@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 
-const DJANGO_API_URL = 'http://localhost:8000/api';
+const DJANGO_API_URL = (process.env.DJANGO_API_URL || 'http://localhost:8000').replace(/\/$/, '') + '/api';
 
 export async function fetchServer(endpoint: string, options: RequestInit = {}) {
     const cookieStore = await cookies();

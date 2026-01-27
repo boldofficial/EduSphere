@@ -13,7 +13,7 @@ const isDev = process.env.NODE_ENV === 'development';
 const devLog = (...args: any[]) => isDev && console.log(...args);
 
 // API Configuration
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+const API_URL = (process.env.DJANGO_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '') + '/api';
 
 /**
  * Helper for API requests
