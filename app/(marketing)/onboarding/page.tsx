@@ -80,16 +80,32 @@ export default function OnboardingPage() {
         setIsLoading(true);
         setError('');
         try {
+            console.log('[ONBOARDING] Submitting data:', data);
             await apiClient.post('schools/register/', data);
             // Redirect to success / tenant login
             const protocol = window.location.protocol;
             const tenantUrl = `${protocol}//${data.domain}.${rootDomain}/login`;
             router.push(`/onboarding/success?url=${encodeURIComponent(tenantUrl)}`);
         } catch (err: any) {
-            console.error('Registration Error Details:', err.response?.data);
-            const detailMsg = err.response?.data?.details
-                ? JSON.stringify(err.response.data.details)
-                : (err.response?.data?.error || 'Registration failed');
+            console.error('[ONBOARDING] Registration Error Details:', err.response?.data);
+
+            const responseData = err.response?.data;
+            let detailMsg = 'Registration failed';
+
+            if (responseData) {
+                if (responseData.details) {
+                    detailMsg = JSON.stringify(responseData.details);
+                } else if (responseData.errors) {
+                    detailMsg = JSON.stringify(responseData.errors);
+                } else if (responseData.error) {
+                    detailMsg = responseData.error;
+                } else {
+                    detailMsg = JSON.stringify(responseData);
+                }
+            } else if (err.message) {
+                detailMsg = err.message;
+            }
+
             setError(detailMsg);
             setIsLoading(false);
         }
