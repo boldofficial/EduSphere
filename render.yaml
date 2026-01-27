@@ -13,9 +13,7 @@ services:
       - key: DEBUG
         value: "False"
       - key: DATABASE_URL
-        fromDatabase:
-          name: school-manager-db # Replace if you create a DB via Render, otherwise use manual env var
-          property: connectionString
+        sync: false # User will provide the Neon DB URL manually
       - key: DJANGO_SECRET_KEY
         generateValue: true
       - key: ALLOWED_HOSTS
