@@ -1,0 +1,9 @@
+--- SHOLEMSVISION DIAGNOSIS ---
+User: sholemsvision (ID: 6)
+School: Test School (ID: 3)
+SETTINGS: None found for this school.
+LAST PAY: ID=16, Ref=PAY-F5E1D9B8
+   Session='2025/2026', Term='Second Term'
+   Amount=70000.00
+   CreatedBy=sholemsvision
+   Student=Samuel Adeyanju (ID: 8)

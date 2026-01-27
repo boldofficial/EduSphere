@@ -1,0 +1,223 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Playfair+Display:wght@400;700;900&family=Roboto:wght@400;700;900&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+    /* BRAND PALETTE (Navy Blue - Trust, Heritage) */
+    --color-brand-50: #f0f5fa;
+    --color-brand-100: #e1eaf5;
+    --color-brand-200: #c2d5eb;
+    --color-brand-300: #94b5dd;
+    --color-brand-400: #5f8dce;
+    --color-brand-500: #3b6fb6;
+    --color-brand-600: #2a5695;
+    --color-brand-700: #23457a;
+    --color-brand-800: #1a3a5c;
+    /* Base Color */
+    --color-brand-900: #132e49;
+    --color-brand-950: #0d1e32;
+
+    /* ACCENT PALETTE (Vibrant Green - Growth, Fruitfulness) */
+    --color-accent-50: #f5fce8;
+    --color-accent-100: #e9f9cf;
+    --color-accent-200: #d5f2a0;
+    --color-accent-300: #b9e86b;
+    --color-accent-400: #9dd839;
+    --color-accent-500: #8FC31F;
+    /* Base Color */
+    --color-accent-600: #6ea313;
+    --color-accent-700: #547d13;
+    --color-accent-800: #446315;
+    --color-accent-900: #385116;
+    --color-accent-950: #1d2e06;
+
+    /* SUPPORT PALETTE */
+    --color-accent-red: #DC2626;
+    --color-accent-amber: #F59E0B;
+}
+
+@layer base {
+    body {
+        @apply antialiased text-gray-900 bg-gray-50;
+        font-family: 'Inter', sans-serif;
+    }
+}
+
+@layer utilities {
+    @media print {
+        @page {
+            size: A4;
+            margin: 10mm;
+        }
+
+        body {
+            background-color: white !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Hide ALL non-print elements */
+        .no-print,
+        aside,
+        header,
+        nav,
+        button,
+        [class*="bg-gray-100"][class*="p-1"][class*="rounded-lg"],
+        .space-y-6>div:first-child:has(button) {
+            display: none !important;
+        }
+
+        /* Force main content to be full width */
+        main {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+            max-width: none !important;
+            position: static !important;
+            left: auto !important;
+            top: auto !important;
+        }
+
+        /* Remove padding/max-width from the main wrapper div in layout */
+        main>div {
+            padding: 0 !important;
+            margin: 0 !important;
+            max-width: none !important;
+        }
+
+        /* Report card container - allow natural flow for multi-page */
+        #report-card {
+            border: none !important;
+            box-shadow: none !important;
+            padding: 5mm !important;
+            width: 100% !important;
+            min-height: auto !important;
+            height: auto !important;
+            display: block !important;
+            overflow: visible !important;
+        }
+
+        /* Allow content to flow to multiple pages */
+        #report-card table {
+            margin-bottom: 5mm !important;
+        }
+
+        #report-card .grid {
+            margin-bottom: 5mm !important;
+        }
+
+        /* Report page containers */
+        .report-page {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+
+        /* Force page 2 to start on a new page */
+        .print\:break-before-page {
+            page-break-before: always !important;
+            break-before: page !important;
+        }
+
+        /* Legacy page break classes */
+        .page-break {
+            display: block !important;
+            page-break-after: always !important;
+            break-after: page !important;
+            height: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border: none !important;
+            visibility: hidden !important;
+        }
+
+        .page-break-before {
+            page-break-before: always !important;
+            break-before: page !important;
+        }
+    }
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    border: 1px solid transparent;
+    background-clip: content-box;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.4);
+    background-clip: content-box;
+}
+
+/* PWA Install Banner Animations */
+@keyframes slide-up {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes scale-in {
+    from {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.animate-slide-up {
+    animation: slide-up 0.4s ease-out forwards;
+}
+
+.animate-scale-in {
+    animation: scale-in 0.3s ease-out forwards;
+}
+
+@media print {
+
+    /* Specific styles for Invoice Printing */
+    /* Use :has to only apply when the invoice modal is present */
+    body:has(#invoice-print) * {
+        visibility: hidden;
+    }
+
+    body:has(#invoice-print) #invoice-print,
+    body:has(#invoice-print) #invoice-print * {
+        visibility: visible;
+    }
+
+    body:has(#invoice-print) #invoice-print {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        background: white;
+        z-index: 99999;
+    }
+
+    /* Ensure the modal wrapper doesn't constrain it */
+    body:has(#invoice-print) .fixed {
+        position: static !important;
+        overflow: visible !important;
+    }
+}

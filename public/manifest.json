@@ -1,0 +1,30 @@
+{
+    "name": "Fruitful Vine Heritage Schools",
+    "short_name": "FVHS Portal",
+    "description": "School Management System for Fruitful Vine Heritage Schools - Reaching the Highest Height",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#0c4a6e",
+    "theme_color": "#0c4a6e",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "/fruitful_logo_main.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/fruitful_logo_main.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": [
+        "education",
+        "productivity"
+    ],
+    "lang": "en-NG",
+    "dir": "ltr"
+}

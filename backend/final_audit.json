@@ -1,0 +1,170 @@
+{
+  "registry": {
+    "students": {
+      "name": "Student Management",
+      "is_active": true
+    },
+    "teachers": {
+      "name": "Teacher Management",
+      "is_active": true
+    },
+    "staff": {
+      "name": "Non-Academic Staff",
+      "is_active": true
+    },
+    "classes": {
+      "name": "Class Management",
+      "is_active": true
+    },
+    "grading": {
+      "name": "Grading & Results",
+      "is_active": true
+    },
+    "attendance": {
+      "name": "Attendance Tracking",
+      "is_active": true
+    },
+    "bursary": {
+      "name": "Bursary & Finance",
+      "is_active": true
+    },
+    "announcements": {
+      "name": "Internal Broadcasts",
+      "is_active": true
+    },
+    "calendar": {
+      "name": "School Calendar",
+      "is_active": true
+    },
+    "analytics": {
+      "name": "School Analytics",
+      "is_active": true
+    },
+    "id_cards": {
+      "name": "ID Card Generator",
+      "is_active": true
+    },
+    "broadsheet": {
+      "name": "Master Broadsheet",
+      "is_active": true
+    },
+    "admissions": {
+      "name": "Online Admissions",
+      "is_active": true
+    },
+    "newsletter": {
+      "name": "School newsletter",
+      "is_active": true
+    },
+    "messages": {
+      "name": "Direct Messaging",
+      "is_active": true
+    },
+    "cms": {
+      "name": "Website CMS",
+      "is_active": true
+    },
+    "learning": {
+      "name": "Learning Center",
+      "is_active": true
+    },
+    "conduct": {
+      "name": "Conduct & Log",
+      "is_active": true
+    }
+  },
+  "plans": [
+    {
+      "id": 1,
+      "name": "Starter Plan",
+      "slug": "starter",
+      "allowed_modules": [
+        "grading",
+        "students",
+        "teachers",
+        "classes",
+        "attendance",
+        "bursary"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Growth Plan",
+      "slug": "growth",
+      "allowed_modules": []
+    },
+    {
+      "id": 3,
+      "name": "Enterprise Plan",
+      "slug": "enterprise",
+      "allowed_modules": [
+        "students",
+        "teachers",
+        "staff",
+        "grading",
+        "bursary",
+        "classes",
+        "attendance",
+        "announcements",
+        "analytics",
+        "calendar",
+        "id_cards",
+        "broadsheet",
+        "newsletter",
+        "admissions",
+        "cms",
+        "messages"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "email": "sholemsfilms@gmail.com",
+      "school": "fruitful vine school",
+      "subscription": {
+        "plan_name": "Starter Plan",
+        "status": "active",
+        "allowed_modules": [
+          "grading",
+          "students",
+          "teachers",
+          "classes",
+          "attendance",
+          "bursary"
+        ]
+      }
+    },
+    {
+      "email": "sholemsvision@gmail.com",
+      "school": "Bold Ideas Innovations Ltd",
+      "subscription": {
+        "plan_name": "Starter Plan",
+        "status": "active",
+        "allowed_modules": [
+          "grading",
+          "students",
+          "teachers",
+          "classes",
+          "attendance",
+          "bursary"
+        ]
+      }
+    },
+    {
+      "email": "dorcasmauyeme@gmail.com",
+      "school": "AK Heritage Schools",
+      "subscription": {
+        "plan_name": "Starter Plan",
+        "status": "active",
+        "allowed_modules": [
+          "grading",
+          "students",
+          "teachers",
+          "classes",
+          "attendance",
+          "bursary"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://fruitfulvineheritageschools.org.ng/sitemap.xml
+
+# Crawl-delay
+Crawl-delay: 1
+
+# Disallow dashboard and sensitive areas
+Disallow: /dashboard
+Disallow: /students
+Disallow: /teachers
+Disallow: /staff
+Disallow: /bursary
+Disallow: /grading
+Disallow: /attendance
+Disallow: /settings
+Disallow: /data
+Disallow: /admissions
+Disallow: /api/
