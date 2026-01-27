@@ -27,7 +27,8 @@ import {
     Megaphone,
     Clock,
     Grid,
-    Check
+    Check,
+    X
 } from 'lucide-react';
 import {
     useSettings, useSystemHealth, useAdminSchools, useAdminPlans,
@@ -51,6 +52,8 @@ export default function SuperAdminDashboard() {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
     const [isTogglingMaintenance, setIsTogglingMaintenance] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [selectedSchoolForEdit, setSelectedSchoolForEdit] = useState<any>(null);
 
     const handleImpersonate = async (userId: number) => {
         if (!userId) {
@@ -109,6 +112,16 @@ export default function SuperAdminDashboard() {
             alert("Failed to toggle maintenance mode");
         } finally {
             setIsTogglingMaintenance(false);
+        }
+    };
+
+    const handleUpdateSchool = async (id: number, data: any) => {
+        try {
+            await apiClient.put(`/schools/manage/${id}/`, data);
+            alert('School details updated successfully');
+            window.location.reload();
+        } catch (error) {
+            alert('Failed to update school details');
         }
     };
 
@@ -317,6 +330,10 @@ export default function SuperAdminDashboard() {
                         <TenantsTab
                             schools={schools}
                             onImpersonate={(userId: number) => handleImpersonate(userId)}
+                            onEdit={(school: any) => {
+                                setSelectedSchoolForEdit(school);
+                                setIsEditModalOpen(true);
+                            }}
                         />
                     )}
                     {activeTab === 'financials' && (
@@ -331,6 +348,14 @@ export default function SuperAdminDashboard() {
                     {activeTab === 'settings' && <PlatformSettingsTab settings={platformSettings} />}
                 </div>
             </main>
+
+            {isEditModalOpen && (
+                <SchoolEditModal
+                    school={selectedSchoolForEdit}
+                    onClose={() => setIsEditModalOpen(false)}
+                    onSave={(data: any) => handleUpdateSchool(selectedSchoolForEdit.id, data)}
+                />
+            )}
         </div>
     );
 }
@@ -752,7 +777,7 @@ function BroadcastsTab({ announcements = [] }: any) {
     );
 }
 
-function TenantsTab({ schools, onImpersonate }: any) {
+function TenantsTab({ schools, onImpersonate, onEdit }: any) {
     const router = useRouter();
     const [isProcessing, setIsProcessing] = useState(false);
     const [paymentModalOpen, setPaymentModalOpen] = useState(false);
@@ -850,6 +875,12 @@ function TenantsTab({ schools, onImpersonate }: any) {
                                         >
                                             <Ghost size={14} />
                                             Login
+                                        </button>
+                                        <button
+                                            onClick={() => onEdit(school)}
+                                            className="text-brand-600 hover:bg-brand-50 px-2 py-1 rounded text-xs font-bold border border-brand-100"
+                                        >
+                                            Edit
                                         </button>
                                         <button onClick={() => openPaymentModal(school)} className="text-gray-600 hover:bg-gray-100 px-2 py-1 rounded text-xs font-bold border border-gray-200">Pay</button>
 
@@ -1355,6 +1386,118 @@ function PlatformSettingsTab({ settings }: { settings: any }) {
                     </button>
                 </div>
             </form>
+        </div>
+    );
+}
+
+function SchoolEditModal({ school, onClose, onSave }: { school: any; onClose: () => void; onSave: (data: any) => void }) {
+    const [formData, setFormData] = useState({
+        name: school?.name || '',
+        domain: school?.domain || '',
+        email: school?.email || '',
+        phone: school?.phone || '',
+        address: school?.address || '',
+        contact_person: school?.contact_person || '',
+    });
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        onSave(formData);
+        onClose();
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+            <div className="bg-white rounded-3xl w-full max-w-2xl shadow-2xl animate-in zoom-in-95 duration-200 overflow-hidden">
+                <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                    <div>
+                        <h3 className="text-2xl font-black text-gray-900 uppercase tracking-tight">Edit School Details</h3>
+                        <p className="text-sm text-gray-500 font-medium">Update core administrative information for {school?.name}.</p>
+                    </div>
+                    <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white hover:shadow-md transition-all text-gray-400 hover:text-gray-900">
+                        <X size={20} />
+                    </button>
+                </div>
+
+                <form onSubmit={handleSubmit} className="p-8 space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">School Name</label>
+                            <input
+                                required
+                                value={formData.name}
+                                onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                className="w-full bg-gray-50 border-0 rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-brand-600 transition-all outline-none"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Subdomain</label>
+                            <div className="relative">
+                                <input
+                                    required
+                                    value={formData.domain}
+                                    onChange={e => setFormData({ ...formData, domain: e.target.value })}
+                                    className="w-full bg-gray-50 border-0 rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-brand-600 transition-all outline-none pr-32"
+                                />
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-gray-300 uppercase">.edusphere.ng</div>
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Official Email</label>
+                            <input
+                                type="email"
+                                required
+                                value={formData.email}
+                                onChange={e => setFormData({ ...formData, email: e.target.value })}
+                                className="w-full bg-gray-50 border-0 rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-brand-600 transition-all outline-none"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Phone Number</label>
+                            <input
+                                required
+                                value={formData.phone}
+                                onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                                className="w-full bg-gray-50 border-0 rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-brand-600 transition-all outline-none"
+                            />
+                        </div>
+                        <div className="space-y-2 md:col-span-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Contact Person</label>
+                            <input
+                                required
+                                value={formData.contact_person}
+                                onChange={e => setFormData({ ...formData, contact_person: e.target.value })}
+                                className="w-full bg-gray-50 border-0 rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-brand-600 transition-all outline-none"
+                            />
+                        </div>
+                        <div className="space-y-2 md:col-span-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Physical Address</label>
+                            <textarea
+                                required
+                                value={formData.address}
+                                onChange={e => setFormData({ ...formData, address: e.target.value })}
+                                className="w-full bg-gray-50 border-0 rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-brand-600 transition-all outline-none min-h-[100px] resize-none"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="flex gap-4 pt-6">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="flex-1 py-4 text-gray-400 font-black uppercase text-xs tracking-widest hover:bg-gray-50 rounded-2xl transition-all"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            className="flex-[2] py-4 bg-gray-900 text-white font-black uppercase text-xs tracking-widest rounded-2xl shadow-xl shadow-gray-900/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                        >
+                            Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 }
