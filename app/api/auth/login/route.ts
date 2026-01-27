@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
-const DJANGO_API_URL = 'http://127.0.0.1:8000'; // Define strictly for server-side
+const DJANGO_API_URL = process.env.DJANGO_API_URL || 'http://127.0.0.1:8000'; // Define strictly for server-side
 
 export async function POST(request: NextRequest) {
     try {
