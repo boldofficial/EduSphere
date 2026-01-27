@@ -5,6 +5,26 @@ export interface Entity {
   updated_at: number;
 }
 
+export interface CoreValue {
+  title: string;
+  description: string;
+  icon: string;
+}
+
+export interface AcademicProgram {
+  title: string;
+  age_range: string;
+  description: string;
+  image: string | null;
+}
+
+export interface Testimonial {
+  name: string;
+  role: string;
+  quote: string;
+  image: string | null;
+}
+
 export interface Settings extends Entity {
   school_name: string;
   school_address: string;
@@ -44,6 +64,10 @@ export interface Settings extends Entity {
   landing_primary_color: string; // Customizable accent color
   landing_show_stats: boolean; // Show/hide stats section
   landing_cta_text: string; // Call to action button text
+  landing_core_values: CoreValue[];
+  landing_academic_programs: AcademicProgram[];
+  landing_testimonials: Testimonial[];
+  landing_stats_config: Record<string, boolean>;
 
   // Phase 2: Promotion Settings
   promotion_threshold: number; // Minimum average to pass (e.g., 50)

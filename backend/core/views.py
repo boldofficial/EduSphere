@@ -20,20 +20,15 @@ class SettingsView(APIView):
     permission_classes = [AllowAny] 
 
     def get_school(self, request):
-        school = None
-        if request.user.is_authenticated:
-            school = getattr(request.user, 'school', None)
+        # Use tenant set by middleware if available
+        if hasattr(request, 'tenant') and request.tenant:
+            return request.tenant
         
-        if not school:
-            domain = request.META.get('HTTP_X_TENANT_ID', 'demo')
-            from schools.models import School
-            school = School.objects.filter(domain=domain).first()
+        # Fallback to user's school if authenticated
+        if request.user.is_authenticated:
+            return getattr(request.user, 'school', None)
             
-        if not school:
-            from schools.models import School
-            school = School.objects.filter(domain='demo').first()
-            
-        return school
+        return None
 
     def get(self, request):
         try:
@@ -100,6 +95,14 @@ class SettingsView(APIView):
                 'landing_primary_color': settings_obj.landing_primary_color,
                 'landing_show_stats': settings_obj.landing_show_stats,
                 'landing_cta_text': settings_obj.landing_cta_text,
+                'landing_core_values': settings_obj.landing_core_values,
+                'landing_academic_programs': [
+                    {**p, 'image': get_url(p.get('image'))} for p in settings_obj.landing_academic_programs
+                ],
+                'landing_testimonials': [
+                    {**t, 'image': get_url(t.get('image'))} for t in settings_obj.landing_testimonials
+                ],
+                'landing_stats_config': settings_obj.landing_stats_config,
                 
                 'promotion_threshold': settings_obj.promotion_threshold,
                 'promotion_rules': settings_obj.promotion_rules,
@@ -188,8 +191,30 @@ class SettingsView(APIView):
             if 'landing_gallery_images' in data:
                 settings_obj.landing_gallery_images = [process_base64(img) for img in data['landing_gallery_images']]
             
-            for field in ['landing_primary_color', 'landing_show_stats', 'landing_cta_text']:
+            for field in ['landing_primary_color', 'landing_show_stats', 'landing_cta_text', 'landing_stats_config']:
                 if field in data: setattr(settings_obj, field, data[field])
+
+            if 'landing_core_values' in data:
+                settings_obj.landing_core_values = data['landing_core_values']
+
+            if 'landing_academic_programs' in data:
+                programs = []
+                for p in data['landing_academic_programs']:
+                    # Handle image upload if present
+                    img = p.get('image')
+                    if img and img.startswith('data:image'):
+                        img = process_base64(img)
+                    programs.append({**p, 'image': img})
+                settings_obj.landing_academic_programs = programs
+
+            if 'landing_testimonials' in data:
+                testimonials = []
+                for t in data['landing_testimonials']:
+                    img = t.get('image')
+                    if img and img.startswith('data:image'):
+                        img = process_base64(img)
+                    testimonials.append({**t, 'image': img})
+                settings_obj.landing_testimonials = testimonials
             
             if 'promotion_threshold' in data: settings_obj.promotion_threshold = data['promotion_threshold']
             if 'promotion_rules' in data: settings_obj.promotion_rules = data['promotion_rules']

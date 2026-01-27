@@ -143,6 +143,22 @@ export const INITIAL_SETTINGS: Settings = {
   landing_primary_color: '#1A3A5C',
   landing_show_stats: true,
   landing_cta_text: 'Start Your Journey',
+  landing_core_values: [
+    { title: 'CARE', description: 'We nurture every child with love, compassion, and individual attention, ensuring they feel valued and supported in their journey.', icon: 'Heart' },
+    { title: 'RESPECT', description: 'We foster an environment of mutual respect, teaching children to honour themselves, others, and their community.', icon: 'Users' },
+    { title: 'EXCELLENCE', description: 'We inspire a pursuit of excellence in academics, character, and all endeavours, helping every child reach their highest potential.', icon: 'Award' }
+  ],
+  landing_academic_programs: [
+    { title: "Crèche", image: "/fruitful2.jpg.jpg", age_range: "Ages 0 - 2", description: "A safe and nurturing environment for infants and toddlers to explore and grow." },
+    { title: "Pre-School", image: "/fruitful5.jpg.jpg", age_range: "Ages 3 - 5", description: "Play-based learning that builds foundational skills in literacy, numeracy, and social interaction." },
+    { title: "Primary School", image: "/fruitful3.jpg.jpg", age_range: "Ages 6 - 11", description: "A robust curriculum developing critical thinking, creativity, and strong moral values." }
+  ],
+  landing_testimonials: [],
+  landing_stats_config: {
+    students: true,
+    teachers: true,
+    classes: true
+  },
   promotion_threshold: 50,
   promotion_rules: 'manual',
   role_permissions: {

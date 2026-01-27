@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: school-manager-backend
+    env: python
+    rootDirectory: backend
+    buildCommand: ./build.sh
+    startCommand: gunicorn config.wsgi:application
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0 # Or your preferred version
+      - key: DJANGO_SETTINGS_MODULE
+        value: config.settings
+      - key: DEBUG
+        value: "False"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: school-manager-db # Replace if you create a DB via Render, otherwise use manual env var
+          property: connectionString
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_HOSTS
+        value: "*" # Update to your Render URL after first deployment
+      - key: CORS_ALLOWED_ORIGINS
+        value: "https://your-vercel-frontend.vercel.app" # Update to your Vercel URL

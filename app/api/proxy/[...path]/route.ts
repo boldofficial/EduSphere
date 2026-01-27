@@ -62,6 +62,10 @@ async function handleProxy(request: NextRequest, params: Promise<{ path: string[
             headers: headers,
             body: body,
             cache: 'no-store',
+            // Increase timeout for slow dev backends/DB latency
+            // @ts-ignore - Next.js fetch options
+            next: { revalidate: 0 },
+            signal: AbortSignal.timeout(60000), // 60 second timeout
         });
 
         if (response.status === 204) {

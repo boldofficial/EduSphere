@@ -29,22 +29,7 @@ import SiteHeader from './SiteHeader';
 import SiteFooter from './SiteFooter';
 
 interface LandingPageProps {
-    settings: {
-        school_name: string;
-        school_tagline: string;
-        school_address: string;
-        school_email: string;
-        school_phone: string;
-        logo_media: string | null;
-        landing_hero_title: string;
-        landing_hero_subtitle: string;
-        landing_features: string;
-        landing_hero_image: string | null;
-        landing_about_text: string;
-        landing_primary_color: string;
-        landing_show_stats: boolean;
-        landing_cta_text: string;
-    };
+    settings: import('@/lib/types').Settings;
     stats: {
         studentsCount: number;
         teachersCount: number;
@@ -125,6 +110,17 @@ const CoreValueCard = ({ icon: Icon, title, description, delay }: { icon: React.
 
 export const LandingPage: React.FC<LandingPageProps> = ({ settings, stats }) => {
     const features = (settings.landing_features || '').split(',').map(f => f.trim()).filter(f => f);
+    const coreValues = settings.landing_core_values?.length > 0 ? settings.landing_core_values : [
+        { title: 'CARE', description: 'We nurture every child with love, compassion, and individual attention, ensuring they feel valued and supported in their journey.', icon: 'Heart' },
+        { title: 'RESPECT', description: 'We foster an environment of mutual respect, teaching children to honour themselves, others, and their community.', icon: 'Users' },
+        { title: 'EXCELLENCE', description: 'We inspire a pursuit of excellence in academics, character, and all endeavours, helping every child reach their highest potential.', icon: 'Award' }
+    ];
+
+    const academicPrograms = settings.landing_academic_programs?.length > 0 ? settings.landing_academic_programs : [
+        { title: "Crèche", image: "/fruitful2.jpg.jpg", age_range: "Ages 0 - 2", description: "A safe and nurturing environment for infants and toddlers to explore and grow." },
+        { title: "Pre-School", image: "/fruitful5.jpg.jpg", age_range: "Ages 3 - 5", description: "Play-based learning that builds foundational skills in literacy, numeracy, and social interaction." },
+        { title: "Primary School", image: "/fruitful3.jpg.jpg", age_range: "Ages 6 - 11", description: "A robust curriculum developing critical thinking, creativity, and strong moral values." }
+    ];
 
     // Contact form state
     const [contactForm, setContactForm] = useState({
@@ -173,9 +169,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ settings, stats }) => 
             <section id="home" className="relative min-h-[75vh] flex items-center justify-center overflow-hidden">
                 {/* Background Image with Overlay */}
                 <div className="absolute inset-0 z-0">
-                    <div className="absolute inset-0 bg-brand-950/80 z-10"></div>
+                    <div className="absolute inset-0 z-10" style={{ backgroundColor: `${settings.landing_primary_color}CC` }}></div>
                     <img
-                        src="/hero1.jpg"
+                        src={settings.landing_hero_image || "/hero1.jpg"}
                         alt="School Campus"
                         className="w-full h-full object-cover"
                     />
@@ -197,7 +193,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ settings, stats }) => 
                     </h1>
 
                     {/* Tagline */}
-                    <p className="text-xl md:text-2xl text-accent-400 font-semibold italic mb-6">
+                    <p className="text-xl md:text-2xl font-semibold italic mb-6" style={{ color: settings.landing_primary_color === '#1A3A5C' ? '#FBBF24' : '#FFFFFF' }}>
                         {settings.school_tagline || "...reaching the highest height"}
                     </p>
 
@@ -210,7 +206,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ settings, stats }) => 
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
                         <Link
                             href="/admission"
-                            className="px-8 py-4 bg-accent-500 hover:bg-accent-400 text-brand-950 text-lg font-bold rounded-lg transition-all shadow-lg hover:shadow-accent-500/30 flex items-center justify-center gap-2 group"
+                            className="px-8 py-4 text-lg font-bold rounded-lg transition-all shadow-lg flex items-center justify-center gap-2 group"
+                            style={{ backgroundColor: settings.landing_primary_color === '#1A3A5C' ? '#FBBF24' : settings.landing_primary_color, color: settings.landing_primary_color === '#1A3A5C' ? '#1A3A5C' : '#FFFFFF' }}
                         >
                             Apply for Admission
                             <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
@@ -321,53 +318,34 @@ export const LandingPage: React.FC<LandingPageProps> = ({ settings, stats }) => 
                     </div>
 
                     <div className="grid md:grid-cols-3 gap-8">
-                        {/* CARE */}
-                        <div className="group bg-gradient-to-br from-pink-500 to-rose-600 rounded-3xl p-8 text-white shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 relative overflow-hidden">
-                            <div className="absolute top-0 right-0 p-6 opacity-10">
-                                <Heart size={150} />
-                            </div>
-                            <div className="relative z-10">
-                                <div className="h-16 w-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-6">
-                                    <Heart size={32} className="text-white" />
-                                </div>
-                                <h3 className="text-3xl font-extrabold mb-4">CARE</h3>
-                                <p className="text-white/90 leading-relaxed">
-                                    We nurture every child with love, compassion, and individual attention, ensuring they feel valued and supported in their journey.
-                                </p>
-                            </div>
-                        </div>
+                        {coreValues.map((value, i) => {
+                            const Icon = getFeatureIcon(value.icon || value.title);
+                            const colors = [
+                                'from-pink-500 to-rose-600',
+                                'from-blue-500 to-indigo-600',
+                                'from-amber-500 to-orange-600',
+                                'from-emerald-500 to-teal-600',
+                                'from-purple-500 to-violet-600'
+                            ];
+                            const colorClass = colors[i % colors.length];
 
-                        {/* RESPECT */}
-                        <div className="group bg-gradient-to-br from-blue-500 to-indigo-600 rounded-3xl p-8 text-white shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 relative overflow-hidden">
-                            <div className="absolute top-0 right-0 p-6 opacity-10">
-                                <Users size={150} />
-                            </div>
-                            <div className="relative z-10">
-                                <div className="h-16 w-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-6">
-                                    <Users size={32} className="text-white" />
+                            return (
+                                <div key={i} className={`group bg-gradient-to-br ${colorClass} rounded-3xl p-8 text-white shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 relative overflow-hidden`}>
+                                    <div className="absolute top-0 right-0 p-6 opacity-10">
+                                        <Icon size={150} />
+                                    </div>
+                                    <div className="relative z-10">
+                                        <div className="h-16 w-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-6">
+                                            <Icon size={32} className="text-white" />
+                                        </div>
+                                        <h3 className="text-3xl font-extrabold mb-4">{value.title}</h3>
+                                        <p className="text-white/90 leading-relaxed">
+                                            {value.description}
+                                        </p>
+                                    </div>
                                 </div>
-                                <h3 className="text-3xl font-extrabold mb-4">RESPECT</h3>
-                                <p className="text-white/90 leading-relaxed">
-                                    We foster an environment of mutual respect, teaching children to honour themselves, others, and their community.
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* EXCELLENCE */}
-                        <div className="group bg-gradient-to-br from-amber-500 to-orange-600 rounded-3xl p-8 text-white shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 relative overflow-hidden">
-                            <div className="absolute top-0 right-0 p-6 opacity-10">
-                                <Award size={150} />
-                            </div>
-                            <div className="relative z-10">
-                                <div className="h-16 w-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-6">
-                                    <Award size={32} className="text-white" />
-                                </div>
-                                <h3 className="text-3xl font-extrabold mb-4">EXCELLENCE</h3>
-                                <p className="text-white/90 leading-relaxed">
-                                    We inspire a pursuit of excellence in academics, character, and all endeavours, helping every child reach their highest potential.
-                                </p>
-                            </div>
-                        </div>
+                            );
+                        })}
                     </div>
                 </div>
             </section>
@@ -386,20 +364,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({ settings, stats }) => 
                     </div>
 
                     <div className="grid md:grid-cols-3 gap-8">
-                        {[
-                            { title: "Crèche", image: "/fruitful2.jpg.jpg", age: "Ages 0 - 2", desc: "A safe and nurturing environment for infants and toddlers to explore and grow." },
-                            { title: "Pre-School", image: "/fruitful5.jpg.jpg", age: "Ages 3 - 5", desc: "Play-based learning that builds foundational skills in literacy, numeracy, and social interaction." },
-                            { title: "Primary School", image: "/fruitful3.jpg.jpg", age: "Ages 6 - 11", desc: "A robust curriculum developing critical thinking, creativity, and strong moral values." }
-                        ].map((prog, i) => (
+                        {academicPrograms.map((prog, i) => (
                             <div key={i} className="group relative rounded-2xl overflow-hidden shadow-lg h-[400px]">
-                                <img src={prog.image} alt={prog.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                                <img src={prog.image || "/fruitful2.jpg.jpg"} alt={prog.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                                 <div className="absolute inset-0 bg-gradient-to-t from-brand-950 via-brand-950/40 to-transparent flex flex-col justify-end p-8">
-                                    <span className="inline-block px-3 py-1 bg-accent-500 text-brand-950 text-xs font-bold rounded-lg mb-3 self-start">
-                                        {prog.age}
+                                    <span className="inline-block px-3 py-1 text-xs font-bold rounded-lg mb-3 self-start" style={{ backgroundColor: settings.landing_primary_color === '#1A3A5C' ? '#FBBF24' : settings.landing_primary_color, color: settings.landing_primary_color === '#1A3A5C' ? '#1A3A5C' : '#FFFFFF' }}>
+                                        {prog.age_range}
                                     </span>
                                     <h3 className="text-2xl font-bold text-white mb-2">{prog.title}</h3>
                                     <p className="text-gray-300 text-sm mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-y-4 group-hover:translate-y-0">
-                                        {prog.desc}
+                                        {prog.description}
                                     </p>
                                     <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white group-hover:bg-accent-500 group-hover:text-brand-950 transition-colors">
                                         <ArrowRight size={20} />

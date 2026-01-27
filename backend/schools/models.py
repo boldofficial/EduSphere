@@ -153,6 +153,12 @@ class SchoolSettings(models.Model):
     landing_show_stats = models.BooleanField(default=True)
     landing_cta_text = models.CharField(max_length=50, default='Start Your Journey')
     
+    # New CMS Fields for structured content
+    landing_core_values = models.JSONField(default=list, blank=True) # list of {title, description, icon}
+    landing_academic_programs = models.JSONField(default=list, blank=True) # list of {title, age_range, description, image}
+    landing_testimonials = models.JSONField(default=list, blank=True) # list of {name, role, quote, image}
+    landing_stats_config = models.JSONField(default=dict, blank=True) # {students: true, teachers: true, etc}
+    
     # Promotion & Finance
     promotion_threshold = models.IntegerField(default=50)
     promotion_rules = models.CharField(max_length=20, choices=(('auto', 'Auto'), ('manual', 'Manual')), default='manual')

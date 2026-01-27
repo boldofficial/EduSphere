@@ -8,27 +8,33 @@ from .serializers import (
     QuestionSerializer, AttemptSerializer, StudentAnswerSerializer
 )
 
-class AssignmentViewSet(viewsets.ModelViewSet):
+class LearningTenantViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        if hasattr(self.request.user, 'school') and self.request.user.school:
+            serializer.save(school=self.request.user.school)
+        else:
+            serializer.save()
+
+class AssignmentViewSet(LearningTenantViewSet):
     queryset = Assignment.objects.all()
     serializer_class = AssignmentSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         # Filtering logic for students vs teachers can be added here
         return Assignment.objects.filter(school=self.request.user.school)
 
-class SubmissionViewSet(viewsets.ModelViewSet):
+class SubmissionViewSet(LearningTenantViewSet):
     queryset = Submission.objects.all()
     serializer_class = SubmissionSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         return Submission.objects.filter(school=self.request.user.school)
 
-class QuizViewSet(viewsets.ModelViewSet):
+class QuizViewSet(LearningTenantViewSet):
     queryset = Quiz.objects.all()
     serializer_class = QuizSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         return Quiz.objects.filter(school=self.request.user.school)
@@ -81,10 +87,9 @@ class QuizViewSet(viewsets.ModelViewSet):
         
         return Response({'success': True, 'score': total_score})
 
-class QuestionViewSet(viewsets.ModelViewSet):
+class QuestionViewSet(LearningTenantViewSet):
     queryset = Question.objects.all()
     serializer_class = QuestionSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         # Allow filtering by quiz_id
@@ -94,10 +99,9 @@ class QuestionViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(quiz_id=quiz_id)
         return queryset
 
-class AttemptViewSet(viewsets.ModelViewSet):
+class AttemptViewSet(LearningTenantViewSet):
     queryset = Attempt.objects.all()
     serializer_class = AttemptSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         return Attempt.objects.filter(school=self.request.user.school)
