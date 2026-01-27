@@ -5,19 +5,40 @@ const DJANGO_API_URL = process.env.DJANGO_API_URL || 'http://127.0.0.1:8000'; //
 
 export async function POST(request: NextRequest) {
     try {
+        const djangoUrl = process.env.DJANGO_API_URL;
+        console.log('Attempting login. DJANGO_API_URL set to:', djangoUrl);
+
+        if (!djangoUrl) {
+            console.error('CRITICAL: DJANGO_API_URL is NOT set in environment variables.');
+        }
+
+        const baseUrl = djangoUrl || 'http://127.0.0.1:8000';
+        // Ensure we don't have double slashes and have a trailing slash for Django if needed
+        const tokenUrl = `${baseUrl.replace(/\/$/, '')}/api/token/`;
+
+        console.log('Fetching from:', tokenUrl);
+
         const body = await request.json();
         const { username, password } = body;
 
         // Call Django to get tokens
-        const response = await fetch(`${DJANGO_API_URL}/api/token/`, {
+        const response = await fetch(tokenUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password }),
         });
 
+        console.log('Django token response status:', response.status);
+
         if (!response.ok) {
-            const errorData = await response.json();
-            return NextResponse.json(errorData, { status: response.status });
+            const errorText = await response.text();
+            console.error('Django token error response:', errorText);
+            try {
+                const errorData = JSON.parse(errorText);
+                return NextResponse.json(errorData, { status: response.status });
+            } catch (k) {
+                return NextResponse.json({ error: 'Backend error', details: errorText }, { status: response.status });
+            }
         }
 
         const data = await response.json();
@@ -44,13 +65,18 @@ export async function POST(request: NextRequest) {
             maxAge: 60 * 60 * 24, // 1 day
         });
 
+        const meUrl = `${baseUrl.replace(/\/$/, '')}/api/users/me/`;
+        console.log('Fetching user details from:', meUrl);
+
         // Fetch User Details to return to frontend
-        const userRes = await fetch(`${DJANGO_API_URL}/api/users/me/`, {
+        const userRes = await fetch(meUrl, {
             headers: {
                 'Authorization': `Bearer ${access}`,
                 'Content-Type': 'application/json'
             }
         });
+
+        console.log('Django user/me response status:', userRes.status);
 
         let userData: any = { username };
         if (userRes.ok) {
@@ -61,8 +87,17 @@ export async function POST(request: NextRequest) {
         }
 
         return NextResponse.json({ success: true, user: userData });
-    } catch (error) {
-        console.error('Login error:', error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    } catch (error: any) {
+        console.error('Detailed login error:', {
+            name: error?.name,
+            message: error?.message,
+            stack: error?.stack,
+            cause: error?.cause
+        });
+        return NextResponse.json({
+            error: 'Internal Server Error',
+            details: error?.message,
+            django_url: process.env.DJANGO_API_URL
+        }, { status: 500 });
     }
 }
