@@ -39,6 +39,7 @@ export const queryKeys = {
     userAnnouncements: ['user_announcements'] as const,
     globalSearch: (query: string) => ['global_search', query] as const,
     modules: ['modules'] as const,
+    platformSettings: ['platform_settings'] as const,
     me: ['me'] as const,
     scholarships: ['scholarships'] as const,
     assignments: ['assignments'] as const,
@@ -191,6 +192,29 @@ export function useModules() {
         queryFn: async () => {
             const response = await apiClient.get('/schools/modules/');
             return response.data;
+        },
+    });
+}
+
+export function usePlatformSettings() {
+    return useQuery({
+        queryKey: queryKeys.platformSettings,
+        queryFn: async () => {
+            const response = await apiClient.get('/schools/platform-settings/');
+            return response.data;
+        },
+    });
+}
+
+export function useUpdatePlatformSettings() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (settings: any) => {
+            const response = await apiClient.put('/schools/platform-settings/', settings);
+            return response.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.platformSettings });
         },
     });
 }
