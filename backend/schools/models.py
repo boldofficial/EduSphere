@@ -93,6 +93,8 @@ class Subscription(models.Model):
     school = models.OneToOneField(School, on_delete=models.CASCADE, related_name='subscription')
     plan = models.ForeignKey(SubscriptionPlan, on_delete=models.PROTECT)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    payment_method = models.CharField(max_length=20, choices=(('paystack', 'Paystack'), ('bank_transfer', 'Bank Transfer')), default='paystack')
+    payment_proof = models.TextField(null=True, blank=True) # Base64 or URL
     start_date = models.DateTimeField(auto_now_add=True)
     end_date = models.DateTimeField()
     auto_renew = models.BooleanField(default=True)
@@ -112,6 +114,8 @@ class SchoolPayment(models.Model):
     school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='payments')
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     reference = models.CharField(max_length=100, unique=True) # e.g. Paystack reference
+    payment_method = models.CharField(max_length=20, default='paystack')
+    proof_image = models.TextField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     date = models.DateTimeField(auto_now_add=True)
     
@@ -177,3 +181,24 @@ class SchoolSettings(models.Model):
 
     def __str__(self):
         return f"Settings for {self.school.name}"
+
+class PlatformSettings(models.Model):
+    """Global configuration for the entire EduSphere platform (Super Admin only)."""
+    # Platform Bank Details (for school onboarding/subscriptions)
+    bank_name = models.CharField(max_length=255, null=True, blank=True)
+    account_name = models.CharField(max_length=255, null=True, blank=True)
+    account_number = models.CharField(max_length=20, null=True, blank=True)
+    bank_code = models.CharField(max_length=20, null=True, blank=True)
+    
+    # Global contact info
+    support_email = models.EmailField(null=True, blank=True)
+    support_phone = models.CharField(max_length=20, null=True, blank=True)
+    
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return "Global Platform Settings"
+
+    class Meta:
+        verbose_name = "Platform Settings"
+        verbose_name_plural = "Platform Settings"

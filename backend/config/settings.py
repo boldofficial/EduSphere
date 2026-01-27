@@ -139,6 +139,9 @@ if DATABASES['default'].get('ENGINE') == 'django.db.backends.postgresql':
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Increase max upload size for base64 images
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760 # 10MB
+
 
 # =============================================================================
 # PASSWORD VALIDATION
@@ -362,20 +365,25 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'simple',
         },
+        'file': {
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'django_debug.log',
+            'formatter': 'verbose',
+        },
     },
     'root': {
-        'handlers': ['console'],
+        'handlers': ['console', 'file'],
         'level': 'INFO',
     },
     'loggers': {
         'django': {
-            'handlers': ['console'],
+            'handlers': ['console', 'file'],
             'level': os.environ.get('DJANGO_LOG_LEVEL', 'INFO'),
             'propagate': False,
         },
         'django.request': {
-            'handlers': ['console'],
-            'level': 'WARNING',
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
             'propagate': False,
         },
     },

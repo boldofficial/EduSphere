@@ -14,10 +14,12 @@ const schema = z.object({
     email: z.string().email("Invalid email address"),
     password: z.string().min(6, "Password must be at least 6 characters"),
     plan_slug: z.string().min(1, "Please select a plan"),
-    phone: z.string().optional(),
+    phone: z.string().optional().or(z.literal('')),
     school_email: z.string().email("Invalid school email").optional().or(z.literal('')),
-    address: z.string().optional(),
-    contact_person: z.string().optional()
+    address: z.string().optional().or(z.literal('')),
+    contact_person: z.string().optional().or(z.literal('')),
+    payment_method: z.enum(['paystack', 'bank_transfer']),
+    payment_proof: z.string().optional().or(z.literal(''))
 });
 
 type FormData = z.infer<typeof schema>;
@@ -29,41 +31,66 @@ export default function OnboardingPage() {
     const [plans, setPlans] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
-
-    const [formData, setFormData] = useState({
-        school_name: '',
-        domain: '',
-        email: '',
-        password: '',
-        phone: '',
-        school_email: '',
-        address: '',
-        contact_person: ''
-    });
+    const [isPaid, setIsPaid] = useState(false);
+    const [isPaying, setIsPaying] = useState(false);
 
     const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormData>({
         resolver: zodResolver(schema),
         defaultValues: {
-            plan_slug: searchParams.get('plan') || 'starter'
+            school_name: '',
+            domain: '',
+            email: '',
+            password: '',
+            plan_slug: searchParams.get('plan') || 'starter',
+            phone: '',
+            school_email: '',
+            address: '',
+            contact_person: '',
+            payment_method: 'paystack',
+            payment_proof: ''
         }
     });
 
     const selectedPlanSlug = watch('plan_slug');
 
+    const [rootDomain, setRootDomain] = useState('localhost:3000');
+
+    const [platformSettings, setPlatformSettings] = useState<any>(null);
+
     useEffect(() => {
-        apiClient.get('/schools/plans/').then(res => setPlans(res.data)).catch(console.error);
+        if (typeof window !== 'undefined') {
+            setRootDomain(window.location.host);
+        }
+        apiClient.get('schools/plans/').then(res => setPlans(res.data)).catch(console.error);
+        apiClient.get('schools/platform-settings/').then(res => setPlatformSettings(res.data)).catch(console.error);
     }, []);
+
+    const handleProofUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setValue('payment_proof', reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 
     const onSubmit = async (data: FormData) => {
         setIsLoading(true);
         setError('');
         try {
-            await apiClient.post('/schools/register/', data);
+            await apiClient.post('schools/register/', data);
             // Redirect to success / tenant login
-            const tenantUrl = `http://${data.domain}.localhost:3000/login`; // Adjust for prod
+            const protocol = window.location.protocol;
+            const tenantUrl = `${protocol}//${data.domain}.${rootDomain}/login`;
             router.push(`/onboarding/success?url=${encodeURIComponent(tenantUrl)}`);
         } catch (err: any) {
-            setError(err.response?.data?.error || 'Registration failed');
+            console.error('Registration Error Details:', err.response?.data);
+            const detailMsg = err.response?.data?.details
+                ? JSON.stringify(err.response.data.details)
+                : (err.response?.data?.error || 'Registration failed');
+            setError(detailMsg);
             setIsLoading(false);
         }
     };
@@ -91,6 +118,11 @@ export default function OnboardingPage() {
                         <div className={`h-1 flex-1 mx-4 bg-gray-200 rounded-full ${step >= 3 ? 'bg-brand-600' : ''}`}></div>
                         <div className={`flex items-center gap-2 ${step >= 3 ? 'text-brand-600' : ''}`}>
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${step >= 3 ? 'border-brand-600 bg-brand-50' : 'border-gray-200'}`}>3</div>
+                            <span>Payment</span>
+                        </div>
+                        <div className={`h-1 flex-1 mx-4 bg-gray-200 rounded-full ${step >= 4 ? 'bg-brand-600' : ''}`}></div>
+                        <div className={`flex items-center gap-2 ${step >= 4 ? 'text-brand-600' : ''}`}>
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${step >= 4 ? 'border-brand-600 bg-brand-50' : 'border-gray-200'}`}>4</div>
                             <span>Account</span>
                         </div>
                     </div>
@@ -134,7 +166,7 @@ export default function OnboardingPage() {
                                     <label className="block text-sm font-bold text-gray-700 mb-1">Subdomain</label>
                                     <div className="flex items-center">
                                         <input {...register('domain')} placeholder="fruitfulvine" className="flex-1 px-4 py-3 rounded-l-xl border border-gray-200 focus:ring-2 focus:ring-brand-500" />
-                                        <span className="px-4 py-3 bg-gray-100 border border-l-0 border-gray-200 rounded-r-xl text-gray-500 font-medium">.edusphere.ng</span>
+                                        <span className="px-4 py-3 bg-gray-100 border border-l-0 border-gray-200 rounded-r-xl text-gray-500 font-medium">.{rootDomain}</span>
                                     </div>
                                     {errors.domain && <p className="text-red-500 text-sm mt-1">{errors.domain.message}</p>}
                                 </div>
@@ -170,6 +202,104 @@ export default function OnboardingPage() {
                         {step === 3 && (
                             <div className="space-y-6 animate-in slide-in-from-right duration-300">
                                 <h2 className="text-xl font-bold flex items-center gap-2">
+                                    <CreditCard className="text-brand-600" /> Payment & Provisioning
+                                </h2>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => setValue('payment_method', 'paystack')}
+                                        className={`p-4 rounded-xl border-2 text-center transition-all ${watch('payment_method') === 'paystack' ? 'border-brand-600 bg-brand-50 font-bold' : 'border-gray-200'}`}
+                                    >
+                                        Online Payment
+                                        <p className="text-xs font-normal text-gray-500 mt-1">Instant Activation</p>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setValue('payment_method', 'bank_transfer')}
+                                        className={`p-4 rounded-xl border-2 text-center transition-all ${watch('payment_method') === 'bank_transfer' ? 'border-brand-600 bg-brand-50 font-bold' : 'border-gray-200'}`}
+                                    >
+                                        Bank Transfer
+                                        <p className="text-xs font-normal text-gray-500 mt-1">Manual Approval</p>
+                                    </button>
+                                </div>
+
+                                {watch('payment_method') === 'bank_transfer' && (
+                                    <div className="p-6 bg-brand-900 text-white rounded-2xl space-y-4">
+                                        <h3 className="font-bold border-b border-white/10 pb-2">Platform Bank Details</h3>
+                                        <div className="grid grid-cols-2 gap-4 text-sm">
+                                            <div>
+                                                <p className="opacity-60">Bank Name</p>
+                                                <p className="font-bold">{platformSettings?.bank_name || 'EduSphere Central Bank'}</p>
+                                            </div>
+                                            <div>
+                                                <p className="opacity-60">Account Number</p>
+                                                <p className="font-bold">{platformSettings?.account_number || '0123456789'}</p>
+                                            </div>
+                                            <div>
+                                                <p className="opacity-60">Account Name</p>
+                                                <p className="font-bold">{platformSettings?.account_name || 'EDUSPHERE INNOVATIONS'}</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="pt-4 border-t border-white/10">
+                                            <label className="block text-xs font-bold uppercase tracking-wider mb-2 opacity-60">Upload Reciept / Proof</label>
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handleProofUpload}
+                                                className="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-white file:text-brand-600 hover:file:bg-brand-50"
+                                            />
+                                            {watch('payment_proof') && <p className="mt-2 text-xs text-green-400 font-bold flex items-center gap-1"><CheckCircle2 size={12} /> Proof Selected</p>}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {watch('payment_method') === 'paystack' && (
+                                    <div className="p-8 border-2 border-dashed border-gray-200 rounded-2xl text-center flex flex-col items-center gap-4">
+                                        <p className="text-gray-500 font-medium">
+                                            {isPaid
+                                                ? "Payment successful! You can now proceed to the final step."
+                                                : `You will be redirected to Paystack to complete your payment of ₦${plans.find(p => p.slug === selectedPlanSlug)?.price || '...'}`
+                                            }
+                                        </p>
+                                        {!isPaid && (
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setIsPaying(true);
+                                                    setTimeout(() => {
+                                                        setIsPaid(true);
+                                                        setIsPaying(false);
+                                                    }, 2000);
+                                                }}
+                                                disabled={isPaying}
+                                                className="px-6 py-2 bg-[#09a5db] text-white font-bold rounded-lg hover:bg-[#0883ae] flex items-center gap-2"
+                                            >
+                                                {isPaying ? <Loader2 className="animate-spin" size={16} /> : "Pay Now (Test Mode)"}
+                                            </button>
+                                        )}
+                                        {isPaid && <CheckCircle2 className="text-green-500" size={32} />}
+                                    </div>
+                                )}
+
+                                <div className="flex justify-between">
+                                    <button type="button" onClick={() => setStep(2)} className="text-gray-500 font-bold hover:text-gray-700">Back</button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setStep(4)}
+                                        disabled={(watch('payment_method') === 'bank_transfer' && !watch('payment_proof')) || (watch('payment_method') === 'paystack' && !isPaid)}
+                                        className="px-6 py-3 bg-brand-600 text-white font-bold rounded-xl hover:bg-brand-700 disabled:opacity-30"
+                                    >
+                                        Next Step
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {step === 4 && (
+                            <div className="space-y-6 animate-in slide-in-from-right duration-300">
+                                <h2 className="text-xl font-bold flex items-center gap-2">
                                     <User className="text-brand-600" /> Admin Account
                                 </h2>
                                 <div>
@@ -191,7 +321,7 @@ export default function OnboardingPage() {
                                 )}
 
                                 <div className="flex justify-between items-center pt-4">
-                                    <button type="button" onClick={() => setStep(2)} className="text-gray-500 font-bold hover:text-gray-700">Back</button>
+                                    <button type="button" onClick={() => setStep(3)} className="text-gray-500 font-bold hover:text-gray-700">Back</button>
                                     <button type="submit" disabled={isLoading} className="px-8 py-3 bg-brand-600 text-white font-bold rounded-xl hover:bg-brand-700 disabled:opacity-50 flex items-center gap-2">
                                         {isLoading ? <Loader2 className="animate-spin" /> : 'Create School'}
                                     </button>

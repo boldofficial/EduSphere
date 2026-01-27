@@ -31,7 +31,7 @@ export default async function DashboardPage() {
     // We fetch everything needed for the Admin view. 
     // Optimization: conditionally fetch based on role.
 
-    let students = [], teachers = [], staff = [], payments = [], expenses = [], fees = [], classes = [], settings = Utils.INITIAL_SETTINGS, announcements = [];
+    let students = [], teachers = [], staff = [], payments = [], expenses = [], fees = [], classes = [], settings = Utils.INITIAL_SETTINGS, announcements = [], schools = [], platformSettings = null;
 
     // Help normalize paginated DRF responses
     const normalize = (data: any) => {
@@ -53,6 +53,9 @@ export default async function DashboardPage() {
                 fetchServer('/classes/').catch(() => []),
                 fetchServer('/settings/').catch(() => Utils.INITIAL_SETTINGS),
                 fetchServer('/schools/announcements/').catch(() => []),
+                // Super Admin specific
+                currentRole === 'super_admin' ? fetchServer('/schools/management/').catch(() => []) : Promise.resolve([]),
+                currentRole === 'super_admin' ? fetchServer('/schools/platform-settings/').catch(() => null) : Promise.resolve(null),
             ]);
 
             students = normalize(results[0]);
@@ -64,6 +67,8 @@ export default async function DashboardPage() {
             classes = normalize(results[6]);
             settings = results[7]; // This is an object
             announcements = normalize(results[8]);
+            schools = normalize(results[9]);
+            platformSettings = results[10];
         } catch (error) {
             console.error('Error fetching dashboard data:', error);
         }
@@ -117,6 +122,8 @@ export default async function DashboardPage() {
             classes={classes}
             settings={settings}
             announcements={announcements}
+            schools={schools}
+            platformSettings={platformSettings}
         // onChangeView handled effectively by Links in the Client Component or Navigation logic
         />
     );

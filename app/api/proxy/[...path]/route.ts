@@ -34,8 +34,9 @@ async function handleProxy(request: NextRequest, params: Promise<{ path: string[
     const isMedia = pathSegments[0] === 'media';
     const baseUrl = isMedia ? DJANGO_API_URL : `${DJANGO_API_URL}/api`;
 
-    // For media, don't append trailing slash. For API, keep it for Django consistency.
-    const url = isMedia ? `${baseUrl}/${path}` : `${baseUrl}/${path}/`;
+    // For media, don't append trailing slash. For API, ensure a single trailing slash.
+    const cleanPath = path.endsWith('/') ? path.slice(0, -1) : path;
+    const url = isMedia ? `${baseUrl}/${path}` : `${baseUrl}/${cleanPath}/`;
 
     const queryString = request.nextUrl.search;
     const fullUrl = url + queryString;
@@ -55,17 +56,17 @@ async function handleProxy(request: NextRequest, params: Promise<{ path: string[
     }
 
     try {
-        const body = request.method !== 'GET' && request.method !== 'HEAD' ? await request.text() : undefined;
+        const bodyText = request.method !== 'GET' && request.method !== 'HEAD' ? await request.text() : undefined;
+        console.log(`[PROXY] ${request.method} ${fullUrl} (Body length: ${bodyText?.length || 0})`);
 
         const response = await fetch(fullUrl, {
             method: request.method,
             headers: headers,
-            body: body,
+            body: bodyText,
             cache: 'no-store',
-            // Increase timeout for slow dev backends/DB latency
-            // @ts-ignore - Next.js fetch options
+            // @ts-ignore
             next: { revalidate: 0 },
-            signal: AbortSignal.timeout(60000), // 60 second timeout
+            signal: AbortSignal.timeout(60000),
         });
 
         if (response.status === 204) {
@@ -82,11 +83,23 @@ async function handleProxy(request: NextRequest, params: Promise<{ path: string[
             });
         }
 
-        const data = await response.json().catch(() => ({}));
+        const responseText = await response.text();
+        let data;
+        try {
+            data = JSON.parse(responseText || '{}');
+        } catch (e) {
+            console.error(`[PROXY] JSON Parse Error for ${fullUrl}. Body: ${responseText.slice(0, 200)}`);
+            data = { error: 'Invalid JSON from backend', raw: responseText.slice(0, 200) };
+        }
+
+        if (!response.ok) {
+            console.warn(`[PROXY] Backend Error ${response.status} for ${fullUrl}:`, data);
+        }
+
         return NextResponse.json(data, { status: response.status });
 
     } catch (error) {
-        console.error(`Proxy Error [${request.method} ${path}]:`, error);
-        return NextResponse.json({ error: 'Proxy Request Failed' }, { status: 502 });
+        console.error(`[PROXY] System Error [${request.method} ${path}]:`, error);
+        return NextResponse.json({ error: 'Proxy Request Failed', details: (error as Error).message }, { status: 502 });
     }
 }

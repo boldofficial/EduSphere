@@ -151,6 +151,28 @@ class SchoolManagementView(APIView):
         logger.info(f"School '{school.name}' subscription {action}d by {request.user.email}")
         return Response({'success': True, 'status': sub.status})
 
+    def put(self, request, pk=None):
+        """Update full school details (Super Admin only)."""
+        self.check_super_admin(request)
+        if not pk:
+            raise ValidationError({'detail': 'School ID is required'})
+        
+        try:
+            school = School.objects.get(pk=pk)
+        except School.DoesNotExist:
+            raise NotFound('School not found')
+        
+        # Simple field update
+        school.name = request.data.get('name', school.name)
+        school.domain = request.data.get('domain', school.domain)
+        school.email = request.data.get('email', school.email)
+        school.phone = request.data.get('phone', school.phone)
+        school.address = request.data.get('address', school.address)
+        school.contact_person = request.data.get('contact_person', school.contact_person)
+        school.save()
+
+        return Response({'success': True, 'data': SchoolSerializer(school).data})
+
 
 class SchoolRevenueView(APIView):
     """Get revenue statistics (Super Admin only)."""
@@ -289,6 +311,34 @@ class PlanManagementView(APIView):
             return Response({'success': True})
         except SubscriptionPlan.DoesNotExist:
             raise NotFound('Plan not found')
+
+
+class PlatformSettingsView(APIView):
+    """Manage global platform settings (Super Admin only)."""
+    permission_classes = [AllowAny]
+
+    def get_settings(self):
+        from .models import PlatformSettings
+        settings, _ = PlatformSettings.objects.get_or_create(id=1)
+        return settings
+
+    def get(self, request):
+        from .serializers import PlatformSettingsSerializer
+        settings = self.get_settings()
+        serializer = PlatformSettingsSerializer(settings)
+        return Response(serializer.data)
+
+    def put(self, request):
+        if request.user.role != 'SUPER_ADMIN':
+            raise PermissionDenied('Only Super Admins can update platform settings')
+        
+        from .serializers import PlatformSettingsSerializer
+        settings = self.get_settings()
+        serializer = PlatformSettingsSerializer(settings, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
 
 
 class SystemHealthView(APIView):
@@ -590,9 +640,11 @@ class RegisterSchoolView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        print(f"!!! Hits RegisterSchoolView POST: {request.data.get('email')}")
         serializer = RegisterSchoolSerializer(data=request.data)
         if not serializer.is_valid():
-            raise ValidationError(serializer.errors)
+            logger.error(f"Registration validation failed: {serializer.errors}")
+            return Response({'error': 'Validation failed', 'details': serializer.errors}, status=400)
         
         data = serializer.validated_data
         
@@ -618,7 +670,7 @@ class RegisterSchoolView(APIView):
 
                 # 2. Create School Admin User
                 admin_user = User.objects.create_user(
-                    username=data['email'].split('@')[0],
+                    username=data['email'],
                     email=data['email'],
                     password=data['password'],
                     role='SCHOOL_ADMIN',
@@ -635,6 +687,8 @@ class RegisterSchoolView(APIView):
                     school=school,
                     plan=plan,
                     status='pending',
+                    payment_method=data.get('payment_method', 'paystack'),
+                    payment_proof=data.get('payment_proof'),
                     end_date=timezone.now() + timezone.timedelta(days=plan.duration_days)
                 )
 

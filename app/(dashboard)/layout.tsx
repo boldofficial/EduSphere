@@ -73,8 +73,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const handleLogout = async () => {
         try {
             await fetch('/api/auth/logout', { method: 'POST' });
+            const isSuperAdmin = currentRole === 'super_admin';
             logout(); // Clear store
-            window.location.href = '/login'; // Force full reload to clear all states
+
+            // If super admin, go to platform root, otherwise go to login
+            window.location.href = isSuperAdmin ? '/' : '/login';
         } catch (error) {
             console.error('Logout failed:', error);
             logout();

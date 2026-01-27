@@ -1,18 +1,30 @@
 from rest_framework import serializers
-from .models import School, SubscriptionPlan, Subscription
+from .models import School, SubscriptionPlan, Subscription, PlatformSettings
 
 class SubscriptionPlanSerializer(serializers.ModelSerializer):
     class Meta:
         model = SubscriptionPlan
         fields = ['id', 'name', 'slug', 'price', 'description', 'features', 'allowed_modules', 'duration_days', 'is_active']
 
+class SubscriptionSerializer(serializers.ModelSerializer):
+    plan_name = serializers.CharField(source='plan.name', read_only=True)
+    class Meta:
+        model = Subscription
+        fields = ['status', 'payment_method', 'payment_proof', 'plan_name', 'start_date', 'end_date']
+
+class PlatformSettingsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PlatformSettings
+        fields = '__all__'
+
 class SchoolSerializer(serializers.ModelSerializer):
     subscription_status = serializers.SerializerMethodField()
     admin_id = serializers.SerializerMethodField()
+    subscription = SubscriptionSerializer(read_only=True)
 
     class Meta:
         model = School
-        fields = ['id', 'name', 'domain', 'address', 'logo', 'subscription_status', 'admin_id']
+        fields = ['id', 'name', 'domain', 'address', 'phone', 'email', 'contact_person', 'logo', 'subscription_status', 'admin_id', 'subscription', 'created_at']
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
@@ -44,8 +56,12 @@ class RegisterSchoolSerializer(serializers.Serializer):
     admin_name = serializers.CharField(max_length=255, required=False)
     
     # New Fields
-    phone = serializers.CharField(max_length=20, required=False)
-    school_email = serializers.EmailField(required=False)
-    address = serializers.CharField(required=False)
-    contact_person = serializers.CharField(max_length=255, required=False)
+    phone = serializers.CharField(max_length=20, required=False, allow_blank=True)
+    school_email = serializers.EmailField(required=False, allow_blank=True)
+    address = serializers.CharField(required=False, allow_blank=True)
+    contact_person = serializers.CharField(max_length=255, required=False, allow_blank=True)
+    
+    # Payment Fields
+    payment_method = serializers.CharField(max_length=20, default='paystack')
+    payment_proof = serializers.CharField(required=False, allow_blank=True)
 

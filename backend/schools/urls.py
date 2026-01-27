@@ -4,7 +4,7 @@ from .views import (
     SchoolRevenueView, RecordPaymentView, PlanManagementView, SystemHealthView,
     StrategicAnalyticsView, PlatformGovernanceView, UserAnnouncementsView,
     GlobalSearchView, MaintenanceModeView, PlatformModulesView, ModuleToggleView,
-    VerifySchoolSlugView
+    VerifySchoolSlugView, PlatformSettingsView
 )
 
 urlpatterns = [
@@ -25,4 +25,7 @@ urlpatterns = [
     path('revenue/', SchoolRevenueView.as_view(), name='school-revenue'),
     path('payments/record/', RecordPaymentView.as_view(), name='payment-record'),
     path('register/', RegisterSchoolView.as_view(), name='school-register'),
+    path('management/', SchoolManagementView.as_view(), name='school-management'),
+    path('management/<int:pk>/', SchoolManagementView.as_view(), name='school-detail'),
+    path('platform-settings/', PlatformSettingsView.as_view(), name='platform-settings'),
 ]
