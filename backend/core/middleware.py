@@ -8,23 +8,27 @@ class TenantMiddleware(MiddlewareMixin):
         tenant_domain = request.headers.get('X-Tenant-ID')
         
         # 2. Fallback for Local Dev / No Header (e.g. direct API calls)
-        if not tenant_domain:
-            # check host header
-            host = request.get_host().split(':')[0] # remove port
-            if host != 'localhost' and host != '127.0.0.1':
-                # assume subdomain in host if needed, or just default
-                pass
-        
         from django.conf import settings
         root_domain = getattr(settings, 'ROOT_DOMAIN', 'localhost:3000')
+        root_host = root_domain.split(':')[0]
 
-        if tenant_domain and tenant_domain != 'www' and tenant_domain != root_domain:
+        if not tenant_domain:
+            host = request.get_host().split(':')[0]
+            if host != root_host and host.endswith(f".{root_host}"):
+                tenant_domain = host.replace(f".{root_host}", "")
+            elif host != root_host and host != '127.0.0.1' and host != 'localhost':
+                # Might be a custom domain
+                tenant_domain = host
+
+        if tenant_domain and tenant_domain != 'www' and tenant_domain != root_host:
             try:
                 # Lookup by subdomain (slug) or custom domain
                 from django.db.models import Q
                 request.tenant = School.objects.filter(
                     Q(domain=tenant_domain) | Q(custom_domain=tenant_domain)
                 ).first()
+                # Also set back to tenant_domain for consistency in serializer checks
+                request.tenant_id = tenant_domain
             except Exception as e:
                 print(f"Tenant lookup error: {e}")
 

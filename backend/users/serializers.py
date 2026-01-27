@@ -13,13 +13,18 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         data = super().validate(attrs)
         
         # 1. Tenant Locking Security
-        # Ensure user belongs to the school matching the current tenant header
-        tenant_id = self.context['request'].headers.get('X-Tenant-ID')
+        # Ensure user belongs to the school matching the current tenant
+        request = self.context['request']
+        tenant_id = request.headers.get('X-Tenant-ID')
         
+        # Fallback to middleware-detected tenant if header is missing
+        if not tenant_id and hasattr(request, 'tenant') and request.tenant:
+            tenant_id = request.tenant.domain
+
         # Super Admins can login anywhere (though usually on the root domain)
         if self.user.role != 'SUPER_ADMIN':
             if not tenant_id:
-                raise AuthenticationFailed('Tenant ID is required for login.')
+                raise AuthenticationFailed('Tenant context is required for login. Please access via your school subdomain.')
             
             # Check if user matches the tenant
             # tenant_id could be a slug or a full domain

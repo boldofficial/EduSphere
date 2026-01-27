@@ -38,12 +38,16 @@ export async function middleware(request: NextRequest) {
     }
 
     // 3. Inject Tenant Header for internal proxy
-    const response = NextResponse.next();
+    const requestHeaders = new Headers(request.headers);
     if (tenantId) {
-        response.headers.set('x-tenant-id', tenantId);
+        requestHeaders.set('x-tenant-id', tenantId);
     }
 
-    return response;
+    return NextResponse.next({
+        request: {
+            headers: requestHeaders,
+        },
+    });
 }
 
 export const config = {
@@ -59,5 +63,6 @@ export const config = {
         '/admissions/:path*',
         '/analytics/:path*',
         '/announcements/:path*',
+        '/api/:path*',
     ],
 }
