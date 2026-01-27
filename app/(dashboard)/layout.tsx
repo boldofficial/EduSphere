@@ -71,7 +71,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }, []);
 
     const handleLogout = async () => {
-        logout();
+        try {
+            await fetch('/api/auth/logout', { method: 'POST' });
+            logout(); // Clear store
+            window.location.href = '/login'; // Force full reload to clear all states
+        } catch (error) {
+            console.error('Logout failed:', error);
+            logout();
+            window.location.href = '/login';
+        }
     };
 
     // Show loading spinner while auth OR settings are initializing

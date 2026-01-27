@@ -52,7 +52,17 @@ export const LoginView = () => {
         if (typeof window !== 'undefined') {
             const host = window.location.host;
             const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'localhost:3000';
-            const isRoot = host === rootDomain || host === `www.${rootDomain}`;
+
+            // Flexible detection: 
+            // 1. Matches configured root
+            // 2. Contains ".vercel.app" (unless it has a prefix like "school.")
+            // 3. Doesn't have a subdomain part (no dots before the main domain)
+            const isRoot = host === rootDomain ||
+                host === `www.${rootDomain}` ||
+                (host.includes('.vercel.app') && !host.includes('--')) || // Simple Vercel check
+                !host.includes('.') ||
+                host.startsWith('localhost:');
+
             setIsSystemRoot(isRoot);
         }
     }, []);
