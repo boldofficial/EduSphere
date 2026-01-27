@@ -16,11 +16,15 @@ export async function POST(request: NextRequest) {
     }
 
     try {
+        const tenantId = request.headers.get('x-tenant-id');
+        const headers: HeadersInit = { 'Content-Type': 'application/json' };
+        if (tenantId) {
+            headers['X-Tenant-ID'] = tenantId;
+        }
+
         const response = await fetch(`${DJANGO_API_URL}/api/token/refresh/`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: headers,
             body: JSON.stringify({ refresh: refreshToken }),
         });
 

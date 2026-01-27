@@ -19,14 +19,16 @@ class TenantMiddleware(MiddlewareMixin):
 
         if tenant_domain and tenant_domain != 'www' and tenant_domain != 'edusphere.ng':
             try:
-                # Find school by domain (e.g. "vine")
-                # Assuming 'domain' field in School model stores the subdomain or full domain
-                # Let's match strictly for now
-                request.tenant = School.objects.filter(domain=tenant_domain).first()
+                # Lookup by subdomain (slug) or custom domain
+                from django.db.models import Q
+                request.tenant = School.objects.filter(
+                    Q(domain=tenant_domain) | Q(custom_domain=tenant_domain)
+                ).first()
             except Exception as e:
                 print(f"Tenant lookup error: {e}")
 
-# If no tenant found, request.tenant is None (System context or 404)
+        # If no tenant found and we're not on a known system domain, 
+        # it might be a custom domain not in our DB yet or a malformed request
         return None
 
 class AuditLogMiddleware:

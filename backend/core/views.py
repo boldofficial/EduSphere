@@ -35,7 +35,7 @@ class SettingsView(APIView):
             school = self.get_school(request)
             if not school:
                 return Response({
-                    'school_name': 'Demo School',
+                    'school_name': 'EduSphere Platform',
                     'subscription_status': 'active', 
                     'current_session': '2025/2026',
                 })

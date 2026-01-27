@@ -569,6 +569,22 @@ class UserAnnouncementsView(APIView):
         } for ann in announcements])
 
 
+class VerifySchoolSlugView(APIView):
+    """Check if a school slug exists (public access)."""
+    permission_classes = [AllowAny]
+
+    def get(self, request, slug):
+        from django.db.models import Q
+        school = School.objects.filter(Q(domain=slug) | Q(custom_domain=slug)).first()
+        if school:
+            return Response({
+                'exists': True,
+                'name': school.name,
+                'slug': school.domain,
+                'custom_domain': school.custom_domain
+            })
+        return Response({'exists': False}, status=404)
+
 class RegisterSchoolView(APIView):
     """Register a new school (public access)."""
     permission_classes = [AllowAny]

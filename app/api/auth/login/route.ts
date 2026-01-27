@@ -21,10 +21,16 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
         const { username, password } = body;
 
+        const tenantId = request.headers.get('x-tenant-id');
+        const authHeaders: HeadersInit = { 'Content-Type': 'application/json' };
+        if (tenantId) {
+            authHeaders['X-Tenant-ID'] = tenantId;
+        }
+
         // Call Django to get tokens
         const response = await fetch(tokenUrl, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: authHeaders,
             body: JSON.stringify({ username, password }),
         });
 
@@ -68,12 +74,17 @@ export async function POST(request: NextRequest) {
         const meUrl = `${baseUrl.replace(/\/$/, '')}/api/users/me/`;
         console.log('Fetching user details from:', meUrl);
 
+        const meHeaders: HeadersInit = {
+            'Authorization': `Bearer ${access}`,
+            'Content-Type': 'application/json'
+        };
+        if (tenantId) {
+            meHeaders['X-Tenant-ID'] = tenantId;
+        }
+
         // Fetch User Details to return to frontend
         const userRes = await fetch(meUrl, {
-            headers: {
-                'Authorization': `Bearer ${access}`,
-                'Content-Type': 'application/json'
-            }
+            headers: meHeaders
         });
 
         console.log('Django user/me response status:', userRes.status);

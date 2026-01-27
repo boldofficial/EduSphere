@@ -24,7 +24,8 @@ MODULES = [
 
 class School(models.Model):
     name = models.CharField(max_length=255)
-    domain = models.CharField(max_length=255, unique=True, null=True, blank=True)
+    domain = models.CharField(max_length=255, unique=True, null=True, blank=True, help_text="Permanent slug/subdomain (e.g. 'vine')")
+    custom_domain = models.CharField(max_length=255, unique=True, null=True, blank=True, help_text="Optional custom domain (e.g. 'portal.vineheritage.com')")
     address = models.TextField(null=True, blank=True)
     phone = models.CharField(max_length=20, null=True, blank=True)
     email = models.EmailField(null=True, blank=True) # Official school email
@@ -39,6 +40,7 @@ class School(models.Model):
     class Meta:
         indexes = [
             models.Index(fields=['domain']),
+            models.Index(fields=['custom_domain']),
             models.Index(fields=['created_at']),
         ]
 

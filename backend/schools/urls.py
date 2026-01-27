@@ -3,10 +3,12 @@ from .views import (
     PublicPlanListView, SchoolManagementView, RegisterSchoolView,
     SchoolRevenueView, RecordPaymentView, PlanManagementView, SystemHealthView,
     StrategicAnalyticsView, PlatformGovernanceView, UserAnnouncementsView,
-    GlobalSearchView, MaintenanceModeView, PlatformModulesView, ModuleToggleView
+    GlobalSearchView, MaintenanceModeView, PlatformModulesView, ModuleToggleView,
+    VerifySchoolSlugView
 )
 
 urlpatterns = [
+    path('verify-slug/<str:slug>/', VerifySchoolSlugView.as_view(), name='verify-slug'),
     path('health/', SystemHealthView.as_view(), name='system-health'),
     path('analytics/strategic/', StrategicAnalyticsView.as_view(), name='strategic-analytics'),
     path('governance/', PlatformGovernanceView.as_view(), name='platform-governance'),
