@@ -2,7 +2,7 @@ services:
   - type: web
     name: school-manager-backend
     env: python
-    rootDirectory: backend
+    rootDir: backend
     buildCommand: ./build.sh
     startCommand: gunicorn config.wsgi:application
     envVars:
