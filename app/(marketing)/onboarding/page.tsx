@@ -13,6 +13,7 @@ const schema = z.object({
     domain: z.string().min(3, "Subdomain is required").regex(/^[a-z0-9-]+$/, "Only lowercase letters, numbers, and hyphens"),
     email: z.string().email("Invalid email address"),
     password: z.string().min(6, "Password must be at least 6 characters"),
+    admin_name: z.string().optional().or(z.literal('')),
     plan_slug: z.string().min(1, "Please select a plan"),
     phone: z.string().optional().or(z.literal('')),
     school_email: z.string().email("Invalid school email").optional().or(z.literal('')),
@@ -41,6 +42,7 @@ export default function OnboardingPage() {
             domain: '',
             email: '',
             password: '',
+            admin_name: '',
             plan_slug: searchParams.get('plan') || 'starter',
             phone: '',
             school_email: '',
@@ -93,10 +95,11 @@ export default function OnboardingPage() {
             let detailMsg = 'Registration failed';
 
             if (responseData) {
-                if (responseData.details) {
-                    detailMsg = JSON.stringify(responseData.details);
-                } else if (responseData.errors) {
-                    detailMsg = JSON.stringify(responseData.errors);
+                const errorObj = responseData.errors || responseData.details || responseData;
+                if (typeof errorObj === 'object' && !Array.isArray(errorObj)) {
+                    detailMsg = Object.entries(errorObj)
+                        .map(([field, msgs]) => `${field}: ${Array.isArray(msgs) ? msgs.join(', ') : msgs}`)
+                        .join(' | ');
                 } else if (responseData.error) {
                     detailMsg = responseData.error;
                 } else {
