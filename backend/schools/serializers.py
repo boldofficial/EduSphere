@@ -53,7 +53,7 @@ class RegisterSchoolSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
     plan_slug = serializers.CharField(max_length=50)
-    admin_name = serializers.CharField(max_length=255, required=False)
+    admin_name = serializers.CharField(max_length=255, required=False, allow_blank=True, default='')
     
     # New Fields
     phone = serializers.CharField(max_length=20, required=False, allow_blank=True)
