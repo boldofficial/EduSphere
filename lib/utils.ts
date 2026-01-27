@@ -148,23 +148,23 @@ export const INITIAL_SETTINGS: Settings = {
   role_permissions: {
 
     super_admin: {
-      navigation: ['dashboard', 'students', 'teachers', 'staff', 'classes', 'grading', 'attendance', 'bursary', 'learning', 'announcements', 'calendar', 'analytics', 'id_cards', 'broadsheet', 'data', 'settings', 'admin_schools', 'admin_revenue', 'system_health'],
+      navigation: ['dashboard', 'students', 'teachers', 'staff', 'classes', 'grading', 'attendance', 'bursary', 'learning', 'announcements', 'calendar', 'analytics', 'id_cards', 'broadsheet', 'admissions', 'newsletter', 'messages', 'conduct', 'cms', 'data', 'settings', 'admin_schools', 'admin_revenue', 'system_health'],
       dashboardWidgets: ['stats', 'finance_chart', 'student_population', 'quick_actions', 'recent_transactions', 'strategic_analytics', 'platform_governance']
     },
     admin: {
-      navigation: ['dashboard', 'students', 'teachers', 'staff', 'classes', 'grading', 'attendance', 'bursary', 'learning', 'announcements', 'calendar', 'analytics', 'id_cards', 'broadsheet', 'data', 'settings'],
+      navigation: ['dashboard', 'students', 'teachers', 'staff', 'classes', 'grading', 'attendance', 'bursary', 'learning', 'announcements', 'calendar', 'analytics', 'id_cards', 'broadsheet', 'admissions', 'newsletter', 'messages', 'conduct', 'cms', 'data', 'settings'],
       dashboardWidgets: ['stats', 'finance_chart', 'student_population', 'quick_actions', 'recent_transactions']
     },
     teacher: {
-      navigation: ['dashboard', 'grading', 'attendance', 'learning', 'announcements', 'calendar'],
+      navigation: ['dashboard', 'grading', 'attendance', 'learning', 'announcements', 'calendar', 'messages', 'conduct'],
       dashboardWidgets: ['stats', 'quick_actions', 'my_classes']
     },
     student: {
-      navigation: ['dashboard', 'grading', 'attendance', 'learning', 'announcements', 'bursary', 'calendar', 'id_cards', 'newsletter'],
+      navigation: ['dashboard', 'grading', 'attendance', 'learning', 'announcements', 'bursary', 'calendar', 'id_cards', 'newsletter', 'messages', 'conduct'],
       dashboardWidgets: ['my_scores', 'my_attendance', 'my_fees', 'class_info']
     },
     parent: {
-      navigation: ['dashboard', 'grading', 'attendance', 'learning', 'announcements', 'bursary', 'calendar', 'id_cards', 'newsletter'],
+      navigation: ['dashboard', 'grading', 'attendance', 'learning', 'announcements', 'bursary', 'calendar', 'id_cards', 'newsletter', 'messages', 'conduct'],
       dashboardWidgets: ['my_scores', 'my_attendance', 'my_fees', 'class_info']
     },
     staff: {

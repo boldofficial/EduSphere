@@ -71,3 +71,7 @@ backend/mediafiles/
 # Celery
 celerybeat-schedule
 celerybeat.pid
+# Sensitive Files
+token.txt
+.gemini/
+dev-output.txt
