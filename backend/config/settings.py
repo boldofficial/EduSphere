@@ -45,12 +45,13 @@ if not SECRET_KEY:
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 'yes')
 
-# Allowed hosts - REQUIRED for production
 ALLOWED_HOSTS = [
     host.strip()
     for host in os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
     if host.strip()
 ]
+
+ROOT_DOMAIN = os.environ.get('ROOT_DOMAIN', 'localhost:3000')
 
 
 # =============================================================================

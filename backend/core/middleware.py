@@ -15,9 +15,10 @@ class TenantMiddleware(MiddlewareMixin):
                 # assume subdomain in host if needed, or just default
                 pass
         
-        request.tenant = None
+        from django.conf import settings
+        root_domain = getattr(settings, 'ROOT_DOMAIN', 'localhost:3000')
 
-        if tenant_domain and tenant_domain != 'www' and tenant_domain != 'edusphere.ng':
+        if tenant_domain and tenant_domain != 'www' and tenant_domain != root_domain:
             try:
                 # Lookup by subdomain (slug) or custom domain
                 from django.db.models import Q

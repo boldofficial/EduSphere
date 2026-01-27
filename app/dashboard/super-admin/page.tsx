@@ -41,6 +41,8 @@ import {
 import apiClient from '@/lib/api-client';
 import * as Utils from '@/lib/utils';
 
+const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'localhost:3000';
+
 export default function SuperAdminDashboard() {
     const { currentUser, currentRole, logout } = useSchoolStore();
     const router = useRouter();
@@ -828,8 +830,8 @@ function TenantsTab({ schools, onImpersonate }: any) {
                             <tr key={school.id} className="hover:bg-gray-50 transition-colors">
                                 <td className="px-6 py-4 font-medium text-gray-900">{school.name}</td>
                                 <td className="px-6 py-4 text-gray-600 text-sm">
-                                    <a href={`http://${school.domain}.localhost:3000`} target="_blank" className="hover:text-brand-600 underline decoration-dotted">
-                                        {school.domain}.edusphere.ng
+                                    <a href={`http://${school.domain}.${ROOT_DOMAIN}`} target="_blank" className="hover:text-brand-600 underline decoration-dotted">
+                                        {school.domain}.{ROOT_DOMAIN}
                                     </a>
                                 </td>
                                 <td className="px-6 py-4">

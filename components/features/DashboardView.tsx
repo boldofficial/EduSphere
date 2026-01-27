@@ -23,7 +23,8 @@ import {
     Lock,
     TrendingUp,
     Megaphone,
-    Bell
+    Bell,
+    CreditCard
 } from 'lucide-react';
 import { useSchoolStore } from '@/lib/store';
 import { useUpdateSettings } from '@/lib/hooks/use-data';
@@ -797,6 +798,33 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                                             value={editedPlatformSettings?.account_name || ''}
                                             onChange={(e) => setEditedPlatformSettings({ ...editedPlatformSettings, account_name: e.target.value })}
                                             className="w-full bg-white/10 border-0 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-white"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="p-6 bg-gray-900 text-white rounded-2xl space-y-4">
+                                <h4 className="font-bold border-b border-white/10 pb-2 flex items-center gap-2">
+                                    <CreditCard size={16} /> Paystack Configuration
+                                </h4>
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-[10px] uppercase opacity-60 font-black mb-1">Public Key (pk_test_...)</label>
+                                        <input
+                                            value={editedPlatformSettings?.paystack_public_key || ''}
+                                            onChange={(e) => setEditedPlatformSettings({ ...editedPlatformSettings, paystack_public_key: e.target.value })}
+                                            className="w-full bg-white/10 border-0 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-white font-mono"
+                                            placeholder="pk_test_..."
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] uppercase opacity-60 font-black mb-1">Secret Key (sk_test_...)</label>
+                                        <input
+                                            type="password"
+                                            value={editedPlatformSettings?.paystack_secret_key || ''}
+                                            onChange={(e) => setEditedPlatformSettings({ ...editedPlatformSettings, paystack_secret_key: e.target.value })}
+                                            className="w-full bg-white/10 border-0 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-white font-mono"
+                                            placeholder="sk_test_..."
                                         />
                                     </div>
                                 </div>
