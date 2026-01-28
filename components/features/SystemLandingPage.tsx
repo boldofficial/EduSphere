@@ -189,7 +189,7 @@ export const SystemLandingPage = () => {
             </motion.nav>
 
             {/* Hero Section */}
-            <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
+            <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20 pb-12 lg:pt-32 lg:pb-20">
                 {/* Background Image with Cinematic Overlay */}
                 <div className="absolute inset-0 z-0 scale-105">
                     <motion.div
@@ -212,6 +212,16 @@ export const SystemLandingPage = () => {
                             transition={{ duration: 0.8 }}
                             className="text-center lg:text-left"
                         >
+
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.2, duration: 0.6 }}
+                                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-brand-100 text-brand-900 text-sm font-bold mb-8 shadow-sm"
+                            >
+                                <Sparkles size={16} className="text-brand-600" />
+                                The operating system for modern schools
+                            </motion.div>
 
                             <motion.h1
                                 initial={{ opacity: 0, y: 30 }}
@@ -807,12 +817,12 @@ export const SystemLandingPage = () => {
                         {/* Brand Column */}
                         <div className="space-y-6">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-gradient-to-br from-brand-600 to-purple-600 rounded-xl flex items-center justify-center text-white shadow-lg">
-                                    <School size={20} />
+                                <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center p-1 shadow-lg">
+                                    <img src="/logo.png" alt="SchoolSync" className="w-full h-full object-contain" />
                                 </div>
                                 <div>
                                     <div className="text-xl font-black tracking-tight">SchoolSync</div>
-                                    <div className="text-sm text-brand-400">schoolsync.ng</div>
+                                    <div className="text-sm text-brand-400">The operating system for modern schools.</div>
                                 </div>
                             </div>
                             <p className="text-gray-400 text-sm leading-relaxed">
