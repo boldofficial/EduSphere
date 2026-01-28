@@ -9,51 +9,49 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
     title: {
-        default: 'Fruitful Vine Heritage Schools | Quality Education in Badagry, Lagos',
-        template: '%s | Fruitful Vine Heritage Schools',
+        default: 'SchoolSync | The operating system for modern schools',
+        template: '%s | SchoolSync',
     },
-    description: 'Faith-based school offering quality education from Crèche to Primary in Badagry, Lagos. Enroll your child today!',
+    description: 'The operating system for modern schools. Unified management for students, staff, and academics.',
     keywords: [
-        'school', 'education', 'Badagry', 'Lagos', 'Nigeria', 'nursery', 'primary',
-        'creche', 'faith-based', 'Fruitful Vine', 'private school', 'quality education',
-        'christian school', 'pre-school', 'kindergarten', 'best school in Badagry',
-        'Fruitful Vine Heritage Schools', 'FVHS', 'academic excellence'
+        'SchoolSync', 'school management system', 'LMS', 'school ERP', 'admissions sync',
+        'academic management', 'fee collection', 'SchoolSync.ng', 'premium school software'
     ],
-    authors: [{ name: 'Fruitful Vine Heritage Schools' }],
+    authors: [{ name: 'SchoolSync Team' }],
     creator: 'Bold Ideas Innovations Ltd',
-    publisher: 'Fruitful Vine Heritage Schools',
-    metadataBase: new URL('https://fruitfulvineheritageschools.org.ng'),
+    publisher: 'SchoolSync',
+    metadataBase: new URL('https://schoolsync.ng'),
     alternates: {
         canonical: '/',
     },
     category: 'Education',
-    classification: 'Primary and Pre-School Education',
+    classification: 'School Management and SaaS',
     openGraph: {
         type: 'website',
         locale: 'en_NG',
-        url: 'https://fruitfulvineheritageschools.org.ng',
-        siteName: 'Fruitful Vine Heritage Schools',
-        title: 'Fruitful Vine Heritage Schools - Quality Education in Badagry',
-        description: 'Faith-based school offering quality education from Crèche to Primary in Badagry, Lagos. Enroll today!',
+        url: 'https://schoolsync.ng',
+        siteName: 'SchoolSync',
+        title: 'SchoolSync - All-in-One School Management Platform',
+        description: 'The operating system for modern schools. Unified management for students, staff, and academics.',
         images: [
             {
-                url: 'https://fruitfulvineheritageschools.org.ng/fruitfulnew.jpg',
+                url: 'https://schoolsync.ng/favicon.png',
                 width: 1200,
                 height: 630,
-                alt: 'Fruitful Vine Heritage Schools - Quality Education in Badagry',
-                type: 'image/jpeg',
+                alt: 'SchoolSync Platform',
+                type: 'image/png',
             },
         ],
     },
     twitter: {
         card: 'summary_large_image',
-        site: '@fruitfulvineschools',
-        creator: '@fruitfulvineschools',
-        title: 'Fruitful Vine Heritage Schools - Quality Education in Badagry',
-        description: 'Faith-based school offering quality education from Crèche to Primary in Badagry, Lagos.',
+        site: '@schoolsync',
+        creator: '@schoolsync',
+        title: 'SchoolSync - Efficient School Management',
+        description: 'The operating system for modern schools. Unified management for students, staff, and academics.',
         images: {
-            url: 'https://fruitfulvineheritageschools.org.ng/fruitfulnew.jpg',
-            alt: 'Fruitful Vine Heritage Schools',
+            url: 'https://schoolsync.ng/favicon.png',
+            alt: 'SchoolSync Logo',
         },
     },
     robots: {
@@ -67,21 +65,16 @@ export const metadata: Metadata = {
             'max-snippet': -1,
         },
     },
-    verification: {
-        // Add these when you have them
-        // google: 'your-google-verification-code',
-        // yandex: 'your-yandex-verification-code',
-    },
     manifest: '/manifest.json',
     icons: {
         icon: [
-            { url: '/fruitful_logo_main.png', sizes: '32x32', type: 'image/png' },
-            { url: '/fruitful_logo_main.png', sizes: '16x16', type: 'image/png' },
+            { url: '/favicon.png', sizes: '32x32', type: 'image/png' },
+            { url: '/favicon.png', sizes: '16x16', type: 'image/png' },
         ],
         apple: [
-            { url: '/fruitful_logo_main.png', sizes: '180x180', type: 'image/png' },
+            { url: '/favicon.png', sizes: '180x180', type: 'image/png' },
         ],
-        shortcut: '/fruitful_logo_main.png',
+        shortcut: '/favicon.png',
     },
     other: {
         'mobile-web-app-capable': 'yes',
@@ -92,7 +85,7 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-    themeColor: '#0c4a6e',
+    themeColor: '#0b1e3b',
     width: 'device-width',
     initialScale: 1,
 }

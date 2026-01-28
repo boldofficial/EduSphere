@@ -334,7 +334,7 @@ export const LoginView = () => {
             <div className="absolute inset-0 z-0">
                 <div
                     className="absolute inset-0 bg-cover bg-center"
-                    style={{ backgroundImage: "url('/fruifulvine_class.jpg')" }}
+                    style={{ backgroundImage: "url('/favicon.png')" }}
                 />
                 <div className="absolute inset-0 bg-brand-900/60 backdrop-blur-[2px]" />
             </div>
@@ -377,7 +377,7 @@ export const LoginView = () => {
                                 </div>
                             </div>
                             <h1 className="text-3xl md:text-6xl font-black text-white tracking-tight drop-shadow-md">
-                                EduSphere<span className="text-brand-300">.ng</span>
+                                SchoolSync<span className="text-accent-500">.ng</span>
                             </h1>
                         </>
                     )}

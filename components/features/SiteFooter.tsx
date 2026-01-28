@@ -31,12 +31,12 @@ const SiteFooter = ({ settings }: SiteFooterProps) => {
                                 </div>
                             )}
                             <div>
-                                <h3 className="text-lg font-bold text-white leading-tight">Fruitful Vine</h3>
-                                <p className="text-white text-lg font-bold leading-tight">Heritage Schools</p>
+                                <h3 className="text-lg font-bold text-white leading-tight">SchoolSync</h3>
+                                <p className="text-accent-500 text-xs font-bold leading-tight uppercase tracking-wider">The operating system for modern schools.</p>
                             </div>
                         </div>
                         <p className="text-white leading-relaxed mb-4 text-sm">
-                            A faith-based school dedicated to training and raising a total child with godly values and excellent character.
+                            A premium school management platform dedicated to syncing academic excellence, operational efficiency, and parent engagement.
                         </p>
                         <p className="text-accent-400 italic text-sm font-medium mb-6">
                             {settings.school_tagline}
@@ -96,7 +96,7 @@ const SiteFooter = ({ settings }: SiteFooterProps) => {
                                 <div className="h-8 w-8 bg-brand-700 rounded-lg flex items-center justify-center shrink-0">
                                     <Mail size={14} className="text-accent-400" />
                                 </div>
-                                <span className="break-all">info@fruitfulvineheritageschools.org.ng</span>
+                                <span className="break-all">info@schoolsync.ng</span>
                             </li>
                             <li className="flex items-start gap-3 text-white text-sm">
                                 <div className="h-8 w-8 bg-brand-700 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
@@ -107,10 +107,10 @@ const SiteFooter = ({ settings }: SiteFooterProps) => {
                         </ul>
 
                         <div className="flex items-center gap-4">
-                            <a href="https://facebook.com/fruitfulvineschools" target="_blank" rel="noopener noreferrer" className="h-10 w-10 bg-white/10 hover:bg-accent-500 rounded-lg flex items-center justify-center text-white transition-all duration-300">
+                            <a href="https://facebook.com/schoolsync" target="_blank" rel="noopener noreferrer" className="h-10 w-10 bg-white/10 hover:bg-accent-500 rounded-lg flex items-center justify-center text-white transition-all duration-300">
                                 <Facebook size={20} />
                             </a>
-                            <a href="https://instagram.com/fruitfulvineschools" target="_blank" rel="noopener noreferrer" className="h-10 w-10 bg-white/10 hover:bg-accent-500 rounded-lg flex items-center justify-center text-white transition-all duration-300">
+                            <a href="https://instagram.com/schoolsync" target="_blank" rel="noopener noreferrer" className="h-10 w-10 bg-white/10 hover:bg-accent-500 rounded-lg flex items-center justify-center text-white transition-all duration-300">
                                 <Instagram size={20} />
                             </a>
                         </div>
@@ -122,7 +122,7 @@ const SiteFooter = ({ settings }: SiteFooterProps) => {
                     <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                         <div className="flex flex-col md:flex-row items-center gap-1 md:gap-4 text-center md:text-left">
                             <p className="text-white text-sm">
-                                © {new Date().getFullYear()} Fruitful Vine Heritage Schools. All rights reserved.
+                                © {new Date().getFullYear()} SchoolSync. All rights reserved.
                             </p>
                             <span className="hidden md:block text-white/30">|</span>
                             <p className="text-white/80 text-sm">

@@ -189,12 +189,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ settings, stats }) => 
 
                     {/* Main Heading */}
                     <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white mb-4 tracking-tight">
-                        {settings.school_name || "Fruitful Vine Heritage Schools"}
+                        {settings.school_name || "SchoolSync"}
                     </h1>
 
                     {/* Tagline */}
                     <p className="text-xl md:text-2xl font-semibold italic mb-6" style={{ color: settings.landing_primary_color === '#1A3A5C' ? '#FBBF24' : '#FFFFFF' }}>
-                        {settings.school_tagline || "...reaching the highest height"}
+                        {settings.school_tagline || "The operating system for modern schools."}
                     </p>
 
                     {/* Description */}
@@ -257,7 +257,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ settings, stats }) => 
                                 A Tradition of Excellence & <span className="text-brand-600">Godly Values</span>
                             </h2>
                             <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-                                {settings.landing_about_text || "Fruitful Vine Heritage Schools provides a comprehensive education that balances academic rigour with spiritual growth. We are dedicated to raising children who are not only intellectually sound but also morally upright."}
+                                {settings.landing_about_text || "SchoolSync provides a comprehensive management and learning platform that balances academic rigour with administrative efficiency. We are dedicated to syncing all aspects of education in one place."}
                             </p>
 
                             <div className="grid sm:grid-cols-2 gap-8 mb-10">
@@ -313,7 +313,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ settings, stats }) => 
                         </div>
                         <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">What We Stand For</h2>
                         <p className="text-lg text-gray-600">
-                            At Fruitful Vine, these values guide everything we do — shaping character and inspiring excellence.
+                            At SchoolSync, these values guide everything we do — syncing success and inspiring excellence.
                         </p>
                     </div>
 
@@ -434,7 +434,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ settings, stats }) => 
                                         </div>
                                         <div>
                                             <p className="text-sm text-brand-200">Email</p>
-                                            <p className="font-semibold text-lg break-all">info@fruitfulvineheritageschools.org.ng</p>
+                                            <p className="font-semibold text-lg break-all">info@schoolsync.ng</p>
                                         </div>
                                     </div>
                                     <div className="flex items-start gap-4">

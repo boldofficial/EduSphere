@@ -48,8 +48,8 @@ const SiteHeader = ({ settings }: SiteHeaderProps) => {
                             </div>
                         )}
                         <div className={`transition-colors duration-300 ${isScrolled ? 'text-brand-900' : 'text-white'}`}>
-                            <h1 className="text-xl font-bold leading-none">{settings.school_name || "Fruitful Vine"}</h1>
-                            <p className={`text-xs font-medium ${isScrolled ? 'text-brand-500' : 'text-white/80'}`}>{settings.school_tagline || "Heritage Schools"}</p>
+                            <h1 className="text-xl font-bold leading-none">{settings.school_name || "SchoolSync"}</h1>
+                            <p className={`text-xs font-medium ${isScrolled ? 'text-brand-500' : 'text-white/80'}`}>{settings.school_tagline || "The operating system for modern schools."}</p>
                         </div>
                     </Link>
 

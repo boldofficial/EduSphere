@@ -242,7 +242,7 @@ export const SystemLandingPage = () => {
                                 transition={{ delay: 0.6, duration: 0.6 }}
                                 className="text-xl text-gray-600 mb-8 max-w-2xl leading-relaxed"
                             >
-                                Transform your educational institution with SchoolSync - the complete digital solution for modern schools. From admissions to alumni management, we've got everything covered.
+                                Transform your educational institution with SchoolSync - The operating system for modern schools. From admissions to alumni management, we've got everything covered.
                             </motion.p>
 
                             {/* Stats */}

@@ -3,33 +3,33 @@
 @import "tailwindcss";
 
 @theme {
-    /* BRAND PALETTE (Navy Blue - Trust, Heritage) */
-    --color-brand-50: #f0f5fa;
-    --color-brand-100: #e1eaf5;
-    --color-brand-200: #c2d5eb;
-    --color-brand-300: #94b5dd;
-    --color-brand-400: #5f8dce;
-    --color-brand-500: #3b6fb6;
-    --color-brand-600: #2a5695;
-    --color-brand-700: #23457a;
-    --color-brand-800: #1a3a5c;
-    /* Base Color */
-    --color-brand-900: #132e49;
-    --color-brand-950: #0d1e32;
+    /* BRAND PALETTE (Navy Blue - Premium, Stable) */
+    --color-brand-50: #f4f7fa;
+    --color-brand-100: #e9eff5;
+    --color-brand-200: #cad9e8;
+    --color-brand-300: #9cb8d6;
+    --color-brand-400: #6791bd;
+    --color-brand-500: #4670a2;
+    --color-brand-600: #365784;
+    --color-brand-700: #2c466b;
+    --color-brand-800: #1a2e47;
+    /* Base Color: Premium Navy */
+    --color-brand-900: #0b1e3b;
+    --color-brand-950: #071326;
 
-    /* ACCENT PALETTE (Vibrant Green - Growth, Fruitfulness) */
-    --color-accent-50: #f5fce8;
-    --color-accent-100: #e9f9cf;
-    --color-accent-200: #d5f2a0;
-    --color-accent-300: #b9e86b;
-    --color-accent-400: #9dd839;
-    --color-accent-500: #8FC31F;
-    /* Base Color */
-    --color-accent-600: #6ea313;
-    --color-accent-700: #547d13;
-    --color-accent-800: #446315;
-    --color-accent-900: #385116;
-    --color-accent-950: #1d2e06;
+    /* ACCENT PALETTE (Premium Gold - Excellence, Success) */
+    --color-accent-50: #fdfbe8;
+    --color-accent-100: #fbf6c1;
+    --color-accent-200: #f7eb85;
+    --color-accent-300: #f1db4b;
+    --color-accent-400: #e9c424;
+    /* Base Color: Gold */
+    --color-accent-500: #d4af37;
+    --color-accent-600: #b8922a;
+    --color-accent-700: #916e24;
+    --color-accent-800: #755922;
+    --color-accent-900: #644c21;
+    --color-accent-950: #39290f;
 
     /* SUPPORT PALETTE */
     --color-accent-red: #DC2626;
