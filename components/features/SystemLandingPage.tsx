@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import {
     BookOpen,
     Users,
@@ -12,117 +13,601 @@ import {
     ArrowRight,
     School,
     Globe,
-    Zap
+    Zap,
+    Menu,
+    X,
+    Star,
+    Play,
+    ChevronDown,
+    Phone,
+    Mail,
+    MapPin,
+    Facebook,
+    Twitter,
+    Instagram,
+    Youtube,
+    Award,
+    Target,
+    Clock,
+    TrendingUp,
+    Heart,
+    Sparkles,
+    Check,
+    MessageCircle,
+    Calendar,
+    FileText,
+    PieChart,
+    Settings,
+    UserCheck,
+    GraduationCap,
+    Building2,
+    Lightbulb,
+    Rocket,
+    Quote,
+    ArrowUpRight
 } from 'lucide-react';
 import { PricingSection } from './PricingSection';
 
 export const SystemLandingPage = () => {
+    const [isScrolled, setIsScrolled] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [activeSection, setActiveSection] = useState('home');
+    const { scrollYProgress } = useScroll();
+
+    useEffect(() => {
+        const handleScroll = () => {
+            setIsScrolled(window.scrollY > 50);
+        };
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    const navItems = [
+        { id: 'home', label: 'Home', href: '#home' },
+        { id: 'features', label: 'Features', href: '#features' },
+        { id: 'how-it-works', label: 'How It Works', href: '#how-it-works' },
+        { id: 'testimonials', label: 'Testimonials', href: '#testimonials' },
+        { id: 'pricing', label: 'Pricing', href: '#pricing' },
+        { id: 'faq', label: 'FAQ', href: '#faq' },
+        { id: 'contact', label: 'Contact', href: '#contact' },
+    ];
+
     return (
-        <div className="min-h-screen bg-white font-primary selection:bg-brand-100 selection:text-brand-900">
-            {/* Navbar */}
-            <nav className="fixed w-full z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
+        <div className="min-h-screen bg-white font-primary selection:bg-brand-100 selection:text-brand-900 overflow-x-hidden">
+            {/* Progress Bar */}
+            <motion.div
+                className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-brand-600 to-purple-600 z-50 origin-left"
+                style={{ scaleX: scrollYProgress }}
+            />
+
+            {/* Navigation */}
+            <motion.nav
+                className={`fixed w-full z-40 transition-all duration-500 ${isScrolled
+                    ? 'bg-white/95 backdrop-blur-xl shadow-xl border-b border-gray-100/50'
+                    : 'bg-transparent'
+                    }`}
+                initial={{ y: -100 }}
+                animate={{ y: 0 }}
+                transition={{ duration: 0.6 }}
+            >
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-20">
-                        <div className="flex items-center gap-2">
-                            <div className="w-10 h-10 bg-brand-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-brand-600/20">
-                                <Globe size={24} />
+                        {/* Logo */}
+                        <motion.div
+                            className="flex items-center gap-3"
+                            whileHover={{ scale: 1.05 }}
+                            transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                        >
+                            <div className="w-12 h-12 bg-gradient-to-br from-brand-600 to-purple-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-brand-600/30">
+                                <School size={26} />
                             </div>
-                            <span className="text-2xl font-black text-gray-900 tracking-tight">EduSphere<span className="text-brand-600">.ng</span></span>
+                            <div>
+                                <span className="text-2xl font-black text-gray-900 tracking-tight">SchoolSync</span>
+                                <div className="text-xs font-semibold text-brand-600 -mt-1">schoolsync.ng</div>
+                            </div>
+                        </motion.div>
+
+                        {/* Desktop Navigation */}
+                        <div className="hidden lg:flex items-center gap-8">
+                            {navItems.map((item) => (
+                                <Link
+                                    key={item.id}
+                                    href={item.href}
+                                    className={`text-sm font-medium transition-all duration-300 hover:text-brand-600 relative group ${isScrolled ? 'text-gray-700' : 'text-gray-800'
+                                        }`}
+                                >
+                                    {item.label}
+                                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-brand-600 to-purple-600 group-hover:w-full transition-all duration-300"></span>
+                                </Link>
+                            ))}
                         </div>
 
-                        <div className="hidden md:flex items-center gap-8">
-                            <Link href="#features" className="text-sm font-medium text-gray-600 hover:text-brand-600 transition-colors">Features</Link>
-                            <Link href="#pricing" className="text-sm font-medium text-gray-600 hover:text-brand-600 transition-colors">Pricing</Link>
-                            <Link href="/login" className="text-sm font-medium text-gray-600 hover:text-brand-600 transition-colors">Log In</Link>
-                            <Link href="/onboarding" className="px-5 py-2.5 bg-brand-900 text-white text-sm font-bold rounded-full hover:bg-brand-800 transition-all shadow-lg hover:shadow-brand-900/20 flex items-center gap-2">
-                                Get Started <ArrowRight size={16} />
+                        {/* CTA Buttons */}
+                        <div className="hidden md:flex items-center gap-4">
+                            <Link
+                                href="/login"
+                                className={`px-6 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 ${isScrolled
+                                    ? 'text-gray-700 hover:text-brand-600 border border-gray-200 hover:border-brand-300'
+                                    : 'text-gray-800 hover:text-brand-600'
+                                    }`}
+                            >
+                                Sign In
+                            </Link>
+                            <Link
+                                href="/onboarding"
+                                className="px-6 py-2.5 bg-gradient-to-r from-brand-600 to-purple-600 text-white text-sm font-bold rounded-xl hover:shadow-lg hover:shadow-brand-600/30 transition-all duration-300 flex items-center gap-2 group"
+                            >
+                                Get Started Free
+                                <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                             </Link>
                         </div>
+
+                        {/* Mobile Menu Button */}
+                        <button
+                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                            className={`lg:hidden p-2 rounded-xl transition-colors ${isScrolled ? 'text-gray-700 hover:bg-gray-100' : 'text-gray-800 hover:bg-white/10'
+                                }`}
+                            aria-label="Toggle mobile menu"
+                        >
+                            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                        </button>
                     </div>
                 </div>
-            </nav>
+
+                {/* Mobile Menu */}
+                <AnimatePresence>
+                    {mobileMenuOpen && (
+                        <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="lg:hidden bg-white/95 backdrop-blur-xl border-t border-gray-100/50 shadow-xl"
+                        >
+                            <div className="px-4 py-6 space-y-4">
+                                {navItems.map((item) => (
+                                    <Link
+                                        key={item.id}
+                                        href={item.href}
+                                        onClick={() => setMobileMenuOpen(false)}
+                                        className="block py-3 text-gray-700 hover:text-brand-600 font-medium transition-colors border-b border-gray-50 last:border-0"
+                                    >
+                                        {item.label}
+                                    </Link>
+                                ))}
+                                <div className="pt-4 space-y-3">
+                                    <Link
+                                        href="/login"
+                                        onClick={() => setMobileMenuOpen(false)}
+                                        className="block w-full text-center py-3 text-gray-700 border border-gray-200 rounded-xl font-bold hover:bg-gray-50 transition-colors"
+                                    >
+                                        Sign In
+                                    </Link>
+                                    <Link
+                                        href="/onboarding"
+                                        onClick={() => setMobileMenuOpen(false)}
+                                        className="block w-full text-center py-3 bg-gradient-to-r from-brand-600 to-purple-600 text-white rounded-xl font-bold hover:shadow-lg transition-all"
+                                    >
+                                        Get Started Free
+                                    </Link>
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </motion.nav>
 
             {/* Hero Section */}
-            <section className="pt-32 pb-20 md:pt-48 md:pb-32 overflow-hidden relative">
-                <div className="absolute inset-0 z-0 opacity-30">
-                    <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-brand-100/50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-                    <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-purple-100/50 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
+            <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
+                {/* Background Elements */}
+                <div className="absolute inset-0 z-0">
+                    <div className="absolute top-20 right-10 w-96 h-96 bg-gradient-to-br from-brand-100 to-purple-100 rounded-full blur-3xl opacity-60"></div>
+                    <div className="absolute bottom-20 left-10 w-80 h-80 bg-gradient-to-br from-blue-100 to-brand-100 rounded-full blur-3xl opacity-50"></div>
+                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-radial from-transparent via-brand-50/20 to-transparent rounded-full"></div>
                 </div>
 
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-50 border border-brand-100 text-brand-700 text-xs font-bold uppercase tracking-wider mb-8 animate-in fade-in slide-in-from-bottom-4">
-                        <span className="w-2 h-2 rounded-full bg-brand-600 animate-pulse"></span>
-                        The #1 School Operating System in Nigeria
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                    <div className="grid lg:grid-cols-2 gap-16 items-center">
+                        {/* Content */}
+                        <motion.div
+                            initial={{ opacity: 0, x: -50 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.8 }}
+                            className="text-center lg:text-left"
+                        >
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.2, duration: 0.6 }}
+                                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-50 border border-brand-100 text-brand-700 text-sm font-bold mb-8"
+                            >
+                                <Sparkles size={16} className="text-brand-600" />
+                                #1 School Management Platform in Nigeria
+                            </motion.div>
+
+                            <motion.h1
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.4, duration: 0.8 }}
+                                className="text-5xl md:text-6xl lg:text-7xl font-black text-gray-900 tracking-tight mb-6 leading-[1.1]"
+                            >
+                                Streamline Your School
+                                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-purple-600">
+                                    Management Today
+                                </span>
+                            </motion.h1>
+
+                            <motion.p
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.6, duration: 0.6 }}
+                                className="text-xl text-gray-600 mb-8 max-w-2xl leading-relaxed"
+                            >
+                                Transform your educational institution with SchoolSync - the complete digital solution for modern schools. From admissions to alumni management, we've got everything covered.
+                            </motion.p>
+
+                            {/* Stats */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.8, duration: 0.6 }}
+                                className="grid grid-cols-3 gap-8 mb-10 max-w-md mx-auto lg:mx-0"
+                            >
+                                <div className="text-center">
+                                    <div className="text-3xl font-black text-brand-600">500+</div>
+                                    <div className="text-sm text-gray-500">Schools</div>
+                                </div>
+                                <div className="text-center">
+                                    <div className="text-3xl font-black text-brand-600">50K+</div>
+                                    <div className="text-sm text-gray-500">Students</div>
+                                </div>
+                                <div className="text-center">
+                                    <div className="text-3xl font-black text-brand-600">98%</div>
+                                    <div className="text-sm text-gray-500">Satisfaction</div>
+                                </div>
+                            </motion.div>
+
+                            {/* CTA Buttons */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 1.0, duration: 0.6 }}
+                                className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
+                            >
+                                <Link
+                                    href="/onboarding"
+                                    className="px-8 py-4 bg-gradient-to-r from-brand-600 to-purple-600 text-white text-lg font-bold rounded-2xl hover:shadow-xl hover:shadow-brand-600/30 transition-all duration-300 flex items-center justify-center gap-2 group"
+                                >
+                                    Start Free Trial
+                                    <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                                </Link>
+                                <Link
+                                    href="#demo"
+                                    className="px-8 py-4 bg-white border-2 border-gray-200 text-gray-900 text-lg font-bold rounded-2xl hover:border-brand-300 hover:bg-brand-50 transition-all duration-300 flex items-center justify-center gap-2 group"
+                                >
+                                    <Play size={20} className="text-brand-600" />
+                                    Watch Demo
+                                </Link>
+                            </motion.div>
+                        </motion.div>
+
+                        {/* Hero Visual */}
+                        <motion.div
+                            initial={{ opacity: 0, x: 50 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.8, delay: 0.2 }}
+                            className="relative"
+                        >
+                            <div className="relative">
+                                {/* Main Dashboard Mockup */}
+                                <div className="bg-white rounded-3xl shadow-2xl p-8 border border-gray-100">
+                                    <div className="flex items-center justify-between mb-6">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 bg-brand-600 rounded-xl flex items-center justify-center text-white">
+                                                <School size={20} />
+                                            </div>
+                                            <span className="font-bold text-gray-900">SchoolSync Dashboard</span>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <div className="w-3 h-3 bg-red-400 rounded-full"></div>
+                                            <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
+                                            <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+                                        </div>
+                                    </div>
+
+                                    {/* Stats Cards */}
+                                    <div className="grid grid-cols-2 gap-4 mb-6">
+                                        <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl">
+                                            <Users size={24} className="text-blue-600 mb-2" />
+                                            <div className="text-2xl font-bold text-gray-900">1,247</div>
+                                            <div className="text-sm text-gray-600">Students</div>
+                                        </div>
+                                        <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-xl">
+                                            <TrendingUp size={24} className="text-green-600 mb-2" />
+                                            <div className="text-2xl font-bold text-gray-900">94.2%</div>
+                                            <div className="text-sm text-gray-600">Attendance</div>
+                                        </div>
+                                    </div>
+
+                                    {/* Chart Placeholder */}
+                                    <div className="bg-gray-50 rounded-xl p-4 h-32 flex items-center justify-center">
+                                        <BarChart3 size={48} className="text-gray-400" />
+                                    </div>
+                                </div>
+
+                                {/* Floating Elements */}
+                                <motion.div
+                                    animate={{ y: [0, -10, 0] }}
+                                    transition={{ duration: 3, repeat: Infinity }}
+                                    className="absolute -top-4 -right-4 bg-white rounded-2xl shadow-xl p-4 border border-gray-100"
+                                >
+                                    <CheckCircle2 size={32} className="text-green-500" />
+                                </motion.div>
+
+                                <motion.div
+                                    animate={{ y: [0, 10, 0] }}
+                                    transition={{ duration: 4, repeat: Infinity }}
+                                    className="absolute -bottom-4 -left-4 bg-white rounded-2xl shadow-xl p-4 border border-gray-100"
+                                >
+                                    <Award size={32} className="text-purple-500" />
+                                </motion.div>
+                            </div>
+                        </motion.div>
                     </div>
+                </div>
 
-                    <h1 className="text-5xl md:text-7xl font-black text-gray-900 tracking-tight mb-8 leading-[1.1] animate-in fade-in slide-in-from-bottom-8 duration-700">
-                        Manage your school <br className="hidden md:block" />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-purple-600">with ease & precision.</span>
-                    </h1>
+                {/* Scroll Indicator */}
+                <motion.div
+                    animate={{ y: [0, 10, 0] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
+                >
+                    <ChevronDown size={32} className="text-gray-400" />
+                </motion.div>
+            </section>
 
-                    <p className="max-w-2xl mx-auto text-xl text-gray-600 mb-12 leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-100">
-                        EduSphere gives you everything you need to run a modern educational institution.
-                        From admissions to alumni, we've got you covered.
-                    </p>
+            {/* Features Section */}
+            <section id="features" className="py-24 bg-gradient-to-br from-gray-50 via-white to-brand-50/30">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6 }}
+                        viewport={{ once: true }}
+                        className="text-center mb-16"
+                    >
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-100 text-brand-700 text-sm font-bold mb-6">
+                            <Target size={16} />
+                            Powerful Features
+                        </div>
+                        <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-6">
+                            Everything Your School Needs
+                        </h2>
+                        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                            Comprehensive modules designed to streamline every aspect of school management, from enrollment to graduation.
+                        </p>
+                    </motion.div>
 
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
-                        <Link href="/onboarding" className="w-full sm:w-auto px-8 py-4 bg-brand-600 text-white text-lg font-bold rounded-2xl hover:bg-brand-700 transition-all shadow-xl shadow-brand-600/30 flex items-center justify-center gap-2">
-                            Create Your School
-                            <ArrowRight size={20} />
-                        </Link>
-                        <Link href="/demo" className="w-full sm:w-auto px-8 py-4 bg-white text-gray-900 border border-gray-200 text-lg font-bold rounded-2xl hover:bg-gray-50 transition-all flex items-center justify-center gap-2">
-                            View Demo
-                            <Zap size={20} className="text-amber-500" />
-                        </Link>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {[
+                            {
+                                icon: Users,
+                                title: "Student Management",
+                                desc: "Complete student profiles, attendance tracking, disciplinary records, and parent communication in one place.",
+                                color: "from-blue-500 to-blue-600",
+                                bg: "bg-blue-50"
+                            },
+                            {
+                                icon: CreditCard,
+                                title: "Smart Finance",
+                                desc: "Automated fee collection, payment tracking, receipt generation, and comprehensive financial reporting.",
+                                color: "from-green-500 to-emerald-600",
+                                bg: "bg-green-50"
+                            },
+                            {
+                                icon: BarChart3,
+                                title: "Academic Analytics",
+                                desc: "Real-time performance tracking, automated grading, report cards, and data-driven insights.",
+                                color: "from-purple-500 to-purple-600",
+                                bg: "bg-purple-50"
+                            },
+                            {
+                                icon: BookOpen,
+                                title: "LMS & CBT",
+                                desc: "Learning Management System with Computer-Based Testing, assignments, and digital resources.",
+                                color: "from-amber-500 to-orange-600",
+                                bg: "bg-amber-50"
+                            },
+                            {
+                                icon: ShieldCheck,
+                                title: "Role-Based Security",
+                                desc: "Secure portals for admins, teachers, students, and parents with granular permission controls.",
+                                color: "from-red-500 to-rose-600",
+                                bg: "bg-red-50"
+                            },
+                            {
+                                icon: Building2,
+                                title: "Multi-School Support",
+                                desc: "Manage multiple campuses, branches, or even entire school districts from one dashboard.",
+                                color: "from-brand-500 to-purple-600",
+                                bg: "bg-brand-50"
+                            }
+                        ].map((feature, index) => (
+                            <motion.div
+                                key={index}
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.6, delay: index * 0.1 }}
+                                viewport={{ once: true }}
+                                className="group relative"
+                            >
+                                <div className="bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border border-gray-100/50 h-full">
+                                    <div className={`w-16 h-16 bg-gradient-to-br ${feature.color} rounded-2xl flex items-center justify-center mb-6 text-white shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                                        <feature.icon size={32} />
+                                    </div>
+                                    <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-brand-600 transition-colors">
+                                        {feature.title}
+                                    </h3>
+                                    <p className="text-gray-600 leading-relaxed mb-6">
+                                        {feature.desc}
+                                    </p>
+                                    <div className="flex items-center text-brand-600 font-semibold group-hover:text-brand-700 transition-colors">
+                                        Learn more
+                                        <ArrowRight size={16} className="ml-2 group-hover:translate-x-1 transition-transform" />
+                                    </div>
+                                </div>
+                            </motion.div>
+                        ))}
                     </div>
                 </div>
             </section>
 
-            {/* Features Grid */}
-            <section id="features" className="py-20 bg-gray-50/50">
+            {/* How It Works Section */}
+            <section id="how-it-works" className="py-24 bg-white">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="text-center mb-16">
-                        <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">Everything you need</h2>
-                        <p className="text-lg text-gray-500">Powerful modules integrated into one seamless platform.</p>
-                    </div>
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6 }}
+                        viewport={{ once: true }}
+                        className="text-center mb-16"
+                    >
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-100 text-purple-700 text-sm font-bold mb-6">
+                            <Lightbulb size={16} />
+                            Simple Process
+                        </div>
+                        <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-6">
+                            Get Started in Minutes
+                        </h2>
+                        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                            Our streamlined onboarding process gets your school up and running quickly, with expert support every step of the way.
+                        </p>
+                    </motion.div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        <FeatureCard
-                            icon={Users}
-                            title="Student Management"
-                            desc="Comprehensive profiles, attendance tracking, and disciplinary records at your fingertips."
-                            color="text-blue-600" bg="bg-blue-50"
-                        />
-                        <FeatureCard
-                            icon={CreditCard}
-                            title="Smart Finance"
-                            desc="Automated fee collection, receipt generation, and expense tracking with financial reports."
-                            color="text-green-600" bg="bg-green-50"
-                        />
-                        <FeatureCard
-                            icon={BarChart3}
-                            title="Academic Results"
-                            desc="Automated grading, report card generation, and performance analytics for students."
-                            color="text-purple-600" bg="bg-purple-50"
-                        />
-                        <FeatureCard
-                            icon={BookOpen}
-                            title="LMS & CBT"
-                            desc="Computer Based Tests and Learning Management System for modern e-learning."
-                            color="text-amber-600" bg="bg-amber-50"
-                        />
-                        <FeatureCard
-                            icon={ShieldCheck}
-                            title="Role-Based Access"
-                            desc="Secure portals for Admins, Teachers, Students, and Parents with specific permissions."
-                            color="text-red-600" bg="bg-red-50"
-                        />
-                        <FeatureCard
-                            icon={School}
-                            title="Multi-School Support"
-                            desc="Manage multiple campuses or branches from a single Super Admin dashboard."
-                            color="text-brand-600" bg="bg-brand-50"
-                        />
+                    <div className="grid md:grid-cols-4 gap-8">
+                        {[
+                            {
+                                step: "01",
+                                title: "Sign Up",
+                                desc: "Create your account and tell us about your school in our quick onboarding form.",
+                                icon: UserCheck
+                            },
+                            {
+                                step: "02",
+                                title: "Setup",
+                                desc: "Import your data or start fresh. We'll guide you through configuring your school settings.",
+                                icon: Settings
+                            },
+                            {
+                                step: "03",
+                                title: "Customize",
+                                desc: "Personalize your school's branding, add staff, and set up your academic structure.",
+                                icon: Sparkles
+                            },
+                            {
+                                step: "04",
+                                title: "Launch",
+                                desc: "Go live with your new school management system and start transforming education.",
+                                icon: Rocket
+                            }
+                        ].map((step, index) => (
+                            <motion.div
+                                key={index}
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.6, delay: index * 0.2 }}
+                                viewport={{ once: true }}
+                                className="text-center relative"
+                            >
+                                <div className="relative mb-8">
+                                    <div className="w-20 h-20 bg-gradient-to-br from-brand-500 to-purple-600 rounded-2xl flex items-center justify-center text-white text-2xl font-black mx-auto shadow-lg">
+                                        {step.step}
+                                    </div>
+                                    {index < 3 && (
+                                        <div className="hidden md:block absolute top-10 left-full w-full h-0.5 bg-gradient-to-r from-brand-200 to-purple-200 -translate-y-1/2" style={{ width: 'calc(100vw / 4 - 5rem)' }}></div>
+                                    )}
+                                </div>
+                                <div className="w-16 h-16 bg-brand-50 rounded-xl flex items-center justify-center text-brand-600 mx-auto mb-6">
+                                    <step.icon size={32} />
+                                </div>
+                                <h3 className="text-2xl font-bold text-gray-900 mb-4">{step.title}</h3>
+                                <p className="text-gray-600 leading-relaxed">{step.desc}</p>
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* Testimonials Section */}
+            <section id="testimonials" className="py-24 bg-gradient-to-br from-brand-900 via-purple-900 to-brand-800 text-white relative overflow-hidden">
+                <div className="absolute inset-0 bg-[url('/noise.png')] opacity-10 mix-blend-overlay"></div>
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6 }}
+                        viewport={{ once: true }}
+                        className="text-center mb-16"
+                    >
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm text-white text-sm font-bold mb-6">
+                            <Heart size={16} />
+                            Success Stories
+                        </div>
+                        <h2 className="text-4xl md:text-5xl font-black mb-6">
+                            Trusted by Leading Schools
+                        </h2>
+                        <p className="text-xl text-brand-100 max-w-3xl mx-auto">
+                            See how schools across Nigeria are transforming their operations with SchoolSync.
+                        </p>
+                    </motion.div>
+
+                    <div className="grid md:grid-cols-3 gap-8">
+                        {[
+                            {
+                                quote: "SchoolSync has revolutionized how we manage our school. The automation features have saved us countless hours, and our parents love the transparency.",
+                                author: "Mrs. Adebayo",
+                                role: "Principal",
+                                school: "Lagos International School",
+                                rating: 5
+                            },
+                            {
+                                quote: "The financial management module is incredible. We've eliminated billing errors and improved our cash flow significantly.",
+                                author: "Mr. Okon",
+                                role: "Business Manager",
+                                school: "Federal Government College",
+                                rating: 5
+                            },
+                            {
+                                quote: "Our teachers love the LMS features, and student performance has improved dramatically with the analytics tools.",
+                                author: "Dr. Ibrahim",
+                                role: "Academic Director",
+                                school: "Nigerian Turkish International School",
+                                rating: 5
+                            }
+                        ].map((testimonial, index) => (
+                            <motion.div
+                                key={index}
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.6, delay: index * 0.2 }}
+                                viewport={{ once: true }}
+                                className="bg-white/10 backdrop-blur-sm rounded-3xl p-8 border border-white/20"
+                            >
+                                <Quote size={32} className="text-brand-300 mb-4" />
+                                <p className="text-white/90 text-lg leading-relaxed mb-6">
+                                    "{testimonial.quote}"
+                                </p>
+                                <div className="flex items-center gap-1 mb-4">
+                                    {[...Array(testimonial.rating)].map((_, i) => (
+                                        <Star key={i} size={16} className="fill-yellow-400 text-yellow-400" />
+                                    ))}
+                                </div>
+                                <div>
+                                    <div className="font-bold text-white">{testimonial.author}</div>
+                                    <div className="text-brand-200 text-sm">{testimonial.role}</div>
+                                    <div className="text-brand-300 text-sm">{testimonial.school}</div>
+                                </div>
+                            </motion.div>
+                        ))}
                     </div>
                 </div>
             </section>
@@ -130,83 +615,305 @@ export const SystemLandingPage = () => {
             {/* Pricing Section */}
             <PricingSection />
 
-            {/* CTA Section */}
-            <section className="py-20 bg-brand-900 text-white relative overflow-hidden">
-                <div className="absolute inset-0 bg-[url('/noise.png')] opacity-10 mix-blend-overlay"></div>
-                <div className="max-w-5xl mx-auto px-4 text-center relative z-10">
-                    <h2 className="text-4xl md:text-6xl font-black mb-8">Ready to transform your school?</h2>
-                    <p className="text-xl text-brand-100 mb-10 max-w-2xl mx-auto">
-                        Join hundreds of forward-thinking schools using EduSphere to deliver world-class education.
-                    </p>
-                    <Link href="/onboarding" className="inline-flex items-center gap-3 px-10 py-5 bg-white text-brand-900 text-xl font-bold rounded-full hover:scale-105 transition-transform shadow-2xl">
-                        Get Started for Free
-                        <ArrowRight size={24} />
-                    </Link>
+            {/* FAQ Section */}
+            <section id="faq" className="py-24 bg-gray-50">
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6 }}
+                        viewport={{ once: true }}
+                        className="text-center mb-16"
+                    >
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-100 text-blue-700 text-sm font-bold mb-6">
+                            <MessageCircle size={16} />
+                            Frequently Asked Questions
+                        </div>
+                        <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-6">
+                            Got Questions?
+                        </h2>
+                        <p className="text-xl text-gray-600">
+                            Find answers to common questions about SchoolSync.
+                        </p>
+                    </motion.div>
+
+                    <div className="space-y-6">
+                        {[
+                            {
+                                question: "How long does it take to set up SchoolSync for my school?",
+                                answer: "Most schools are up and running within 1-2 weeks. Our onboarding team provides personalized guidance throughout the process."
+                            },
+                            {
+                                question: "Can I import my existing student and staff data?",
+                                answer: "Yes! We support CSV imports and can help migrate data from most existing school management systems."
+                            },
+                            {
+                                question: "Is my school's data secure?",
+                                answer: "Absolutely. We use bank-level encryption, regular security audits, and comply with Nigerian data protection regulations."
+                            },
+                            {
+                                question: "What kind of support do you provide?",
+                                answer: "We offer 24/7 technical support, comprehensive documentation, video tutorials, and dedicated account managers for enterprise clients."
+                            },
+                            {
+                                question: "Can I try SchoolSync before committing?",
+                                answer: "Yes! We offer a 30-day free trial with full access to all features. No credit card required to get started."
+                            }
+                        ].map((faq, index) => (
+                            <motion.div
+                                key={index}
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.6, delay: index * 0.1 }}
+                                viewport={{ once: true }}
+                                className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100"
+                            >
+                                <h3 className="text-xl font-bold text-gray-900 mb-4">{faq.question}</h3>
+                                <p className="text-gray-600 leading-relaxed">{faq.answer}</p>
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* Contact Section */}
+            <section id="contact" className="py-24 bg-white">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6 }}
+                        viewport={{ once: true }}
+                        className="text-center mb-16"
+                    >
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-100 text-green-700 text-sm font-bold mb-6">
+                            <Phone size={16} />
+                            Get In Touch
+                        </div>
+                        <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-6">
+                            Ready to Transform Your School?
+                        </h2>
+                        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                            Join hundreds of schools already using SchoolSync. Let's discuss how we can help your institution thrive.
+                        </p>
+                    </motion.div>
+
+                    <div className="grid lg:grid-cols-2 gap-16">
+                        {/* Contact Form */}
+                        <motion.div
+                            initial={{ opacity: 0, x: -50 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.6 }}
+                            viewport={{ once: true }}
+                            className="bg-white rounded-3xl p-8 shadow-xl border border-gray-100"
+                        >
+                            <h3 className="text-2xl font-bold text-gray-900 mb-6">Send us a message</h3>
+                            <form className="space-y-6">
+                                <div className="grid md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                                        <input
+                                            type="text"
+                                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none transition-all"
+                                            placeholder="John"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                                        <input
+                                            type="text"
+                                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none transition-all"
+                                            placeholder="Doe"
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                                    <input
+                                        type="email"
+                                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none transition-all"
+                                        placeholder="john@school.com"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">School Name</label>
+                                    <input
+                                        type="text"
+                                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none transition-all"
+                                        placeholder="Your School Name"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Message</label>
+                                    <textarea
+                                        rows={4}
+                                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none transition-all resize-none"
+                                        placeholder="Tell us about your school and how we can help..."
+                                    />
+                                </div>
+                                <button
+                                    type="submit"
+                                    className="w-full py-4 bg-gradient-to-r from-brand-600 to-purple-600 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-brand-600/30 transition-all duration-300 flex items-center justify-center gap-2"
+                                >
+                                    Send Message
+                                    <ArrowRight size={20} />
+                                </button>
+                            </form>
+                        </motion.div>
+
+                        {/* Contact Info */}
+                        <motion.div
+                            initial={{ opacity: 0, x: 50 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.6 }}
+                            viewport={{ once: true }}
+                            className="space-y-8"
+                        >
+                            <div>
+                                <h3 className="text-2xl font-bold text-gray-900 mb-6">Contact Information</h3>
+                                <div className="space-y-6">
+                                    <div className="flex items-start gap-4">
+                                        <div className="w-12 h-12 bg-brand-50 rounded-xl flex items-center justify-center text-brand-600 flex-shrink-0">
+                                            <Phone size={24} />
+                                        </div>
+                                        <div>
+                                            <div className="font-semibold text-gray-900">Phone</div>
+                                            <div className="text-gray-600">+234 800 SCHOOLSYNC</div>
+                                            <div className="text-sm text-gray-500">Mon-Fri 9AM-6PM WAT</div>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-start gap-4">
+                                        <div className="w-12 h-12 bg-brand-50 rounded-xl flex items-center justify-center text-brand-600 flex-shrink-0">
+                                            <Mail size={24} />
+                                        </div>
+                                        <div>
+                                            <div className="font-semibold text-gray-900">Email</div>
+                                            <div className="text-gray-600">hello@schoolsync.ng</div>
+                                            <div className="text-sm text-gray-500">We'll respond within 24 hours</div>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-start gap-4">
+                                        <div className="w-12 h-12 bg-brand-50 rounded-xl flex items-center justify-center text-brand-600 flex-shrink-0">
+                                            <MapPin size={24} />
+                                        </div>
+                                        <div>
+                                            <div className="font-semibold text-gray-900">Office</div>
+                                            <div className="text-gray-600">Lagos, Nigeria</div>
+                                            <div className="text-sm text-gray-500">Serving schools nationwide</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Social Links */}
+                            <div>
+                                <h4 className="font-semibold text-gray-900 mb-4">Follow Us</h4>
+                                <div className="flex gap-4">
+                                    {[
+                                        { icon: Facebook, href: '#' },
+                                        { icon: Twitter, href: '#' },
+                                        { icon: Instagram, href: '#' },
+                                        { icon: Youtube, href: '#' }
+                                    ].map((social, index) => (
+                                        <a
+                                            key={index}
+                                            href={social.href}
+                                            className="w-12 h-12 bg-gray-100 hover:bg-brand-100 rounded-xl flex items-center justify-center text-gray-600 hover:text-brand-600 transition-colors"
+                                        >
+                                            <social.icon size={20} />
+                                        </a>
+                                    ))}
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
                 </div>
             </section>
 
             {/* Footer */}
-            <footer className="bg-gray-50 pt-20 pb-10 border-t border-gray-200">
+            <footer className="bg-gray-900 text-white pt-16 pb-8">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
-                        {/* Column 1: Brand */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+                        {/* Brand Column */}
                         <div className="space-y-6">
-                            <div className="flex items-center gap-2">
-                                <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center text-white">
-                                    <Globe size={18} />
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-gradient-to-br from-brand-600 to-purple-600 rounded-xl flex items-center justify-center text-white shadow-lg">
+                                    <School size={20} />
                                 </div>
-                                <span className="text-xl font-black text-gray-900 tracking-tight">EduSphere<span className="text-brand-600">.ng</span></span>
+                                <div>
+                                    <div className="text-xl font-black tracking-tight">SchoolSync</div>
+                                    <div className="text-sm text-brand-400">schoolsync.ng</div>
+                                </div>
                             </div>
-                            <p className="text-gray-500 text-sm leading-relaxed">
-                                The complete operating system for modern schools in Nigeria. Simplify administration, enhance learning, and drive growth.
+                            <p className="text-gray-400 text-sm leading-relaxed">
+                                The complete school management platform for modern Nigerian educational institutions. Streamlining administration, enhancing learning, and driving academic excellence.
                             </p>
+                            <div className="flex gap-4">
+                                {[
+                                    { icon: Facebook, href: '#' },
+                                    { icon: Twitter, href: '#' },
+                                    { icon: Instagram, href: '#' },
+                                    { icon: Youtube, href: '#' }
+                                ].map((social, index) => (
+                                    <a
+                                        key={index}
+                                        href={social.href}
+                                        className="w-10 h-10 bg-gray-800 hover:bg-brand-600 rounded-lg flex items-center justify-center text-gray-400 hover:text-white transition-colors"
+                                    >
+                                        <social.icon size={18} />
+                                    </a>
+                                ))}
+                            </div>
                         </div>
 
-                        {/* Column 2: Product */}
+                        {/* Product Column */}
                         <div>
-                            <h4 className="font-bold text-gray-900 mb-6">Product</h4>
-                            <ul className="space-y-4 text-sm text-gray-600">
-                                <li><Link href="#features" className="hover:text-brand-600 transition-colors">Features</Link></li>
-                                <li><Link href="#pricing" className="hover:text-brand-600 transition-colors">Pricing</Link></li>
-                                <li><Link href="/demo" className="hover:text-brand-600 transition-colors">Request Demo</Link></li>
-                                <li><Link href="/onboarding" className="hover:text-brand-600 transition-colors">Start for Free</Link></li>
+                            <h4 className="font-bold text-white mb-6">Product</h4>
+                            <ul className="space-y-4 text-sm text-gray-400">
+                                <li><Link href="#features" className="hover:text-brand-400 transition-colors">Features</Link></li>
+                                <li><Link href="#pricing" className="hover:text-brand-400 transition-colors">Pricing</Link></li>
+                                <li><Link href="#demo" className="hover:text-brand-400 transition-colors">Request Demo</Link></li>
+                                <li><Link href="/onboarding" className="hover:text-brand-400 transition-colors">Get Started</Link></li>
+                                <li><Link href="/login" className="hover:text-brand-400 transition-colors">Sign In</Link></li>
                             </ul>
                         </div>
 
-                        {/* Column 3: Resources */}
+                        {/* Resources Column */}
                         <div>
-                            <h4 className="font-bold text-gray-900 mb-6">Resources</h4>
-                            <ul className="space-y-4 text-sm text-gray-600">
-                                <li><Link href="#" className="hover:text-brand-600 transition-colors">Help Center</Link></li>
-                                <li><Link href="#" className="hover:text-brand-600 transition-colors">School Success Stories</Link></li>
-                                <li><Link href="#" className="hover:text-brand-600 transition-colors">Blog</Link></li>
-                                <li><Link href="#" className="hover:text-brand-600 transition-colors">Community</Link></li>
+                            <h4 className="font-bold text-white mb-6">Resources</h4>
+                            <ul className="space-y-4 text-sm text-gray-400">
+                                <li><Link href="#" className="hover:text-brand-400 transition-colors">Help Center</Link></li>
+                                <li><Link href="#" className="hover:text-brand-400 transition-colors">School Success Stories</Link></li>
+                                <li><Link href="#" className="hover:text-brand-400 transition-colors">Blog</Link></li>
+                                <li><Link href="#" className="hover:text-brand-400 transition-colors">Video Tutorials</Link></li>
+                                <li><Link href="#" className="hover:text-brand-400 transition-colors">API Documentation</Link></li>
                             </ul>
                         </div>
 
-                        {/* Column 4: Legal */}
+                        {/* Company Column */}
                         <div>
-                            <h4 className="font-bold text-gray-900 mb-6">Legal</h4>
-                            <ul className="space-y-4 text-sm text-gray-600">
-                                <li><Link href="#" className="hover:text-brand-600 transition-colors">Privacy Policy</Link></li>
-                                <li><Link href="#" className="hover:text-brand-600 transition-colors">Terms of Service</Link></li>
-                                <li><Link href="#" className="hover:text-brand-600 transition-colors">Cookie Policy</Link></li>
-                                <li><Link href="#" className="hover:text-brand-600 transition-colors">Security</Link></li>
+                            <h4 className="font-bold text-white mb-6">Company</h4>
+                            <ul className="space-y-4 text-sm text-gray-400">
+                                <li><Link href="#" className="hover:text-brand-400 transition-colors">About Us</Link></li>
+                                <li><Link href="#" className="hover:text-brand-400 transition-colors">Careers</Link></li>
+                                <li><Link href="#" className="hover:text-brand-400 transition-colors">Contact</Link></li>
+                                <li><Link href="#" className="hover:text-brand-400 transition-colors">Privacy Policy</Link></li>
+                                <li><Link href="#" className="hover:text-brand-400 transition-colors">Terms of Service</Link></li>
                             </ul>
                         </div>
                     </div>
 
-                    <div className="pt-8 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4">
-                        <p className="text-sm text-gray-500">
-                            &copy; {new Date().getFullYear()} EduSphere.ng. All rights reserved.
+                    <div className="pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4">
+                        <p className="text-sm text-gray-400">
+                            &copy; {new Date().getFullYear()} SchoolSync. All rights reserved.
                         </p>
-                        <div className="flex items-center gap-1 text-sm text-gray-500">
-                            <span>Designed and developed by</span>
+                        <div className="flex items-center gap-1 text-sm text-gray-400">
+                            <span>Powered by</span>
                             <a
                                 href="https://getboldideas.com/"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="font-bold text-brand-700 hover:text-brand-900 transition-colors flex items-center gap-1"
+                                className="font-bold text-brand-400 hover:text-brand-300 transition-colors flex items-center gap-1"
                             >
                                 Bold Ideas Innovations Ltd.
                                 <Zap size={12} className="fill-current" />
@@ -218,15 +925,3 @@ export const SystemLandingPage = () => {
         </div>
     );
 };
-
-function FeatureCard({ icon: Icon, title, desc, color, bg }: any) {
-    return (
-        <div className="group p-8 rounded-3xl bg-white border border-gray-100 shadow-xl shadow-gray-200/50 hover:shadow-2xl hover:shadow-brand-900/5 hover:-translate-y-1 transition-all">
-            <div className={`w-14 h-14 ${bg} ${color} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
-                <Icon size={28} />
-            </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-3">{title}</h3>
-            <p className="text-gray-500 leading-relaxed">{desc}</p>
-        </div>
-    );
-}

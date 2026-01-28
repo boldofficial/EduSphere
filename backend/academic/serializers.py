@@ -1,5 +1,6 @@
 from django.db import transaction, models
 from rest_framework import serializers
+from users.models import User
 from .models import (
     Subject, Teacher, Class, Student, 
     ReportCard, SubjectScore, AttendanceSession, AttendanceRecord,
@@ -62,10 +63,15 @@ class SubjectSerializer(serializers.ModelSerializer):
 
 class TeacherSerializer(serializers.ModelSerializer):
     passport_url = Base64ImageField(required=False, allow_null=True)
+    user = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(), 
+        required=False, 
+        allow_null=True
+    )
     
     class Meta:
         model = Teacher
-        fields = ['id', 'user', 'school', 'name', 'address', 'phone', 'email', 'passport_url', 'staff_type', 'created_at', 'updated_at']
+        fields = ['id', 'user', 'school', 'name', 'address', 'phone', 'email', 'passport_url', 'staff_type', 'role', 'tasks', 'assigned_modules', 'created_at', 'updated_at']
         read_only_fields = ('school',)
 
     def to_representation(self, instance):

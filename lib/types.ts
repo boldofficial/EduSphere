@@ -131,6 +131,9 @@ export interface Teacher extends Entity {
   phone: string;
   passport_url?: string | null; // Base64 image or URL
   staff_type: 'ACADEMIC' | 'NON_ACADEMIC';
+  role?: string;
+  tasks?: string;
+  assigned_modules?: string[];
 }
 
 export interface Staff extends Entity {

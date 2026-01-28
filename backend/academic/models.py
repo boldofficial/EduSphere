@@ -29,6 +29,11 @@ class Teacher(TenantModel):
     email = models.EmailField(blank=True)
     passport_url = models.CharField(max_length=512, blank=True, null=True)
     staff_type = models.CharField(max_length=20, choices=STAFF_TYPES, default='ACADEMIC')
+    
+    # Non-Academic Staff fields
+    role = models.CharField(max_length=255, blank=True, null=True, help_text="Job Title (e.g. Bursar)")
+    tasks = models.TextField(blank=True, null=True, help_text="Assigned duties")
+    assigned_modules = models.JSONField(default=list, blank=True, help_text="List of module IDs they can access")
 
     def __str__(self):
         return f"{self.name} ({self.school.name}) - {self.staff_type}"
