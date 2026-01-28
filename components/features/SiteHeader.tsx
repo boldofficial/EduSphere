@@ -43,8 +43,8 @@ const SiteHeader = ({ settings }: SiteHeaderProps) => {
                         {settings.logo_media ? (
                             <img src={settings.logo_media} alt="Logo" className="h-12 w-12 rounded-xl object-contain bg-white/10" />
                         ) : (
-                            <div className="h-12 w-12 bg-gradient-to-br from-brand-500 to-brand-700 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                                <GraduationCap size={24} />
+                            <div className="h-14 w-14 bg-white rounded-xl flex items-center justify-center p-1">
+                                <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
                             </div>
                         )}
                         <div className={`transition-colors duration-300 ${isScrolled ? 'text-brand-900' : 'text-white'}`}>

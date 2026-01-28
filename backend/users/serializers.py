@@ -39,8 +39,21 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         data = super().validate(attrs)
         
         # Debugging Login Flow (Safe now)
-        print(f"[AUTH_DEBUG] Login success for user: {self.user.username} (Role: {self.user.role})")
+        logger.info(f"[AUTH_DEBUG] Login success for user: {self.user.username} (Role: {self.user.role})")
         
+        # SUPER ADMIN BYPASS: Always allow super admins to login regardless of tenant context
+        if self.user.role.upper() == 'SUPER_ADMIN': # Ensure case-insensitivity
+             logger.info(f"[AUTH_DEBUG] SUPER_ADMIN bypass active for {self.user.username}")
+             
+             data['role'] = self.user.role
+             data['school_id'] = self.user.school.id if self.user.school else None
+             data['user'] = {
+                 'id': self.user.id,
+                 'username': self.user.username,
+                 'role': self.user.role
+             }
+             return data # Return immediately for super admins
+
         # 1. Tenant Locking Security
         # Ensure user belongs to the school matching the current tenant
         request = self.context['request']
@@ -51,21 +64,19 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             tenant_id = request.tenant.domain
 
         user_school = self.user.school
-        print(f"[AUTH_DEBUG] Tenant ID: {tenant_id}, User School: {user_school}")
+        logger.info(f"[AUTH_DEBUG] Tenant ID: {tenant_id}, User School: {user_school}")
         
-        if self.user.role != 'SUPER_ADMIN':
-            if not tenant_id:
-                # If no tenant context, we can't validate (unless it's a super admin, handled above)
-                pass 
-            
-            if not user_school:
-                # User has no school assigned - might be a system user or error
-                # For now, if they are not super admin, they should have a school
-                raise AuthenticationFailed('User is not assigned to any school.')
-            
-            if tenant_id and user_school.domain != tenant_id and user_school.custom_domain != tenant_id:
-                logger.warning(f"[AUTH_BLOCK] User {self.user.email} (School: {user_school.domain}) tried accessing {tenant_id}")
-                raise AuthenticationFailed('You do not have permission to login to this school portal.')
+        if not tenant_id:
+             # If no tenant context is provided, users MUST have a school (unless super admin, handled above)
+             pass
+        
+        if not user_school:
+            # User has no school assigned - might be a system user or error
+            raise AuthenticationFailed('User is not assigned to any school.')
+        
+        if tenant_id and user_school.domain != tenant_id and user_school.custom_domain != tenant_id:
+            logger.warning(f"[AUTH_BLOCK] User {self.user.email} (School: {user_school.domain}) tried accessing {tenant_id}")
+            raise AuthenticationFailed('You do not have permission to login to this school portal.')
 
         # 2. Check school subscription status
         if self.user.school:
@@ -88,5 +99,5 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             'role': self.user.role
         }
         
-        print("[AUTH_DEBUG] Login Successful")
+        logger.info("[AUTH_DEBUG] Login Successful")
         return data

@@ -26,8 +26,8 @@ const SiteFooter = ({ settings }: SiteFooterProps) => {
                                     <img src={settings.logo_media} alt="Logo" className="h-14 w-14 object-contain" />
                                 </div>
                             ) : (
-                                <div className="h-14 w-14 bg-gradient-to-br from-brand-500 to-accent-500 rounded-xl flex items-center justify-center text-white font-bold text-xl">
-                                    <GraduationCap size={28} />
+                                <div className="h-14 w-14 bg-white rounded-xl flex items-center justify-center p-1">
+                                    <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
                                 </div>
                             )}
                             <div>

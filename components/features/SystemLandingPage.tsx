@@ -98,8 +98,8 @@ export const SystemLandingPage = () => {
                             whileHover={{ scale: 1.05 }}
                             transition={{ type: "spring", stiffness: 400, damping: 17 }}
                         >
-                            <div className="w-12 h-12 bg-gradient-to-br from-brand-600 to-purple-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-brand-600/30">
-                                <School size={26} />
+                            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center p-1 shadow-lg shadow-brand-600/10">
+                                <img src="/logo.png" alt="SchoolSync Logo" className="w-full h-full object-contain" />
                             </div>
                             <div>
                                 <span className="text-2xl font-black text-gray-900 tracking-tight">SchoolSync</span>
@@ -198,11 +198,17 @@ export const SystemLandingPage = () => {
 
             {/* Hero Section */}
             <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
-                {/* Background Elements */}
-                <div className="absolute inset-0 z-0">
-                    <div className="absolute top-20 right-10 w-96 h-96 bg-gradient-to-br from-brand-100 to-purple-100 rounded-full blur-3xl opacity-60"></div>
-                    <div className="absolute bottom-20 left-10 w-80 h-80 bg-gradient-to-br from-blue-100 to-brand-100 rounded-full blur-3xl opacity-50"></div>
-                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-radial from-transparent via-brand-50/20 to-transparent rounded-full"></div>
+                {/* Background Image with Cinematic Overlay */}
+                <div className="absolute inset-0 z-0 scale-105">
+                    <motion.div
+                        initial={{ scale: 1.1 }}
+                        animate={{ scale: 1 }}
+                        transition={{ duration: 10, repeat: Infinity, repeatType: "reverse", ease: "linear" }}
+                        className="absolute inset-0 bg-cover bg-center"
+                        style={{ backgroundImage: "url('/hero-bg.png')" }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-b from-brand-950/80 via-brand-950/60 to-brand-950/90" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-brand-950/40 via-transparent to-brand-950/40" />
                 </div>
 
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -225,24 +231,24 @@ export const SystemLandingPage = () => {
                             </motion.div>
 
                             <motion.h1
-                                initial={{ opacity: 0, y: 20 }}
+                                initial={{ opacity: 0, y: 30 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.4, duration: 0.8 }}
-                                className="text-5xl md:text-6xl lg:text-7xl font-black text-gray-900 tracking-tight mb-6 leading-[1.1]"
+                                transition={{ delay: 0.4, duration: 1 }}
+                                className="text-5xl md:text-7xl lg:text-8xl font-black text-white tracking-tight mb-8 leading-[1.05]"
                             >
-                                Streamline Your School
-                                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-purple-600">
-                                    Management Today
+                                The Operating System
+                                <span className="block text-accent-500 drop-shadow-[0_0_15px_rgba(212,175,55,0.3)]">
+                                    for Modern Schools
                                 </span>
                             </motion.h1>
 
                             <motion.p
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.6, duration: 0.6 }}
-                                className="text-xl text-gray-600 mb-8 max-w-2xl leading-relaxed"
+                                transition={{ delay: 0.6, duration: 0.8 }}
+                                className="text-xl md:text-2xl text-brand-100/90 mb-12 max-w-2xl leading-relaxed font-medium"
                             >
-                                Transform your educational institution with SchoolSync - The operating system for modern schools. From admissions to alumni management, we've got everything covered.
+                                Syncing every connection. Empower your institution with a unified platform for academics, finance, and community. Experience the future of management.
                             </motion.p>
 
                             {/* Stats */}

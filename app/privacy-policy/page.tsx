@@ -54,7 +54,7 @@ const PrivacyPolicy = () => {
 
                     <div className="prose prose-brand max-w-none text-gray-600">
                         <p className="lead text-xl text-gray-700 mb-8">
-                            At Fruitful Vine Heritage Schools, we are committed to protecting the privacy and security of our students, parents, and staff. This Privacy Policy outlines how we collect, use, and safeguard your personal information.
+                            At SchoolSync Heritage Schools, we are committed to protecting the privacy and security of our students, parents, and staff. This Privacy Policy outlines how we collect, use, and safeguard your personal information.
                         </p>
 
                         <h3 className="text-brand-800 font-bold mt-8 mb-4 flex items-center gap-2">

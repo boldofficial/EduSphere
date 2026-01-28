@@ -140,7 +140,7 @@ export async function POST(request: NextRequest) {
                         <!-- Header -->
                         <div style="background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%); padding: 30px; text-align: center;">
                             <h1 style="color: #ffffff; margin: 0; font-size: 24px;">New Contact Form Submission</h1>
-                            <p style="color: #b8d4e8; margin: 10px 0 0; font-size: 14px;">Fruitful Vine Heritage Schools</p>
+                            <p style="color: #b8d4e8; margin: 10px 0 0; font-size: 14px;">SchoolSync Heritage Schools</p>
                         </div>
                         
                         <!-- Content -->

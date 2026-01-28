@@ -77,16 +77,10 @@ export const LoginView = () => {
 
     const roles = [
         {
-            id: 'super_admin' as UserRole,
-            name: 'Super Admin',
-            icon: ShieldCheck,
-            color: 'bg-indigo-600',
-            desc: 'Global System Control'
-        },
-        {
             id: 'admin' as UserRole,
             name: 'Admin',
             icon: ShieldCheck,
+            themeColor: '#3B82F6',
             color: 'bg-blue-600',
             desc: 'System Administration'
         },
@@ -94,20 +88,23 @@ export const LoginView = () => {
             id: 'teacher' as UserRole,
             name: 'Teacher',
             icon: Users,
-            color: 'bg-green-600',
+            themeColor: '#10B981',
+            color: 'bg-emerald-600',
             desc: 'Class & Grade Management'
         },
         {
             id: 'student' as UserRole,
             name: 'Student / Parent',
             icon: GraduationCap,
-            color: 'bg-purple-600',
+            themeColor: '#8B5CF6',
+            color: 'bg-violet-600',
             desc: 'Academic Portal'
         },
         {
             id: 'staff' as UserRole,
             name: 'Non Teaching',
             icon: Briefcase,
+            themeColor: '#F59E0B',
             color: 'bg-amber-600',
             desc: 'Operations Dashboard'
         },
@@ -167,7 +164,7 @@ export const LoginView = () => {
             // Username logic:
             // For students, we append the @tenant suffix to match the backend unique username format
             // while allowing students to type just their ID (e.g., '001')
-            let usernamePayload = email;
+            let usernamePayload = email.trim().toLowerCase();
             if (selectedRole === 'student' && tenantSlug) {
                 usernamePayload = `${email}@${tenantSlug}`;
             }
@@ -224,7 +221,7 @@ export const LoginView = () => {
 
             if (isSystemRoot) {
                 // If on root domain, we rely on the searched school or can't login as student directly without context
-                // But usually students are at school.edusphere.ng
+                // But usually students are at school.schoolsync.ng
                 if (!searchSlug) {
                     setLoginError('Please find your school first.');
                     setIsLoading(false);
@@ -351,7 +348,7 @@ export const LoginView = () => {
                         <>
                             <div className="inline-block p-4 bg-white rounded-3xl shadow-2xl mb-4 border-4 border-white">
                                 <img
-                                    src={settings.logo_media || '/fruitful_logo_main.png'}
+                                    src="/logo.png"
                                     alt="Logo"
                                     className="h-24 md:h-32 object-contain"
                                 />
@@ -372,8 +369,8 @@ export const LoginView = () => {
                                     }
                                 }}
                             >
-                                <div className="w-24 h-24 md:w-32 md:h-32 bg-brand-600 rounded-2xl flex items-center justify-center text-white">
-                                    <Globe size={48} />
+                                <div className="w-24 h-24 md:w-32 md:h-32 bg-white rounded-3xl p-4 shadow-2xl flex items-center justify-center mb-8">
+                                    <img src="/logo.png" alt="SchoolSync Logo" className="w-full h-full object-contain" />
                                 </div>
                             </div>
                             <h1 className="text-3xl md:text-6xl font-black text-white tracking-tight drop-shadow-md">
@@ -391,21 +388,47 @@ export const LoginView = () => {
 
                 {/* Role Selection Cards */}
                 {!selectedRole && !isSystemRoot && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 px-4 md:px-0 w-full">
-                        {roles.map((role) => (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 px-4 md:px-0 w-full max-w-7xl">
+                        {roles.map((role, idx) => (
                             <button
                                 key={role.id}
                                 onClick={() => setSelectedRole(role.id)}
-                                className="group relative bg-black/40 backdrop-blur-md rounded-3xl p-6 border transition-all duration-300 text-left hover:-translate-y-2 border-white/10 hover:bg-black/60 hover:border-white/30"
+                                className="group relative bg-white/5 backdrop-blur-xl rounded-[2.5rem] p-8 border transition-all duration-500 text-left hover:-translate-y-3 border-white/10 hover:bg-white/10 hover:border-accent-500/50 shadow-2xl overflow-hidden flex flex-col h-full"
+                                style={{ animationDelay: `${idx * 100}ms` }}
                             >
-                                <div className={`${role.color} w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center text-white mb-4 md:mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                                    <role.icon size={24} className="md:w-7 md:h-7" />
+                                {/* Decorative Glow */}
+                                <div
+                                    className="absolute -top-24 -right-24 w-48 h-48 rounded-full opacity-0 group-hover:opacity-20 transition-opacity duration-700 blur-[80px]"
+                                    style={{ backgroundColor: role.themeColor }}
+                                />
+
+                                <div className="relative z-10">
+                                    <div
+                                        className="w-16 h-16 rounded-2xl flex items-center justify-center mb-8 shadow-inner transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3"
+                                        style={{ backgroundColor: `${role.themeColor}20`, border: `1px solid ${role.themeColor}40` }}
+                                    >
+                                        <role.icon size={32} style={{ color: role.themeColor }} />
+                                    </div>
+
+                                    <h3 className="text-2xl font-black text-white mb-3 tracking-tight group-hover:text-accent-400 transition-colors">
+                                        {role.name}
+                                    </h3>
+                                    <p className="text-gray-400 text-sm font-medium mb-10 leading-relaxed min-h-[3rem]">
+                                        {role.desc}
+                                    </p>
                                 </div>
-                                <h3 className="text-lg md:text-xl font-bold text-white mb-2">{role.name}</h3>
-                                <p className="text-xs md:text-sm text-gray-200 mb-6 font-medium leading-relaxed">{role.desc}</p>
-                                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-400 group-hover:text-white transition-colors">
-                                    Access Portal <ArrowRight size={14} />
+
+                                <div className="mt-auto relative z-10 flex items-center justify-between">
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 group-hover:text-white transition-colors">
+                                        Access Portal
+                                    </span>
+                                    <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white group-hover:bg-accent-500 group-hover:text-brand-950 transition-all duration-300">
+                                        <ArrowRight size={20} className="transition-transform group-hover:translate-x-1" />
+                                    </div>
                                 </div>
+
+                                {/* Bottom Border Highlight */}
+                                <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-accent-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                             </button>
                         ))}
                     </div>

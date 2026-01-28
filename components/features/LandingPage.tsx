@@ -183,7 +183,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ settings, stats }) => 
                         {settings.logo_media ? (
                             <img src={settings.logo_media} alt="School Logo" className="w-full h-full object-contain" />
                         ) : (
-                            <GraduationCap size={48} className="text-brand-600" />
+                            <img src="/logo.png" alt="SchoolSync Logo" className="w-full h-full object-contain" />
                         )}
                     </div>
 

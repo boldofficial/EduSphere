@@ -169,10 +169,15 @@ export default function SuperAdminDashboard() {
     return (
         <div className="min-h-screen bg-gray-50 font-primary flex">
             {/* Sidebar */}
-            <aside className="w-64 bg-slate-900 text-white fixed h-full z-10 flex flex-col">
-                <div className="p-6 border-b border-slate-700">
-                    <h1 className="text-xl font-black tracking-tight">EduSphere<span className="text-brand-500">.ng</span></h1>
-                    <p className="text-xs text-slate-400 mt-1 uppercase tracking-widest font-bold">Super Admin</p>
+            <aside className="w-64 bg-brand-950 text-white fixed h-full z-10 flex flex-col">
+                <div className="p-6 border-b border-slate-700/50 flex items-center gap-3">
+                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center p-1 shadow-lg">
+                        <img src="/logo.png" alt="SchoolSync Logo" className="w-full h-full object-contain" />
+                    </div>
+                    <div>
+                        <h1 className="text-xl font-black tracking-tight text-white">SchoolSync</h1>
+                        <p className="text-[10px] text-accent-500 uppercase tracking-[0.2em] font-black">Super Admin</p>
+                    </div>
                 </div>
 
                 <nav className="flex-1 p-4 space-y-2">
@@ -204,8 +209,8 @@ export default function SuperAdminDashboard() {
                     <SidebarItem icon={Settings} label="Platform Settings" active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} />
                 </nav>
 
-                <div className="p-4 border-t border-slate-700">
-                    <button onClick={logout} className="flex items-center gap-3 px-4 py-3 w-full text-slate-300 hover:text-white hover:bg-slate-800 rounded-xl transition-all">
+                <div className="p-4 border-t border-white/10">
+                    <button onClick={logout} className="flex items-center gap-3 px-4 py-3 w-full text-slate-300 hover:text-white hover:bg-white/5 rounded-xl transition-all">
                         <LogOut size={20} />
                         <span className="font-medium">Logout</span>
                     </button>
@@ -228,7 +233,7 @@ export default function SuperAdminDashboard() {
                                 setIsSearchOpen(true);
                             }}
                             onFocus={() => setIsSearchOpen(true)}
-                            className="w-full bg-gray-50 border-2 border-transparent focus:border-brand-500 focus:bg-white rounded-2xl py-3 pl-12 pr-4 outline-none transition-all font-medium text-sm"
+                            className="w-full bg-gray-50 border-2 border-transparent focus:border-brand-600 focus:bg-white rounded-2xl py-3 pl-12 pr-4 outline-none transition-all font-medium text-sm"
                         />
 
                         {isSearchOpen && searchQuery.length >= 2 && (
@@ -364,7 +369,7 @@ function SidebarItem({ icon: Icon, label, active, onClick }: any) {
     return (
         <button
             onClick={onClick}
-            className={`flex items-center gap-3 px-4 py-3 w-full rounded-xl transition-all ${active ? 'bg-brand-600 text-white shadow-lg shadow-brand-900/50 font-bold' : 'text-slate-300 hover:text-white hover:bg-slate-800'
+            className={`flex items-center gap-3 px-4 py-3 w-full rounded-xl transition-all ${active ? 'bg-brand-600 text-white shadow-lg shadow-brand-900/50 font-bold' : 'text-slate-300 hover:text-white hover:bg-white/5'
                 }`}
         >
             <Icon size={20} />
@@ -1370,7 +1375,7 @@ function PlatformSettingsTab({ settings }: { settings: any }) {
                                 value={editedSettings.account_name || ''}
                                 onChange={(e) => setEditedSettings({ ...editedSettings, account_name: e.target.value })}
                                 className="w-full bg-gray-50 border-0 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-brand-600 transition-all outline-none"
-                                placeholder="EduSphere Global"
+                                placeholder="SchoolSync Global"
                             />
                         </div>
                     </div>
@@ -1439,7 +1444,7 @@ function SchoolEditModal({ school, onClose, onSave }: { school: any; onClose: ()
                                     onChange={e => setFormData({ ...formData, domain: e.target.value })}
                                     className="w-full bg-gray-50 border-0 rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-brand-600 transition-all outline-none pr-32"
                                 />
-                                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-gray-300 uppercase">.edusphere.ng</div>
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-gray-300 uppercase">.SchoolSync.ng</div>
                             </div>
                         </div>
                         <div className="space-y-2">
