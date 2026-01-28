@@ -143,11 +143,43 @@ export const LoginView = () => {
         setIsLoading(true);
 
         try {
+            // Determine tenant slug
+            let tenantSlug = '';
+
+            if (isSystemRoot) {
+                if (!searchSlug && selectedRole !== 'super_admin') {
+                    // If searching for school
+                    setLoginError('Please find your school first.');
+                    setIsLoading(false);
+                    return;
+                }
+                tenantSlug = searchSlug;
+            } else {
+                const host = window.location.host;
+                const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'localhost:3000';
+                tenantSlug = host.replace(`.${rootDomain}`, '');
+            }
+
+            // For Super Admin, we might not have a tenant, OR we might be logging into a specific tenant as super admin.
+            // But usually Super Admin accounts are global or attached to 'preschool' (default).
+            // Let's pass the tenantSlug if we have it.
+
+            // Username logic:
+            // For students, we append the @tenant suffix to match the backend unique username format
+            // while allowing students to type just their ID (e.g., '001')
+            let usernamePayload = email;
+            if (selectedRole === 'student' && tenantSlug) {
+                usernamePayload = `${email}@${tenantSlug}`;
+            }
+
             const res = await fetch('/api/auth/login', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-tenant-id': tenantSlug
+                },
                 body: JSON.stringify({
-                    username: email.split('@')[0], // Assuming username is part of email for now, or just use 'admin'
+                    username: usernamePayload,
                     password
                 }),
             });
@@ -174,7 +206,9 @@ export const LoginView = () => {
                 router.push('/dashboard');
             }
         } catch (err: any) {
+            console.error(err);
             setLoginError(err.message || 'Invalid credentials');
+        } finally {
             setIsLoading(false);
         }
     };
@@ -185,23 +219,61 @@ export const LoginView = () => {
         setIsLoading(true);
 
         try {
-            const student = students.find((s: Student) => s.student_no?.toLowerCase() === studentNo.toLowerCase().trim());
+            // Determine tenant slug
+            let tenantSlug = '';
 
-            if (!student) {
-                setLoginError('Student not found. Please check your Student Number.');
-                setIsLoading(false);
-                return;
+            if (isSystemRoot) {
+                // If on root domain, we rely on the searched school or can't login as student directly without context
+                // But usually students are at school.edusphere.ng
+                if (!searchSlug) {
+                    setLoginError('Please find your school first.');
+                    setIsLoading(false);
+                    return;
+                }
+                tenantSlug = searchSlug;
+            } else {
+                // Extract from hostname
+                const host = window.location.host;
+                const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'localhost:3000';
+                tenantSlug = host.replace(`.${rootDomain}`, '');
             }
 
-            // In refactor phase, we just log in via the store
-            login('student', student);
+            // Construct scoped username matching backend format: ST001@vine-heritage
+            const scopedUsername = `${studentNo.trim()}@${tenantSlug}`;
+
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-tenant-id': tenantSlug // Pass explicit tenant header
+                },
+                body: JSON.stringify({
+                    username: scopedUsername,
+                    password: password
+                }),
+            });
+
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.detail || 'Invalid Student Number or Password');
+            }
+
+            const data = await res.json();
+
+            // Store student session
+            login('student', {
+                id: data.user.id,
+                name: data.user.username, // or fetch real name
+                email: data.user.email,
+                role: 'student'
+            });
 
             // Redirect to dashboard
             router.push('/dashboard');
-            setIsLoading(false);
-        } catch (err) {
+        } catch (err: any) {
             console.error('Student login error:', err);
-            setLoginError('An unexpected error occurred. Please try again.');
+            setLoginError(err.message || 'Login failed. Please check your credentials.');
+        } finally {
             setIsLoading(false);
         }
     };

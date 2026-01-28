@@ -67,6 +67,24 @@ class TeacherViewSet(TenantViewSet):
     serializer_class = TeacherSerializer
     pagination_class = StandardPagination
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        # Filter based on endpoint
+        if 'staff' in self.request.path:
+            return qs.filter(staff_type='NON_ACADEMIC')
+        return qs.filter(staff_type='ACADEMIC')
+
+    def perform_create(self, serializer):
+        # Determine staff_type from path
+        staff_type = 'NON_ACADEMIC' if 'staff' in self.request.path else 'ACADEMIC'
+        
+        user_school = getattr(self.request.user, 'school', None)
+        tenant_school = getattr(self.request, 'tenant', None)
+        school = user_school or tenant_school
+
+        serializer.save(school=school, staff_type=staff_type)
+        self.invalidate_cache()
+
 class ClassViewSet(TenantViewSet):
     queryset = Class.objects.select_related('class_teacher', 'school').prefetch_related('subjects').all()
     serializer_class = ClassSerializer

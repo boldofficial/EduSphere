@@ -64,14 +64,14 @@ export const StaffView: React.FC<StaffViewProps> = ({ staff, onAdd, onUpdate, on
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         setIsSaving(true);
-        
+
         const resetForm = () => {
             setShowModal(false);
             setEditingId(null);
             setFormData({ name: '', role: '', tasks: '', email: '', phone: '', address: '', assigned_modules: [], passport_url: null });
             setIsSaving(false);
         };
-        
+
         if (editingId) {
             onUpdate(
                 { id: editingId, updates: { ...formData, updated_at: Date.now() } },
@@ -92,7 +92,7 @@ export const StaffView: React.FC<StaffViewProps> = ({ staff, onAdd, onUpdate, on
                 ...formData,
                 id: '', // Empty ID will be removed by data-service, letting DB generate it
             } as Types.Staff;
-            
+
             onAdd(staffData, {
                 onSuccess: () => {
                     addToast('Staff member added successfully', 'success');
@@ -143,7 +143,7 @@ export const StaffView: React.FC<StaffViewProps> = ({ staff, onAdd, onUpdate, on
 
         setIsCreatingLogin(true);
         try {
-            const response = await fetch('/api/auth/create-staff-account', {
+            const response = await fetch('/api/proxy/users/account-setup/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -200,15 +200,15 @@ export const StaffView: React.FC<StaffViewProps> = ({ staff, onAdd, onUpdate, on
                                 </td>
                                 <td className="px-4 py-3 text-xs">{s.phone}</td>
                                 <td className="px-4 py-3 text-right flex items-center justify-end gap-2">
-                                    <button 
-                                        onClick={() => handleEdit(s)} 
+                                    <button
+                                        onClick={() => handleEdit(s)}
                                         className="text-gray-400 hover:text-brand-600"
                                         title="Edit Staff"
                                     >
                                         <Edit className="h-4 w-4" />
                                     </button>
-                                    <button 
-                                        onClick={() => handleCreateLoginAccount(s)} 
+                                    <button
+                                        onClick={() => handleCreateLoginAccount(s)}
                                         className="text-gray-400 hover:text-green-600"
                                         title="Create Login Account"
                                     >
@@ -311,8 +311,8 @@ export const StaffView: React.FC<StaffViewProps> = ({ staff, onAdd, onUpdate, on
                         <p className="text-sm text-red-500">Password must be at least 8 characters</p>
                     )}
 
-                    <Button 
-                        type="submit" 
+                    <Button
+                        type="submit"
                         className="w-full bg-green-600 hover:bg-green-700"
                         disabled={isCreatingLogin || loginPassword.length < 8}
                     >

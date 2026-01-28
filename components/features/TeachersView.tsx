@@ -58,7 +58,7 @@ export const TeachersView: React.FC<TeachersViewProps> = ({ teachers, onAdd, onU
 
         setIsCreatingLogin(true);
         try {
-            const response = await fetch('/api/auth/create-staff-account', {
+            const response = await fetch('/api/proxy/users/account-setup/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

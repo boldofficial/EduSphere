@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied, NotFound, ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
+from academic.models import Teacher
 import logging
 from .models import User
 
@@ -78,4 +79,78 @@ class ImpersonateUserView(APIView):
             'access': str(refresh.access_token),
             'refresh': str(refresh),
             'user': get_user_me_data(target_user)
+        })
+
+class CreateAccountView(APIView):
+    """
+    Manually create or update a user account for a Teacher or Staff profile.
+    This links a User record to an existing Teacher profile.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        if request.user.role not in ['SUPER_ADMIN', 'SCHOOL_ADMIN']:
+            logger.warning(f"Unauthorized account setup attempt by {request.user.email} (Role: {request.user.role})")
+            raise PermissionDenied("Only admins can setup accounts.")
+
+        profile_id = request.data.get('profileId')
+        profile_type = request.data.get('profileType') # 'teacher' or 'staff'
+        email = request.data.get('email')
+        password = request.data.get('password')
+        name = request.data.get('name')
+
+        logger.info(f"[AUTH_DEBUG] CreateAccountView - profileId: {profile_id}, type: {profile_type}, email: {email}")
+
+        if not all([profile_id, profile_type, email, password]):
+            logger.error(f"[AUTH_DEBUG] Missing fields in account setup: {request.data}")
+            raise ValidationError({"detail": "Missing required fields: profileId, profileType, email, password"})
+
+        User = get_user_model()
+        
+        # Determine the user role based on profile type
+        role = 'TEACHER' if profile_type == 'teacher' else 'STAFF'
+        
+        # Find the profile record
+        try:
+            # Note: The 'Teacher' model in this codebase handles both academic and non-academic staff
+            profile = Teacher.objects.get(pk=profile_id)
+            logger.info(f"[AUTH_DEBUG] Found profile: {profile.name} (ID: {profile_id}) in school: {profile.school}")
+            
+            # SCHOOL ISOLATION CHECK
+            # If not superadmin, ensure the admin belongs to the same school as the profile
+            if request.user.role == 'SCHOOL_ADMIN' and profile.school != request.user.school:
+                logger.warning(f"Admin {request.user.email} attempted to setup account for profile in different school: {profile.school}")
+                raise PermissionDenied("You can only setup accounts for staff in your own school.")
+                
+        except Teacher.DoesNotExist:
+            logger.error(f"[AUTH_DEBUG] Teacher profile NOT FOUND for ID: {profile_id}")
+            raise NotFound({"detail": f"{profile_type.capitalize()} profile not found with ID {profile_id}"})
+
+        # Create or update the User record
+        user, created = User.objects.get_or_create(
+            username=email,
+            defaults={
+                'email': email,
+                'role': role,
+                'school': profile.school,
+                'is_active': True
+            }
+        )
+
+        user.set_password(password)
+        # Explicitly update role if it changed or user existed
+        user.role = role 
+        user.save()
+
+        # Link the user to the profile if not already linked
+        profile.user = user
+        profile.save()
+
+        logger.info(f"Account setup complete for {email} (Role: {role}, Type: {profile.staff_type}, Created: {created}) by {request.user.email}")
+
+        return Response({
+            "message": "Account created successfully",
+            "user_id": user.id,
+            "username": user.username,
+            "created": created
         })

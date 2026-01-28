@@ -65,7 +65,7 @@ class TeacherSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Teacher
-        fields = '__all__'
+        fields = ['id', 'user', 'school', 'name', 'address', 'phone', 'email', 'passport_url', 'staff_type', 'created_at', 'updated_at']
         read_only_fields = ('school',)
 
     def to_representation(self, instance):
@@ -230,12 +230,14 @@ class StudentSerializer(serializers.ModelSerializer):
                 
         instance = super().create(validated_data)
         
-        # Create User for Portal Access if password provided
         if password and instance.student_no:
-            username = instance.student_no
-            email = instance.parent_email or f"{username}@school.com"
+            # Generate scoped username to prevent collisions across tenants
+            # Format: ST001@vine-heritage
+            school_suffix = instance.school.domain if instance.school and instance.school.domain else 'school'
+            username = f"{instance.student_no}@{school_suffix}"
+            email = instance.parent_email or f"{username}.com" # distinct from real emails
             
-            # Check if user exists
+            # Check if user exists (should not exist with this scoped username)
             if not User.objects.filter(username=username).exists():
                 user = User.objects.create(
                     username=username,
@@ -245,6 +247,13 @@ class StudentSerializer(serializers.ModelSerializer):
                     school=instance.school,
                     is_active=True
                 )
+                instance.user = user
+                instance.save()
+            else:
+                # If user exists (e.g. re-enrolling), just link it
+                user = User.objects.get(username=username)
+                user.password = make_password(password) # Update password
+                user.save()
                 instance.user = user
                 instance.save()
                 
@@ -272,8 +281,10 @@ class StudentSerializer(serializers.ModelSerializer):
                 instance.user.save()
             elif password and not instance.user:
                  # Create user if it doesn't exist during update
-                 username = instance.student_no
-                 email = instance.parent_email or f"{username}@school.com"
+                 school_suffix = instance.school.domain if instance.school and instance.school.domain else 'school'
+                 username = f"{instance.student_no}@{school_suffix}"
+                 email = instance.parent_email or f"{username}.com"
+                 
                  if not User.objects.filter(username=username).exists():
                     user = User.objects.create(
                         username=username,
@@ -283,6 +294,13 @@ class StudentSerializer(serializers.ModelSerializer):
                         school=instance.school,
                         is_active=True
                     )
+                    instance.user = user
+                    instance.save()
+                 else:
+                    # Link existing
+                    user = User.objects.get(username=username)
+                    user.password = make_password(password)
+                    user.save()
                     instance.user = user
                     instance.save()
                     

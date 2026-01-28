@@ -143,6 +143,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Increase max upload size for base64 images
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760 # 10MB
 
+# Enforce PostgreSQL in Production
+if not DEBUG and DATABASES['default']['ENGINE'] == 'django.db.backends.sqlite3':
+    from django.core.exceptions import ImproperlyConfigured
+    # raise ImproperlyConfigured("SQLite is not supported in production! Set DATABASE_URL to a PostgreSQL instance.")
+    # Temporarily warned instead of raised to allow staged rollout
+    print("WARNING: SQLite is NOT recommended for production. Set DATABASE_URL.")
+
 
 # =============================================================================
 # PASSWORD VALIDATION
@@ -250,7 +257,7 @@ SIMPLE_JWT = {
         minutes=int(os.environ.get('JWT_ACCESS_TOKEN_LIFETIME_MINUTES', 60))
     ),
     'REFRESH_TOKEN_LIFETIME': timedelta(
-        days=int(os.environ.get('JWT_REFRESH_TOKEN_LIFETIME_DAYS', 7))
+        days=int(os.environ.get('JWT_REFRESH_TOKEN_LIFETIME_DAYS', 1)) # Default to 1 day to match cookie
     ),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,

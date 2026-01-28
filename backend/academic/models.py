@@ -18,15 +18,20 @@ class Subject(TenantModel):
         return f"{self.name} ({self.school.name})"
 
 class Teacher(TenantModel):
+    STAFF_TYPES = [
+        ('ACADEMIC', 'Academic Staff'),
+        ('NON_ACADEMIC', 'Non-Academic Staff'),
+    ]
     user = models.OneToOneField(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='teacher_profile')
     name = models.CharField(max_length=255)
     address = models.TextField(blank=True)
     phone = models.CharField(max_length=50, blank=True)
     email = models.EmailField(blank=True)
     passport_url = models.CharField(max_length=512, blank=True, null=True)
+    staff_type = models.CharField(max_length=20, choices=STAFF_TYPES, default='ACADEMIC')
 
     def __str__(self):
-        return f"{self.name} ({self.school.name})"
+        return f"{self.name} ({self.school.name}) - {self.staff_type}"
 
 class Class(TenantModel):
     name = models.CharField(max_length=100)

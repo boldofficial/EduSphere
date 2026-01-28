@@ -35,6 +35,8 @@ export async function POST(request: NextRequest) {
         });
 
         console.log('Django token response status:', response.status);
+        const responseClone = response.clone();
+        console.log('Django response body:', await responseClone.text());
 
         if (!response.ok) {
             const errorText = await response.text();
@@ -52,6 +54,7 @@ export async function POST(request: NextRequest) {
 
         // Set cookies
         const cookieStore = await cookies();
+        console.log(`[AUTH_LOG] Setting cookies for tenant: ${tenantId}`);
 
         // Access Token
         cookieStore.set('access_token', access, {
@@ -61,6 +64,7 @@ export async function POST(request: NextRequest) {
             path: '/',
             maxAge: 60 * 60, // 1 hour
         });
+        console.log(`[AUTH_LOG] access_token set (length: ${access.length})`);
 
         // Refresh Token
         cookieStore.set('refresh_token', refresh, {

@@ -19,6 +19,8 @@ export async function middleware(request: NextRequest) {
         tenantId = hostname;
     }
 
+    console.log(`[MIDDLEWARE_DEBUG] Host: ${hostname}, Root: ${rootDomain}, isSubdomain: ${isSubdomain}, isRoot: ${isRoot}, tenantId: ${tenantId}`);
+
     const accessToken = request.cookies.get('access_token')?.value;
     const { pathname } = request.nextUrl;
 

@@ -57,7 +57,10 @@ async function handleProxy(request: NextRequest, params: Promise<{ path: string[
 
     try {
         const bodyText = request.method !== 'GET' && request.method !== 'HEAD' ? await request.text() : undefined;
-        console.log(`[PROXY] ${request.method} ${fullUrl} (Body length: ${bodyText?.length || 0})`);
+        console.log(`[PROXY_DEBUG] ${request.method} ${fullUrl}`);
+        console.log(`[PROXY_DEBUG] Access Token: ${accessToken ? 'PRESENT' : 'MISSING'}`);
+        console.log(`[PROXY_DEBUG] Tenant ID: ${tenantId}`);
+        console.log(`[PROXY_DEBUG] Forwarded Headers:`, JSON.stringify(headers));
 
         const response = await fetch(fullUrl, {
             method: request.method,

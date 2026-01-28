@@ -130,6 +130,7 @@ export interface Teacher extends Entity {
   email: string;
   phone: string;
   passport_url?: string | null; // Base64 image or URL
+  staff_type: 'ACADEMIC' | 'NON_ACADEMIC';
 }
 
 export interface Staff extends Entity {
@@ -141,6 +142,7 @@ export interface Staff extends Entity {
   email: string;
   phone: string;
   address: string;
+  staff_type: 'ACADEMIC' | 'NON_ACADEMIC';
 }
 
 export interface Student extends Entity {

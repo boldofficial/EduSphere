@@ -22,3 +22,7 @@
 [2026-01-26 23:36:37.315289] Base64ImageField Saved Path: passports/7a91e361-01b7-4058-a3a3-846b51bf6466.png
 [2026-01-26 23:36:38.008864] Base64ImageField Saved Path: passports/f4e440e6-705d-4352-a231-ce318c6bfc97.png
 [2026-01-27 14:59:53.835411] Base64ImageField Saved Path: passports/0685a6d8-0ca3-40bd-8596-bfd15fbdd3c2.png
+[2026-01-28 09:18:35.383295] Uploaded passports/4766bcfe-357d-4c29-ad3b-3b3f44473658.jpeg. URL: https://4877d71ec0f87600eb10a51f01a09c28.r2.cloudflarestorage.com/multi-school/passports/4766bcfe-357d-4c29-ad3b-3b3f44473658.jpeg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=020f58b07342e52595da6136bad8d030%2F20260128%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260128T081835Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=c248ec64cb25e873584ff0aebef4f1006be80b7d9a0a62555fa1b3e4d166db74
+[2026-01-28 11:19:42.314378] Base64ImageField Saved Path: passports/57faee96-f256-4636-b85b-ce75cfa3a2d8.jpeg
+[2026-01-28 12:24:09.862371] Base64ImageField Saved Path: passports/3682ef0e-b377-4016-945f-f74e55dd735f.jpeg
+[2026-01-28 12:25:46.180321] Base64ImageField Saved Path: passports/e590733a-ad36-4898-94bd-3518398f1913.jpeg

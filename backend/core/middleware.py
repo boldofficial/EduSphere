@@ -1,12 +1,18 @@
+import logging
 from schools.models import School
 from django.utils.deprecation import MiddlewareMixin
 from django.http import JsonResponse
+
+logger = logging.getLogger(__name__)
 
 class TenantMiddleware(MiddlewareMixin):
     def process_request(self, request):
         # 1. Get tenant identifier from header (set by Next.js middleware)
         tenant_domain = request.headers.get('X-Tenant-ID')
         
+        # DEBUG LOGGING - Using logger
+        logger.info(f"[TENANT_DEBUG] Host: {request.get_host()}, X-Tenant-ID Header: {tenant_domain}")
+
         # 2. Fallback for Local Dev / No Header (e.g. direct API calls)
         from django.conf import settings
         root_domain = getattr(settings, 'ROOT_DOMAIN', 'localhost:3000')
@@ -27,10 +33,14 @@ class TenantMiddleware(MiddlewareMixin):
                 request.tenant = School.objects.filter(
                     Q(domain=tenant_domain) | Q(custom_domain=tenant_domain)
                 ).first()
+                if request.tenant:
+                    logger.info(f"[TENANT_DEBUG] Found Tenant: {request.tenant.domain}")
+                else:
+                    logger.warning(f"[TENANT_DEBUG] No tenant found for domain: {tenant_domain}")
                 # Also set back to tenant_domain for consistency in serializer checks
                 request.tenant_id = tenant_domain
             except Exception as e:
-                print(f"Tenant lookup error: {e}")
+                logger.error(f"Tenant lookup error: {e}")
 
         # If no tenant found and we're not on a known system domain, 
         # it might be a custom domain not in our DB yet or a malformed request
@@ -43,35 +53,48 @@ class AuditLogMiddleware:
     def __call__(self, request):
         response = self.get_response(request)
         
-        # Only log mutations (POST, PUT, PATCH, DELETE) for authenticated users
+        # Only log mutations (POST, PUT, PATCH, DELETE)
         if request.user.is_authenticated and request.method in ['POST', 'PUT', 'PATCH', 'DELETE']:
-            # Avoid logging login/token routes to prevent storing passwords or sensitive tokens in logs
+            # Skip standard mutation logging for auth routes to avoid double-logging or credential leaks
             if '/token/' in request.path or '/login/' in request.path:
-                return response
+                pass
+            else:
+                self._log_activity(request, response)
 
+        # Log FAILED login attempts (Brute force detection)
+        if hasattr(response, 'status_code') and response.status_code in [401, 403]:
+             if '/token/' in request.path or '/login/' in request.path:
+                 # Log without user info (since they failed) but capture IP/Path
+                 self._log_activity(request, response, force_anonymous=True)
+
+        return response
+
+    def _log_activity(self, request, response, force_anonymous=False):
+        try:
             from core.models import GlobalActivityLog
-            from django.contrib.contenttypes.models import ContentType
-            import json
+            
+            user = request.user if request.user.is_authenticated and not force_anonymous else None
+            school = getattr(request, 'tenant', None)
+            
+            # Don't log if we can't identify context and it's 200 OK (noise)
+            if not user and response.status_code < 400:
+                return
 
-            # Simple audit logging
-            try:
-                # We skip GET and only log successful or potentially impactful mutations
-                if 200 <= response.status_code < 400:
-                    GlobalActivityLog.objects.create(
-                        action='RECORDS_MUTATED',
-                        school=getattr(request, 'tenant', None),
-                        user=request.user,
-                        description=f"{request.method} request to {request.path}",
-                        metadata={
-                            'path': request.path,
-                            'method': request.method,
-                            'status': response.status_code,
-                            'ip': self.get_client_ip(request),
-                        }
-                    )
-            except Exception as e:
-                # Middleware should never crash the request
-                print(f"Audit log error: {e}")
+            GlobalActivityLog.objects.create(
+                action='RECORDS_MUTATED' if response.status_code < 400 else 'ACCESS_DENIED',
+                school=school,
+                user=user,
+                description=f"{request.method} request to {request.path}",
+                metadata={
+                    'path': request.path,
+                    'method': request.method,
+                    'status': response.status_code,
+                    'ip': self.get_client_ip(request),
+                    # explicitly NO body logging for auth
+                }
+            )
+        except Exception as e:
+            print(f"Audit log error: {e}")
 
         return response
 
