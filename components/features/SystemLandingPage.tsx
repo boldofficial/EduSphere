@@ -82,10 +82,7 @@ export const SystemLandingPage = () => {
 
             {/* Navigation */}
             <motion.nav
-                className={`fixed w-full z-40 transition-all duration-500 ${isScrolled
-                    ? 'bg-white/95 backdrop-blur-xl shadow-xl border-b border-gray-100/50'
-                    : 'bg-transparent'
-                    }`}
+                className="fixed w-full z-40 transition-all duration-500 bg-white shadow-xl border-b border-gray-100/50"
                 initial={{ y: -100 }}
                 animate={{ y: 0 }}
                 transition={{ duration: 0.6 }}
@@ -113,8 +110,7 @@ export const SystemLandingPage = () => {
                                 <Link
                                     key={item.id}
                                     href={item.href}
-                                    className={`text-sm font-medium transition-all duration-300 hover:text-brand-600 relative group ${isScrolled ? 'text-gray-700' : 'text-gray-800'
-                                        }`}
+                                    className="text-sm font-medium transition-all duration-300 hover:text-brand-600 relative group text-gray-700"
                                 >
                                     {item.label}
                                     <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-brand-600 to-purple-600 group-hover:w-full transition-all duration-300"></span>
@@ -126,10 +122,7 @@ export const SystemLandingPage = () => {
                         <div className="hidden md:flex items-center gap-4">
                             <Link
                                 href="/login"
-                                className={`px-6 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 ${isScrolled
-                                    ? 'text-gray-700 hover:text-brand-600 border border-gray-200 hover:border-brand-300'
-                                    : 'text-gray-800 hover:text-brand-600'
-                                    }`}
+                                className="px-6 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 text-gray-700 hover:text-brand-600 border border-gray-200 hover:border-brand-300"
                             >
                                 Sign In
                             </Link>
@@ -145,8 +138,7 @@ export const SystemLandingPage = () => {
                         {/* Mobile Menu Button */}
                         <button
                             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                            className={`lg:hidden p-2 rounded-xl transition-colors ${isScrolled ? 'text-gray-700 hover:bg-gray-100' : 'text-gray-800 hover:bg-white/10'
-                                }`}
+                            className="lg:hidden p-2 rounded-xl transition-colors text-gray-700 hover:bg-gray-100"
                             aria-label="Toggle mobile menu"
                         >
                             {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -220,23 +212,14 @@ export const SystemLandingPage = () => {
                             transition={{ duration: 0.8 }}
                             className="text-center lg:text-left"
                         >
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.2, duration: 0.6 }}
-                                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-50 border border-brand-100 text-brand-700 text-sm font-bold mb-8"
-                            >
-                                <Sparkles size={16} className="text-brand-600" />
-                                #1 School Management Platform in Nigeria
-                            </motion.div>
 
                             <motion.h1
                                 initial={{ opacity: 0, y: 30 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.4, duration: 1 }}
-                                className="text-5xl md:text-7xl lg:text-8xl font-black text-white tracking-tight mb-8 leading-[1.05]"
+                                className="text-3xl md:text-5xl lg:text-6xl font-black text-white tracking-tight mb-8 leading-[1.05]"
                             >
-                                The Operating System
+                                All-in-One School Management System
                                 <span className="block text-accent-500 drop-shadow-[0_0_15px_rgba(212,175,55,0.3)]">
                                     for Modern Schools
                                 </span>
@@ -248,29 +231,10 @@ export const SystemLandingPage = () => {
                                 transition={{ delay: 0.6, duration: 0.8 }}
                                 className="text-xl md:text-2xl text-brand-100/90 mb-12 max-w-2xl leading-relaxed font-medium"
                             >
-                                Syncing every connection. Empower your institution with a unified platform for academics, finance, and community. Experience the future of management.
+                                SchoolSync is the operating system that unifies academics, finance, communication, and administration on one powerful platform.
                             </motion.p>
 
-                            {/* Stats */}
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.8, duration: 0.6 }}
-                                className="grid grid-cols-3 gap-8 mb-10 max-w-md mx-auto lg:mx-0"
-                            >
-                                <div className="text-center">
-                                    <div className="text-3xl font-black text-brand-600">500+</div>
-                                    <div className="text-sm text-gray-500">Schools</div>
-                                </div>
-                                <div className="text-center">
-                                    <div className="text-3xl font-black text-brand-600">50K+</div>
-                                    <div className="text-sm text-gray-500">Students</div>
-                                </div>
-                                <div className="text-center">
-                                    <div className="text-3xl font-black text-brand-600">98%</div>
-                                    <div className="text-sm text-gray-500">Satisfaction</div>
-                                </div>
-                            </motion.div>
+
 
                             {/* CTA Buttons */}
                             <motion.div
