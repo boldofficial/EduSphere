@@ -857,7 +857,7 @@ function TenantsTab({ schools, onImpersonate, onEdit }: any) {
                             <tr key={school.id} className="hover:bg-gray-50 transition-colors">
                                 <td className="px-6 py-4 font-medium text-gray-900">{school.name}</td>
                                 <td className="px-6 py-4 text-gray-600 text-sm">
-                                    <a href={`http://${school.domain}.${ROOT_DOMAIN}`} target="_blank" className="hover:text-brand-600 underline decoration-dotted">
+                                    <a href={`https://${school.domain}.${ROOT_DOMAIN}`} target="_blank" className="hover:text-brand-600 underline decoration-dotted">
                                         {school.domain}.{ROOT_DOMAIN}
                                     </a>
                                 </td>
