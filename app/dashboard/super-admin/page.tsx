@@ -42,7 +42,7 @@ import {
 import apiClient from '@/lib/api-client';
 import * as Utils from '@/lib/utils';
 
-const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'localhost:3000';
+const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'myregistra.net';
 
 export default function SuperAdminDashboard() {
     const { currentUser, currentRole, logout } = useSchoolStore();

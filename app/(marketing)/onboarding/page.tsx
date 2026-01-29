@@ -55,7 +55,7 @@ export default function OnboardingPage() {
 
     const selectedPlanSlug = watch('plan_slug');
 
-    const [rootDomain, setRootDomain] = useState('localhost:3000');
+    const [rootDomain, setRootDomain] = useState('myregistra.net');
 
     const [platformSettings, setPlatformSettings] = useState<any>(null);
 

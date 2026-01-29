@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from 'next/server'
 
 export async function middleware(request: NextRequest) {
     const hostname = request.headers.get('host') || '';
-    const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'localhost:3000';
+    const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'myregistra.net';
 
     // 1. Identify if we are on a subdomain of the root domain
     // Example: vine.myregistra.net vs myregistra.net

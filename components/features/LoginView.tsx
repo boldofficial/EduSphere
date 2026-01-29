@@ -124,7 +124,7 @@ export const LoginView = () => {
             const data = await res.json();
 
             // Construct the login URL for the found school
-            const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'localhost:3000';
+            const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'myregistra.net';
             const targetDomain = data.custom_domain || `${data.slug}.${rootDomain}`;
 
             // Using window.location.href to handle cross-origin redirect if necessary
@@ -154,7 +154,7 @@ export const LoginView = () => {
                 tenantSlug = searchSlug;
             } else {
                 const host = window.location.host;
-                const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'localhost:3000';
+                const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'myregistra.net';
                 tenantSlug = host.replace(`.${rootDomain}`, '');
             }
 
@@ -232,7 +232,7 @@ export const LoginView = () => {
             } else {
                 // Extract from hostname
                 const host = window.location.host;
-                const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'localhost:3000';
+                const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'myregistra.net';
                 tenantSlug = host.replace(`.${rootDomain}`, '');
             }
 

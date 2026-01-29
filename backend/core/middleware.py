@@ -15,7 +15,7 @@ class TenantMiddleware(MiddlewareMixin):
 
         # 2. Fallback for Local Dev / No Header (e.g. direct API calls)
         from django.conf import settings
-        root_domain = getattr(settings, 'ROOT_DOMAIN', 'localhost:3000')
+        root_domain = getattr(settings, 'ROOT_DOMAIN', 'myregistra.net')
         root_host = root_domain.split(':')[0]
 
         if not tenant_domain:
