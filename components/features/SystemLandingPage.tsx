@@ -95,12 +95,8 @@ export const SystemLandingPage = () => {
                             whileHover={{ scale: 1.05 }}
                             transition={{ type: "spring", stiffness: 400, damping: 17 }}
                         >
-                            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center p-1 shadow-lg shadow-brand-600/10">
-                                <img src="/logo.png" alt="Registra Logo" className="w-full h-full object-contain" />
-                            </div>
-                            <div>
-                                <span className="text-2xl font-black text-gray-900 tracking-tight">Registra</span>
-                                <div className="text-xs font-semibold text-brand-600 -mt-1">myregistra.net</div>
+                            <div className="h-16">
+                                <img src="/full-logo.png" alt="Registra" className="h-full w-auto object-contain" />
                             </div>
                         </motion.div>
 
@@ -189,7 +185,7 @@ export const SystemLandingPage = () => {
             </motion.nav>
 
             {/* Hero Section */}
-            <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20 pb-12 lg:pt-32 lg:pb-20">
+            <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden pt-32 pb-12 lg:pt-40 lg:pb-20">
                 {/* Background Image with Cinematic Overlay */}
                 <div className="absolute inset-0 z-0 scale-105">
                     <motion.div
@@ -372,44 +368,44 @@ export const SystemLandingPage = () => {
                             {
                                 icon: Users,
                                 title: "Student Management",
-                                desc: "Complete student profiles, attendance tracking, disciplinary records, and parent communication in one place.",
+                                desc: "Holistic 360° profiles tracking academic progress, health records, behavioral history, and extracurricular achievements in one unified view.",
                                 color: "from-blue-500 to-blue-600",
                                 bg: "bg-blue-50"
                             },
                             {
                                 icon: CreditCard,
                                 title: "Smart Finance",
-                                desc: "Automated fee collection, payment tracking, receipt generation, and comprehensive financial reporting.",
+                                desc: "Automated fee reconciliation, intelligent debt recovery tools, and seamless multi-channel payment gateway integration.",
                                 color: "from-green-500 to-emerald-600",
                                 bg: "bg-green-50"
                             },
                             {
                                 icon: BarChart3,
                                 title: "Academic Analytics",
-                                desc: "Real-time performance tracking, automated grading, report cards, and data-driven insights.",
+                                desc: "High-speed Result Engine with psychometric analysis, comparative cohort tracking, and automated report card generation.",
                                 color: "from-purple-500 to-purple-600",
                                 bg: "bg-purple-50"
                             },
                             {
                                 icon: BookOpen,
-                                title: "LMS & CBT",
-                                desc: "Learning Management System with Computer-Based Testing, assignments, and digital resources.",
+                                title: "Hybrid LMS & CBT",
+                                desc: "Offline-first learning tools, extensive question bank support for CBT, and seamless hybrid classroom management.",
                                 color: "from-amber-500 to-orange-600",
                                 bg: "bg-amber-50"
                             },
                             {
                                 icon: ShieldCheck,
-                                title: "Role-Based Security",
-                                desc: "Secure portals for admins, teachers, students, and parents with granular permission controls.",
+                                title: "Bank-Grade Security",
+                                desc: "Enterprise-level data protection with granular role-based access control, comprehensive audit logs, and 2FA support.",
                                 color: "from-red-500 to-rose-600",
                                 bg: "bg-red-50"
                             },
                             {
                                 icon: Building2,
                                 title: "Multi-School Support",
-                                desc: "Manage multiple campuses, branches, or even entire school districts from one dashboard.",
-                                color: "from-brand-500 to-purple-600",
-                                bg: "bg-brand-50"
+                                desc: "Centralized franchise management for school chains, allowing headquarters to monitor performance across all branches.",
+                                color: "from-indigo-500 to-blue-600",
+                                bg: "bg-indigo-50"
                             }
                         ].map((feature, index) => (
                             <motion.div
@@ -420,20 +416,20 @@ export const SystemLandingPage = () => {
                                 viewport={{ once: true }}
                                 className="group relative"
                             >
-                                <div className="bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border border-gray-100/50 h-full">
-                                    <div className={`w-16 h-16 bg-gradient-to-br ${feature.color} rounded-2xl flex items-center justify-center mb-6 text-white shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                                <div className="bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border border-gray-100/50 h-full relative overflow-hidden">
+                                    {/* Decorative Gradient Blob */}
+                                    <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${feature.color} opacity-5 rounded-bl-full group-hover:scale-125 transition-transform duration-700`} />
+
+                                    <div className={`w-16 h-16 bg-gradient-to-br ${feature.color} rounded-2xl flex items-center justify-center mb-6 text-white shadow-lg group-hover:scale-110 transition-transform duration-300 relative z-10`}>
                                         <feature.icon size={32} />
                                     </div>
-                                    <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-brand-600 transition-colors">
+
+                                    <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-brand-600 transition-colors relative z-10">
                                         {feature.title}
                                     </h3>
-                                    <p className="text-gray-600 leading-relaxed mb-6">
+                                    <p className="text-gray-600 leading-relaxed relative z-10">
                                         {feature.desc}
                                     </p>
-                                    <div className="flex items-center text-brand-600 font-semibold group-hover:text-brand-700 transition-colors">
-                                        Learn more
-                                        <ArrowRight size={16} className="ml-2 group-hover:translate-x-1 transition-transform" />
-                                    </div>
                                 </div>
                             </motion.div>
                         ))}
@@ -816,14 +812,8 @@ export const SystemLandingPage = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
                         {/* Brand Column */}
                         <div className="space-y-6">
-                            <div className="flex items-center gap-3">
-                                <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center p-1 shadow-lg">
-                                    <img src="/logo.png" alt="Registra" className="w-full h-full object-contain" />
-                                </div>
-                                <div>
-                                    <div className="text-xl font-black tracking-tight">Registra</div>
-                                    <div className="text-sm text-brand-400">The operating system for modern schools.</div>
-                                </div>
+                            <div className="h-20 mb-6">
+                                <img src="/footer-logo.png" alt="Registra" className="h-full w-auto object-contain" />
                             </div>
                             <p className="text-gray-400 text-sm leading-relaxed">
                                 The complete school management platform for modern Nigerian educational institutions. Streamlining administration, enhancing learning, and driving academic excellence.
@@ -862,11 +852,11 @@ export const SystemLandingPage = () => {
                         <div>
                             <h4 className="font-bold text-white mb-6">Resources</h4>
                             <ul className="space-y-4 text-sm text-gray-400">
-                                <li><Link href="#" className="hover:text-brand-400 transition-colors">Help Center</Link></li>
-                                <li><Link href="#" className="hover:text-brand-400 transition-colors">School Success Stories</Link></li>
-                                <li><Link href="#" className="hover:text-brand-400 transition-colors">Blog</Link></li>
-                                <li><Link href="#" className="hover:text-brand-400 transition-colors">Video Tutorials</Link></li>
-                                <li><Link href="#" className="hover:text-brand-400 transition-colors">API Documentation</Link></li>
+                                <li><Link href="/help" className="hover:text-brand-400 transition-colors">Help Center</Link></li>
+                                <li><Link href="/success-stories" className="hover:text-brand-400 transition-colors">School Success Stories</Link></li>
+                                <li><Link href="/blog" className="hover:text-brand-400 transition-colors">Blog</Link></li>
+                                <li><Link href="/resources" className="hover:text-brand-400 transition-colors">Video Tutorials</Link></li>
+                                <li><Link href="/developers" className="hover:text-brand-400 transition-colors">API Documentation</Link></li>
                             </ul>
                         </div>
 
@@ -874,11 +864,11 @@ export const SystemLandingPage = () => {
                         <div>
                             <h4 className="font-bold text-white mb-6">Company</h4>
                             <ul className="space-y-4 text-sm text-gray-400">
-                                <li><Link href="#" className="hover:text-brand-400 transition-colors">About Us</Link></li>
-                                <li><Link href="#" className="hover:text-brand-400 transition-colors">Careers</Link></li>
-                                <li><Link href="#" className="hover:text-brand-400 transition-colors">Contact</Link></li>
-                                <li><Link href="#" className="hover:text-brand-400 transition-colors">Privacy Policy</Link></li>
-                                <li><Link href="#" className="hover:text-brand-400 transition-colors">Terms of Service</Link></li>
+                                <li><Link href="/#about" className="hover:text-brand-400 transition-colors">About Us</Link></li>
+                                <li><Link href="/careers" className="hover:text-brand-400 transition-colors">Careers</Link></li>
+                                <li><Link href="/#contact" className="hover:text-brand-400 transition-colors">Contact</Link></li>
+                                <li><Link href="/privacy-policy" className="hover:text-brand-400 transition-colors">Privacy Policy</Link></li>
+                                <li><Link href="/terms-of-service" className="hover:text-brand-400 transition-colors">Terms of Service</Link></li>
                             </ul>
                         </div>
                     </div>

@@ -330,10 +330,10 @@ export const LoginView = () => {
             {/* Background Image with Overlay */}
             <div className="absolute inset-0 z-0">
                 <div
-                    className="absolute inset-0 bg-cover bg-center"
-                    style={{ backgroundImage: "url('/favicon.png')" }}
+                    className="absolute inset-0 bg-cover bg-center transition-all duration-1000"
+                    style={{ backgroundImage: "url('/login-bg-classroom.png')" }}
                 />
-                <div className="absolute inset-0 bg-brand-900/60 backdrop-blur-[2px]" />
+                <div className="absolute inset-0 bg-brand-950/80 backdrop-blur-[1px]" />
             </div>
 
             {/* Return to Home Button */}
@@ -359,7 +359,7 @@ export const LoginView = () => {
                         </>
                     ) : (
                         <>
-                            <div className="inline-block p-4 bg-white rounded-3xl shadow-2xl mb-4 border-4 border-white cursor-pointer select-none active:scale-95 transition-transform"
+                            <div className="inline-block mb-4 cursor-pointer select-none active:scale-95 transition-transform"
                                 onClick={() => {
                                     const newCount = adminSecretCount + 1;
                                     setAdminSecretCount(newCount);
@@ -369,13 +369,10 @@ export const LoginView = () => {
                                     }
                                 }}
                             >
-                                <div className="w-24 h-24 md:w-32 md:h-32 bg-white rounded-3xl p-4 shadow-2xl flex items-center justify-center mb-8">
-                                    <img src="/logo.png" alt="Registra Logo" className="w-full h-full object-contain" />
+                                <div className="h-24 md:h-32 flex items-center justify-center mb-8">
+                                    <img src="/footer-logo.png" alt="Registra" className="h-full w-auto object-contain drop-shadow-md" />
                                 </div>
                             </div>
-                            <h1 className="text-3xl md:text-6xl font-black text-white tracking-tight drop-shadow-md">
-                                Registra<span className="text-accent-500">.net</span>
-                            </h1>
                         </>
                     )}
                     <p className="text-brand-100 text-base md:text-xl font-medium max-w-2xl mx-auto">

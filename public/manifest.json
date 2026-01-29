@@ -1,6 +1,6 @@
 {
     "name": "Fruitful Vine Heritage Schools",
-    "short_name": "FVHS Portal",
+    "short_name": "Registra",
     "description": "School Management System for Fruitful Vine Heritage Schools - Reaching the Highest Height",
     "start_url": "/",
     "display": "standalone",
@@ -9,13 +9,13 @@
     "orientation": "portrait-primary",
     "icons": [
         {
-            "src": "/fruitful_logo_main.png",
+            "src": "/favicon.png",
             "sizes": "192x192",
             "type": "image/png",
             "purpose": "any maskable"
         },
         {
-            "src": "/fruitful_logo_main.png",
+            "src": "/favicon.png",
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "any maskable"

@@ -35,13 +35,18 @@ export const metadata: Metadata = {
         description: 'The operating system for modern schools. Unified management for students, staff, and academics.',
         images: [
             {
-                url: 'https://myregistra.net/favicon.png',
+                url: '/opengraph-image.png',
                 width: 1200,
                 height: 630,
                 alt: 'Registra Platform',
                 type: 'image/png',
             },
         ],
+    },
+    icons: {
+        icon: '/favicon.png',
+        shortcut: '/favicon.png',
+        apple: '/favicon.png',
     },
     twitter: {
         card: 'summary_large_image',

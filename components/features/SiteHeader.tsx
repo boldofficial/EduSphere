@@ -41,16 +41,18 @@ const SiteHeader = ({ settings }: SiteHeaderProps) => {
                     {/* Logo & School Name */}
                     <Link href="/" className="flex items-center gap-3">
                         {settings.logo_media ? (
-                            <img src={settings.logo_media} alt="Logo" className="h-12 w-12 rounded-xl object-contain bg-white/10" />
+                            <>
+                                <img src={settings.logo_media} alt="Logo" className="h-12 w-12 rounded-xl object-contain bg-white/10" />
+                                <div className={`transition-colors duration-300 ${isScrolled ? 'text-brand-900' : 'text-white'}`}>
+                                    <h1 className="text-xl font-bold leading-none">{settings.school_name || "Registra"}</h1>
+                                    <p className={`text-xs font-medium ${isScrolled ? 'text-brand-500' : 'text-white/80'}`}>{settings.school_tagline || "The operating system for modern schools."}</p>
+                                </div>
+                            </>
                         ) : (
-                            <div className="h-14 w-14 bg-white rounded-xl flex items-center justify-center p-1">
-                                <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
+                            <div className="h-16 flex items-center">
+                                <img src="/full-logo.png" alt="Registra" className="h-full w-auto object-contain" />
                             </div>
                         )}
-                        <div className={`transition-colors duration-300 ${isScrolled ? 'text-brand-900' : 'text-white'}`}>
-                            <h1 className="text-xl font-bold leading-none">{settings.school_name || "Registra"}</h1>
-                            <p className={`text-xs font-medium ${isScrolled ? 'text-brand-500' : 'text-white/80'}`}>{settings.school_tagline || "The operating system for modern schools."}</p>
-                        </div>
                     </Link>
 
                     {/* Desktop Navigation */}

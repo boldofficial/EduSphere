@@ -24,8 +24,8 @@ const PWAContext = createContext<PWAContextType>({
     isInstallable: false,
     isInstalled: false,
     isIOS: false,
-    promptInstall: () => {},
-    dismissPrompt: () => {},
+    promptInstall: () => { },
+    dismissPrompt: () => { },
 });
 
 export const usePWA = () => useContext(PWAContext);
@@ -78,7 +78,7 @@ export const PWAProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             e.preventDefault();
             setDeferredPrompt(e as BeforeInstallPromptEvent);
             setIsInstallable(true);
-            
+
             // Show banner after a short delay if not dismissed
             if (!isDismissedRecently()) {
                 setTimeout(() => {
@@ -114,7 +114,7 @@ export const PWAProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         try {
             await deferredPrompt.prompt();
             const { outcome } = await deferredPrompt.userChoice;
-            
+
             if (outcome === 'accepted') {
                 setIsInstalled(true);
                 setShowBanner(false);
@@ -148,11 +148,11 @@ export const PWAProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 <div className="fixed bottom-0 left-0 right-0 z-[9999] animate-slide-up">
                     <div className="bg-gradient-to-r from-brand-600 to-brand-700 text-white p-4 shadow-2xl">
                         <div className="max-w-4xl mx-auto flex items-center gap-4">
-                            <div className="h-12 w-12 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
-                                <Smartphone className="h-6 w-6" />
+                            <div className="h-12 w-12 bg-white/20 rounded-xl flex items-center justify-center shrink-0 p-2">
+                                <img src="/footer-logo.png" alt="Logo" className="w-full h-full object-contain" />
                             </div>
                             <div className="flex-1 min-w-0">
-                                <p className="font-bold text-sm sm:text-base">Install FVHS Portal</p>
+                                <p className="font-bold text-sm sm:text-base">Install Registra</p>
                                 <p className="text-xs sm:text-sm text-brand-100 truncate">
                                     Access your portal faster with our app!
                                 </p>
@@ -191,7 +191,7 @@ export const PWAProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                                 <X className="h-5 w-5 text-gray-500" />
                             </button>
                         </div>
-                        
+
                         <div className="space-y-4">
                             <div className="flex items-start gap-3">
                                 <div className="h-8 w-8 bg-brand-100 rounded-full flex items-center justify-center shrink-0 text-brand-600 font-bold">
@@ -204,7 +204,7 @@ export const PWAProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                                     </p>
                                 </div>
                             </div>
-                            
+
                             <div className="flex items-start gap-3">
                                 <div className="h-8 w-8 bg-brand-100 rounded-full flex items-center justify-center shrink-0 text-brand-600 font-bold">
                                     2
@@ -216,7 +216,7 @@ export const PWAProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                                     </p>
                                 </div>
                             </div>
-                            
+
                             <div className="flex items-start gap-3">
                                 <div className="h-8 w-8 bg-brand-100 rounded-full flex items-center justify-center shrink-0 text-brand-600 font-bold">
                                     3
@@ -227,7 +227,7 @@ export const PWAProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                                 </div>
                             </div>
                         </div>
-                        
+
                         <button
                             onClick={dismissPrompt}
                             className="w-full mt-6 bg-brand-600 text-white py-3 rounded-xl font-bold hover:bg-brand-700 transition-colors"

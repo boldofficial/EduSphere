@@ -171,12 +171,8 @@ export default function SuperAdminDashboard() {
             {/* Sidebar */}
             <aside className="w-64 bg-brand-950 text-white fixed h-full z-10 flex flex-col">
                 <div className="p-6 border-b border-slate-700/50 flex items-center gap-3">
-                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center p-1 shadow-lg">
-                        <img src="/logo.png" alt="Registra Logo" className="w-full h-full object-contain" />
-                    </div>
-                    <div>
-                        <h1 className="text-xl font-black tracking-tight text-white">Registra</h1>
-                        <p className="text-[10px] text-accent-500 uppercase tracking-[0.2em] font-black">Super Admin</p>
+                    <div className="h-16 w-full flex items-center justify-start">
+                        <img src="/footer-logo.png" alt="Registra" className="h-full w-auto object-contain" />
                     </div>
                 </div>
 

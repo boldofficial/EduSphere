@@ -22,18 +22,20 @@ const SiteFooter = ({ settings }: SiteFooterProps) => {
                     <div className="sm:col-span-2 lg:col-span-1">
                         <div className="flex items-center gap-3 mb-6">
                             {settings.logo_media ? (
-                                <div className="bg-white p-1 rounded-xl">
-                                    <img src={settings.logo_media} alt="Logo" className="h-14 w-14 object-contain" />
-                                </div>
+                                <>
+                                    <div className="bg-white p-1 rounded-xl">
+                                        <img src={settings.logo_media} alt="Logo" className="h-14 w-14 object-contain" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-bold text-white leading-tight">Registra</h3>
+                                        <p className="text-accent-500 text-xs font-bold leading-tight uppercase tracking-wider">The operating system for modern schools.</p>
+                                    </div>
+                                </>
                             ) : (
-                                <div className="h-14 w-14 bg-white rounded-xl flex items-center justify-center p-1">
-                                    <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
+                                <div className="h-16">
+                                    <img src="/footer-logo.png" alt="Registra" className="h-full w-auto object-contain" />
                                 </div>
                             )}
-                            <div>
-                                <h3 className="text-lg font-bold text-white leading-tight">Registra</h3>
-                                <p className="text-accent-500 text-xs font-bold leading-tight uppercase tracking-wider">The operating system for modern schools.</p>
-                            </div>
                         </div>
                         <p className="text-white leading-relaxed mb-4 text-sm">
                             A premium school management platform dedicated to syncing academic excellence, operational efficiency, and parent engagement.
