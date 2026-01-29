@@ -321,13 +321,12 @@ if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY and AWS_S3_ENDPOINT_URL:
     # Use custom domain if provided, otherwise fallback to endpoint URL
     # Useful if R2 bucket has a public URL enabled
     _custom_domain = os.environ.get('R2_PUBLIC_URL')
-    if _custom_domain:
-        _custom_domain = _custom_domain.replace('https://', '').replace('http://', '').split('/')[0]
+    AWS_S3_CUSTOM_DOMAIN = os.environ.get('R2_CUSTOM_DOMAIN')
     
-    AWS_S3_CUSTOM_DOMAIN = os.environ.get('R2_CUSTOM_DOMAIN') or _custom_domain
-    
-    # Disable signature/query string auth if using a public custom domain
-    AWS_QUERYSTRING_AUTH = False if AWS_S3_CUSTOM_DOMAIN else True
+    # Always use signed URLs for R2 to ensure accessibility even if bucket is private
+    # signatures can last up to 7 days (604800 seconds)
+    AWS_QUERYSTRING_AUTH = True
+    AWS_QUERYSTRING_EXPIRE = 604800
 
     STORAGES = {
         "default": {
@@ -341,6 +340,7 @@ if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY and AWS_S3_ENDPOINT_URL:
                 "signature_version": AWS_S3_SIGNATURE_VERSION,
                 "default_acl": None,
                 "querystring_auth": AWS_QUERYSTRING_AUTH,
+                "querystring_expire": getattr(settings, 'AWS_QUERYSTRING_EXPIRE', 3600),
             },
         },
         "staticfiles": {

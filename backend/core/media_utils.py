@@ -36,6 +36,8 @@ def get_media_url(path):
         return path
         
     try:
-        return default_storage.url(path)
+        # Strip leading /media/ or media/ if present in the stored path
+        clean_path = str(path).replace('/media/', '').replace('media/', '').lstrip('/')
+        return default_storage.url(clean_path)
     except Exception:
         return path
