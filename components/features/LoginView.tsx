@@ -349,8 +349,8 @@ export const LoginView = () => {
                         <>
                             <div className="inline-block p-4 bg-white rounded-3xl shadow-2xl mb-4 border-4 border-white">
                                 <img
-                                    src="/logo.png"
-                                    alt="Logo"
+                                    src={settings.logo_media || "/logo.png"}
+                                    alt={settings.school_name || "School Logo"}
                                     className="h-24 md:h-32 object-contain"
                                 />
                             </div>
