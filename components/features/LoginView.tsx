@@ -51,17 +51,18 @@ export const LoginView = () => {
     React.useEffect(() => {
         if (typeof window !== 'undefined') {
             const host = window.location.host;
-            const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'localhost:3000';
+            const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'myregistra.net';
+            const cleanHost = host.replace(/^www\./, '');
 
             // Flexible detection: 
-            // 1. Matches configured root
-            // 2. Contains ".vercel.app" (unless it has a prefix like "school.")
-            // 3. Doesn't have a subdomain part (no dots before the main domain)
-            const isRoot = host === rootDomain ||
-                host === `www.${rootDomain}` ||
-                (host.includes('.vercel.app') && !host.includes('--')) || // Simple Vercel check
-                !host.includes('.') ||
-                host.startsWith('localhost:');
+            // 1. Matches configured root or clean version of it
+            // 2. Localhost
+            // 3. Vercel deployment (root)
+            const isRoot = cleanHost === rootDomain ||
+                host.startsWith('localhost:') ||
+                (host.includes('.vercel.app') && !host.includes('--')) ||
+                cleanHost === 'registra.net' || // Fallback for the base domain
+                host === 'localhost';
 
             setIsSystemRoot(isRoot);
         }
