@@ -318,6 +318,17 @@ AWS_S3_REGION_NAME = 'auto'
 
 # Only configure S3 storage if credentials are provided
 if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY and AWS_S3_ENDPOINT_URL:
+    # Use custom domain if provided, otherwise fallback to endpoint URL
+    # Useful if R2 bucket has a public URL enabled
+    _custom_domain = os.environ.get('R2_PUBLIC_URL')
+    if _custom_domain:
+        _custom_domain = _custom_domain.replace('https://', '').replace('http://', '').split('/')[0]
+    
+    AWS_S3_CUSTOM_DOMAIN = os.environ.get('R2_CUSTOM_DOMAIN') or _custom_domain
+    
+    # Disable signature/query string auth if using a public custom domain
+    AWS_QUERYSTRING_AUTH = False if AWS_S3_CUSTOM_DOMAIN else True
+
     STORAGES = {
         "default": {
             "BACKEND": "storages.backends.s3.S3Storage",
@@ -329,21 +340,13 @@ if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY and AWS_S3_ENDPOINT_URL:
                 "region_name": AWS_S3_REGION_NAME,
                 "signature_version": AWS_S3_SIGNATURE_VERSION,
                 "default_acl": None,
-                "querystring_auth": True,  # Enable signed URLs for private R2 access
+                "querystring_auth": AWS_QUERYSTRING_AUTH,
             },
         },
         "staticfiles": {
             "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
         },
     }
-    
-    # Use custom domain if provided, otherwise fallback to endpoint URL
-    # Useful if R2 bucket has a public URL enabled
-    _custom_domain = os.environ.get('R2_PUBLIC_URL')
-    if _custom_domain:
-        _custom_domain = _custom_domain.replace('https://', '').replace('http://', '').split('/')[0]
-    
-    AWS_S3_CUSTOM_DOMAIN = os.environ.get('R2_CUSTOM_DOMAIN') or _custom_domain
 else:
     # Use local file storage if R2 not configured
     STORAGES = {
