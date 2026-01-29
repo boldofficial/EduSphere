@@ -1414,8 +1414,8 @@ function SchoolEditModal({ school, plans, onClose, onSave }: { school: any; plan
 
     return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
-            <div className="bg-white rounded-3xl w-full max-w-2xl shadow-2xl animate-in zoom-in-95 duration-200 overflow-hidden">
-                <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+            <div className="bg-white rounded-3xl w-full max-w-2xl shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh] overflow-hidden">
+                <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 shrink-0">
                     <div>
                         <h3 className="text-2xl font-black text-gray-900 uppercase tracking-tight">Edit School Details</h3>
                         <p className="text-sm text-gray-500 font-medium">Update core administrative information for {school?.name}.</p>
@@ -1425,7 +1425,7 @@ function SchoolEditModal({ school, plans, onClose, onSave }: { school: any; plan
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="p-8 space-y-6">
+                <form onSubmit={handleSubmit} className="p-8 space-y-6 overflow-y-auto">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">School Name</label>

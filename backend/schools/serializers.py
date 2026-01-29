@@ -17,7 +17,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Subscription
-        fields = ['status', 'payment_method', 'payment_proof', 'plan_name', 'start_date', 'end_date']
+        fields = ['status', 'payment_method', 'payment_proof', 'plan_name', 'plan_id', 'start_date', 'end_date']
 
 class PlatformSettingsSerializer(serializers.ModelSerializer):
     class Meta:
