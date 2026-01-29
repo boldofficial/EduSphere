@@ -201,6 +201,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         { id: 'analytics', name: 'Analytics' },
         { id: 'id_cards', name: 'ID Cards' },
         { id: 'broadsheet', name: 'Broadsheet' },
+        { id: 'admissions', name: 'Admissions' },
+        { id: 'newsletter', name: 'Newsletter' },
+        { id: 'messages', name: 'Messages' },
+        { id: 'cms', name: 'Website CMS' },
         { id: 'data', name: 'System Data' },
         { id: 'settings', name: 'Settings' },
     ].filter(item => {

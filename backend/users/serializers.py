@@ -16,11 +16,18 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_subscription(self, obj):
         if obj.school and hasattr(obj.school, 'subscription'):
+            from schools.models import PlatformModule
             sub = obj.school.subscription
+            
+            # Filter allowed_modules by what is GLOBALLY active
+            global_active_ids = set(PlatformModule.objects.filter(is_active=True).values_list('module_id', flat=True))
+            plan_modules = sub.plan.allowed_modules or []
+            effective_modules = [m_id for m_id in plan_modules if m_id in global_active_ids]
+
             return {
+                'plan_name': sub.plan.name,
                 'status': sub.status,
-                'plan': sub.plan.name,
-                'allowed_modules': sub.plan.allowed_modules,
+                'allowed_modules': effective_modules,
                 'end_date': sub.end_date
             }
         return None

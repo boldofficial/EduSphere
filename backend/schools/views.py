@@ -177,6 +177,7 @@ class SchoolManagementView(APIView):
         sub_end_date = request.data.get('subscription_end_date')
 
         if plan_id or sub_status or sub_end_date:
+            logger.info(f"Subscription update triggered: plan_id={plan_id}, status={sub_status}, end_date={sub_end_date}")
             with transaction.atomic():
                 sub, _ = Subscription.objects.get_or_create(
                     school=school,
@@ -187,8 +188,9 @@ class SchoolManagementView(APIView):
                     try:
                         plan = SubscriptionPlan.objects.get(pk=plan_id)
                         sub.plan = plan
+                        logger.info(f"Updated plan to: {plan.name}")
                     except SubscriptionPlan.DoesNotExist:
-                        pass
+                        logger.error(f"SubscriptionPlan with ID {plan_id} not found")
                 
                 if sub_status:
                     sub.status = sub_status
