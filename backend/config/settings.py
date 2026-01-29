@@ -337,8 +337,13 @@ if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY and AWS_S3_ENDPOINT_URL:
         },
     }
     
-    # Using signed URLs instead of a custom domain to ensure access if bucket is private
-    AWS_S3_CUSTOM_DOMAIN = None 
+    # Use custom domain if provided, otherwise fallback to endpoint URL
+    # Useful if R2 bucket has a public URL enabled
+    _custom_domain = os.environ.get('R2_PUBLIC_URL')
+    if _custom_domain:
+        _custom_domain = _custom_domain.replace('https://', '').replace('http://', '').split('/')[0]
+    
+    AWS_S3_CUSTOM_DOMAIN = os.environ.get('R2_CUSTOM_DOMAIN') or _custom_domain
 else:
     # Use local file storage if R2 not configured
     STORAGES = {
