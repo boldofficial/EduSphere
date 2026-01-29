@@ -61,7 +61,7 @@ export default function OnboardingPage() {
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
-            setRootDomain(window.location.host);
+            setRootDomain(window.location.host.replace(/^www\./, ''));
         }
         apiClient.get('schools/plans/').then(res => setPlans(res.data)).catch(console.error);
         apiClient.get('schools/platform-settings/').then(res => setPlatformSettings(res.data)).catch(console.error);

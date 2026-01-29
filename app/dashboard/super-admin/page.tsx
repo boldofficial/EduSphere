@@ -1444,7 +1444,7 @@ function SchoolEditModal({ school, onClose, onSave }: { school: any; onClose: ()
                                     onChange={e => setFormData({ ...formData, domain: e.target.value })}
                                     className="w-full bg-gray-50 border-0 rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-brand-600 transition-all outline-none pr-32"
                                 />
-                                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-gray-300 uppercase">.myregistra.net</div>
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-gray-300 uppercase">.{ROOT_DOMAIN}</div>
                             </div>
                         </div>
                         <div className="space-y-2">
