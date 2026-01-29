@@ -171,6 +171,40 @@ class SchoolManagementView(APIView):
         school.contact_person = request.data.get('contact_person', school.contact_person)
         school.save()
 
+        # Manual Subscription Update
+        plan_id = request.data.get('plan_id')
+        sub_status = request.data.get('subscription_status')
+        sub_end_date = request.data.get('subscription_end_date')
+
+        if plan_id or sub_status or sub_end_date:
+            with transaction.atomic():
+                sub, _ = Subscription.objects.get_or_create(
+                    school=school,
+                    defaults={'plan': SubscriptionPlan.objects.first(), 'end_date': timezone.now()}
+                )
+                
+                if plan_id:
+                    try:
+                        plan = SubscriptionPlan.objects.get(pk=plan_id)
+                        sub.plan = plan
+                    except SubscriptionPlan.DoesNotExist:
+                        pass
+                
+                if sub_status:
+                    sub.status = sub_status
+                
+                if sub_end_date:
+                    sub.end_date = sub_end_date
+                
+                sub.save()
+                
+                GlobalActivityLog.objects.create(
+                    action='SUBSCRIPTION_UPDATED',
+                    school=school,
+                    user=request.user,
+                    description=f"Manual subscription update for '{school.name}' by Super Admin. Plan: {sub.plan.name}, Status: {sub.status}, Expires: {sub.end_date}"
+                )
+
         return Response({'success': True, 'data': SchoolSerializer(school).data})
 
 

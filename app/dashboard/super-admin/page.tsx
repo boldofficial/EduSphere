@@ -330,6 +330,7 @@ export default function SuperAdminDashboard() {
                     {activeTab === 'tenants' && (
                         <TenantsTab
                             schools={schools}
+                            plans={plans}
                             onImpersonate={(userId: number) => handleImpersonate(userId)}
                             onEdit={(school: any) => {
                                 setSelectedSchoolForEdit(school);
@@ -353,6 +354,7 @@ export default function SuperAdminDashboard() {
             {isEditModalOpen && (
                 <SchoolEditModal
                     school={selectedSchoolForEdit}
+                    plans={plans}
                     onClose={() => setIsEditModalOpen(false)}
                     onSave={(data: any) => handleUpdateSchool(selectedSchoolForEdit.id, data)}
                 />
@@ -778,7 +780,7 @@ function BroadcastsTab({ announcements = [] }: any) {
     );
 }
 
-function TenantsTab({ schools, onImpersonate, onEdit }: any) {
+function TenantsTab({ schools, plans, onImpersonate, onEdit }: any) {
     const router = useRouter();
     const [isProcessing, setIsProcessing] = useState(false);
     const [paymentModalOpen, setPaymentModalOpen] = useState(false);
@@ -1391,7 +1393,7 @@ function PlatformSettingsTab({ settings }: { settings: any }) {
     );
 }
 
-function SchoolEditModal({ school, onClose, onSave }: { school: any; onClose: () => void; onSave: (data: any) => void }) {
+function SchoolEditModal({ school, plans, onClose, onSave }: { school: any; plans: any[]; onClose: () => void; onSave: (data: any) => void }) {
     const [formData, setFormData] = useState({
         name: school?.name || '',
         domain: school?.domain || '',
@@ -1399,6 +1401,9 @@ function SchoolEditModal({ school, onClose, onSave }: { school: any; onClose: ()
         phone: school?.phone || '',
         address: school?.address || '',
         contact_person: school?.contact_person || '',
+        plan_id: school?.subscription?.plan_id || '',
+        subscription_status: school?.subscription?.status || 'active',
+        subscription_end_date: school?.subscription?.end_date ? new Date(school.subscription.end_date).toISOString().split('T')[0] : '',
     });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -1479,6 +1484,48 @@ function SchoolEditModal({ school, onClose, onSave }: { school: any; onClose: ()
                                 onChange={e => setFormData({ ...formData, address: e.target.value })}
                                 className="w-full bg-gray-50 border-0 rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-brand-600 transition-all outline-none min-h-[100px] resize-none"
                             />
+                        </div>
+
+                        {/* Subscription Management Section */}
+                        <div className="md:col-span-2 pt-6 border-t border-gray-100">
+                            <h4 className="text-xs font-black text-brand-600 uppercase tracking-widest mb-4">Subscription Management</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Subscription Plan</label>
+                                    <select
+                                        value={formData.plan_id}
+                                        onChange={e => setFormData({ ...formData, plan_id: e.target.value })}
+                                        className="w-full bg-gray-50 border-0 rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-brand-600 transition-all outline-none"
+                                    >
+                                        <option value="">Select Plan</option>
+                                        {plans.map((plan: any) => (
+                                            <option key={plan.id} value={plan.id}>{plan.name} (₦{parseFloat(plan.price).toLocaleString()})</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Status</label>
+                                    <select
+                                        value={formData.subscription_status}
+                                        onChange={e => setFormData({ ...formData, subscription_status: e.target.value })}
+                                        className="w-full bg-gray-50 border-0 rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-brand-600 transition-all outline-none"
+                                    >
+                                        <option value="active">Active</option>
+                                        <option value="pending">Pending</option>
+                                        <option value="expired">Expired</option>
+                                        <option value="cancelled">Cancelled</option>
+                                    </select>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Expiry Date</label>
+                                    <input
+                                        type="date"
+                                        value={formData.subscription_end_date}
+                                        onChange={e => setFormData({ ...formData, subscription_end_date: e.target.value })}
+                                        className="w-full bg-gray-50 border-0 rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-brand-600 transition-all outline-none"
+                                    />
+                                </div>
+                            </div>
                         </div>
                     </div>
 
