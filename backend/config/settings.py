@@ -340,7 +340,7 @@ if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY and AWS_S3_ENDPOINT_URL:
                 "signature_version": AWS_S3_SIGNATURE_VERSION,
                 "default_acl": None,
                 "querystring_auth": AWS_QUERYSTRING_AUTH,
-                "querystring_expire": getattr(settings, 'AWS_QUERYSTRING_EXPIRE', 3600),
+                "querystring_expire": AWS_QUERYSTRING_EXPIRE,
             },
         },
         "staticfiles": {
