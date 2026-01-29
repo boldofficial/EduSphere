@@ -47,11 +47,11 @@ DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 'yes')
 
 ALLOWED_HOSTS = [
     host.strip()
-    for host in os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+    for host in os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,.myregistra.net').split(',')
     if host.strip()
 ]
 
-ROOT_DOMAIN = os.environ.get('ROOT_DOMAIN', 'localhost:3000')
+ROOT_DOMAIN = os.environ.get('ROOT_DOMAIN', 'myregistra.net')
 
 
 # =============================================================================

@@ -221,7 +221,7 @@ export const LoginView = () => {
 
             if (isSystemRoot) {
                 // If on root domain, we rely on the searched school or can't login as student directly without context
-                // But usually students are at school.schoolsync.ng
+                // But usually students are at school.myregistra.net
                 if (!searchSlug) {
                     setLoginError('Please find your school first.');
                     setIsLoading(false);
@@ -370,11 +370,11 @@ export const LoginView = () => {
                                 }}
                             >
                                 <div className="w-24 h-24 md:w-32 md:h-32 bg-white rounded-3xl p-4 shadow-2xl flex items-center justify-center mb-8">
-                                    <img src="/logo.png" alt="SchoolSync Logo" className="w-full h-full object-contain" />
+                                    <img src="/logo.png" alt="Registra Logo" className="w-full h-full object-contain" />
                                 </div>
                             </div>
                             <h1 className="text-3xl md:text-6xl font-black text-white tracking-tight drop-shadow-md">
-                                SchoolSync<span className="text-accent-500">.ng</span>
+                                Registra<span className="text-accent-500">.net</span>
                             </h1>
                         </>
                     )}

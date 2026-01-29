@@ -9,18 +9,18 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
     title: {
-        default: 'SchoolSync | The operating system for modern schools',
-        template: '%s | SchoolSync',
+        default: 'Registra | The operating system for modern schools',
+        template: '%s | Registra',
     },
     description: 'The operating system for modern schools. Unified management for students, staff, and academics.',
     keywords: [
-        'SchoolSync', 'school management system', 'LMS', 'school ERP', 'admissions sync',
-        'academic management', 'fee collection', 'SchoolSync.ng', 'premium school software'
+        'Registra', 'school management system', 'LMS', 'school ERP', 'admissions sync',
+        'academic management', 'fee collection', 'Registra.net', 'premium school software'
     ],
-    authors: [{ name: 'SchoolSync Team' }],
+    authors: [{ name: 'Registra Team' }],
     creator: 'Bold Ideas Innovations Ltd',
-    publisher: 'SchoolSync',
-    metadataBase: new URL('https://schoolsync.ng'),
+    publisher: 'Registra',
+    metadataBase: new URL('https://myregistra.net'),
     alternates: {
         canonical: '/',
     },
@@ -29,29 +29,29 @@ export const metadata: Metadata = {
     openGraph: {
         type: 'website',
         locale: 'en_NG',
-        url: 'https://schoolsync.ng',
-        siteName: 'SchoolSync',
-        title: 'SchoolSync - All-in-One School Management Platform',
+        url: 'https://myregistra.net',
+        siteName: 'Registra',
+        title: 'Registra - All-in-One School Management Platform',
         description: 'The operating system for modern schools. Unified management for students, staff, and academics.',
         images: [
             {
-                url: 'https://schoolsync.ng/favicon.png',
+                url: 'https://myregistra.net/favicon.png',
                 width: 1200,
                 height: 630,
-                alt: 'SchoolSync Platform',
+                alt: 'Registra Platform',
                 type: 'image/png',
             },
         ],
     },
     twitter: {
         card: 'summary_large_image',
-        site: '@schoolsync',
-        creator: '@schoolsync',
-        title: 'SchoolSync - Efficient School Management',
+        site: '@registra',
+        creator: '@registra',
+        title: 'Registra - Efficient School Management',
         description: 'The operating system for modern schools. Unified management for students, staff, and academics.',
         images: {
-            url: 'https://schoolsync.ng/favicon.png',
-            alt: 'SchoolSync Logo',
+            url: 'https://myregistra.net/favicon.png',
+            alt: 'Registra Logo',
         },
     },
     robots: {

@@ -54,7 +54,7 @@ const PrivacyPolicy = () => {
 
                     <div className="prose prose-brand max-w-none text-gray-600">
                         <p className="lead text-xl text-gray-700 mb-8">
-                            At SchoolSync Heritage Schools, we are committed to protecting the privacy and security of our students, parents, and staff. This Privacy Policy outlines how we collect, use, and safeguard your personal information.
+                            At Registra, we are committed to protecting the privacy and security of our students, parents, and staff. This Privacy Policy outlines how we collect, use, and safeguard your personal information.
                         </p>
 
                         <h3 className="text-brand-800 font-bold mt-8 mb-4 flex items-center gap-2">
@@ -102,7 +102,7 @@ const PrivacyPolicy = () => {
 
                         <h3 className="text-brand-800 font-bold mt-8 mb-4">Contact Us</h3>
                         <p>
-                            If you have any questions about this Privacy Policy, please contact us at: <a href="mailto:info@fruitfulvineheritageschools.org.ng" className="text-brand-600 hover:text-brand-700 font-medium">info@fruitfulvineheritageschools.org.ng</a>.
+                            If you have any questions about this Privacy Policy, please contact us at: <a href="mailto:info@myregistra.net" className="text-brand-600 hover:text-brand-700 font-medium">info@myregistra.net</a>.
                         </p>
                     </div>
                 </div>

@@ -54,7 +54,7 @@ const TermsOfService = () => {
 
                     <div className="prose prose-brand max-w-none text-gray-600">
                         <p className="lead text-xl text-gray-700 mb-8">
-                            Welcome to the SchoolSync Heritage Schools website and portal. By accessing or using our services, you agree to be bound by these Terms of Service.
+                            Welcome to the Registra website and portal. By accessing or using our services, you agree to be bound by these Terms of Service.
                         </p>
 
                         <h3 className="text-brand-800 font-bold mt-8 mb-4 flex items-center gap-2">
@@ -82,7 +82,7 @@ const TermsOfService = () => {
                             Intellectual Property
                         </h3>
                         <p className="mb-6">
-                            All content on this website, including text, graphics, logos, and images, is the property of SchoolSync Heritage Schools or its content suppliers and is protected by intellectual property laws. You may not reproduce, distribute, or create derivative works without our express permission.
+                            All content on this website, including text, graphics, logos, and images, is the property of Registra or its content suppliers and is protected by intellectual property laws. You may not reproduce, distribute, or create derivative works without our express permission.
                         </p>
 
                         <h3 className="text-brand-800 font-bold mt-8 mb-4">User Accounts</h3>
@@ -97,7 +97,7 @@ const TermsOfService = () => {
 
                         <h3 className="text-brand-800 font-bold mt-8 mb-4">Limitation of Liability</h3>
                         <p className="mb-6">
-                            SchoolSync Heritage Schools shall not be liable for any indirect, incidental, special, or consequential damages arising out of or in connection with your use of our services.
+                            Registra shall not be liable for any indirect, incidental, special, or consequential damages arising out of or in connection with your use of our services.
                         </p>
 
                         <h3 className="text-brand-800 font-bold mt-8 mb-4">Changes to Terms</h3>

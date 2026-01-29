@@ -96,11 +96,11 @@ export const SystemLandingPage = () => {
                             transition={{ type: "spring", stiffness: 400, damping: 17 }}
                         >
                             <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center p-1 shadow-lg shadow-brand-600/10">
-                                <img src="/logo.png" alt="SchoolSync Logo" className="w-full h-full object-contain" />
+                                <img src="/logo.png" alt="Registra Logo" className="w-full h-full object-contain" />
                             </div>
                             <div>
-                                <span className="text-2xl font-black text-gray-900 tracking-tight">SchoolSync</span>
-                                <div className="text-xs font-semibold text-brand-600 -mt-1">schoolsync.ng</div>
+                                <span className="text-2xl font-black text-gray-900 tracking-tight">Registra</span>
+                                <div className="text-xs font-semibold text-brand-600 -mt-1">myregistra.net</div>
                             </div>
                         </motion.div>
 
@@ -241,7 +241,7 @@ export const SystemLandingPage = () => {
                                 transition={{ delay: 0.6, duration: 0.8 }}
                                 className="text-xl md:text-2xl text-brand-100/90 mb-12 max-w-2xl leading-relaxed font-medium"
                             >
-                                SchoolSync is the operating system that unifies academics, finance, communication, and administration on one powerful platform.
+                                Registra is the operating system that unifies academics, finance, communication, and administration on one powerful platform.
                             </motion.p>
 
 
@@ -285,7 +285,7 @@ export const SystemLandingPage = () => {
                                             <div className="w-10 h-10 bg-brand-600 rounded-xl flex items-center justify-center text-white">
                                                 <School size={20} />
                                             </div>
-                                            <span className="font-bold text-gray-900">SchoolSync Dashboard</span>
+                                            <span className="font-bold text-gray-900">Registra Dashboard</span>
                                         </div>
                                         <div className="flex gap-2">
                                             <div className="w-3 h-3 bg-red-400 rounded-full"></div>
@@ -536,14 +536,14 @@ export const SystemLandingPage = () => {
                             Trusted by Leading Schools
                         </h2>
                         <p className="text-xl text-brand-100 max-w-3xl mx-auto">
-                            See how schools across Nigeria are transforming their operations with SchoolSync.
+                            See how schools across Nigeria are transforming their operations with Registra.
                         </p>
                     </motion.div>
 
                     <div className="grid md:grid-cols-3 gap-8">
                         {[
                             {
-                                quote: "SchoolSync has revolutionized how we manage our school. The automation features have saved us countless hours, and our parents love the transparency.",
+                                quote: "Registra has revolutionized how we manage our school. The automation features have saved us countless hours, and our parents love the transparency.",
                                 author: "Mrs. Adebayo",
                                 role: "Principal",
                                 school: "Lagos International School",
@@ -613,14 +613,14 @@ export const SystemLandingPage = () => {
                             Got Questions?
                         </h2>
                         <p className="text-xl text-gray-600">
-                            Find answers to common questions about SchoolSync.
+                            Find answers to common questions about Registra.
                         </p>
                     </motion.div>
 
                     <div className="space-y-6">
                         {[
                             {
-                                question: "How long does it take to set up SchoolSync for my school?",
+                                question: "How long does it take to set up Registra for my school?",
                                 answer: "Most schools are up and running within 1-2 weeks. Our onboarding team provides personalized guidance throughout the process."
                             },
                             {
@@ -636,7 +636,7 @@ export const SystemLandingPage = () => {
                                 answer: "We offer 24/7 technical support, comprehensive documentation, video tutorials, and dedicated account managers for enterprise clients."
                             },
                             {
-                                question: "Can I try SchoolSync before committing?",
+                                question: "Can I try Registra before committing?",
                                 answer: "Yes! We offer a 30-day free trial with full access to all features. No credit card required to get started."
                             }
                         ].map((faq, index) => (
@@ -674,7 +674,7 @@ export const SystemLandingPage = () => {
                             Ready to Transform Your School?
                         </h2>
                         <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                            Join hundreds of schools already using SchoolSync. Let's discuss how we can help your institution thrive.
+                            Join hundreds of schools already using Registra. Let's discuss how we can help your institution thrive.
                         </p>
                     </motion.div>
 
@@ -758,7 +758,7 @@ export const SystemLandingPage = () => {
                                         </div>
                                         <div>
                                             <div className="font-semibold text-gray-900">Phone</div>
-                                            <div className="text-gray-600">+234 800 SCHOOLSYNC</div>
+                                            <div className="text-gray-600">+234 800 REGISTRA</div>
                                             <div className="text-sm text-gray-500">Mon-Fri 9AM-6PM WAT</div>
                                         </div>
                                     </div>
@@ -768,7 +768,7 @@ export const SystemLandingPage = () => {
                                         </div>
                                         <div>
                                             <div className="font-semibold text-gray-900">Email</div>
-                                            <div className="text-gray-600">hello@schoolsync.ng</div>
+                                            <div className="text-gray-600">hello@myregistra.net</div>
                                             <div className="text-sm text-gray-500">We'll respond within 24 hours</div>
                                         </div>
                                     </div>
@@ -818,10 +818,10 @@ export const SystemLandingPage = () => {
                         <div className="space-y-6">
                             <div className="flex items-center gap-3">
                                 <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center p-1 shadow-lg">
-                                    <img src="/logo.png" alt="SchoolSync" className="w-full h-full object-contain" />
+                                    <img src="/logo.png" alt="Registra" className="w-full h-full object-contain" />
                                 </div>
                                 <div>
-                                    <div className="text-xl font-black tracking-tight">SchoolSync</div>
+                                    <div className="text-xl font-black tracking-tight">Registra</div>
                                     <div className="text-sm text-brand-400">The operating system for modern schools.</div>
                                 </div>
                             </div>
@@ -885,7 +885,7 @@ export const SystemLandingPage = () => {
 
                     <div className="pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4">
                         <p className="text-sm text-gray-400">
-                            &copy; {new Date().getFullYear()} SchoolSync. All rights reserved.
+                            &copy; {new Date().getFullYear()} Registra. All rights reserved.
                         </p>
                         <div className="flex items-center gap-1 text-sm text-gray-400">
                             <span>Powered by</span>

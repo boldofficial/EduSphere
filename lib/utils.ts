@@ -108,9 +108,9 @@ export const INITIAL_SETTINGS: Settings = {
   id: 'singleton',
   created_at: Date.now(),
   updated_at: Date.now(),
-  school_name: 'SchoolSync Heritage Schools',
+  school_name: 'Registra Heritage Schools',
   school_address: '21, Agric Road, James Estate, Ajara-Topa, Badagry, Lagos State',
-  school_email: 'info@fruitfulvineheritageschools.org.ng',
+  school_email: 'info@myregistra.net',
   school_phone: '0803 483 2855, 0806 475 0268',
   school_tagline: '...reaching the highest height',
   current_session: '2025/2026',
@@ -134,7 +134,7 @@ export const INITIAL_SETTINGS: Settings = {
   head_teacher_label: 'Head of School',
   report_font_family: 'inherit',
   report_scale: 100,
-  landing_hero_title: 'Welcome to SchoolSync Heritage Schools',
+  landing_hero_title: 'Welcome to Registra',
   landing_hero_subtitle: 'Faith-Based Excellence in Education',
   landing_features: 'Faith-Based Education, Modern Facilities, Expert Teachers, Safe Environment, Holistic Development, Academic Excellence',
   landing_hero_image: null,
@@ -164,19 +164,19 @@ export const INITIAL_SETTINGS: Settings = {
   role_permissions: {
 
     super_admin: {
-      navigation: ['dashboard', 'students', 'teachers', 'staff', 'classes', 'grading', 'attendance', 'bursary', 'learning', 'announcements', 'calendar', 'analytics', 'id_cards', 'broadsheet', 'admissions', 'newsletter', 'messages', 'conduct', 'cms', 'data', 'settings', 'admin_schools', 'admin_revenue', 'system_health'],
+      navigation: ['dashboard', 'students', 'teachers', 'staff', 'classes', 'timetables', 'grading', 'attendance', 'bursary', 'learning', 'announcements', 'calendar', 'analytics', 'id_cards', 'broadsheet', 'admissions', 'newsletter', 'messages', 'conduct', 'cms', 'data', 'settings', 'admin_schools', 'admin_revenue', 'system_health'],
       dashboardWidgets: ['stats', 'finance_chart', 'student_population', 'quick_actions', 'recent_transactions', 'strategic_analytics', 'platform_governance']
     },
     admin: {
-      navigation: ['dashboard', 'students', 'teachers', 'staff', 'classes', 'grading', 'attendance', 'bursary', 'learning', 'announcements', 'calendar', 'analytics', 'id_cards', 'broadsheet', 'admissions', 'newsletter', 'messages', 'conduct', 'cms', 'data', 'settings'],
+      navigation: ['dashboard', 'students', 'teachers', 'staff', 'classes', 'timetables', 'grading', 'attendance', 'bursary', 'learning', 'announcements', 'calendar', 'analytics', 'id_cards', 'broadsheet', 'admissions', 'newsletter', 'messages', 'conduct', 'cms', 'data', 'settings'],
       dashboardWidgets: ['stats', 'finance_chart', 'student_population', 'quick_actions', 'recent_transactions']
     },
     teacher: {
-      navigation: ['dashboard', 'grading', 'attendance', 'learning', 'announcements', 'calendar', 'messages', 'conduct'],
+      navigation: ['dashboard', 'timetables', 'grading', 'attendance', 'learning', 'announcements', 'calendar', 'messages', 'conduct'],
       dashboardWidgets: ['stats', 'quick_actions', 'my_classes']
     },
     student: {
-      navigation: ['dashboard', 'grading', 'attendance', 'learning', 'announcements', 'bursary', 'calendar', 'id_cards', 'newsletter', 'messages', 'conduct'],
+      navigation: ['dashboard', 'timetables', 'grading', 'attendance', 'learning', 'announcements', 'bursary', 'calendar', 'id_cards', 'newsletter', 'messages', 'conduct'],
       dashboardWidgets: ['my_scores', 'my_attendance', 'my_fees', 'class_info']
     },
     parent: {
@@ -191,7 +191,7 @@ export const INITIAL_SETTINGS: Settings = {
   // Invoice & Payment Settings
   show_bank_details: true,
   bank_name: 'First Bank of Nigeria',
-  bank_account_name: 'SchoolSync Heritage Schools',
+  bank_account_name: 'Registra Heritage Schools',
   bank_account_number: '0123456789',
   bank_sort_code: '',
   invoice_notes: 'Please ensure payment is made before the due date to avoid late fees.',

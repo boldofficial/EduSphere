@@ -5,12 +5,14 @@ from django.db import transaction
 from .models import (
     Subject, Teacher, Class, Student, 
     ReportCard, SubjectScore, AttendanceSession, AttendanceRecord,
-    SchoolEvent, Lesson, ConductEntry
+    SchoolEvent, Lesson, ConductEntry,
+    Period, Timetable, TimetableEntry, GradingScheme, GradeRange
 )
 from .serializers import (
     SubjectSerializer, TeacherSerializer, ClassSerializer, StudentSerializer,
     ReportCardSerializer, SubjectScoreSerializer, AttendanceSessionSerializer, AttendanceRecordSerializer,
-    SchoolEventSerializer, LessonSerializer, ConductEntrySerializer
+    SchoolEventSerializer, LessonSerializer, ConductEntrySerializer,
+    PeriodSerializer, TimetableSerializer, TimetableEntrySerializer, GradingSchemeSerializer, GradeRangeSerializer
 )
 from core.pagination import StandardPagination, LargePagination
 from core.cache_utils import CachingMixin
@@ -134,6 +136,32 @@ class ReportCardViewSet(TenantViewSet):
     serializer_class = ReportCardSerializer
     pagination_class = StandardPagination
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        user = self.request.user
+
+        # 1. Security: Restrict Students/Parents to their own records
+        if user.role == 'STUDENT':
+            qs = qs.filter(student__user=user)
+        elif user.role == 'PARENT':
+            # Assuming Parent is linked to Student via email/phone or explicit link
+            # For now, filtering by parent_email match if simple link
+            qs = qs.filter(student__parent_email=user.email)
+        
+        # 2. Filters for "Past Report Cards" feature
+        session = self.request.query_params.get('session')
+        term = self.request.query_params.get('term')
+        student_id = self.request.query_params.get('student')
+
+        if session:
+            qs = qs.filter(session=session)
+        if term:
+            qs = qs.filter(term=term)
+        if student_id:
+             qs = qs.filter(student__id=student_id)
+             
+        return qs
+
 class SubjectScoreViewSet(TenantViewSet):
     queryset = SubjectScore.objects.select_related('student', 'subject', 'school').all()
     serializer_class = SubjectScoreSerializer
@@ -187,3 +215,23 @@ class ConductEntryViewSet(TenantViewSet):
             serializer.save(school=self.request.user.school, recorded_by=self.request.user)
         else:
             serializer.save(recorded_by=self.request.user)
+
+class PeriodViewSet(TenantViewSet):
+    queryset = Period.objects.select_related('school').all()
+    serializer_class = PeriodSerializer
+    pagination_class = StandardPagination
+
+class TimetableViewSet(TenantViewSet):
+    queryset = Timetable.objects.select_related('student_class', 'school').prefetch_related('entries__subject', 'entries__teacher').all()
+    serializer_class = TimetableSerializer
+    pagination_class = StandardPagination
+
+class TimetableEntryViewSet(TenantViewSet):
+    queryset = TimetableEntry.objects.select_related('timetable', 'period', 'subject', 'teacher', 'school').all()
+    serializer_class = TimetableEntrySerializer
+    pagination_class = LargePagination
+
+class GradingSchemeViewSet(TenantViewSet):
+    queryset = GradingScheme.objects.select_related('school').prefetch_related('ranges').all()
+    serializer_class = GradingSchemeSerializer
+    pagination_class = StandardPagination

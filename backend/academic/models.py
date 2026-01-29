@@ -79,6 +79,28 @@ class Student(TenantModel):
             )
         ]
 
+class GradingScheme(TenantModel):
+    name = models.CharField(max_length=100) # e.g., "British Curriculum", "WASSCE Standard"
+    is_default = models.BooleanField(default=False)
+    description = models.TextField(blank=True)
+    
+    def __str__(self):
+        return f"{self.name} ({self.school.name})"
+
+class GradeRange(TenantModel):
+    scheme = models.ForeignKey(GradingScheme, related_name='ranges', on_delete=models.CASCADE)
+    grade = models.CharField(max_length=10) # e.g., "A", "A+"
+    min_score = models.FloatField()         # e.g., 70.0
+    max_score = models.FloatField()         # e.g., 100.0
+    gpa_point = models.FloatField(default=0.0) 
+    remark = models.CharField(max_length=50) # e.g., "Excellent"
+    
+    class Meta:
+        ordering = ['-min_score'] # Highest grades first
+        
+    def __str__(self):
+        return f"{self.grade} ({self.min_score}-{self.max_score})"
+
 class ReportCard(TenantModel):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='report_cards')
     student_class = models.ForeignKey(Class, on_delete=models.SET_NULL, null=True) 
@@ -95,7 +117,12 @@ class ReportCard(TenantModel):
     psychomotor = models.JSONField(default=dict, blank=True) # e.g. {"Sports": 5, "Art": 4}
     attendance_present = models.IntegerField(default=0)
     attendance_total = models.IntegerField(default=0)
+    attendance_present = models.IntegerField(default=0)
+    attendance_total = models.IntegerField(default=0)
     next_term_begins = models.DateField(null=True, blank=True)
+    
+    # Historical Data Protection
+    grading_scheme = models.ForeignKey(GradingScheme, on_delete=models.SET_NULL, null=True, blank=True)
     
     # Publication & Promotion
     is_passed = models.BooleanField(default=False)
@@ -168,11 +195,22 @@ class SubjectScore(TenantModel):
         self.total = self.ca1 + self.ca2 + self.exam
         # Simple grading logic (can be expanded)
         if hasattr(self, 'grade') and not self.grade:
-            if self.total >= 75: self.grade = 'A'
-            elif self.total >= 65: self.grade = 'B'
-            elif self.total >= 50: self.grade = 'C'
-            elif self.total >= 40: self.grade = 'D'
-            else: self.grade = 'F'
+            # 1. Try Dynamic Grading Scheme linked to the Report Card
+            scheme = self.report_card.grading_scheme
+            if scheme:
+                grade_range = scheme.ranges.filter(min_score__lte=self.total, max_score__gte=self.total).first()
+                if grade_range:
+                    self.grade = grade_range.grade
+                    self.comment = grade_range.remark
+            
+            # 2. Fallback to Hardcoded Logic (Legacy/Default)
+            if not self.grade:
+                if self.total >= 75: self.grade = 'A'
+                elif self.total >= 65: self.grade = 'B'
+                elif self.total >= 50: self.grade = 'C'
+                elif self.total >= 40: self.grade = 'D'
+                else: self.grade = 'F'
+                
         super().save(*args, **kwargs)
         # Trigger update of parent report card without saving the report card yet 
         # (the serializer will save it once at the end)
@@ -264,3 +302,58 @@ class ConductEntry(TenantModel):
     
     def __str__(self):
         return f"{self.student.names} - {self.trait}: {self.score}"
+
+class Period(TenantModel):
+    """Defines time slots, e.g., 'Morning Period 1: 8:00-8:40'"""
+    name = models.CharField(max_length=50)
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+    category = models.CharField(max_length=50, default='Regular') # Regular, Break, Assembly
+    
+    def __str__(self):
+        return f"{self.name} ({self.start_time}-{self.end_time})"
+
+class Timetable(TenantModel):
+    """A master container for a class's schedule"""
+    title = models.CharField(max_length=100) # e.g., "JSS1 General Timetable"
+    student_class = models.ForeignKey(Class, on_delete=models.CASCADE, related_name='timetables')
+    is_active = models.BooleanField(default=True)
+    
+    def __str__(self):
+        return f"{self.title} - {self.student_class.name}"
+
+class TimetableEntry(TenantModel):
+    """The actual cell: Monday, Period 1, Math, Mr. A"""
+    DAYS = [
+        ('Monday', 'Monday'),
+        ('Tuesday', 'Tuesday'),
+        ('Wednesday', 'Wednesday'),
+        ('Thursday', 'Thursday'),
+        ('Friday', 'Friday'),
+        ('Saturday', 'Saturday'),
+        ('Sunday', 'Sunday'),
+    ]
+    timetable = models.ForeignKey(Timetable, on_delete=models.CASCADE, related_name='entries')
+    day_of_week = models.CharField(max_length=20, choices=DAYS)
+    period = models.ForeignKey(Period, on_delete=models.CASCADE)
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
+    teacher = models.ForeignKey(Teacher, on_delete=models.SET_NULL, null=True, blank=True) # Can be different from main subject teacher
+    
+    class Meta:
+        indexes = [
+            models.Index(fields=['timetable', 'day_of_week']),
+            models.Index(fields=['teacher', 'day_of_week', 'period']), # For conflict checks
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=['timetable', 'day_of_week', 'period'], 
+                name='unique_class_period_slot'
+            ),
+            models.UniqueConstraint(
+                fields=['teacher', 'day_of_week', 'period'], 
+                name='unique_teacher_period_slot'
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.day_of_week} {self.period.name}: {self.subject.name}"

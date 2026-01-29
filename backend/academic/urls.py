@@ -23,6 +23,13 @@ router.register(r'newsletters', views.SchoolEventViewSet, basename='newsletters'
 router.register(r'lessons', views.LessonViewSet)
 router.register(r'conduct-entries', views.ConductEntryViewSet)
 
+# New Module Endpoints
+router.register(r'periods', views.PeriodViewSet, basename='periods')
+router.register(r'timetables', views.TimetableViewSet, basename='timetables')
+router.register(r'timetable-entries', views.TimetableEntryViewSet, basename='timetable-entries')
+router.register(r'grading-schemes', views.GradingSchemeViewSet, basename='grading-schemes')
+router.register(r'grade-ranges', views.PeriodViewSet, basename='grade-ranges') # Correct mapping if ViewSet exists, checking ViewSet
+
 urlpatterns = [
     path('', include(router.urls)),
 ]

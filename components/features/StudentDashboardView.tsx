@@ -59,22 +59,28 @@ export const StudentDashboardView = () => {
 
     const [showReportCard, setShowReportCard] = useState(false);
 
+    // State for Past Reports
+    const [selectedSession, setSelectedSession] = useState<string>('');
+    const [selectedTerm, setSelectedTerm] = useState<string>('');
+
+    // Initialize selection when settings load
+    React.useEffect(() => {
+        if (settings.current_session && !selectedSession) setSelectedSession(settings.current_session);
+        if (settings.current_term && !selectedTerm) setSelectedTerm(settings.current_term);
+    }, [settings, selectedSession, selectedTerm]);
+
     // In a real app, we'd find the student linked to the parent/user
     // For demo/dev, we try to match by name or fallback to the first student
     const student = useMemo(() => {
         let foundStudent: Types.Student | undefined;
-
         if (currentUser?.student_id) {
             foundStudent = students.find((s: Types.Student) => s.id === currentUser.student_id);
         }
-
-        // Use found student, or first student, or a safe fallback
         return foundStudent || students[0] || {
             id: 'demo',
             names: 'Student Name',
             student_no: 'NG-001',
             class_id: '',
-            // Add other required properties to avoid type errors if necessary
             gender: 'Male',
             passport_url: '/placeholder.jpg',
         } as any;
@@ -91,8 +97,21 @@ export const StudentDashboardView = () => {
     const totalPaid = payments.filter(p => p.student_id === student.id).reduce((acc, p) => acc + p.amount, 0);
     const balance = totalBilled - totalPaid;
 
-    // Get Academic Score
-    const myScore = scores.find(s => s.student_id === student.id && s.session === settings.current_session && s.term === settings.current_term);
+    // Available Sessions (from scores + current)
+    const availableSessions = useMemo(() => {
+        const sessions = new Set(scores.filter(s => s.student_id === student.id).map(s => s.session));
+        if (settings.current_session) sessions.add(settings.current_session);
+        return Array.from(sessions).sort().reverse();
+    }, [scores, settings.current_session, student.id]);
+
+    const availableTerms = ['First Term', 'Second Term', 'Third Term'];
+
+    // Get Academic Score based on SELECTION
+    // Default to current if selection is empty (initial load)
+    const targetSession = selectedSession || settings.current_session;
+    const targetTerm = selectedTerm || settings.current_term;
+
+    const myScore = scores.find(s => s.student_id === student.id && s.session === targetSession && s.term === targetTerm);
     const average = myScore?.average || 0;
 
     // Get previous term score for comparison
@@ -291,7 +310,28 @@ export const StudentDashboardView = () => {
                     )}
                     <div className="text-center sm:text-left flex-1 min-w-0">
                         <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-gray-900 uppercase tracking-tight truncate">{student.names}</h1>
-                        <p className="text-gray-500 font-medium text-sm sm:text-base">Admission No: <span className="text-brand-600 font-bold">{student.student_no}</span> | Term: {settings.current_term}</p>
+                        <div className="flex flex-wrap items-center gap-2 mt-1">
+                            <p className="text-gray-500 font-medium text-sm sm:text-base">Admission No: <span className="text-brand-600 font-bold">{student.student_no}</span></p>
+                            <span className="hidden sm:inline text-gray-300">|</span>
+
+                            {/* Session Selector */}
+                            <select
+                                value={selectedSession}
+                                onChange={(e) => setSelectedSession(e.target.value)}
+                                className="bg-gray-50 border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-brand-500 focus:border-brand-500 block p-1 font-bold"
+                            >
+                                {availableSessions.map(s => <option key={s} value={s}>{s}</option>)}
+                            </select>
+
+                            {/* Term Selector */}
+                            <select
+                                value={selectedTerm}
+                                onChange={(e) => setSelectedTerm(e.target.value)}
+                                className="bg-gray-50 border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-brand-500 focus:border-brand-500 block p-1 font-bold"
+                            >
+                                {availableTerms.map(t => <option key={t} value={t}>{t}</option>)}
+                            </select>
+                        </div>
                     </div>
                     {/* Buttons - Stack on mobile, row on larger screens */}
                     <div className="w-full sm:w-auto flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3 mt-2 sm:mt-0">

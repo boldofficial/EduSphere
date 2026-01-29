@@ -2,9 +2,9 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
     title: 'Apply for Admission',
-    description: 'Apply online for admission to SchoolSync Heritage Schools. We offer quality Crèche, Pre-School, and Primary education in Badagry, Lagos. Start your child\'s journey today.',
+    description: 'Apply online for admission to Registra Heritage Schools. We offer quality Crèche, Pre-School, and Primary education in Badagry, Lagos. Start your child\'s journey today.',
     openGraph: {
-        title: 'Apply for Admission | SchoolSync Heritage Schools',
+        title: 'Apply for Admission | Registra Heritage Schools',
         description: 'Apply online for admission. Quality Crèche, Pre-School, and Primary education in Badagry, Lagos.',
     },
 };

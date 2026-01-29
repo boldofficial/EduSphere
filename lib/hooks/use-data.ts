@@ -797,6 +797,44 @@ export function useDeleteAnnouncement() {
 }
 
 // =============================================
+// TIMETABLE
+// =============================================
+export function useTimetables(class_id?: string) {
+    return useQuery({
+        queryKey: ['timetables', class_id],
+        queryFn: () => {
+            const url = class_id ? `/timetables/?student_class=${class_id}` : '/timetables/';
+            return fetchAll<Types.Timetable>(url);
+        },
+    });
+}
+
+export function useCreateTimetable() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (item: Partial<Types.Timetable>) => {
+            const response = await apiClient.post('/timetables/', item);
+            return response.data;
+        },
+        onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['timetables'] }); },
+    });
+}
+
+export function useCreateTimetableEntry() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (item: Partial<Types.TimetableEntry>) => {
+            const response = await apiClient.post('/timetable-entries/', item);
+            return response.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['timetables'] });
+            queryClient.invalidateQueries({ queryKey: ['timetable_entries'] });
+        },
+    });
+}
+
+// =============================================
 // EVENTS
 // =============================================
 export function useEvents() {

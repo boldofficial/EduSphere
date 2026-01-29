@@ -192,6 +192,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         { id: 'teachers', name: 'Teachers' },
         { id: 'staff', name: 'Non-Academic Staff' },
         { id: 'classes', name: 'Classes' },
+        { id: 'timetables', name: 'Timetable' },
         { id: 'grading', name: 'Grading' },
         { id: 'attendance', name: 'Attendance' },
         { id: 'bursary', name: 'Bursary' },
@@ -204,7 +205,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         { id: 'settings', name: 'Settings' },
     ].filter(item => {
         // Dashboard and Settings are always available for Admins
-        if (item.id === 'dashboard' || item.id === 'settings' || item.id === 'data') return true;
+        if (item.id === 'dashboard' || item.id === 'settings' || item.id === 'data' || item.id === 'timetables') return true;
         // Check if module is allowed in plan
         return allowedModules.includes(item.id);
     });

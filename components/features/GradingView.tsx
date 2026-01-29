@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Select } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { ReportCardTemplate } from './grading/ReportCardTemplate';
+import { GradingSchemeManager } from './grading/GradingSchemeManager';
 import { useSchoolStore } from '@/lib/store';
 import { useToast } from '@/components/providers/toast-provider';
 
@@ -58,7 +59,7 @@ export const GradingView: React.FC<GradingViewProps> = ({
     const classSubjects = Utils.getSubjectsForClass(currentClass);
 
     const [selectedSubject, setSelectedSubject] = useState(classSubjects[0] || '');
-    const [activeTab, setActiveTab] = useState<'broadsheet' | 'report' | 'skills' | 'publish'>('broadsheet');
+    const [activeTab, setActiveTab] = useState<'broadsheet' | 'report' | 'skills' | 'publish' | 'schemes'>('broadsheet');
     const [reportStudentId, setReportStudentId] = useState('');
 
     const activeStudents = students.filter(s => s.class_id === selectedClass);
@@ -392,13 +393,19 @@ export const GradingView: React.FC<GradingViewProps> = ({
                     <button onClick={() => setActiveTab('skills')} className={`px-3 lg:px-4 py-2 text-xs lg:text-sm font-medium rounded-md whitespace-nowrap ${activeTab === 'skills' ? 'bg-white shadow text-brand-700' : 'text-gray-600'}`}>Skills</button>
                     <button onClick={() => setActiveTab('report')} className={`px-3 lg:px-4 py-2 text-xs lg:text-sm font-medium rounded-md whitespace-nowrap ${activeTab === 'report' ? 'bg-white shadow text-brand-700' : 'text-gray-600'}`}>Report Cards</button>
                     {currentRole === 'admin' && (
-                        <button onClick={() => setActiveTab('publish')} className={`px-3 lg:px-4 py-2 text-xs lg:text-sm font-medium rounded-md flex items-center gap-1 whitespace-nowrap ${activeTab === 'publish' ? 'bg-white shadow text-brand-700' : 'text-gray-600'}`}>
-                            <Shield className="h-3 w-3 lg:h-4 lg:w-4" />
-                            Publish
-                        </button>
+                        <>
+                            <button onClick={() => setActiveTab('publish')} className={`px-3 lg:px-4 py-2 text-xs lg:text-sm font-medium rounded-md flex items-center gap-1 whitespace-nowrap ${activeTab === 'publish' ? 'bg-white shadow text-brand-700' : 'text-gray-600'}`}>
+                                <Shield className="h-3 w-3 lg:h-4 lg:w-4" />
+                                Publish
+                            </button>
+                            <button onClick={() => setActiveTab('schemes')} className={`px-3 lg:px-4 py-2 text-xs lg:text-sm font-medium rounded-md whitespace-nowrap ${activeTab === 'schemes' ? 'bg-white shadow text-brand-700' : 'text-gray-600'}`}>
+                                Schemes
+                            </button>
+                        </>
                     )}
                 </div>
             </div>
+            {activeTab === 'schemes' && <GradingSchemeManager />}
             {activeTab === 'broadsheet' && (
                 <Card className="min-h-[400px] lg:min-h-[600px] flex flex-col">
                     <div className="flex flex-col sm:flex-row gap-3 lg:gap-4 mb-4 lg:mb-6 p-3 lg:p-4 bg-gray-50 border-b items-end">

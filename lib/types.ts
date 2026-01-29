@@ -367,7 +367,59 @@ export type ViewState =
   | 'calendar'
   | 'analytics'
   | 'learning'
-  | 'conduct';
+  | 'conduct'
+  | 'users';
 
+//Optionally add new Viewstates here for better control
+// | 'timetables'
+// | 'grading_schemes'
+
+// =============================================
+// PHASE 5: Timetable & Scheduling
+// =============================================
+export interface Period extends Entity {
+  name: string;
+  start_time: string; // HH:MM
+  end_time: string; // HH:MM
+  category: 'Regular' | 'Break' | 'Assembly';
+}
+
+export interface TimetableEntry extends Entity {
+  timetable: string; // ID (but serialized nested often uses ID)
+  day_of_week: string;
+  period: string; // ID
+  subject: string; // ID
+  teacher: string | null; // ID
+
+  // Expanded Fields from Serializer
+  subject_name?: string;
+  teacher_name?: string;
+  period_start?: string;
+}
+
+export interface Timetable extends Entity {
+  title: string;
+  student_class: string; // ID
+  class_name?: string;
+  is_active: boolean;
+  entries: TimetableEntry[];
+}
+
+export interface GradingScheme extends Entity {
+  name: string;
+  description: string;
+  is_default: boolean;
+  ranges: GradeRange[];
+}
+
+export interface GradeRange extends Entity {
+  grade: string;
+  min_score: number;
+  max_score: number;
+  remark: string;
+  gpa_point: number;
+}
+
+
+// Restoring UserRole at the end
 export type UserRole = 'super_admin' | 'admin' | 'teacher' | 'student' | 'parent' | 'staff';
-

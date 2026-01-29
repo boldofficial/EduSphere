@@ -2,7 +2,7 @@ import { ImageResponse } from 'next/og'
 
 export const runtime = 'edge'
 
-export const alt = 'SchoolSync Heritage Schools - Quality Faith-Based Education in Badagry, Lagos'
+export const alt = 'Registra - Quality Faith-Based Education'
 export const size = {
     width: 1200,
     height: 630,
@@ -41,7 +41,7 @@ export default async function Image() {
                 >
                     <span style={{ fontSize: 60, color: '#0c4a6e' }}>🍇</span>
                 </div>
-                
+
                 {/* School Name */}
                 <div
                     style={{
@@ -61,9 +61,9 @@ export default async function Image() {
                             textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
                         }}
                     >
-                        SchoolSync Heritage Schools
+                        Registra
                     </h1>
-                    
+
                     {/* Tagline */}
                     <p
                         style={{
@@ -107,7 +107,7 @@ export default async function Image() {
                             margin: '10px 0 0 0',
                         }}
                     >
-                        📍 Badagry, Lagos, Nigeria
+                        📍 Lagos, Nigeria
                     </p>
                 </div>
 
@@ -120,7 +120,7 @@ export default async function Image() {
                         color: '#bae6fd',
                     }}
                 >
-                    fruitfulvineheritageschools.org.ng
+                    myregistra.net
                 </div>
             </div>
         ),

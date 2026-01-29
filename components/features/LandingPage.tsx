@@ -183,13 +183,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ settings, stats }) => 
                         {settings.logo_media ? (
                             <img src={settings.logo_media} alt="School Logo" className="w-full h-full object-contain" />
                         ) : (
-                            <img src="/logo.png" alt="SchoolSync Logo" className="w-full h-full object-contain" />
+                            <img src="/logo.png" alt="Registra Logo" className="w-full h-full object-contain" />
                         )}
                     </div>
 
                     {/* Main Heading */}
                     <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white mb-4 tracking-tight">
-                        {settings.school_name || "SchoolSync"}
+                        {settings.school_name || "Registra"}
                     </h1>
 
                     {/* Tagline */}
@@ -257,7 +257,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ settings, stats }) => 
                                 A Tradition of Excellence & <span className="text-brand-600">Godly Values</span>
                             </h2>
                             <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-                                {settings.landing_about_text || "SchoolSync provides a comprehensive management and learning platform that balances academic rigour with administrative efficiency. We are dedicated to syncing all aspects of education in one place."}
+                                {settings.landing_about_text || "Registra provides a comprehensive management and learning platform that balances academic rigour with administrative efficiency. We are dedicated to syncing all aspects of education in one place."}
                             </p>
 
                             <div className="grid sm:grid-cols-2 gap-8 mb-10">
@@ -313,7 +313,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ settings, stats }) => 
                         </div>
                         <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">What We Stand For</h2>
                         <p className="text-lg text-gray-600">
-                            At SchoolSync, these values guide everything we do — syncing success and inspiring excellence.
+                            At Registra, these values guide everything we do — syncing success and inspiring excellence.
                         </p>
                     </div>
 
@@ -434,7 +434,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ settings, stats }) => 
                                         </div>
                                         <div>
                                             <p className="text-sm text-brand-200">Email</p>
-                                            <p className="font-semibold text-lg break-all">info@schoolsync.ng</p>
+                                            <p className="font-semibold text-lg break-all">info@myregistra.net</p>
                                         </div>
                                     </div>
                                     <div className="flex items-start gap-4">

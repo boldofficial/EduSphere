@@ -10,10 +10,10 @@ import Script from 'next/script';
 const getStructuredData = (settings: any) => ({
     "@context": "https://schema.org",
     "@type": "EducationalOrganization",
-    "@id": `https://${settings.school_name?.replace(/\s+/g, '').toLowerCase()}.schoolsync.ng`,
+    "@id": `https://${settings.school_name?.replace(/\s+/g, '').toLowerCase()}.myregistra.net`,
     "name": settings.school_name || "School Name",
     "description": settings.school_tagline || "Quality Education",
-    "url": `https://${settings.school_name?.replace(/\s+/g, '').toLowerCase()}.schoolsync.ng`,
+    "url": `https://${settings.school_name?.replace(/\s+/g, '').toLowerCase()}.myregistra.net`,
     "logo": settings.logo || "",
     "email": settings.school_email || "",
     "address": {

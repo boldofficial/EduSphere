@@ -10,11 +10,11 @@ const MAX_SUBMISSIONS = 5; // Max 5 submissions per hour per IP
 function isRateLimited(ip: string): boolean {
     const now = Date.now();
     const userSubmissions = submissions.get(ip) || [];
-    
+
     // Filter out old submissions
     const recentSubmissions = userSubmissions.filter(time => now - time < RATE_LIMIT_WINDOW);
     submissions.set(ip, recentSubmissions);
-    
+
     return recentSubmissions.length >= MAX_SUBMISSIONS;
 }
 
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
         // Get client IP for rate limiting
         const forwarded = request.headers.get('x-forwarded-for');
         const ip = forwarded ? forwarded.split(',')[0].trim() : 'unknown';
-        
+
         // Check rate limit
         if (isRateLimited(ip)) {
             logWarn('Contact form rate limited', { ip });
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Validate field lengths
-        if (name.length > 100 || email.length > 100 || (phone && phone.length > 20) || 
+        if (name.length > 100 || email.length > 100 || (phone && phone.length > 20) ||
             (subject && subject.length > 200) || message.length > 5000) {
             return NextResponse.json(
                 { error: 'One or more fields exceed maximum length.' },
@@ -140,7 +140,7 @@ export async function POST(request: NextRequest) {
                         <!-- Header -->
                         <div style="background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%); padding: 30px; text-align: center;">
                             <h1 style="color: #ffffff; margin: 0; font-size: 24px;">New Contact Form Submission</h1>
-                            <p style="color: #b8d4e8; margin: 10px 0 0; font-size: 14px;">SchoolSync Heritage Schools</p>
+                            <p style="color: #b8d4e8; margin: 10px 0 0; font-size: 14px;">Registra Heritage Schools</p>
                         </div>
                         
                         <!-- Content -->
@@ -210,30 +210,30 @@ From: www.fruitfulvineheritageschools.org.ng
 
         // Send email
         await transporter.sendMail(mailOptions);
-        
+
         // Record successful submission for rate limiting
         recordSubmission(ip);
-        
-        logInfo('Contact form submitted successfully', { 
-            name: sanitizedData.name, 
-            email: sanitizedData.email 
+
+        logInfo('Contact form submitted successfully', {
+            name: sanitizedData.name,
+            email: sanitizedData.email
         });
 
-        return NextResponse.json({ 
-            success: true, 
-            message: 'Thank you! Your message has been sent successfully.' 
+        return NextResponse.json({
+            success: true,
+            message: 'Thank you! Your message has been sent successfully.'
         });
 
     } catch (error) {
         // Log detailed error for debugging
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         const errorStack = error instanceof Error ? error.stack : undefined;
-        logError('Contact form error', error, { 
+        logError('Contact form error', error, {
             errorMessage,
             smtpHost: process.env.SMTP_HOST,
             smtpPort: process.env.SMTP_PORT,
         });
-        
+
         // Check for specific error types
         if (errorMessage.includes('ECONNREFUSED') || errorMessage.includes('ETIMEDOUT')) {
             return NextResponse.json(
@@ -241,14 +241,14 @@ From: www.fruitfulvineheritageschools.org.ng
                 { status: 503 }
             );
         }
-        
+
         if (errorMessage.includes('authentication') || errorMessage.includes('auth')) {
             return NextResponse.json(
                 { error: 'Email service configuration error. Please contact us by phone.' },
                 { status: 503 }
             );
         }
-        
+
         return NextResponse.json(
             { error: 'Failed to send message. Please try again later.' },
             { status: 500 }

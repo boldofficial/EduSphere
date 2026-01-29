@@ -119,7 +119,7 @@ export default function OnboardingPage() {
             <div className="max-w-3xl mx-auto">
                 <div className="mb-10 text-center">
                     <h1 className="text-3xl font-black text-gray-900 mb-2">Setup your School</h1>
-                    <p className="text-gray-500">Complete these steps to launch your SchoolSync platform.</p>
+                    <p className="text-gray-500">Complete these steps to launch your Registra platform.</p>
                 </div>
 
                 <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
@@ -178,7 +178,7 @@ export default function OnboardingPage() {
                                 </h2>
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 mb-1">School Name</label>
-                                    <input {...register('school_name')} placeholder="e.g. SchoolSync College" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-500" />
+                                    <input {...register('school_name')} placeholder="e.g. Registra College" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-500" />
                                     {errors.school_name && <p className="text-red-500 text-sm mt-1">{errors.school_name.message}</p>}
                                 </div>
                                 <div>
@@ -249,7 +249,7 @@ export default function OnboardingPage() {
                                         <div className="grid grid-cols-2 gap-4 text-sm">
                                             <div>
                                                 <p className="opacity-60">Bank Name</p>
-                                                <p className="font-bold">{platformSettings?.bank_name || 'SchoolSync Central Bank'}</p>
+                                                <p className="font-bold">{platformSettings?.bank_name || 'Registra Central Bank'}</p>
                                             </div>
                                             <div>
                                                 <p className="opacity-60">Account Number</p>
@@ -257,7 +257,7 @@ export default function OnboardingPage() {
                                             </div>
                                             <div>
                                                 <p className="opacity-60">Account Name</p>
-                                                <p className="font-bold">{platformSettings?.account_name || 'SCHOOLSYNC SOLUTIONS'}</p>
+                                                <p className="font-bold">{platformSettings?.account_name || 'REGISTRA SOLUTIONS'}</p>
                                             </div>
                                         </div>
 

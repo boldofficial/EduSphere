@@ -5,7 +5,7 @@ export async function middleware(request: NextRequest) {
     const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'localhost:3000';
 
     // 1. Identify if we are on a subdomain of the root domain
-    // Example: vine.schoolsync.ng vs schoolsync.ng
+    // Example: vine.myregistra.net vs myregistra.net
     const isSubdomain = hostname.endsWith(`.${rootDomain}`);
     const isRoot = hostname === rootDomain || hostname === `www.${rootDomain}`;
 

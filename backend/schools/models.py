@@ -183,7 +183,7 @@ class SchoolSettings(models.Model):
         return f"Settings for {self.school.name}"
 
 class PlatformSettings(models.Model):
-    """Global configuration for the entire SchoolSync platform (Super Admin only)."""
+    """Global configuration for the entire Registra platform (Super Admin only)."""
     # Platform Bank Details (for school onboarding/subscriptions)
     bank_name = models.CharField(max_length=255, null=True, blank=True)
     account_name = models.CharField(max_length=255, null=True, blank=True)

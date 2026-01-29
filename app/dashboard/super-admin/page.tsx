@@ -172,10 +172,10 @@ export default function SuperAdminDashboard() {
             <aside className="w-64 bg-brand-950 text-white fixed h-full z-10 flex flex-col">
                 <div className="p-6 border-b border-slate-700/50 flex items-center gap-3">
                     <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center p-1 shadow-lg">
-                        <img src="/logo.png" alt="SchoolSync Logo" className="w-full h-full object-contain" />
+                        <img src="/logo.png" alt="Registra Logo" className="w-full h-full object-contain" />
                     </div>
                     <div>
-                        <h1 className="text-xl font-black tracking-tight text-white">SchoolSync</h1>
+                        <h1 className="text-xl font-black tracking-tight text-white">Registra</h1>
                         <p className="text-[10px] text-accent-500 uppercase tracking-[0.2em] font-black">Super Admin</p>
                     </div>
                 </div>
@@ -1375,7 +1375,7 @@ function PlatformSettingsTab({ settings }: { settings: any }) {
                                 value={editedSettings.account_name || ''}
                                 onChange={(e) => setEditedSettings({ ...editedSettings, account_name: e.target.value })}
                                 className="w-full bg-gray-50 border-0 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-brand-600 transition-all outline-none"
-                                placeholder="SchoolSync Global"
+                                placeholder="Registra Global"
                             />
                         </div>
                     </div>
@@ -1444,7 +1444,7 @@ function SchoolEditModal({ school, onClose, onSave }: { school: any; onClose: ()
                                     onChange={e => setFormData({ ...formData, domain: e.target.value })}
                                     className="w-full bg-gray-50 border-0 rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-brand-600 transition-all outline-none pr-32"
                                 />
-                                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-gray-300 uppercase">.SchoolSync.ng</div>
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-gray-300 uppercase">.myregistra.net</div>
                             </div>
                         </div>
                         <div className="space-y-2">

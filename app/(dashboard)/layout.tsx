@@ -109,6 +109,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         { id: 'teachers', name: 'Teachers', href: '/teachers', icon: Users },
         { id: 'staff', name: 'Non-Academic', icon: UserCog, href: '/staff' },
         { id: 'classes', name: 'Classes', href: '/classes', icon: BookOpen },
+        { id: 'timetables', name: 'Timetable', href: '/timetable', icon: Calendar },
         { id: 'learning', name: 'Learning Center', href: '/learning', icon: BookOpen }, // Using BookOpen for now, or find a better one
         { id: 'grading', name: 'Grading', href: '/grading', icon: ClipboardList },
         { id: 'attendance', name: 'Attendance', href: '/attendance', icon: CalendarCheck },
@@ -154,7 +155,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     // Master list of allowed IDs considering both Role Permissions AND Plan Limitations
     const masterAllowedNavIds = allowedNavIds.filter((id: string) => {
         // Special Case: Dashboard and Settings are core platform features
-        if (id === 'dashboard' || id === 'settings' || id === 'data') return true;
+        if (id === 'dashboard' || id === 'settings' || id === 'data' || id === 'timetables') return true;
 
         // The module must be in both the user's role-permission list AND the school's plan-allowed list
         return (schoolAllowedModules as string[]).includes(id);
