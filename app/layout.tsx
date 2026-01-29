@@ -43,11 +43,7 @@ export const metadata: Metadata = {
             },
         ],
     },
-    icons: {
-        icon: '/favicon.png',
-        shortcut: '/favicon.png',
-        apple: '/favicon.png',
-    },
+
     twitter: {
         card: 'summary_large_image',
         site: '@registra',
@@ -55,7 +51,7 @@ export const metadata: Metadata = {
         title: 'Registra - Efficient School Management',
         description: 'The operating system for modern schools. Unified management for students, staff, and academics.',
         images: {
-            url: 'https://myregistra.net/favicon.png',
+            url: '/opengraph-image.png',
             alt: 'Registra Logo',
         },
     },
