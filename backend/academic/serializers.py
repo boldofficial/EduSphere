@@ -77,14 +77,9 @@ class TeacherSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
+        from core.media_utils import get_media_url
         if instance.passport_url:
-            from django.core.files.storage import default_storage
-            # Check if it's already a full URL (legacy)
-            if not instance.passport_url.startswith('http'):
-                try:
-                    ret['passport_url'] = default_storage.url(instance.passport_url)
-                except Exception:
-                    pass
+            ret['passport_url'] = get_media_url(instance.passport_url)
         return ret
 
 class ClassSerializer(serializers.ModelSerializer):
@@ -166,14 +161,9 @@ class StudentSerializer(serializers.ModelSerializer):
         # Force class_id to be an integer (native ID type) to match frontend expectation
         ret['class_id'] = instance.current_class.id if instance.current_class else None
         
+        from core.media_utils import get_media_url
         if instance.passport_url:
-            from django.core.files.storage import default_storage
-            # Check if it's already a full URL (legacy)
-            if not instance.passport_url.startswith('http'):
-                try:
-                    ret['passport_url'] = default_storage.url(instance.passport_url)
-                except Exception:
-                    pass
+            ret['passport_url'] = get_media_url(instance.passport_url)
         return ret
 
     def to_internal_value(self, data):
@@ -182,42 +172,6 @@ class StudentSerializer(serializers.ModelSerializer):
         if data.get('dob') == '':
             data['dob'] = None
             
-        # Handle Base64 Image Upload
-        passport_data = data.get('passport_url')
-        if passport_data and isinstance(passport_data, str) and passport_data.startswith('data:image'):
-            try:
-                # Format: "data:image/png;base64,iVBORw0KG..."
-                header, imgstr = passport_data.split(';base64,') 
-                ext = header.split('/')[-1] 
-                
-                # Generate unique filename
-                import uuid
-                import base64
-                from django.core.files.base import ContentFile
-                from django.core.files.storage import default_storage
-                
-                filename = f"passports/{uuid.uuid4()}.{ext}"
-                decoded_file = base64.b64decode(imgstr)
-                
-                # Save to configured storage (R2/S3 or Local)
-                file_name = default_storage.save(filename, ContentFile(decoded_file))
-                file_url = default_storage.url(file_name)
-                
-                # Log the upload for debugging
-                with open('r2_upload_log.txt', 'a') as log:
-                    import datetime
-                    log.write(f"[{datetime.datetime.now()}] Uploaded {file_name}. URL: {file_url}\n")
-                
-                # Replace base64 data with file URL
-                data['passport_url'] = file_url
-                
-            except Exception as e:
-                # If anything fails, log it and let normal validation proceed (which might fail)
-                print(f"Base64 Image Upload Failed: {e}")
-                with open('r2_upload_log.txt', 'a') as log:
-                    import datetime
-                    log.write(f"[{datetime.datetime.now()}] ERROR: {e}\n")
-
         return super().to_internal_value(data)
 
     def create(self, validated_data):
@@ -482,10 +436,12 @@ class LessonSerializer(serializers.ModelSerializer):
     class_name = serializers.CharField(source='student_class.name', read_only=True)
     teacher_name = serializers.CharField(source='teacher.name', read_only=True)
     
-    class Meta:
-        model = Lesson
-        fields = '__all__'
-        read_only_fields = ('school', 'teacher')
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        from core.media_utils import get_media_url
+        if instance.file_url:
+            ret['file_url'] = get_media_url(instance.file_url)
+        return ret
 
 class ConductEntrySerializer(serializers.ModelSerializer):
     student_name = serializers.CharField(source='student.names', read_only=True)

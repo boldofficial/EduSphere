@@ -2,12 +2,28 @@ from rest_framework import serializers
 from .models import Assignment, Submission, Quiz, Question, Option, Attempt, StudentAnswer
 
 class AssignmentSerializer(serializers.ModelSerializer):
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        from core.media_utils import get_media_url
+        if instance.attachment_url:
+            ret['attachment_url'] = get_media_url(instance.attachment_url)
+        if hasattr(instance, 'image_url') and instance.image_url:
+            ret['image_url'] = get_media_url(instance.image_url)
+        return ret
+
     class Meta:
         model = Assignment
         fields = '__all__'
         read_only_fields = ('school',)
 
 class SubmissionSerializer(serializers.ModelSerializer):
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        from core.media_utils import get_media_url
+        if instance.submission_file:
+            ret['submission_file'] = get_media_url(instance.submission_file)
+        return ret
+
     class Meta:
         model = Submission
         fields = '__all__'

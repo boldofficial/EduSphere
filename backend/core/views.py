@@ -49,13 +49,7 @@ class SettingsView(APIView):
 
             from django.core.files.storage import default_storage
             
-            def get_url(path):
-                if not path: return None
-                if path.startswith('http'): return path
-                try:
-                    return default_storage.url(path)
-                except Exception:
-                    return path
+            from core.media_utils import get_media_url
 
             # Merge School and Settings data
             return Response({
@@ -65,15 +59,15 @@ class SettingsView(APIView):
                 'school_email': school.email or '',
                 'school_phone': school.phone or '',
                 'school_tagline': settings_obj.school_tagline or '',
-                'logo_media': get_url(school.logo),
+                'logo_media': get_media_url(school.logo),
                 'current_session': settings_obj.current_session,
                 'current_term': settings_obj.current_term,
-                'watermark_media': get_url(settings_obj.watermark_media),
+                'watermark_media': get_media_url(settings_obj.watermark_media),
                 
                 'director_name': settings_obj.director_name or '',
-                'director_signature': get_url(settings_obj.director_signature),
+                'director_signature': get_media_url(settings_obj.director_signature),
                 'head_of_school_name': settings_obj.head_of_school_name or '',
-                'head_of_school_signature': get_url(settings_obj.head_of_school_signature),
+                'head_of_school_signature': get_media_url(settings_obj.head_of_school_signature),
                 
                 'subjects_global': settings_obj.subjects_global,
                 'terms': settings_obj.terms_list,
@@ -90,17 +84,17 @@ class SettingsView(APIView):
                 'landing_hero_subtitle': settings_obj.landing_hero_subtitle or '',
                 'landing_features': settings_obj.landing_features or '',
                 'landing_about_text': settings_obj.landing_about_text or '',
-                'landing_hero_image': get_url(settings_obj.landing_hero_image),
-                'landing_gallery_images': [get_url(img) for img in settings_obj.landing_gallery_images],
+                'landing_hero_image': get_media_url(settings_obj.landing_hero_image),
+                'landing_gallery_images': [get_media_url(img) for img in settings_obj.landing_gallery_images],
                 'landing_primary_color': settings_obj.landing_primary_color,
                 'landing_show_stats': settings_obj.landing_show_stats,
                 'landing_cta_text': settings_obj.landing_cta_text,
                 'landing_core_values': settings_obj.landing_core_values,
                 'landing_academic_programs': [
-                    {**p, 'image': get_url(p.get('image'))} for p in settings_obj.landing_academic_programs
+                    {**p, 'image': get_media_url(p.get('image'))} for p in settings_obj.landing_academic_programs
                 ],
                 'landing_testimonials': [
-                    {**t, 'image': get_url(t.get('image'))} for t in settings_obj.landing_testimonials
+                    {**t, 'image': get_media_url(t.get('image'))} for t in settings_obj.landing_testimonials
                 ],
                 'landing_stats_config': settings_obj.landing_stats_config,
                 

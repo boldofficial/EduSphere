@@ -8,6 +8,13 @@ class SubscriptionPlanSerializer(serializers.ModelSerializer):
 
 class SubscriptionSerializer(serializers.ModelSerializer):
     plan_name = serializers.CharField(source='plan.name', read_only=True)
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        from core.media_utils import get_media_url
+        if instance.payment_proof:
+            ret['payment_proof'] = get_media_url(instance.payment_proof)
+        return ret
+
     class Meta:
         model = Subscription
         fields = ['status', 'payment_method', 'payment_proof', 'plan_name', 'start_date', 'end_date']
@@ -28,13 +35,9 @@ class SchoolSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
+        from core.media_utils import get_media_url
         if instance.logo:
-            from django.core.files.storage import default_storage
-            if not instance.logo.startswith('http'):
-                try:
-                    ret['logo'] = default_storage.url(instance.logo)
-                except Exception:
-                    pass
+            ret['logo'] = get_media_url(instance.logo)
         return ret
 
     def get_subscription_status(self, obj):

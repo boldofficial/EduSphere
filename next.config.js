@@ -72,6 +72,16 @@ const nextConfig = {
     // Production optimizations
     poweredByHeader: false,
     compress: true,
+
+    async rewrites() {
+        const DJANGO_API_URL = process.env.DJANGO_API_URL || 'http://127.0.0.1:8000';
+        return [
+            {
+                source: '/media/:path*',
+                destination: `${DJANGO_API_URL}/media/:path*`,
+            },
+        ];
+    },
 }
 
 const withPWA = require('next-pwa')({
