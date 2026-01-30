@@ -10,6 +10,7 @@ from academic.models import Student, Class
 from core.pagination import StandardPagination, LargePagination
 from core.cache_utils import CachingMixin
 from django.utils import timezone
+from django.db.models import Sum, Q, Count
 import uuid
 
 class TenantViewSet(CachingMixin, viewsets.ModelViewSet):
@@ -170,3 +171,130 @@ class ExpenseViewSet(TenantViewSet):
             save_kwargs['school'] = self.request.user.school
             
         serializer.save(**save_kwargs)
+
+
+class DashboardViewSet(viewsets.ViewSet):
+    """
+    ViewSet for dashboard-specific statistics and aggregations.
+    This offloads heavy client-side calculations to optimized DB queries.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    @action(detail=False, methods=['get'], url_path='financial-stats')
+    def financial_stats(self, request):
+        school = request.user.school
+        session = request.query_params.get('session')
+        term = request.query_params.get('term')
+
+        if not all([session, term]):
+            return Response({"error": "Session and term are required"}, status=400)
+
+        # Caching logic
+        from django.core.cache import cache
+        cache_key = f"api:bursary:dashboard:{school.id}:{session}:{term}"
+        cached_data = cache.get(cache_key)
+        if cached_data:
+            return Response(cached_data)
+
+        # 1. Income & Expenses
+        income_data = Payment.objects.filter(
+            school=school, session=session, term=term, status='completed'
+        ).aggregate(total=Sum('amount'), count=Count('id'))
+        
+        expense_data = Expense.objects.filter(
+            school=school, session=session, term=term
+        ).aggregate(total=Sum('amount'), count=Count('id'))
+
+        total_income = income_data['total'] or 0
+        total_expenses = expense_data['total'] or 0
+        
+        # 2. Expected Income (Aggregated calculation)
+        # This is an approximation of the client-side logic for high performance
+        # Mandatory Class Fees
+        mandatory_fees = FeeItem.objects.filter(
+            school=school, session=session, term=term, 
+            category__is_optional=False
+        ).select_related('target_class')
+        
+        # Count students per class
+        class_student_counts = Student.objects.filter(school=school).values('current_class').annotate(count=Count('id'))
+        student_count_map = {item['current_class']: item['count'] for item in class_student_counts}
+        
+        expected_mandatory = 0
+        for fee in mandatory_fees:
+            if fee.target_class_id is None:
+                # Flat fee for all students
+                total_students = sum(student_count_map.values())
+                expected_mandatory += fee.amount * total_students
+            else:
+                count = student_count_map.get(fee.target_class_id, 0)
+                expected_mandatory += fee.amount * count
+
+        # Optional Fees Assigned (only if not already captured in mandatory)
+        # We look at StudentFee which explicitly links students to fees
+        expected_optional = StudentFee.objects.filter(
+            school=school, fee_item__session=session, fee_item__term=term,
+            fee_item__category__is_optional=True
+        ).aggregate(total=Sum('fee_item__amount'))['total'] or 0
+
+        # Adjust for discounts (approximated from StudentFee records)
+        discounts = StudentFee.objects.filter(
+            school=school, fee_item__session=session, fee_item__term=term
+        ).aggregate(total=Sum('discount_amount'))['total'] or 0
+
+        total_expected = expected_mandatory + expected_optional - discounts
+        
+        # 3. Method Breakdown
+        payments_by_method = Payment.objects.filter(
+            school=school, session=session, term=term, status='completed'
+        ).values('method').annotate(total=Sum('amount'))
+
+        # 4. Expense Breakdown
+        expenses_by_category = Expense.objects.filter(
+            school=school, session=session, term=term
+        ).values('category').annotate(total=Sum('amount'))
+
+        # 5. Monthly Trend (Income vs Expense)
+        # We group by month (Trunc Month)
+        from django.db.models.functions import TruncMonth
+        income_trend = Payment.objects.filter(
+            school=school, session=session, term=term, status='completed'
+        ).annotate(month=TruncMonth('date')).values('month').annotate(total=Sum('amount')).order_by('month')
+        
+        expense_trend = Expense.objects.filter(
+            school=school, session=session, term=term
+        ).annotate(month=TruncMonth('date')).values('month').annotate(total=Sum('amount')).order_by('month')
+
+        # Merge trends
+        trend_map = {}
+        for item in income_trend:
+            m = item['month'].strftime('%b')
+            trend_map[m] = {"month": m, "income": float(item['total']), "expense": 0}
+        
+        for item in expense_trend:
+            m = item['month'].strftime('%b')
+            if m not in trend_map:
+                trend_map[m] = {"month": m, "income": 0, "expense": float(item['total'])}
+            else:
+                trend_map[m]["expense"] = float(item['total'])
+
+        result = {
+            "summary": {
+                "total_income": total_income,
+                "total_expenses": total_expenses,
+                "net_balance": total_income - total_expenses,
+                "total_expected": float(total_expected),
+                "income_count": income_data['count'],
+                "expense_count": expense_data['count'],
+            },
+            "breakdown": {
+                "methods": {item['method']: item['total'] for item in payments_by_method},
+                "expense_categories": {item['category']: item['total'] for item in expenses_by_category},
+                "monthly_trend": list(trend_map.values())
+            }
+        }
+        
+        # Store in cache
+        cache.set(cache_key, result, 900) # 15 minutes
+        
+        return Response(result)

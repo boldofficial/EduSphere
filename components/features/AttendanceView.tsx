@@ -14,16 +14,22 @@ interface AttendanceViewProps {
     attendance: Types.Attendance[];
     settings: Types.Settings;
     onSave: (att: Types.Attendance) => void;
+
+    // Lifted State Props
+    selectedClass: string;
+    setSelectedClass: (val: string) => void;
+    date: string;
+    setDate: (val: string) => void;
+    isLoading?: boolean;
 }
 
 export const AttendanceView: React.FC<AttendanceViewProps> = ({
-    students, classes, attendance, settings, onSave
+    students, classes, attendance, settings, onSave,
+    selectedClass, setSelectedClass, date, setDate, isLoading = false
 }) => {
-    const [selectedClass, setSelectedClass] = useState(classes[0]?.id || '');
-    const [date, setDate] = useState(Utils.getTodayString());
     const { addToast } = useToast();
-    const activeStudents = students.filter(s => s.class_id === selectedClass);
-    const existingRecord: Types.Attendance | undefined = attendance.find((a: Types.Attendance) => a.class_id === selectedClass && a.date === date);
+    const activeStudents = students; // Already filtered by parent
+    const existingRecord: Types.Attendance | undefined = attendance[0]; // Filtered by backend to match class/date
     const [currentStatuses, setCurrentStatuses] = useState<Record<string, 'present' | 'absent' | 'late'>>({});
 
     const isTermMismatch = existingRecord && existingRecord.term !== settings.current_term;
@@ -114,7 +120,15 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                         )}
                     </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 relative">
+                    {isLoading && (
+                        <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] flex items-center justify-center z-10 rounded-lg">
+                            <div className="flex flex-col items-center gap-2">
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-600"></div>
+                                <p className="text-xs font-medium text-brand-700">Refetching register...</p>
+                            </div>
+                        </div>
+                    )}
                     {activeStudents.map(s => (
                         <div key={s.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
                             <div><div className="font-bold text-gray-900">{s.names}</div><div className="text-xs text-gray-500">{s.student_no}</div></div>

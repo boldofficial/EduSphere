@@ -46,6 +46,7 @@ export const queryKeys = {
     quizzes: ['quizzes'] as const,
     questions: ['questions'] as const,
     submissions: ['submissions'] as const,
+    bursaryDashboard: (session: string, term: string) => ['bursary', 'dashboard', session, term] as const,
 };
 
 // Generic fetcher
@@ -600,6 +601,22 @@ export function useDeletePayment() {
 }
 
 // =============================================
+// BURSARY DASHBOARD
+// =============================================
+export function useFinancialStats(session: string, term: string, enabled = true) {
+    return useQuery({
+        queryKey: queryKeys.bursaryDashboard(session, term),
+        queryFn: async () => {
+            const response = await apiClient.get('/dashboard/financial-stats/', {
+                params: { session, term }
+            });
+            return response.data as Types.FinancialStats;
+        },
+        enabled: enabled && !!session && !!term,
+    });
+}
+
+// =============================================
 // EXPENSES
 // =============================================
 export function useExpenses() {
@@ -738,17 +755,17 @@ export function useDeleteScore() {
 // =============================================
 // ATTENDANCE
 // =============================================
-export function useAttendance() {
+export function useAttendance(filters?: { class_id?: string; date?: string }) {
     return useQuery({
-        queryKey: queryKeys.attendance,
-        queryFn: () => fetchAll<Types.Attendance>('/attendance-sessions/'),
+        queryKey: [...queryKeys.attendance, filters],
+        queryFn: () => fetchAll<Types.Attendance>('/attendance-sessions/', filters),
     });
 }
 
-export function usePaginatedAttendance(page = 1, pageSize = 50) {
+export function usePaginatedAttendance(page = 1, pageSize = 50, filters?: { class_id?: string; date?: string }) {
     return useQuery({
-        queryKey: [...queryKeys.attendance, { page, pageSize }],
-        queryFn: () => fetchPaginated<any>('/attendance-sessions/', page, pageSize),
+        queryKey: [...queryKeys.attendance, { page, pageSize, ...filters }],
+        queryFn: () => fetchPaginated<any>('/attendance-sessions/', page, pageSize, filters),
     });
 }
 

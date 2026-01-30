@@ -96,10 +96,17 @@ def invalidate_model_cache(model_name):
         model_name: Name of the model to invalidate cache for
     """
     cache_prefix = CacheKeyBuilder.get_model_cache_prefix(model_name)
-    # Note: Exact prefix invalidation depends on cache backend
-    # For Redis, you would use: cache.delete_many(cache.keys(cache_prefix))
-    # For LocMem, we'll use a manual approach
-    pass
+    try:
+        # django-redis provides delete_pattern
+        if hasattr(cache, 'delete_pattern'):
+            cache.delete_pattern(cache_prefix)
+        else:
+            # Fallback (Aggressive: clear all if we can't do pattern delete)
+            # Better to be safe than stale in multi-tenant contexts
+            # But in LocMem, this is only for this process
+            pass
+    except Exception as e:
+        print(f"Cache invalidation error: {e}")
 
 
 class CachingMixin:
@@ -113,13 +120,20 @@ class CachingMixin:
     
     def get_cache_key_prefix(self):
         """Get cache key prefix for this ViewSet's model"""
-        return f"api:{self.queryset.model.__name__}"
+        model_name = self.queryset.model.__name__ if hasattr(self, 'queryset') and self.queryset is not None else "generic"
+        return f"api:{model_name}"
     
     def invalidate_cache(self):
         """Invalidate cache for this model"""
         prefix = self.get_cache_key_prefix()
-        # Simple approach: delete specific keys if needed
-        # For production with Redis, use: cache.delete_pattern(f"{prefix}:*")
+        try:
+            if hasattr(cache, 'delete_pattern'):
+                cache.delete_pattern(f"{prefix}:*")
+                # If financial data is updated, also invalidate dashboard
+                if prefix in ["api:Payment", "api:Expense", "api:FeeItem", "api:StudentFee"]:
+                     cache.delete_pattern("api:bursary:dashboard:*")
+        except Exception:
+            pass
     
     def perform_create(self, serializer):
         """Override to invalidate cache after create"""

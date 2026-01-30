@@ -8,6 +8,7 @@ import {
 } from 'recharts';
 import * as Types from '@/lib/types';
 import * as Utils from '@/lib/utils';
+import { useFinancialStats } from '@/lib/hooks/use-data';
 
 interface FinancialDashboardProps {
     students: Types.Student[];
@@ -23,74 +24,58 @@ const COLORS = ['#3b6fb6', '#8FC31F', '#F59E0B', '#DC2626', '#8b5cf6', '#ec4899'
 export const FinancialDashboard: React.FC<FinancialDashboardProps> = ({
     students, classes, fees, payments, expenses, settings
 }) => {
-    // Filter for current session/term
+    // Phase 2: Use backend-calculated stats for performance
+    const { data: stats, isLoading } = useFinancialStats(settings.current_session, settings.current_term);
+
+    // Filter for current session/term (Fallback for charts not yet in specialized stats)
     const currentPayments = payments.filter(p => p.session === settings.current_session && p.term === settings.current_term);
     const currentExpenses = expenses.filter(e => e.session === settings.current_session && e.term === settings.current_term);
-    const currentFees = fees.filter(f => f.session === settings.current_session && f.term === settings.current_term);
 
-    // Calculate totals with numeric coercion for safety
-    const totalIncome = currentPayments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
-    const totalExpenses = currentExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
-    const netBalance = totalIncome - totalExpenses;
-
-    // Calculate expected vs collected using the same utility as invoices/debtor reports
-    const expectedIncome = students.reduce((sum, student) => {
-        const { totalBill } = Utils.getStudentBalance(
-            student,
-            fees,
-            payments,
-            settings.current_session,
-            settings.current_term
-        );
+    // Derived values from backend stats
+    const totalIncome = stats?.summary.total_income ?? currentPayments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+    const totalExpenses = stats?.summary.total_expenses ?? currentExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+    const netBalance = stats?.summary.net_balance ?? (totalIncome - totalExpenses);
+    const expectedIncome = stats?.summary.total_expected ?? students.reduce((sum, student) => {
+        const { totalBill } = Utils.getStudentBalance(student, fees, payments, settings.current_session, settings.current_term);
         return sum + totalBill;
     }, 0);
+
+    const totalOutstanding = expectedIncome - totalIncome;
     const collectionRate = expectedIncome > 0 ? (totalIncome / expectedIncome) * 100 : 0;
 
-    // Chart Data: Payment Methods
-    const paymentsByMethod = currentPayments.reduce((acc, p) => {
-        const method = p.method || 'other';
-        acc[method] = (acc[method] || 0) + (Number(p.amount) || 0);
-        return acc;
-    }, {} as Record<string, number>);
+    // Chart Data: Payment Methods from stats or fallback
+    const paymentChartData = stats
+        ? Object.entries(stats.breakdown.methods).map(([name, value]) => ({ name, value }))
+        : Object.entries(currentPayments.reduce((acc, p) => {
+            const method = p.method || 'other';
+            acc[method] = (acc[method] || 0) + (Number(p.amount) || 0);
+            return acc;
+        }, {} as Record<string, number>)).map(([name, value]) => ({ name, value }));
 
-    const paymentChartData = Object.entries(paymentsByMethod).map(([name, value]) => ({ name, value }));
+    // Chart Data: Expense Categories from stats or fallback
+    const expenseChartData = stats
+        ? Object.entries(stats.breakdown.expense_categories).map(([name, value]) => ({ name, value }))
+        : Object.entries(currentExpenses.reduce((acc, e) => {
+            const category = e.category || 'other';
+            acc[category] = (acc[category] || 0) + (Number(e.amount) || 0);
+            return acc;
+        }, {} as Record<string, number>)).map(([name, value]) => ({ name, value }));
 
-    // Chart Data: Expense Categories
-    const expensesByCategory = currentExpenses.reduce((acc, e) => {
-        const category = e.category || 'other';
-        acc[category] = (acc[category] || 0) + (Number(e.amount) || 0);
-        return acc;
-    }, {} as Record<string, number>);
-
-    const expenseChartData = Object.entries(expensesByCategory).map(([name, value]) => ({ name, value }));
-
-    // Chart Data: Revenue vs Expenses (Monthly)
-    // For demo, we'll group by month from the current term's payments
-    const monthlyData = currentPayments.reduce((acc, p) => {
-        const month = p.date ? new Date(p.date).toLocaleString('default', { month: 'short' }) : 'Unknown';
-        if (!acc[month]) acc[month] = { month, income: 0, expense: 0 };
-        acc[month].income += (Number(p.amount) || 0);
-        return acc;
-    }, {} as Record<string, any>);
-
-    currentExpenses.forEach(e => {
-        const month = e.date ? new Date(e.date).toLocaleString('default', { month: 'short' }) : 'Unknown';
-        if (!monthlyData[month]) monthlyData[month] = { month, income: 0, expense: 0 };
-        monthlyData[month].expense += (Number(e.amount) || 0);
-    });
-
-    const revenueChartData = Object.values(monthlyData).sort((a, b) => {
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        return months.indexOf(a.month) - months.indexOf(b.month);
-    });
-
-    // Debtors analysis
+    // Debtors analysis (Still needs local student data for the list, and calculating balance)
     const debtors = students.map(student => {
         const { balance } = Utils.getStudentBalance(student, fees, payments, settings.current_session, settings.current_term);
         return { student, balance };
     }).filter(d => d.balance > 0).sort((a, b) => b.balance - a.balance);
 
-    const totalOutstanding = debtors.reduce((sum, d) => sum + d.balance, 0);
+    const revenueChartData = stats?.breakdown.monthly_trend ?? Object.values(currentPayments.reduce((acc, p) => {
+        const month = p.date ? new Date(p.date).toLocaleString('default', { month: 'short' }) : 'Unknown';
+        if (!acc[month]) acc[month] = { month, income: 0, expense: 0 };
+        acc[month].income += (Number(p.amount) || 0);
+        return acc;
+    }, {} as Record<string, any>)).sort((a, b) => {
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return months.indexOf(a.month) - months.indexOf(b.month);
+    });
 
     return (
         <div className="space-y-6">

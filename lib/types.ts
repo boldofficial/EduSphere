@@ -282,6 +282,22 @@ export interface Expense extends Entity {
   recorded_by?: string;
 }
 
+export interface FinancialStats {
+  summary: {
+    total_income: number;
+    total_expenses: number;
+    net_balance: number;
+    total_expected: number;
+    income_count: number;
+    expense_count: number;
+  };
+  breakdown: {
+    methods: Record<string, number>;
+    expense_categories: Record<string, number>;
+    monthly_trend: { month: string; income: number; expense: number }[];
+  };
+}
+
 // Phase 2: Subject-Teacher Mapping
 export interface SubjectTeacher extends Entity {
   teacher_id: string;

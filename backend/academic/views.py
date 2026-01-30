@@ -188,6 +188,16 @@ class AttendanceSessionViewSet(TenantViewSet):
     serializer_class = AttendanceSessionSerializer
     pagination_class = StandardPagination
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        class_id = self.request.query_params.get('class_id')
+        date = self.request.query_params.get('date')
+        if class_id:
+            qs = qs.filter(student_class_id=class_id)
+        if date:
+            qs = qs.filter(date=date)
+        return qs
+
 class AttendanceRecordViewSet(TenantViewSet):
     queryset = AttendanceRecord.objects.select_related('attendance_session', 'student', 'school').all()
     serializer_class = AttendanceRecordSerializer

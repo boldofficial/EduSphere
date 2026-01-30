@@ -1,38 +1,32 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
     Users,
     GraduationCap,
     ClipboardList,
     CalendarCheck,
     TrendingUp,
-    Clock,
-    UserCircle,
     BookOpen,
-    CheckCircle2,
-    XCircle,
-    AlertCircle,
-    ChevronRight,
-    Save,
-    Mail
+    TrendingDown,
+    PieChart as PieChartIcon,
+    DollarSign,
+    AlertTriangle
 } from 'lucide-react';
 import { useSchoolStore } from '@/lib/store';
 import * as Utils from '@/lib/utils';
-import * as Types from '@/lib/types'; // Explicit import
+import * as Types from '@/lib/types';
 import {
     useStudents, useClasses, useScores, useAttendance, useSubjectTeachers, useTeachers, useSettings,
     useCreateScore, useUpdateScore, useCreateAttendance, useUpdateAttendance
 } from '@/lib/hooks/use-data';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Select } from '@/components/ui/select';
-import { useToast } from '@/components/providers/toast-provider';
 import { GradingView } from './GradingView';
 import { AttendanceView } from './AttendanceView';
 import { MessageInboxWidget } from './dashboard/MessageInboxWidget';
 
-// Internal components for the modules (to be expanded)
+// Internal components for the modules
 const MySubjectsModule = ({ subjects, classes }: { subjects: any[], classes: any[] }) => {
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -111,16 +105,26 @@ const MyStudentsModule = ({ students, classes }: { students: any[], classes: any
 
 export const TeacherDashboardView = () => {
     // Auth
-    const { currentRole, currentUser } = useSchoolStore();
+    const { currentUser } = useSchoolStore();
+
+    // Attendance State
+    const [selectedClassAtt, setSelectedClassAtt] = useState('');
+    const [dateAtt, setDateAtt] = useState(Utils.getTodayString());
+    const [activeTab, setActiveTab] = useState<'overview' | 'subjects' | 'students' | 'grading' | 'attendance'>('overview');
 
     // Data Hooks
     const { data: students = [] } = useStudents();
     const { data: classes = [] } = useClasses();
     const { data: teachers = [] } = useTeachers();
     const { data: scores = [] } = useScores();
-    const { data: attendance = [] } = useAttendance();
     const { data: subjectTeachers = [] } = useSubjectTeachers();
     const { data: settings = Utils.INITIAL_SETTINGS } = useSettings();
+
+    // Filtered Attendance Hook
+    const { data: attendance = [], isLoading: attendanceLoading } = useAttendance({
+        class_id: selectedClassAtt,
+        date: dateAtt
+    });
 
     // Mutations
     const { mutate: createScore } = useCreateScore();
@@ -139,43 +143,47 @@ export const TeacherDashboardView = () => {
     };
 
     const handleUpsertAttendance = (att: Types.Attendance) => {
-        const existing = attendance.find(a => a.id === att.id);
+        const existing = attendance.find(a => a.id === att.id) || attendance[0];
         if (existing) {
-            updateAttendance({ id: att.id, updates: att });
+            updateAttendance({ id: existing.id, updates: att });
         } else {
             createAttendance(att);
         }
     };
-    const [activeTab, setActiveTab] = useState<'overview' | 'subjects' | 'students' | 'grading' | 'attendance'>('overview');
 
     // Derived Data
     const myTeacherProfile = teachers.find(t => t.email === currentUser?.email) || teachers[0] || { id: 'teacher_1', name: 'Demo Teacher' };
 
-    // My Subjects (from SubjectTeacher assignments)
     const myAssignments = useMemo(() =>
         subjectTeachers.filter(st => st.teacher_id === myTeacherProfile.id && st.session === settings.current_session),
         [subjectTeachers, myTeacherProfile.id, settings.current_session]
     );
 
-    // My Classes (classes where I'm assigned as class teacher OR teach subjects)
-    const myClassIdsFromSubjects = myAssignments.map(a => a.class_id);
-    const myClassIdsFromClassTeacher = classes.filter(c => c.class_teacher_id === myTeacherProfile.id).map(c => c.id);
-    const myClassIds = Array.from(new Set([...myClassIdsFromSubjects, ...myClassIdsFromClassTeacher]));
-    const myClasses = classes.filter(c => myClassIds.includes(c.id));
+    const myClassIds = useMemo(() => {
+        const idsFromSubjects = myAssignments.map(a => a.class_id);
+        const idsFromClassTeacher = classes.filter(c => c.class_teacher_id === myTeacherProfile.id).map(c => c.id);
+        return Array.from(new Set([...idsFromSubjects, ...idsFromClassTeacher]));
+    }, [myAssignments, classes, myTeacherProfile.id]);
 
-    // Classes where I'm the class teacher
-    const classesAsClassTeacher = useMemo(() =>
-        classes.filter(c => c.class_teacher_id === myTeacherProfile.id),
-        [classes, myTeacherProfile.id]
-    );
+    const myClasses = useMemo(() => classes.filter(c => myClassIds.includes(c.id)), [classes, myClassIds]);
 
-    // My Students (students in any of my classes)
     const myStudents = useMemo(() =>
         students.filter((s: Types.Student) => myClassIds.includes(s.class_id)),
         [students, myClassIds]
     );
 
-    // Stats
+    const classesAsClassTeacher = useMemo(() =>
+        classes.filter(c => c.class_teacher_id === myTeacherProfile.id),
+        [classes, myTeacherProfile.id]
+    );
+
+    // Initial selected class for attendance
+    useEffect(() => {
+        if (!selectedClassAtt && myClasses.length > 0) {
+            setSelectedClassAtt(myClasses[0].id);
+        }
+    }, [myClasses, selectedClassAtt]);
+
     const stats = [
         { label: 'My Subjects', value: myAssignments.length.toString(), icon: BookOpen, color: 'bg-blue-500' },
         { label: 'Total Students', value: myStudents.length.toString(), icon: Users, color: 'bg-indigo-500' },
@@ -185,7 +193,6 @@ export const TeacherDashboardView = () => {
 
     return (
         <div className="space-y-6">
-            {/* Header with Navigation */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                 <div>
                     <h1 className="text-3xl font-black text-gray-900 uppercase">Teacher Dashboard</h1>
@@ -214,7 +221,6 @@ export const TeacherDashboardView = () => {
                 </div>
             </div>
 
-            {/* Overview Tab */}
             {activeTab === 'overview' && (
                 <div className="space-y-8">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -232,7 +238,6 @@ export const TeacherDashboardView = () => {
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        {/* My Classes Section */}
                         <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
                             <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                                 <GraduationCap size={20} className="text-brand-500" />
@@ -278,30 +283,21 @@ export const TeacherDashboardView = () => {
                             )}
                         </div>
 
-                        <div className="bg-brand-900 text-white p-6 rounded-3xl shadow-xl relative overflow-hidden">
-                            <div className="relative z-10">
-                                <h3 className="text-lg font-bold mb-2">Notice Board</h3>
-                                <p className="text-brand-100 text-sm">Review school announcements and upcoming events.</p>
+                        <div className="space-y-8">
+                            <div className="bg-brand-900 text-white p-6 rounded-3xl shadow-xl relative overflow-hidden">
+                                <div className="relative z-10">
+                                    <h3 className="text-lg font-bold mb-2">Notice Board</h3>
+                                    <p className="text-brand-100 text-sm">Review school announcements and upcoming events.</p>
+                                </div>
                             </div>
+                            <MessageInboxWidget maxMessages={3} />
                         </div>
-
-                        {/* Messages Inbox */}
-                        <MessageInboxWidget maxMessages={3} />
                     </div>
                 </div>
             )}
 
-            {/* My Subjects Tab */}
-            {activeTab === 'subjects' && (
-                <MySubjectsModule subjects={myAssignments} classes={classes} />
-            )}
-
-            {/* My Students Tab */}
-            {activeTab === 'students' && (
-                <MyStudentsModule students={myStudents} classes={classes} />
-            )}
-
-            {/* Grading Module */}
+            {activeTab === 'subjects' && <MySubjectsModule subjects={myAssignments} classes={classes} />}
+            {activeTab === 'students' && <MyStudentsModule students={myStudents} classes={classes} />}
             {activeTab === 'grading' && (
                 myClasses.length > 0 ? (
                     <GradingView
@@ -317,15 +313,19 @@ export const TeacherDashboardView = () => {
                     </div>
                 )
             )}
-
             {activeTab === 'attendance' && (
                 myClasses.length > 0 ? (
                     <AttendanceView
                         classes={myClasses}
-                        students={myStudents}
+                        students={myStudents.filter(s => s.class_id === selectedClassAtt)}
                         attendance={attendance}
                         settings={settings}
                         onSave={handleUpsertAttendance}
+                        selectedClass={selectedClassAtt}
+                        setSelectedClass={setSelectedClassAtt}
+                        date={dateAtt}
+                        setDate={setDateAtt}
+                        isLoading={attendanceLoading}
                     />
                 ) : (
                     <div className="text-center py-12 text-gray-400">
