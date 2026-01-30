@@ -13,7 +13,13 @@ export default async function Page() {
     const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'myregistra.net';
 
     // If no tenant ID, or explicitly 'www' or root domain, show System Landing
-    const isSystem = !tenantId || tenantId === `www.${rootDomain}` || host === rootDomain || (!tenantId && host.includes('localhost'));
+    // Also check if the host matches the fallback content to be safe against ENV var mismatches
+    const isSystem = !tenantId ||
+        tenantId === `www.${rootDomain}` ||
+        host === rootDomain ||
+        host === 'myregistra.net' ||
+        host === 'www.myregistra.net' ||
+        (!tenantId && host.includes('localhost'));
 
     if (isSystem) {
         return <SystemLandingPage />;
