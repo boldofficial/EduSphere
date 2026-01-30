@@ -7,6 +7,7 @@ import { Select } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { ReportCardTemplate } from './grading/ReportCardTemplate';
 import { GradingSchemeManager } from './grading/GradingSchemeManager';
+import { SubjectTeacherManager } from './grading/SubjectTeacherManager';
 import { useSchoolStore } from '@/lib/store';
 import { useToast } from '@/components/providers/toast-provider';
 
@@ -59,7 +60,7 @@ export const GradingView: React.FC<GradingViewProps> = ({
     const classSubjects = Utils.getSubjectsForClass(currentClass);
 
     const [selectedSubject, setSelectedSubject] = useState(classSubjects[0] || '');
-    const [activeTab, setActiveTab] = useState<'broadsheet' | 'report' | 'skills' | 'publish' | 'schemes'>('broadsheet');
+    const [activeTab, setActiveTab] = useState<'broadsheet' | 'report' | 'skills' | 'publish' | 'schemes' | 'assignments'>('broadsheet');
     const [reportStudentId, setReportStudentId] = useState('');
 
     const activeStudents = students.filter(s => s.class_id === selectedClass);
@@ -401,10 +402,14 @@ export const GradingView: React.FC<GradingViewProps> = ({
                             <button onClick={() => setActiveTab('schemes')} className={`px-3 lg:px-4 py-2 text-xs lg:text-sm font-medium rounded-md whitespace-nowrap ${activeTab === 'schemes' ? 'bg-white shadow text-brand-700' : 'text-gray-600'}`}>
                                 Schemes
                             </button>
+                            <button onClick={() => setActiveTab('assignments')} className={`px-3 lg:px-4 py-2 text-xs lg:text-sm font-medium rounded-md whitespace-nowrap ${activeTab === 'assignments' ? 'bg-white shadow text-brand-700' : 'text-gray-600'}`}>
+                                Assignments
+                            </button>
                         </>
                     )}
                 </div>
             </div>
+            {activeTab === 'assignments' && <SubjectTeacherManager />}
             {activeTab === 'schemes' && <GradingSchemeManager />}
             {activeTab === 'broadsheet' && (
                 <Card className="min-h-[400px] lg:min-h-[600px] flex flex-col">

@@ -6,13 +6,15 @@ from .models import (
     Subject, Teacher, Class, Student, 
     ReportCard, SubjectScore, AttendanceSession, AttendanceRecord,
     SchoolEvent, Lesson, ConductEntry,
-    Period, Timetable, TimetableEntry, GradingScheme, GradeRange
+    Period, Timetable, TimetableEntry, GradingScheme, GradeRange,
+    SubjectTeacher
 )
 from .serializers import (
     SubjectSerializer, TeacherSerializer, ClassSerializer, StudentSerializer,
     ReportCardSerializer, SubjectScoreSerializer, AttendanceSessionSerializer, AttendanceRecordSerializer,
     SchoolEventSerializer, LessonSerializer, ConductEntrySerializer,
-    PeriodSerializer, TimetableSerializer, TimetableEntrySerializer, GradingSchemeSerializer, GradeRangeSerializer
+    PeriodSerializer, TimetableSerializer, TimetableEntrySerializer, GradingSchemeSerializer, GradeRangeSerializer,
+    SubjectTeacherSerializer
 )
 from core.pagination import StandardPagination, LargePagination
 from core.cache_utils import CachingMixin
@@ -235,3 +237,34 @@ class GradingSchemeViewSet(TenantViewSet):
     queryset = GradingScheme.objects.select_related('school').prefetch_related('ranges').all()
     serializer_class = GradingSchemeSerializer
     pagination_class = StandardPagination
+
+class GradeRangeViewSet(TenantViewSet):
+    queryset = GradeRange.objects.select_related('scheme', 'school').all()
+    serializer_class = GradeRangeSerializer
+    pagination_class = StandardPagination
+
+class SubjectTeacherViewSet(TenantViewSet):
+    queryset = SubjectTeacher.objects.select_related('teacher', 'student_class', 'school').all()
+    serializer_class = SubjectTeacherSerializer
+    pagination_class = StandardPagination
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        
+        # Filter by teacher if user is a teacher
+        if self.request.user.role == 'TEACHER' and hasattr(self.request.user, 'teacher_profile'):
+            qs = qs.filter(teacher=self.request.user.teacher_profile)
+            
+        # Optional filters
+        class_id = self.request.query_params.get('class_id')
+        teacher_id = self.request.query_params.get('teacher_id')
+        session = self.request.query_params.get('session')
+        
+        if class_id:
+            qs = qs.filter(student_class_id=class_id)
+        if teacher_id:
+            qs = qs.filter(teacher_id=teacher_id)
+        if session:
+            qs = qs.filter(session=session)
+            
+        return qs

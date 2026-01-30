@@ -5,7 +5,8 @@ from .models import (
     Subject, Teacher, Class, Student, 
     ReportCard, SubjectScore, AttendanceSession, AttendanceRecord,
     SchoolEvent, Lesson, ConductEntry,
-    Period, Timetable, TimetableEntry, GradingScheme, GradeRange
+    Period, Timetable, TimetableEntry, GradingScheme, GradeRange,
+    SubjectTeacher
 )
 
 class Base64ImageField(serializers.CharField):
@@ -487,4 +488,10 @@ class TimetableSerializer(serializers.ModelSerializer):
     class Meta:
         model = Timetable
         fields = ['id', 'title', 'student_class', 'class_name', 'is_active', 'entries', 'created_at', 'updated_at']
+        read_only_fields = ('school',)
+
+class SubjectTeacherSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SubjectTeacher
+        fields = '__all__'
         read_only_fields = ('school',)

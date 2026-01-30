@@ -45,7 +45,27 @@ class Class(TenantModel):
 
     def __str__(self):
         return f"{self.name} ({self.school.name})"
+
+class SubjectTeacher(TenantModel):
+    """
+    Explicit mapping for subject teachers per class/session
+    This allows a different teacher for Math in JSS1 vs JSS2, or strictly assigning subjects
+    """
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, related_name='subject_assignments')
+    student_class = models.ForeignKey(Class, on_delete=models.CASCADE, related_name='subject_teachers')
+    subject = models.CharField(max_length=100) # Storing name directly as Subject model is loosely coupled
+    session = models.CharField(max_length=50)
     
+    class Meta:
+        indexes = [
+            models.Index(fields=['school', 'teacher']),
+            models.Index(fields=['school', 'student_class']),
+        ]
+        unique_together = ('school', 'teacher', 'student_class', 'subject', 'session')
+
+    def __str__(self):
+        return f"{self.teacher.name} - {self.subject} ({self.student_class.name})"
+
 class Student(TenantModel):
     user = models.OneToOneField(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='student_profile')
     student_no = models.CharField(max_length=50) 
@@ -115,8 +135,6 @@ class ReportCard(TenantModel):
     # Enhanced Fields
     affective = models.JSONField(default=dict, blank=True) # e.g. {"Punctuality": 5, "Honesty": 4}
     psychomotor = models.JSONField(default=dict, blank=True) # e.g. {"Sports": 5, "Art": 4}
-    attendance_present = models.IntegerField(default=0)
-    attendance_total = models.IntegerField(default=0)
     attendance_present = models.IntegerField(default=0)
     attendance_total = models.IntegerField(default=0)
     next_term_begins = models.DateField(null=True, blank=True)

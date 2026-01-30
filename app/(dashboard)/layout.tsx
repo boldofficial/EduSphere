@@ -10,7 +10,7 @@ import {
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSchoolStore } from '@/lib/store';
-import { useSettings, useStaff, useMe } from '@/lib/hooks/use-data';
+import { useSettings, useStaff, useTeachers, useMe } from '@/lib/hooks/use-data';
 import * as Types from '@/lib/types';
 import * as Utils from '@/lib/utils';
 import { LoginView } from '@/components/features/LoginView';
@@ -42,6 +42,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
     // Fetch staff data to get assigned_modules for staff users
     const { data: staffList = [], isLoading: staffLoading } = useStaff();
+    const { data: teacherList = [], isLoading: teacherLoading } = useTeachers();
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Start closed on mobile
     const pathname = usePathname();
@@ -57,6 +58,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         }
         return null;
     }, [currentRole, currentUser, staffList]);
+
+    // Get current teacher's profile with assigned_modules
+    const currentTeacherProfile = useMemo(() => {
+        if (currentRole === 'teacher' && currentUser?.profile_id) {
+            return teacherList.find(t => t.id === currentUser.profile_id);
+        }
+        if (currentRole === 'teacher' && currentUser?.email) {
+            return teacherList.find(t => t.email === currentUser.email);
+        }
+        return null;
+    }, [currentRole, currentUser, teacherList]);
 
     // Set sidebar open by default on desktop
     useEffect(() => {
@@ -88,7 +100,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     // Show loading spinner while auth OR settings are initializing
     // Also wait for staff data if user is a staff member (to load assigned_modules)
     // IMPORTANT: This must be checked BEFORE computing navigation to prevent flickering
-    const isStaffLoadingModules = currentRole === 'staff' && staffLoading;
+    const isStaffLoadingModules = (currentRole === 'staff' && staffLoading) || (currentRole === 'teacher' && teacherLoading);
     if (authLoading || settingsLoading || isStaffLoadingModules || meLoading) {
         return (
             <div className="h-screen w-full flex items-center justify-center bg-gray-50">
@@ -144,7 +156,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             // Staff with specific modules gets dashboard + their assigned modules
             allowedNavIds = ['dashboard', ...staffModules];
         }
-        // If no modules assigned, fall through to use rolePermissions.navigation
+    }
+
+    if (currentRole === 'teacher' && currentTeacherProfile) {
+        // Teacher logic: specific assignments, or default teacher role + assigned modules
+        const teacherModules = currentTeacherProfile.assigned_modules || [];
+        // If teacher has specific extra modules assigned, append them to the default role permissions
+        // Or if we want strictly assigned, we can replace. 
+        // Usually teachers need standard teacher nav (Classes, Grading) + extras.
+
+        // For now, let's APPEND explicitly assigned modules to the role defaults
+        if (teacherModules.length > 0) {
+            allowedNavIds = [...new Set([...allowedNavIds, ...teacherModules])];
+        }
     }
 
     // ALLOWED MODULES from School Subscription Plan

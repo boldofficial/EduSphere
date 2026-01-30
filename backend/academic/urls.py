@@ -28,7 +28,8 @@ router.register(r'periods', views.PeriodViewSet, basename='periods')
 router.register(r'timetables', views.TimetableViewSet, basename='timetables')
 router.register(r'timetable-entries', views.TimetableEntryViewSet, basename='timetable-entries')
 router.register(r'grading-schemes', views.GradingSchemeViewSet, basename='grading-schemes')
-router.register(r'grade-ranges', views.PeriodViewSet, basename='grade-ranges') # Correct mapping if ViewSet exists, checking ViewSet
+router.register(r'grade-ranges', views.GradeRangeViewSet, basename='grade-ranges')
+router.register(r'subject_teachers', views.SubjectTeacherViewSet, basename='subject_teachers')
 
 urlpatterns = [
     path('', include(router.urls)),
