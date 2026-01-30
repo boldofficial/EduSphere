@@ -1,7 +1,7 @@
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.db import transaction
+from django.db import transaction, models
 from .models import (
     Subject, Teacher, Class, Student, 
     ReportCard, SubjectScore, AttendanceSession, AttendanceRecord,
@@ -98,6 +98,20 @@ class StudentViewSet(TenantViewSet):
     queryset = Student.objects.select_related('user', 'current_class', 'school').all()
     serializer_class = StudentSerializer
     pagination_class = LargePagination
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        class_id = self.request.query_params.get('class')
+        search = self.request.query_params.get('search')
+
+        if class_id:
+            qs = qs.filter(current_class_id=class_id)
+        if search:
+            qs = qs.filter(
+                models.Q(names__icontains=search) | 
+                models.Q(student_no__icontains=search)
+            )
+        return qs
 
     @action(detail=False, methods=['post'], url_path='bulk-promote')
     def bulk_promote(self, request):
@@ -222,6 +236,54 @@ class PeriodViewSet(TenantViewSet):
     queryset = Period.objects.select_related('school').all()
     serializer_class = PeriodSerializer
     pagination_class = StandardPagination
+
+    @action(detail=False, methods=['post'], url_path='setup-defaults')
+    def setup_defaults(self, request):
+        """
+        Creates a standard set of periods for the school.
+        """
+        user_school = getattr(request.user, 'school', None)
+        tenant_school = getattr(request, 'tenant', None)
+        school = user_school or tenant_school
+
+        if not school:
+            return Response({"error": "School context not found"}, status=400)
+
+        if Period.objects.filter(school=school).exists():
+            return Response({"message": "Periods already exist for this school"}, status=200)
+
+        # Standard Nigerian School Day (approx)
+        default_periods = [
+            ("Assembly", "08:00:00", "08:15:00", "Assembly"),
+            ("Period 1", "08:15:00", "08:55:00", "Regular"),
+            ("Period 2", "08:55:00", "09:35:00", "Regular"),
+            ("Period 3", "09:35:00", "10:15:00", "Regular"),
+            ("Short Break", "10:15:00", "10:30:00", "Break"),
+            ("Period 4", "10:30:00", "11:10:00", "Regular"),
+            ("Period 5", "11:10:00", "11:50:00", "Regular"),
+            ("Long Break", "11:50:00", "12:30:00", "Break"),
+            ("Period 6", "12:30:00", "13:10:00", "Regular"),
+            ("Period 7", "13:10:00", "13:50:00", "Regular"),
+            ("Period 8", "13:50:00", "14:30:00", "Regular"),
+        ]
+
+        created_periods = []
+        with transaction.atomic():
+            for name, start, end, cat in default_periods:
+                p = Period.objects.create(
+                    school=school,
+                    name=name,
+                    start_time=start,
+                    end_time=end,
+                    category=cat
+                )
+                created_periods.append(p.id)
+
+        self.invalidate_cache()
+        return Response({
+            "message": f"Successfully created {len(created_periods)} default periods",
+            "period_ids": created_periods
+        }, status=201)
 
 class TimetableViewSet(TenantViewSet):
     queryset = Timetable.objects.select_related('student_class', 'school').prefetch_related('entries__subject', 'entries__teacher').all()

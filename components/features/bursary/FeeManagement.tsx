@@ -3,6 +3,7 @@ import { Plus, Printer, Trash2, User, Search, FileText } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
+import { Pagination } from '@/components/ui/pagination';
 import * as Types from '@/lib/types';
 import * as Utils from '@/lib/utils';
 
@@ -22,6 +23,14 @@ interface FeeManagementProps {
     onPrintInvoice?: (student: Types.Student) => void;
     onUpdateStudent?: (student: Types.Student) => void;
     onOpenDiscountModal?: () => void;
+
+    // Pagination
+    studentPage?: number;
+    studentTotalPages?: number;
+    onStudentPageChange?: (p: number) => void;
+    paymentPage?: number;
+    paymentTotalPages?: number;
+    onPaymentPageChange?: (p: number) => void;
 }
 
 const RefreshIcon = () => (
@@ -29,7 +38,8 @@ const RefreshIcon = () => (
 );
 
 export const FeeManagement: React.FC<FeeManagementProps> = ({
-    students, classes, fees, payments, settings, selectedClass, setSelectedClass, selectedStudent, setSelectedStudent, onRecordPayment, onPrintReceipt, onDeletePayment, onPrintInvoice, onUpdateStudent, onOpenDiscountModal
+    students, classes, fees, payments, settings, selectedClass, setSelectedClass, selectedStudent, setSelectedStudent, onRecordPayment, onPrintReceipt, onDeletePayment, onPrintInvoice, onUpdateStudent, onOpenDiscountModal,
+    studentPage, studentTotalPages, onStudentPageChange, paymentPage, paymentTotalPages, onPaymentPageChange
 }) => {
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -126,6 +136,14 @@ export const FeeManagement: React.FC<FeeManagementProps> = ({
                             </div>
                         )}
                     </div>
+
+                    {onStudentPageChange && studentTotalPages && studentTotalPages > 1 && (
+                        <Pagination
+                            currentPage={studentPage || 1}
+                            totalPages={studentTotalPages}
+                            onPageChange={onStudentPageChange}
+                        />
+                    )}
                 </Card>
             </div>
             <div className="lg:col-span-2">
@@ -294,6 +312,14 @@ export const FeeManagement: React.FC<FeeManagementProps> = ({
                                         </div>
                                     );
                                 })}
+
+                                {onPaymentPageChange && paymentTotalPages && paymentTotalPages > 1 && (
+                                    <Pagination
+                                        currentPage={paymentPage || 1}
+                                        totalPages={paymentTotalPages}
+                                        onPageChange={onPaymentPageChange}
+                                    />
+                                )}
                             </div>
                         </Card>
                     </div>

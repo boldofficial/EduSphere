@@ -49,13 +49,21 @@ export const queryKeys = {
 };
 
 // Generic fetcher
-const fetchAll = async <T>(endpoint: string): Promise<T[]> => {
-    const response = await apiClient.get(endpoint);
+const fetchAll = async <T>(endpoint: string, params?: Record<string, any>): Promise<T[]> => {
+    const response = await apiClient.get(endpoint, { params });
     // Handle paginated DRF responses
     if (response.data && typeof response.data === 'object' && 'results' in response.data) {
         return response.data.results;
     }
     return Array.isArray(response.data) ? response.data : [];
+};
+
+// Paginated fetcher
+const fetchPaginated = async <T>(endpoint: string, page = 1, pageSize = 50, extraParams?: Record<string, any>): Promise<Types.PaginatedResponse<T>> => {
+    const response = await apiClient.get(endpoint, {
+        params: { ...extraParams, page, page_size: pageSize }
+    });
+    return response.data;
 };
 
 // =============================================
@@ -281,6 +289,14 @@ export function useStudents(enabled = true) {
     return useQuery({
         queryKey: queryKeys.students,
         queryFn: () => fetchAll<Types.Student>('/students/'),
+        enabled,
+    });
+}
+
+export function usePaginatedStudents(page = 1, pageSize = 50, search = '', classId = '', enabled = true) {
+    return useQuery({
+        queryKey: [...queryKeys.students, { page, pageSize, search, classId }],
+        queryFn: () => fetchPaginated<Types.Student>('/students/', page, pageSize, { search, class: classId }),
         enabled,
     });
 }
@@ -544,6 +560,13 @@ export function usePayments() {
     });
 }
 
+export function usePaginatedPayments(page = 1, pageSize = 50, studentId = '') {
+    return useQuery({
+        queryKey: [...queryKeys.payments, { page, pageSize, studentId }],
+        queryFn: () => fetchPaginated<Types.Payment>('/payments/', page, pageSize, { student: studentId }),
+    });
+}
+
 export function useCreatePayment() {
     const queryClient = useQueryClient();
     return useMutation({
@@ -719,6 +742,13 @@ export function useAttendance() {
     return useQuery({
         queryKey: queryKeys.attendance,
         queryFn: () => fetchAll<Types.Attendance>('/attendance-sessions/'),
+    });
+}
+
+export function usePaginatedAttendance(page = 1, pageSize = 50) {
+    return useQuery({
+        queryKey: [...queryKeys.attendance, { page, pageSize }],
+        queryFn: () => fetchPaginated<any>('/attendance-sessions/', page, pageSize),
     });
 }
 

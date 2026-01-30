@@ -79,6 +79,13 @@ class PaymentViewSet(TenantViewSet):
     serializer_class = PaymentSerializer
     pagination_class = LargePagination
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        student_id = self.request.query_params.get('student')
+        if student_id:
+            qs = qs.filter(student_id=student_id)
+        return qs
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if not serializer.is_valid():

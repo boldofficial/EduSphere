@@ -15,6 +15,9 @@ interface StudentsViewProps {
     onAdd: (s: Types.Student) => Promise<Types.Student>;
     onUpdate: (s: Types.Student, options?: { onSuccess?: () => void; onError?: (error: Error) => void }) => void;
     onDelete: (id: string) => void;
+    onSearchChange?: (s: string) => void;
+    onFilterClassChange?: (c: string) => void;
+    isLoading?: boolean;
 }
 
 const getPassportUrl = (student: Types.Student | any): string | null => {
@@ -24,7 +27,7 @@ const getPassportUrl = (student: Types.Student | any): string | null => {
 };
 
 export const StudentsView: React.FC<StudentsViewProps> = ({
-    students, classes, onAdd, onUpdate, onDelete
+    students, classes, onAdd, onUpdate, onDelete, onSearchChange, onFilterClassChange, isLoading = false
 }) => {
     const [showModal, setShowModal] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -34,6 +37,16 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
 
     const [formData, setFormData] = useState<Partial<Types.Student>>({});
     const { addToast } = useToast();
+
+    const handleSearch = (val: string) => {
+        setSearch(val);
+        if (onSearchChange) onSearchChange(val);
+    };
+
+    const handleFilterClass = (val: string) => {
+        setFilterClass(val);
+        if (onFilterClassChange) onFilterClassChange(val);
+    };
 
     const handleEdit = (s: Types.Student) => {
         setFormData(s);
@@ -53,7 +66,7 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSaving(true);
-        
+
         try {
             if (editingId) {
                 // For updates, use callback pattern
@@ -87,11 +100,13 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
         }
     };
 
-    const filteredStudents = students.filter(s => {
-        const matchesClass = filterClass === 'all' || s.class_id === filterClass;
-        const matchesSearch = s.names.toLowerCase().includes(search.toLowerCase()) || s.student_no.toLowerCase().includes(search.toLowerCase());
-        return matchesClass && matchesSearch;
-    });
+    const filteredStudents = (onSearchChange || onFilterClassChange)
+        ? students
+        : students.filter(s => {
+            const matchesClass = filterClass === 'all' || s.class_id === filterClass;
+            const matchesSearch = s.names.toLowerCase().includes(search.toLowerCase()) || s.student_no.toLowerCase().includes(search.toLowerCase());
+            return matchesClass && matchesSearch;
+        });
 
     return (
         <div className="space-y-6">
@@ -111,14 +126,14 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                         placeholder="Search by name or admission no..."
                         className="pl-9 w-full h-10 rounded-md border border-gray-300 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"
                         value={search}
-                        onChange={e => setSearch(e.target.value)}
+                        onChange={e => handleSearch(e.target.value)}
                     />
                 </div>
                 <div className="w-full md:w-64">
                     <select
                         className="w-full h-10 rounded-md border border-gray-300 text-sm px-3 focus:ring-2 focus:ring-brand-500 focus:outline-none"
                         value={filterClass}
-                        onChange={e => setFilterClass(e.target.value)}
+                        onChange={e => handleFilterClass(e.target.value)}
                     >
                         <option value="all">All Classes</option>
                         {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -126,7 +141,7 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 transition-opacity ${isLoading ? 'opacity-50 pointer-events-none' : ''}`}>
                 {filteredStudents.map(s => {
                     const cls = classes.find(c => c.id === s.class_id)?.name || 'Unknown';
                     const passportUrl = getPassportUrl(s);

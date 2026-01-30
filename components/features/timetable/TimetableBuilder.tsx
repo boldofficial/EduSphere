@@ -25,6 +25,7 @@ export const TimetableBuilder = () => {
     const { data: teachers = [] } = useTeachers();
     const { data: periods = [] } = usePeriods();
     const [selectedClassId, setSelectedClassId] = useState<string>('');
+    const [isSettingUp, setIsSettingUp] = useState(false);
 
     // Fetch Timetable for selected class
     const { data: timetables = [], isLoading: isLoadingTimetable } = useTimetables(selectedClassId);
@@ -70,6 +71,19 @@ export const TimetableBuilder = () => {
     if (!selectedClassId) {
         // Show Period Setup if no periods exist
         if (periods.length === 0) {
+            const handleSetupDefaults = async () => {
+                setIsSettingUp(true);
+                try {
+                    await apiClient.post('/periods/setup-defaults/');
+                    window.location.reload();
+                } catch (error) {
+                    console.error('Failed to setup default periods:', error);
+                    alert('Failed to setup default periods. Please try again.');
+                } finally {
+                    setIsSettingUp(false);
+                }
+            };
+
             return (
                 <div className="p-12 text-center bg-white rounded-xl border border-gray-100 shadow-sm flex flex-col items-center">
                     <div className="bg-brand-50 p-4 rounded-full mb-4">
@@ -78,9 +92,18 @@ export const TimetableBuilder = () => {
                     <h2 className="text-xl font-bold text-gray-900 mb-2">Setup School Timetable</h2>
                     <p className="text-gray-500 mb-6 max-w-md">Before you can create class schedules, you need to define the school's periods (e.g., Period 1, Break, Lunch).</p>
                     <div className="p-4 bg-yellow-50 text-yellow-800 text-sm rounded-lg mb-6 max-w-md">
-                        <strong>Note:</strong> We have auto-generated a standard schedule for you. Refresh the page to see it. If you need custom periods, please contact support or use the backend admin.
+                        <strong>Note:</strong> We can auto-generate a standard schedule for you. Click the button below to get started. If you need custom periods, please contact support or use the backend admin.
                     </div>
-                    <Button onClick={() => window.location.reload()}>Refresh Page</Button>
+                    <Button onClick={handleSetupDefaults} disabled={isSettingUp}>
+                        {isSettingUp ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Setting up...
+                            </>
+                        ) : (
+                            'Setup Default Schedule'
+                        )}
+                    </Button>
                 </div>
             );
         }

@@ -4,12 +4,15 @@ from users.models import User
 
 # Abstract base for multi-tenant models
 class TenantModel(models.Model):
-    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name="%(class)s_related")
-    created_at = models.DateTimeField(auto_now_add=True)
+    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name="%(class)s_related", db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
         abstract = True
+        indexes = [
+            models.Index(fields=['school', 'created_at']),
+        ]
 
 class Subject(TenantModel):
     name = models.CharField(max_length=100)

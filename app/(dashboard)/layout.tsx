@@ -32,9 +32,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     useEffect(() => {
         if (freshUser) {
             // Normalize role from backend (SCHOOL_ADMIN -> admin)
-            let role = freshUser.role;
-            if (role === 'SCHOOL_ADMIN') role = 'admin';
-            if (role === 'SUPER_ADMIN') role = 'super_admin';
+            let role = freshUser.role.toLowerCase();
+            if (role === 'school_admin') role = 'admin';
+            if (role === 'super_admin') role = 'super_admin';
 
             storeLogin(role, freshUser);
         }

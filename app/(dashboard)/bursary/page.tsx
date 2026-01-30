@@ -1,5 +1,5 @@
 'use client';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useSchoolStore } from '@/lib/store';
 import { BursaryView } from '@/components/features/BursaryView';
 import { StudentInvoiceView } from '@/components/features/bursary/StudentInvoiceView';
@@ -7,7 +7,7 @@ import {
     useStudents, useClasses, useFees, usePayments, useExpenses, useSettings,
     useCreatePayment, useCreateFee, useCreateExpense,
     useDeletePayment, useDeleteFee, useDeleteExpense,
-    useUpdateStudent
+    useUpdateStudent, usePaginatedStudents, usePaginatedPayments
 } from '@/lib/hooks/use-data';
 import * as Utils from '@/lib/utils';
 import * as Types from '@/lib/types';
@@ -15,10 +15,20 @@ import * as Types from '@/lib/types';
 export default function BursaryPage() {
     const { currentRole, currentUser } = useSchoolStore();
 
-    const { data: students = [] } = useStudents();
     const { data: classes = [] } = useClasses();
+    const [studentPage, setStudentPage] = useState(1);
+    const [selectedClassId, setSelectedClassId] = useState('all');
+
+    const { data: studentResponse } = usePaginatedStudents(studentPage, 50, '', selectedClassId === 'all' ? '' : selectedClassId);
+    const students = studentResponse?.results || [];
+    const studentTotalPages = studentResponse ? Math.ceil(studentResponse.count / 50) : 0;
+
     const { data: fees = [] } = useFees();
-    const { data: payments = [] } = usePayments();
+
+    const [paymentPage, setPaymentPage] = useState(1);
+    const { data: paymentResponse } = usePaginatedPayments(paymentPage, 10, currentUser?.student_id || '');
+    const payments = paymentResponse?.results || [];
+    const paymentTotalPages = paymentResponse ? Math.ceil(paymentResponse.count / 10) : 0;
     const { data: expenses = [] } = useExpenses();
     const { data: settings = Utils.INITIAL_SETTINGS } = useSettings();
 
@@ -74,6 +84,17 @@ export default function BursaryPage() {
                     discounts: student.discounts
                 };
                 updateStudent({ id: student.id, updates }, opt);
+            }}
+            studentPage={studentPage}
+            studentTotalPages={studentTotalPages}
+            onStudentPageChange={setStudentPage}
+            paymentPage={paymentPage}
+            paymentTotalPages={paymentTotalPages}
+            onPaymentPageChange={setPaymentPage}
+            selectedClass={selectedClassId}
+            onClassChange={(c) => {
+                setSelectedClassId(c);
+                setStudentPage(1);
             }}
         />
     );

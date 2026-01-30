@@ -25,16 +25,34 @@ interface BursaryViewProps {
     onDeleteFee: (id: string, options?: any) => void;
     onDeleteExpense?: (id: string, options?: any) => void;
     onUpdateStudent?: (student: Types.Student, options?: any) => void;
+
+    // Pagination
+    studentPage?: number;
+    studentTotalPages?: number;
+    onStudentPageChange?: (p: number) => void;
+    paymentPage?: number;
+    paymentTotalPages?: number;
+    onPaymentPageChange?: (p: number) => void;
+    selectedClass?: string;
+    onClassChange?: (c: string) => void;
 }
 
 type TabType = 'dashboard' | 'fees' | 'debtors' | 'expenses' | 'structure' | 'scholarships';
 
 export const BursaryView: React.FC<BursaryViewProps> = ({
-    students, classes, fees, payments, expenses, settings, onAddPayment, onAddFee, onAddExpense, onDeletePayment, onDeleteFee, onDeleteExpense, onUpdateStudent
+    students, classes, fees, payments, expenses, settings, onAddPayment, onAddFee, onAddExpense, onDeletePayment, onDeleteFee, onDeleteExpense, onUpdateStudent,
+    studentPage, studentTotalPages, onStudentPageChange, paymentPage, paymentTotalPages, onPaymentPageChange,
+    selectedClass: selectedClassProp, onClassChange
 }) => {
     const [activeTab, setActiveTab] = useState<TabType>('dashboard');
-    const [selectedClass, setSelectedClass] = useState(classes[0]?.id || '');
-    const [selectedStudent, setSelectedStudent] = useState<string | null>(null);
+    const [localSelectedClass, setLocalSelectedClass] = useState(classes[0]?.id || '');
+    const [localSelectedStudent, setLocalSelectedStudent] = useState<string | null>(null);
+
+    const currentSelectedClass = selectedClassProp || localSelectedClass;
+    const handleSelectClass = (val: string) => {
+        if (onClassChange) onClassChange(val);
+        else setLocalSelectedClass(val);
+    };
 
     // Modal Visibility State
     const [showPayModal, setShowPayModal] = useState(false);
@@ -94,16 +112,22 @@ export const BursaryView: React.FC<BursaryViewProps> = ({
                     fees={fees}
                     payments={payments}
                     settings={settings}
-                    selectedClass={selectedClass}
-                    setSelectedClass={setSelectedClass}
-                    selectedStudent={selectedStudent}
-                    setSelectedStudent={setSelectedStudent}
+                    selectedClass={currentSelectedClass}
+                    setSelectedClass={handleSelectClass}
+                    selectedStudent={localSelectedStudent}
+                    setSelectedStudent={setLocalSelectedStudent}
                     onRecordPayment={() => setShowPayModal(true)}
                     onPrintReceipt={(p) => setReceiptPayment(p)}
                     onDeletePayment={onDeletePayment}
                     onPrintInvoice={(student) => setInvoiceStudent(student)}
                     onUpdateStudent={onUpdateStudent}
                     onOpenDiscountModal={() => setShowDiscountModal(true)}
+                    studentPage={studentPage}
+                    studentTotalPages={studentTotalPages}
+                    onStudentPageChange={onStudentPageChange}
+                    paymentPage={paymentPage}
+                    paymentTotalPages={paymentTotalPages}
+                    onPaymentPageChange={onPaymentPageChange}
                 />
             )}
 
@@ -156,7 +180,7 @@ export const BursaryView: React.FC<BursaryViewProps> = ({
                 setReceiptPayment={setReceiptPayment}
                 invoiceStudent={invoiceStudent}
                 setInvoiceStudent={setInvoiceStudent}
-                selectedStudent={selectedStudent}
+                selectedStudent={localSelectedStudent}
                 onAddPayment={onAddPayment}
                 onAddExpense={onAddExpense}
                 onAddFee={onAddFee}
@@ -164,8 +188,8 @@ export const BursaryView: React.FC<BursaryViewProps> = ({
                 showDiscountModal={showDiscountModal}
                 setShowDiscountModal={setShowDiscountModal}
                 onAddDiscount={(discount) => {
-                    if (selectedStudent && onUpdateStudent) {
-                        const student = students.find(s => s.id === selectedStudent);
+                    if (localSelectedStudent && onUpdateStudent) {
+                        const student = students.find(s => s.id === localSelectedStudent);
                         if (student) {
                             onUpdateStudent({
                                 ...student,
