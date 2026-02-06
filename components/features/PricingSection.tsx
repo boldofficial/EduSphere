@@ -23,7 +23,7 @@ export const PricingSection = () => {
     useEffect(() => {
         const fetchPlans = async () => {
             try {
-                const res = await apiClient.get('/schools/plans/');
+                const res = await apiClient.get('schools/plans/');
                 setPlans(res.data);
             } catch (err) {
                 console.error("Failed to fetch plans", err);
@@ -96,8 +96,8 @@ export const PricingSection = () => {
                             <Link
                                 href={`/onboarding?plan=${plan.slug}`}
                                 className={`w-full py-4 text-center font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${plan.slug === 'growth'
-                                        ? 'bg-brand-600 text-white hover:bg-brand-700 shadow-lg shadow-brand-600/30'
-                                        : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
+                                    ? 'bg-brand-600 text-white hover:bg-brand-700 shadow-lg shadow-brand-600/30'
+                                    : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
                                     }`}
                             >
                                 Choose {plan.name}

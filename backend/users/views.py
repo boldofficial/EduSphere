@@ -1,6 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.exceptions import PermissionDenied, NotFound, ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
@@ -153,4 +153,34 @@ class CreateAccountView(APIView):
             "user_id": user.id,
             "username": user.username,
             "created": created
+        })
+
+class DemoLoginView(APIView):
+    """Magic login for the demo school."""
+    permission_classes = [AllowAny]
+    def post(self, request):
+        role_type = request.data.get('role', 'admin') # admin, teacher, bursar
+        
+        username_map = {
+            'admin': 'demo_admin',
+            'teacher': 'demo_teacher',
+            'student': 'demo_student'
+        }
+        
+        username = username_map.get(role_type, 'demo_admin')
+        
+        User = get_user_model()
+        try:
+            # Note: The seeder creates these users with school__domain='demo'
+            user = User.objects.get(username=username, school__domain='demo')
+        except User.DoesNotExist:
+            raise NotFound({"detail": f"Demo user for {role_type} not found. Please run the seeder."})
+
+        # Generate tokens
+        refresh = RefreshToken.for_user(user)
+        
+        return Response({
+            'access': str(refresh.access_token),
+            'refresh': str(refresh),
+            'user': get_user_me_data(user)
         })

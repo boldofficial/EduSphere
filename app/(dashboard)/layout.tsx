@@ -15,6 +15,7 @@ import * as Types from '@/lib/types';
 import * as Utils from '@/lib/utils';
 import { LoginView } from '@/components/features/LoginView';
 import { NotificationCenter } from '@/components/features/NotificationCenter';
+import { DemoBanner } from '@/components/features/DemoBanner';
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     // Auth from store (keep this)
     const { currentRole, currentUser, logout, login: storeLogin } = useSchoolStore();
@@ -252,6 +253,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
             {/* Main Content - Adjust margin for sidebar */}
             <main className="flex-1 flex flex-col min-w-0 h-full overflow-hidden transition-all duration-300 lg:ml-64">
+                {(currentUser?.school === 'Bold Ideas Innovations School' || (currentUser as any)?.school?.name === 'Bold Ideas Innovations School') && (
+                    <DemoBanner />
+                )}
                 <header className="h-16 lg:h-20 bg-white border-b sticky top-0 z-20 flex items-center justify-between px-4 lg:px-6 no-print shadow-sm shrink-0">
                     {/* Mobile menu button - hidden on desktop */}
                     <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 rounded-md transition-colors hover:bg-gray-100 lg:hidden">

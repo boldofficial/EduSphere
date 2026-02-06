@@ -27,11 +27,11 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/schools/', include('schools.urls')),
     path('api/users/', include('users.urls')),
     path('api/', include('academic.urls')),
     path('api/', include('bursary.urls')),
     path('api/', include('core.urls')),
-    path('api/schools/', include('schools.urls')),
     path('api/learning/', include('learning.urls')),
     
     # API Documentation

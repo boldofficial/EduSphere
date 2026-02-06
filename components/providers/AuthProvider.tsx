@@ -16,7 +16,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             try {
                 // If we don't have a user in store, try to fetch from API (using cookie)
                 if (!currentUser) {
-                    const response = await apiClient.get('/users/me/');
+                    const response = await apiClient.get('users/me/');
                     const userData = response.data;
 
                     // Map backend role to frontend role

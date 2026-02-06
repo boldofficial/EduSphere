@@ -5,7 +5,7 @@ import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
  * Handles automatic token refresh on 401 Unauthorized errors.
  */
 const apiClient = axios.create({
-    baseURL: '/api/proxy',
+    baseURL: '/api/proxy/',
     headers: {
         'Content-Type': 'application/json',
     },
