@@ -28,9 +28,22 @@ export async function middleware(request: NextRequest) {
     const accessToken = request.cookies.get('access_token')?.value;
     const { pathname } = request.nextUrl;
 
+    console.log(`[MIDDLEWARE] ${request.method} ${host}${pathname} | tenantId: ${tenantId}`);
+
+    // Debug helper: allow checking if middleware is active on subdomain
+    if (pathname === '/api/middleware-check') {
+        return NextResponse.json({
+            success: true,
+            host,
+            tenantId,
+            isSubdomain,
+            isRoot,
+            rootDomain
+        });
+    }
+
     // 2. Access Control
-    // If trying to access protected routes without token, redirect to login
-    // BUT allow /api calls to pass through (as they might be for login itself)
+    // ... rest of the logic
     if (!accessToken &&
         !pathname.startsWith('/api/') &&
         pathname !== '/login' &&
