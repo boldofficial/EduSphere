@@ -23,6 +23,8 @@ services:
     volumes:
       - static_volume:/app/staticfiles
       - media_volume:/app/media
+    networks:
+      - coolify
     env_file:
       - .env
     depends_on:
@@ -40,6 +42,8 @@ services:
     depends_on:
       - backend
     restart: always
+    networks:
+      - coolify
 
   celery_worker:
     build:
@@ -75,13 +79,11 @@ services:
     volumes:
       - static_volume:/app/staticfiles
       - media_volume:/app/media
+    networks:
+      - coolify
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.registra-nginx.rule=Host(`myregistra.net`) || HostRegexp(`{subdomain:.+}.myregistra.net`)"
-      - "traefik.http.routers.registra-nginx.entrypoints=websecure"
-      - "traefik.http.routers.registra-nginx.tls=true"
-      - "traefik.http.routers.registra-nginx.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.registra-nginx.service=registra-nginx"
       - "traefik.http.services.registra-nginx.loadbalancer.server.port=80"
     depends_on:
       - frontend
@@ -93,3 +95,8 @@ volumes:
   media_volume:
   certbot_etc:
   certbot_var:
+
+
+networks:
+  coolify:
+    external: true
