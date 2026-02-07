@@ -58,17 +58,13 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
     matcher: [
-        '/',
-        '/dashboard/:path*',
-        '/students/:path*',
-        '/teachers/:path*',
-        '/classes/:path*',
-        '/grading/:path*',
-        '/attendance/:path*',
-        '/bursary/:path*',
-        '/settings/:path*',
-        '/admissions/:path*',
-        '/analytics/:path*',
-        '/announcements/:path*',
+        /*
+         * Match all request paths except for the ones starting with:
+         * - _next/static (static files)
+         * - _next/image (image optimization files)
+         * - favicon.ico (favicon file)
+         * - public files (svg, png, etc.)
+         */
+        '/((?!_next/static|_next/image|favicon.ico|.*\\.png|.*\\.jpg|.*\\.svg).*)',
     ],
 }
