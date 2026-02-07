@@ -47,7 +47,7 @@ DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 'yes')
 
 ALLOWED_HOSTS = [
     host.strip()
-    for host in os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,.myregistra.net').split(',')
+    for host in os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,.myregistra.net,backend,registra_backend,frontend').split(',')
     if host.strip()
 ]
 
@@ -292,8 +292,12 @@ CORS_EXPOSE_HEADERS = ['Content-Type', 'X-CSRFToken']
 # =============================================================================
 
 if not DEBUG:
-    # HTTPS settings
-    SECURE_SSL_REDIRECT = True
+    # SECURE_PROXY_SSL_HEADER is critical for detecting HTTPS behind Coolify/Traefik
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    
+    # Let the proxy (Coolify/Nginx) handle the redirect to avoid internal Docker network loops
+    SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'False').lower() == 'true'
+    
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_BROWSER_XSS_FILTER = True
