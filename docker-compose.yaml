@@ -77,7 +77,7 @@ services:
       - media_volume:/app/media
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.registra-nginx.rule=Host(`myregistra.net`) || HostRegexp(`{subdomain:[a-z0-9-]+}.myregistra.net`)"
+      - "traefik.http.routers.registra-nginx.rule=Host(`myregistra.net`, `www.myregistra.net`) || HostRegexp(`^.+\\.myregistra\\.net$`)"
       - "traefik.http.routers.registra-nginx.entrypoints=websecure"
       - "traefik.http.routers.registra-nginx.tls=true"
       - "traefik.http.routers.registra-nginx.tls.certresolver=letsencrypt"
