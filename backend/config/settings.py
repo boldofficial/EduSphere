@@ -45,11 +45,14 @@ if not SECRET_KEY:
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 'yes')
 
-ALLOWED_HOSTS = [
-    host.strip()
-    for host in os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,.myregistra.net,backend,registra_backend,frontend').split(',')
-    if host.strip()
-]
+# Parse ALLOWED_HOSTS from environment
+_env_hosts = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,.myregistra.net').split(',')
+ALLOWED_HOSTS = [host.strip() for host in _env_hosts if host.strip()]
+
+# ALWAYS include internal docker service names for container-to-container communication
+# This prevents 502/400 errors when the Frontend calls the Backend via http://backend:8000
+INTERNAL_HOSTS = ['backend', 'registra_backend', 'frontend', 'registra_frontend', 'nginx']
+ALLOWED_HOSTS.extend([h for h in INTERNAL_HOSTS if h not in ALLOWED_HOSTS])
 
 ROOT_DOMAIN = os.environ.get('ROOT_DOMAIN', 'myregistra.net')
 
@@ -285,6 +288,18 @@ CORS_ALLOWED_ORIGINS = [
 
 CORS_ALLOW_CREDENTIALS = True
 CORS_EXPOSE_HEADERS = ['Content-Type', 'X-CSRFToken']
+
+# CSRF settings for production
+CSRF_TRUSTED_ORIGINS = [
+    origin.replace('http://', 'https://') if origin.startswith('http://') else origin
+    for origin in CORS_ALLOWED_ORIGINS
+]
+# Explicitly add wildcard for subdomains if root domain is set
+_root = os.environ.get('ROOT_DOMAIN', 'myregistra.net')
+if f"https://{_root}" not in CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS.append(f"https://{_root}")
+if f"https://*.{_root}" not in CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS.append(f"https://*.{_root}")
 
 
 # =============================================================================
