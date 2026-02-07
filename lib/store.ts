@@ -15,7 +15,9 @@ interface SchoolState {
 
     // Legacy view state (kept for compatibility if needed, but should be phased out)
     view: Types.ViewState;
-    setView: (view: Types.ViewState) => void;
+    // Hydration tracking
+    hasHydrated: boolean;
+    setHasHydrated: (state: boolean) => void;
 }
 
 // Custom debounced storage to prevent main thread blocking
@@ -51,9 +53,11 @@ export const useSchoolStore = create<SchoolState>()(
     persist(
         (set) => ({
             currentUser: null,
-            currentRole: 'admin',
+            currentRole: null as unknown as Types.UserRole, // Start as null to detect hydration
             view: 'dashboard',
+            hasHydrated: false,
 
+            setHasHydrated: (state) => set({ hasHydrated: state }),
             login: (role, user = null) => set({ currentRole: role, currentUser: user, view: 'dashboard' }),
             logout: () => set({ currentUser: null, currentRole: 'admin', view: 'dashboard' }),
             switchRole: (role) => set({ currentRole: role, view: 'dashboard' }),
@@ -62,6 +66,9 @@ export const useSchoolStore = create<SchoolState>()(
         {
             name: 'ng-school-storage',
             storage: createJSONStorage(() => debouncedStorage as any),
+            onRehydrateStorage: () => (state) => {
+                state?.setHasHydrated(true);
+            },
             partialize: (state) => ({
                 currentRole: state.currentRole,
                 currentUser: state.currentUser,

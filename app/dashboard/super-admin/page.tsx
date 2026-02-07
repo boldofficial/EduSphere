@@ -41,11 +41,13 @@ import {
 } from 'recharts';
 import apiClient from '@/lib/api-client';
 import * as Utils from '@/lib/utils';
+import { AIPlatformInsights } from '@/components/features/AIPlatformInsights';
+import { CommandPalette } from '@/components/features/CommandPalette';
 
 const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'myregistra.net';
 
 export default function SuperAdminDashboard() {
-    const { currentUser, currentRole, logout } = useSchoolStore();
+    const { currentUser, currentRole, logout, hasHydrated } = useSchoolStore();
     const router = useRouter();
     const [activeTab, setActiveTab] = useState<'overview' | 'tenants' | 'financials' | 'plans' | 'governance' | 'broadcasts' | 'modules' | 'settings'>('overview');
     const [searchQuery, setSearchQuery] = useState('');
@@ -54,6 +56,19 @@ export default function SuperAdminDashboard() {
     const [isTogglingMaintenance, setIsTogglingMaintenance] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [selectedSchoolForEdit, setSelectedSchoolForEdit] = useState<any>(null);
+    const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+
+    // Command Palette Keyboard Shortcut
+    useEffect(() => {
+        const handleCmdK = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                setIsCommandPaletteOpen(prev => !prev);
+            }
+        };
+        window.addEventListener('keydown', handleCmdK);
+        return () => window.removeEventListener('keydown', handleCmdK);
+    }, []);
 
     const handleImpersonate = async (userId: number) => {
         if (!userId) {
@@ -85,10 +100,12 @@ export default function SuperAdminDashboard() {
 
     // Verify Access
     useEffect(() => {
+        if (!hasHydrated) return; // Wait for store to hydrate
+
         if (currentUser && currentRole !== 'super_admin') {
             router.push('/dashboard');
         }
-    }, [currentUser, currentRole, router]);
+    }, [currentUser, currentRole, router, hasHydrated]);
 
     // Fetch Data using TanStack Query for robustness
     const { data: healthData, isLoading: healthLoading } = useSystemHealth();
@@ -128,7 +145,7 @@ export default function SuperAdminDashboard() {
     const isDataLoading = healthLoading || schoolsLoading || plansLoading || revenueLoading || strategicLoading || governanceLoading;
 
     // Hydration/Auth loading
-    if (!currentUser) {
+    if (!hasHydrated || !currentUser) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
                 <div className="animate-spin rounded-full h-12 w-12 border-4 border-brand-600 border-t-transparent"></div>
@@ -290,6 +307,15 @@ export default function SuperAdminDashboard() {
                     </div>
                     <div className="flex items-center gap-6">
                         <button
+                            onClick={() => setIsCommandPaletteOpen(true)}
+                            className="p-3 bg-gray-50 border border-gray-100 rounded-2xl text-gray-400 hover:text-brand-600 hover:bg-white hover:border-brand-200 transition-all flex items-center gap-2 group"
+                        >
+                            <Search size={18} className="group-hover:scale-110 transition-transform" />
+                            <kbd className="hidden md:inline-flex items-center gap-1 px-1.5 py-0.5 border border-gray-200 rounded text-[10px] font-black text-gray-400">
+                                Ctrl+K
+                            </kbd>
+                        </button>
+                        <button
                             disabled={isTogglingMaintenance}
                             onClick={handleToggleMaintenance}
                             className={`flex items-center gap-3 px-4 py-2 rounded-2xl border transition-all ${isMaintenanceMode
@@ -308,7 +334,7 @@ export default function SuperAdminDashboard() {
                                 <p className="text-sm font-black text-gray-900">{currentUser?.username || 'Admin'}</p>
                                 <p className="text-[10px] font-bold text-brand-600 uppercase tracking-widest">Global Super Admin</p>
                             </div>
-                            <div className="w-12 h-12 bg-gray-900 rounded-2xl flex items-center justify-center text-white font-black text-lg shadow-lg">
+                            <div className="w-12 h-12 bg-gray-900 rounded-2xl flex items-center justify-center text-white font-black text-lg shadow-lg overflow-hidden border-2 border-white">
                                 {currentUser?.username?.[0].toUpperCase() || 'A'}
                             </div>
                         </div>
@@ -359,6 +385,12 @@ export default function SuperAdminDashboard() {
                     onSave={(data: any) => handleUpdateSchool(selectedSchoolForEdit.id, data)}
                 />
             )}
+
+            <CommandPalette
+                schools={schools}
+                isOpen={isCommandPaletteOpen}
+                onClose={() => setIsCommandPaletteOpen(false)}
+            />
         </div>
     );
 }
@@ -417,20 +449,28 @@ function OverviewTab({ schools, plans, revenue, health, strategic, governance, o
                 </div>
             </div>
 
-            {/* Infrastructure Health Section */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <HealthCard
-                    title="Redis Cache"
-                    status={health?.redis_status === 'connected' ? 'healthy' : 'error'}
-                    message={health?.redis_status === 'connected' ? 'Operational' : 'Disconnected'}
-                    icon={Zap}
-                />
-                <HealthCard
-                    title="Celery Workers"
-                    status={health?.celery_status === 'active' ? 'healthy' : 'error'}
-                    message={health?.celery_status === 'active' ? 'Active' : 'Offline'}
-                    icon={Server}
-                />
+            {/* AI Insights & Infrastructure Health */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2">
+                    <AIPlatformInsights schools={schools} health={health} revenue={revenue} />
+                </div>
+                <div className="grid grid-cols-2 lg:grid-cols-1 gap-6">
+                    <HealthCard
+                        title="Redis Cache"
+                        status={health?.redis_status === 'connected' ? 'healthy' : 'error'}
+                        message={health?.redis_status === 'connected' ? 'Operational' : 'Disconnected'}
+                        icon={Zap}
+                    />
+                    <HealthCard
+                        title="Celery Workers"
+                        status={health?.celery_status === 'active' ? 'healthy' : 'error'}
+                        message={health?.celery_status === 'active' ? 'Active' : 'Offline'}
+                        icon={Server}
+                    />
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <HealthCard
                     title="DB Latency"
                     status="healthy"
