@@ -6,20 +6,22 @@ export async function middleware(request: NextRequest) {
 
     // 1. Identify if we are on a subdomain of the root domain
     // Example: vine.myregistra.net vs myregistra.net
-    const isSubdomain = hostname.endsWith(`.${rootDomain}`);
-    const isRoot = hostname === rootDomain || hostname === `www.${rootDomain}`;
+    // Cleanup host to remove port if present (e.g. for local dev or proxy mismatch)
+    const host = hostname.split(':')[0];
+    const isSubdomain = host.endsWith(`.${rootDomain}`);
+    const isRoot = host === rootDomain || host === `www.${rootDomain}`;
 
     let tenantId = null;
 
     if (isSubdomain) {
         // Subdomain mode: extract the slug
-        tenantId = hostname.replace(`.${rootDomain}`, '');
-    } else if (!isRoot) {
+        tenantId = host.replace(`.${rootDomain}`, '');
+    } else if (!isRoot && host !== 'localhost' && !host.includes('127.0.0.1')) {
         // Custom Domain mode: use the full hostname to look up in DB
-        tenantId = hostname;
+        tenantId = host;
     }
 
-    console.log(`[MIDDLEWARE_DEBUG] Host: ${hostname}, Root: ${rootDomain}, isSubdomain: ${isSubdomain}, isRoot: ${isRoot}, tenantId: ${tenantId}`);
+    console.log(`[MIDDLEWARE_DEBUG] Host: ${host}, Root: ${rootDomain}, isSubdomain: ${isSubdomain}, isRoot: ${isRoot}, tenantId: ${tenantId}`);
 
     const accessToken = request.cookies.get('access_token')?.value;
     const { pathname } = request.nextUrl;
