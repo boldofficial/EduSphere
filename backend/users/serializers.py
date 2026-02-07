@@ -43,7 +43,14 @@ class UserSerializer(serializers.ModelSerializer):
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
-        data = super().validate(attrs)
+        try:
+            data = super().validate(attrs)
+        except AuthenticationFailed as e:
+            logger.error(f"[AUTH_BLOCK] Credential Failure for {attrs.get('username')}: {str(e)}")
+            raise e
+        except Exception as e:
+            logger.error(f"[AUTH_BLOCK] Unexpected Auth Error: {str(type(e))} {str(e)}")
+            raise e
         
         # Debugging Login Flow (Safe now)
         logger.info(f"[AUTH_DEBUG] Login success for user: {self.user.username} (Role: {self.user.role})")
