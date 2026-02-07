@@ -5,9 +5,6 @@ class SchoolsConfig(AppConfig):
     name = 'schools'
 
     def ready(self):
-        try:
-            from .models import PlatformModule
-            PlatformModule.sync_from_registry()
-        except Exception:
-            # Avoid breaking migrations or initial setup
-            pass
+        # Database queries in ready() are discouraged and cause warnings/hangs in production.
+        # sync_from_registry() should be called via a management command instead.
+        pass

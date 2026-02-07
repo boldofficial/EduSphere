@@ -21,7 +21,6 @@ services:
       dockerfile: Dockerfile
     container_name: registra_backend
     volumes:
-      - ./backend:/app
       - static_volume:/app/staticfiles
       - media_volume:/app/media
     env_file:
@@ -48,8 +47,6 @@ services:
       dockerfile: Dockerfile
     container_name: registra_worker
     command: celery -A config worker -l info
-    volumes:
-      - ./backend:/app
     env_file:
       - .env
     depends_on:
@@ -63,8 +60,6 @@ services:
       dockerfile: Dockerfile
     container_name: registra_beat
     command: celery -A config beat -l info
-    volumes:
-      - ./backend:/app
     env_file:
       - .env
     depends_on:
