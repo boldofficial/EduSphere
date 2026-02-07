@@ -91,11 +91,16 @@ services:
       - coolify
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=coolify"
       - "traefik.http.routers.registra-wildcard.rule=Host(`myregistra.net`, `www.myregistra.net`) || HostRegexp(`{subdomain:.+}.myregistra.net`)"
-      - "traefik.http.routers.registra-wildcard.entrypoints=web,websecure"
+      - "traefik.http.routers.registra-wildcard.entrypoints=web"
       - "traefik.http.routers.registra-wildcard.priority=5000"
-      - "traefik.http.routers.registra-wildcard.service=registra-svc"
-      - "traefik.http.services.registra-svc.loadbalancer.server.port=80"
+      - "traefik.http.services.registra-wildcard.loadbalancer.server.port=80"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost/" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     depends_on:
       - frontend
     restart: always
