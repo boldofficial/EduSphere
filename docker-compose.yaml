@@ -75,7 +75,13 @@ services:
     volumes:
       - static_volume:/app/staticfiles
       - media_volume:/app/media
-    # ports removed - Coolify's proxy will handle traffic routing to this container's port 80
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.registra-nginx.rule=Host(`myregistra.net`) || HostRegexp(`{subdomain:[a-z0-9-]+}.myregistra.net`)"
+      - "traefik.http.routers.registra-nginx.entrypoints=websecure"
+      - "traefik.http.routers.registra-nginx.tls=true"
+      - "traefik.http.routers.registra-nginx.tls.certresolver=letsencrypt"
+      - "traefik.http.services.registra-nginx.loadbalancer.server.port=80"
     depends_on:
       - frontend
     restart: always
