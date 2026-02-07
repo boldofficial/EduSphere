@@ -57,11 +57,11 @@ export const useSchoolStore = create<SchoolState>()(
             view: 'dashboard',
             hasHydrated: false,
 
-            setHasHydrated: (state) => set({ hasHydrated: state }),
-            login: (role, user = null) => set({ currentRole: role, currentUser: user, view: 'dashboard' }),
+            setHasHydrated: (state: boolean) => set({ hasHydrated: state }),
+            login: (role: Types.UserRole, user: any = null) => set({ currentRole: role, currentUser: user, view: 'dashboard' }),
             logout: () => set({ currentUser: null, currentRole: 'admin', view: 'dashboard' }),
-            switchRole: (role) => set({ currentRole: role, view: 'dashboard' }),
-            setView: (view) => set({ view }),
+            switchRole: (role: Types.UserRole) => set({ currentRole: role, view: 'dashboard' }),
+            setView: (view: Types.ViewState) => set({ view }),
         }),
         {
             name: 'ng-school-storage',
