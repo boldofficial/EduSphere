@@ -78,9 +78,6 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.registra-nginx.rule=Host(`myregistra.net`, `www.myregistra.net`) || HostRegexp(`^.+\\.myregistra\\.net$`)"
-      - "traefik.http.routers.registra-nginx.entrypoints=websecure"
-      - "traefik.http.routers.registra-nginx.tls=true"
-      - "traefik.http.routers.registra-nginx.tls.certresolver=letsencrypt"
       - "traefik.http.services.registra-nginx.loadbalancer.server.port=80"
     depends_on:
       - frontend
