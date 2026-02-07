@@ -49,7 +49,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         logger.info(f"[AUTH_DEBUG] Login success for user: {self.user.username} (Role: {self.user.role})")
         
         # SUPER ADMIN BYPASS: Always allow super admins to login regardless of tenant context
-        if self.user.role.upper() == 'SUPER_ADMIN': # Ensure case-insensitivity
+        if self.user.is_superuser or self.user.role.upper() == 'SUPER_ADMIN':
              logger.info(f"[AUTH_DEBUG] SUPER_ADMIN bypass active for {self.user.username}")
              
              data['role'] = self.user.role
