@@ -620,7 +620,7 @@ export const LoginView = () => {
                                         <div className="relative">
                                             <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                                             <input
-                                                type="email"
+                                                type="text"
                                                 value={email}
                                                 onChange={e => { setEmail(e.target.value); setLoginError(''); }}
                                                 placeholder={`admin@school.com`}
