@@ -496,7 +496,7 @@ class StrategicAnalyticsView(APIView):
 
         # 3. Plan Distribution
         plan_distribution = SubscriptionPlan.objects.annotate(
-            school_count=Count('subscription_plan_schools')
+            school_count=Count('subscription')
         ).values('name', 'school_count')
 
         # Format trends for frontend
