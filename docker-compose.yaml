@@ -77,7 +77,7 @@ services:
       - media_volume:/app/media
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.registra-nginx.rule=Host(`myregistra.net`, `www.myregistra.net`) || HostRegexp(`^.+\\.myregistra\\.net$`)"
+      - "traefik.http.routers.registra-nginx.rule=Host(`myregistra.net`) || HostRegexp(`{subdomain:.+}.myregistra.net`)"
       - "traefik.http.services.registra-nginx.loadbalancer.server.port=80"
     depends_on:
       - frontend
