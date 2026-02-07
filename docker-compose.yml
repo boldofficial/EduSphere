@@ -81,9 +81,7 @@ services:
       - certbot_var:/var/lib/letsencrypt
       - static_volume:/app/staticfiles
       - media_volume:/app/media
-    ports:
-      - "80:80"
-      - "443:443"
+    # ports removed - Coolify's proxy will handle traffic routing to this container's port 80/443
     depends_on:
       - frontend
     restart: always
