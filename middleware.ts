@@ -70,6 +70,5 @@ export const config = {
         '/admissions/:path*',
         '/analytics/:path*',
         '/announcements/:path*',
-        '/api/:path*',
     ],
 }
