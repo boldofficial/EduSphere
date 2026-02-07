@@ -722,7 +722,7 @@ class RegisterSchoolView(APIView):
                 Subscription.objects.create(
                     school=school,
                     plan=plan,
-                    status='pending',
+                    status='active', # Default to active for trial access
                     payment_method=data.get('payment_method', 'paystack'),
                     payment_proof=data.get('payment_proof'),
                     end_date=timezone.now() + timezone.timedelta(days=plan.duration_days)
