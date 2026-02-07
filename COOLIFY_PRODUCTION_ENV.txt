@@ -1,0 +1,51 @@
+# =============================================================================
+# REGISTRA PRODUCTION ENVIRONMENT - READY FOR COOLIFY
+# =============================================================================
+# COPY EVERYTHING BELOW THIS LINE INTO THE COOLIFY "ENVIRONMENT VARIABLES" TAB
+# =============================================================================
+
+# 1. DATABASE (Internal VPS Postgres)
+POSTGRES_DB=registra_db
+POSTGRES_USER=registra_admin
+POSTGRES_PASSWORD=registra_secure_pass_2026
+DATABASE_URL=postgres://registra_admin:registra_secure_pass_2026@db:5432/registra_db
+
+# 2. REDIS & CELERY (Internal VPS Redis)
+REDIS_URL=redis://redis:6379/0
+CELERY_BROKER_URL=redis://redis:6379/1
+CELERY_RESULT_BACKEND=redis://redis:6379/1
+
+# 3. BACKEND (Django)
+DEBUG=False
+DJANGO_SECRET_KEY=django-insecure-prod-vps-58fh-49sh-29dk-01la
+ALLOWED_HOSTS=myregistra.net,.myregistra.net
+CORS_ALLOWED_ORIGINS=https://myregistra.net
+ROOT_DOMAIN=myregistra.net
+
+# 4. FRONTEND (Next.js)
+DJANGO_API_URL=http://backend:8000
+NEXT_PUBLIC_ROOT_DOMAIN=myregistra.net
+NEXT_TELEMETRY_DISABLED=1
+
+# 5. SUPABASE AUTH & KEYS
+NEXT_PUBLIC_SUPABASE_URL=https://qyfxlrkscnpeyblrxeiw.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF5ZnhscmtzY25wZXlibHJ4ZWl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczNjc5MDYsImV4cCI6MjA4Mjk0MzkwNn0.TxdWvt_sIdT83QnVomdC1QMykNhkftGLNPVoESyui9Q
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF5ZnhscmtzY25wZXlibHJ4ZWl3Iiwicm9sZSI6InNlcnZp_roleIiwiaWF0IjoxNzY3MzY3OTA2LCJleHAiOjIwODI5NDM5MDZ9.6YEX_axRVLXdXOe1AUMpRnlXJ_z-dDPAJfOgB7QiEyY
+
+# 6. CLOUDFLARE R2 STORAGE
+R2_ACCOUNT_ID=4877d71ec0f87600eb10a51f01a09c28
+R2_ACCESS_KEY_ID=020f58b07342e52595da6136bad8d030
+R2_SECRET_ACCESS_KEY=893944c34f090c283bc53aec0bedb12a96c67e4e62a95dbaf6cc4aa6fa584179
+R2_BUCKET_NAME=multi-school
+R2_PUBLIC_URL=https://pub-1467bcdb0c484570856fd81da98b6735.r2.dev
+R2_ENDPOINT=https://4877d71ec0f87600eb10a51f01a09c28.r2.cloudflarestorage.com
+
+# 7. EMAIL (SMTP)
+SMTP_HOST=mail.fruitfulvineheritageschools.org.ng
+SMTP_PORT=465
+SMTP_USER=info@fruitfulvineheritageschools.org.ng
+SMTP_PASS=FruitfulVine@2026
+SMTP_FROM=info@fruitfulvineheritageschools.org.ng
+
+# 8. AI (Google Gemini)
+GEMINI_API_KEY=PLACAIzaSyBGyYf8cfytbchAHK8amRNX0SXpW3zJA2Y
