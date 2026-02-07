@@ -92,9 +92,9 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=coolify"
-      - "traefik.http.routers.registra-wildcard.rule=Host(`myregistra.net`, `www.myregistra.net`) || HostRegexp(`{subdomain:.+}.myregistra.net`)"
-      - "traefik.http.routers.registra-wildcard.priority=5000"
-      - "traefik.http.services.registra-wildcard.loadbalancer.server.port=80"
+      - "traefik.http.routers.nginx.rule=Host(`myregistra.net`, `www.myregistra.net`) || HostRegexp(`{subdomain:.+}.myregistra.net`)"
+      - "traefik.http.routers.nginx.priority=5000"
+      - "traefik.http.services.nginx.loadbalancer.server.port=80"
     depends_on:
       - frontend
     restart: always
