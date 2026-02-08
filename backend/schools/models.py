@@ -191,6 +191,9 @@ class PlatformSettings(models.Model):
     bank_code = models.CharField(max_length=20, null=True, blank=True)
     
     # Paystack Config
+    paystack_public_key = models.CharField(max_length=255, null=True, blank=True)
+    paystack_secret_key = models.CharField(max_length=255, null=True, blank=True)
+    
     # SMTP & API Email Config
     EMAIL_PROVIDERS = (
         ('smtp', 'Standard SMTP'),
