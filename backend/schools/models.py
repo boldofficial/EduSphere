@@ -194,6 +194,15 @@ class PlatformSettings(models.Model):
     paystack_public_key = models.CharField(max_length=100, null=True, blank=True)
     paystack_secret_key = models.CharField(max_length=100, null=True, blank=True)
     
+    # SMTP Config
+    email_host = models.CharField(max_length=100, null=True, blank=True)
+    email_port = models.IntegerField(null=True, blank=True, default=587)
+    email_user = models.CharField(max_length=100, null=True, blank=True)
+    email_password = models.CharField(max_length=100, null=True, blank=True)
+    email_from = models.EmailField(null=True, blank=True)
+    email_use_tls = models.BooleanField(default=True)
+    email_use_ssl = models.BooleanField(default=False)
+    
     # Global contact info
     support_email = models.EmailField(null=True, blank=True)
     support_phone = models.CharField(max_length=20, null=True, blank=True)

@@ -1,9 +1,10 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import FileUploadView, SettingsView, PublicStatsView, SchoolMessageViewSet
+from .views import FileUploadView, SettingsView, PublicStatsView, SchoolMessageViewSet #, EmailTemplateViewSet
 
 router = DefaultRouter()
 router.register(r'messages', SchoolMessageViewSet, basename='message')
+# router.register(r'email-templates', EmailTemplateViewSet, basename='email-template')
 
 urlpatterns = [
     path('settings/', SettingsView.as_view(), name='settings'),

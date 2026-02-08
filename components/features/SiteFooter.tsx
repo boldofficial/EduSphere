@@ -109,10 +109,10 @@ const SiteFooter = ({ settings }: SiteFooterProps) => {
                         </ul>
 
                         <div className="flex items-center gap-4">
-                            <a href="https://facebook.com/registra" target="_blank" rel="noopener noreferrer" className="h-10 w-10 bg-white/10 hover:bg-accent-500 rounded-lg flex items-center justify-center text-white transition-all duration-300">
+                            <a href="https://facebook.com/myregistra" target="_blank" rel="noopener noreferrer" className="h-10 w-10 bg-white/10 hover:bg-accent-500 rounded-lg flex items-center justify-center text-white transition-all duration-300">
                                 <Facebook size={20} />
                             </a>
-                            <a href="https://instagram.com/registra" target="_blank" rel="noopener noreferrer" className="h-10 w-10 bg-white/10 hover:bg-accent-500 rounded-lg flex items-center justify-center text-white transition-all duration-300">
+                            <a href="https://instagram.com/myregistra" target="_blank" rel="noopener noreferrer" className="h-10 w-10 bg-white/10 hover:bg-accent-500 rounded-lg flex items-center justify-center text-white transition-all duration-300">
                                 <Instagram size={20} />
                             </a>
                         </div>

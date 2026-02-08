@@ -41,12 +41,38 @@ def send_template_email(template_name, recipient_email, context=None):
     else:
         text_content = strip_tags(html_content)
 
-    # 5. Create Email Message
+    # 5. Get Dynamic SMTP Settings
+    from schools.models import PlatformSettings
+    from django.core.mail import get_connection
+    
+    p_settings = PlatformSettings.objects.first()
+    
+    # Use dynamic settings if available, otherwise fallback to defaults in settings.py
+    email_host = getattr(p_settings, 'email_host', None) or settings.EMAIL_HOST
+    email_port = getattr(p_settings, 'email_port', None) or settings.EMAIL_PORT
+    email_user = getattr(p_settings, 'email_user', None) or settings.EMAIL_HOST_USER
+    email_password = getattr(p_settings, 'email_password', None) or settings.EMAIL_HOST_PASSWORD
+    email_from = getattr(p_settings, 'email_from', None) or settings.DEFAULT_FROM_EMAIL
+    use_tls = getattr(p_settings, 'email_use_tls', True)
+    use_ssl = getattr(p_settings, 'email_use_ssl', False)
+
+    connection = get_connection(
+        host=email_host,
+        port=email_port,
+        username=email_user,
+        password=email_password,
+        use_tls=use_tls,
+        use_ssl=use_ssl,
+        timeout=10
+    )
+
+    # 6. Create Email Message
     email = EmailMultiAlternatives(
         subject=subject,
         body=text_content,
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        to=[recipient_email]
+        from_email=email_from,
+        to=[recipient_email],
+        connection=connection
     )
     email.attach_alternative(html_content, "text/html")
 

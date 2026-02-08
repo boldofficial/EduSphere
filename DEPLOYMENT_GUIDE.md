@@ -1,6 +1,6 @@
 # Registra - Hostinger VPS Deployment Guide
 
-This guide describes how to deploy the Registra (EduSphere) platform to your new VPS using the Docker Compose setup we generated.
+This guide describes how to deploy the Registra platform to your new VPS using the Docker Compose setup we generated.
 
 ## Prerequisites
 1.  **Server**: A Hostinger VPS running Ubuntu (22.04+ recommended).

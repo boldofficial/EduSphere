@@ -40,6 +40,8 @@ export const queryKeys = {
     globalSearch: (query: string) => ['global_search', query] as const,
     modules: ['modules'] as const,
     platformSettings: ['platform_settings'] as const,
+    emailTemplates: ['email_templates'] as const,
+    emailLogs: ['email_logs'] as const,
     me: ['me'] as const,
     scholarships: ['scholarships'] as const,
     assignments: ['assignments'] as const,
@@ -225,6 +227,48 @@ export function useUpdatePlatformSettings() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.platformSettings });
         },
+    });
+}
+
+export function useEmailTemplates() {
+    return useQuery({
+        queryKey: queryKeys.emailTemplates,
+        queryFn: async () => {
+            const response = await apiClient.get('/emails/templates/');
+            // Handle paginated results
+            if (response.data && typeof response.data === 'object' && 'results' in response.data) {
+                return response.data.results;
+            }
+            return Array.isArray(response.data) ? response.data : [];
+        },
+    });
+}
+
+export function useUpdateEmailTemplate() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ id, updates }: { id: number; updates: any }) => {
+            const response = await apiClient.patch(`/emails/templates/${id}/`, updates);
+            return response.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.emailTemplates });
+        },
+    });
+}
+
+export function useEmailLogs() {
+    return useQuery({
+        queryKey: queryKeys.emailLogs,
+        queryFn: async () => {
+            const response = await apiClient.get('/emails/logs/');
+            // Handle paginated results
+            if (response.data && typeof response.data === 'object' && 'results' in response.data) {
+                return response.data.results;
+            }
+            return Array.isArray(response.data) ? response.data : [];
+        },
+        refetchInterval: 10000, // Refresh logs every 10s
     });
 }
 

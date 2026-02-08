@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-**ng-school-management-system** is a comprehensive, multi-tenant SaaS platform designed to streamline school administration, academics, and finance. It features a sophisticated separation between platform governance and tenant-specific operations.
+**Registra** is a comprehensive, multi-tenant SaaS platform designed to streamline school administration, academics, and finance. It features a sophisticated separation between platform governance and tenant-specific operations.
 
 ### Key Characteristics
 - **Multi-tenant Architecture**: Each school operates independently within the platform
@@ -571,7 +571,7 @@ remotePatterns: [
 - Impossible to access another school's data
 
 **Subdomain Routing**
-- `vine.edusphere.ng` → Vine School
+- `vine.myregistra.net` → Vine School
 - Platform recognizes schools by domain
 - Header-based tenant identification in frontend
 

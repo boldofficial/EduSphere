@@ -245,7 +245,7 @@ REST_FRAMEWORK = {
 }
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'School Manager API',
+    'TITLE': 'Registra API',
     'DESCRIPTION': 'Multi-tenant School Management System API',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
