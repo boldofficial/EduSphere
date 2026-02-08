@@ -191,15 +191,19 @@ class PlatformSettings(models.Model):
     bank_code = models.CharField(max_length=20, null=True, blank=True)
     
     # Paystack Config
-    paystack_public_key = models.CharField(max_length=100, null=True, blank=True)
-    paystack_secret_key = models.CharField(max_length=100, null=True, blank=True)
-    
-    # SMTP Config
+    # SMTP & API Email Config
+    EMAIL_PROVIDERS = (
+        ('smtp', 'Standard SMTP'),
+        ('brevo_api', 'Brevo API'),
+    )
+    email_provider = models.CharField(max_length=20, choices=EMAIL_PROVIDERS, default='smtp')
+    email_api_key = models.CharField(max_length=255, null=True, blank=True)
     email_host = models.CharField(max_length=100, null=True, blank=True)
     email_port = models.IntegerField(null=True, blank=True, default=587)
     email_user = models.CharField(max_length=100, null=True, blank=True)
     email_password = models.CharField(max_length=100, null=True, blank=True)
     email_from = models.EmailField(null=True, blank=True)
+    email_from_name = models.CharField(max_length=100, null=True, blank=True, default='Registra')
     email_use_tls = models.BooleanField(default=True)
     email_use_ssl = models.BooleanField(default=False)
     
