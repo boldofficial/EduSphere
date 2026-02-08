@@ -9,8 +9,13 @@ from django.utils import timezone
 from django.db.models import Q
 import uuid
 import os
-from .models import SchoolMessage
-from .serializers import SchoolMessageSerializer
+from .models import GlobalActivityLog, SchoolMessage, PlatformAnnouncement
+# from emails.models import EmailTemplate
+from .serializers import (
+    GlobalActivityLogSerializer, SchoolMessageSerializer, PlatformAnnouncementSerializer,
+    # EmailTemplateSerializer
+)
+from emails.utils import send_template_email
 from .pagination import StandardPagination
 from .cache_utils import CachingMixin
 
@@ -316,3 +321,38 @@ class SchoolMessageViewSet(CachingMixin, viewsets.ModelViewSet):
             serializer.save(is_read=True, read_at=timezone.now())
         else:
             serializer.save()
+
+# class EmailTemplateViewSet(viewsets.ModelViewSet):
+#     """
+#     CRUD for Email Templates + Test Sending Action
+#     """
+#     permission_classes = [permissions.IsAdminUser]  # Only Super Admins
+#     queryset = EmailTemplate.objects.all()
+#     serializer_class = EmailTemplateSerializer
+
+#     @action(detail=True, methods=['post'])
+#     def send_test(self, request, pk=None):
+#         """
+#         Sends a test email of this template to the current admin user.
+#         Payload: { "context": { "variable_name": "value" } }
+#         """
+#         template = self.get_object()
+#         recipient = request.user.email
+#         context = request.data.get('context', {})
+        
+#         # Add default context if missing
+#         if 'user_name' not in context:
+#             context['user_name'] = request.user.username
+#         if 'school_name' not in context:
+#             context['school_name'] = "Test School"
+#         if 'login_url' not in context:
+#             context['login_url'] = "https://myregistra.net/login"
+
+#         try:
+#             success = send_template_email(template.slug, recipient, context)
+#             if success:
+#                 return Response({'status': 'sent', 'recipient': recipient})
+#             else:
+#                 return Response({'error': 'Failed to send email. Check logs.'}, status=500)
+#         except Exception as e:
+#             return Response({'error': str(e)}, status=500)

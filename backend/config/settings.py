@@ -84,6 +84,7 @@ INSTALLED_APPS = [
     'academic',
     'bursary',
     'learning',
+    'emails',
 ]
 
 MIDDLEWARE = [
@@ -473,3 +474,23 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes
+
+
+# =============================================================================
+# EMAIL CONFIGURATION (BREVO / SMTP)
+# =============================================================================
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.environ.get('SMTP_HOST', 'smtp-relay.brevo.com')
+EMAIL_PORT = int(os.environ.get('SMTP_PORT', 587))
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.environ.get('SMTP_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('SMTP_PASS')
+DEFAULT_FROM_EMAIL = os.environ.get('SMTP_FROM', 'noreply@myregistra.net')
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+
+# If credentials are not set (e.g. in dev), fallback to console backend
+if not EMAIL_HOST_USER or not EMAIL_HOST_PASSWORD:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    if DEBUG:
+        print("WARNING: SMTP credentials not set. Emails will be printed to console.")

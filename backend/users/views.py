@@ -10,6 +10,8 @@ from .models import User
 
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import CustomTokenObtainPairSerializer
+from emails.tasks import send_email_task
+
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
@@ -148,12 +150,23 @@ class CreateAccountView(APIView):
 
         logger.info(f"Account setup complete for {email} (Role: {role}, Type: {profile.staff_type}, Created: {created}) by {request.user.email}")
 
+        if created:
+            try:
+                send_email_task.delay(
+                    'welcome_email',
+                    email,
+                    {'school_name': user.school.name if user.school else 'Registra', 'domain': user.school.domain if user.school else 'app'}
+                )
+            except Exception as e:
+                logger.error(f"Failed to queue welcome email for staff {email}: {e}")
+
         return Response({
             "message": "Account created successfully",
             "user_id": user.id,
             "username": user.username,
             "created": created
         })
+
 
 class DemoLoginView(APIView):
     """Magic login for the demo school."""
@@ -184,3 +197,35 @@ class DemoLoginView(APIView):
             'refresh': str(refresh),
             'user': get_user_me_data(user)
         })
+
+class PasswordResetRequestView(APIView):
+    """
+    Endpoint to request a password reset email.
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        email = request.data.get('email')
+        if not email:
+            raise ValidationError({"detail": "email is required"})
+
+        User = get_user_model()
+        try:
+            user = User.objects.get(email=email)
+            # In a real app, generate a secure token
+            reset_token = "dummy-token-" + str(uuid.uuid4())[:8]
+            reset_url = f"https://myregistra.net/reset-password?token={reset_token}"
+            
+            send_email_task.delay(
+                'password_reset',
+                email,
+                {'reset_url': reset_url}
+            )
+            logger.info(f"Password reset requested for {email}")
+        except User.DoesNotExist:
+            # For security, don't reveal if user exists
+            logger.info(f"Password reset requested for non-existent email: {email}")
+            pass
+
+        return Response({"message": "If an account exists with this email, a reset link has been sent."})
+
