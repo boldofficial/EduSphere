@@ -41,50 +41,78 @@ def send_template_email(template_name, recipient_email, context=None):
     else:
         text_content = strip_tags(html_content)
 
-    # 5. Get Dynamic SMTP Settings
+    # 5. Get Dynamic SMTP/API Settings
     from schools.models import PlatformSettings
+    import requests
     from django.core.mail import get_connection
     
     p_settings = PlatformSettings.objects.first()
     
-    # Use dynamic settings if available, otherwise fallback to defaults in settings.py
-    email_host = getattr(p_settings, 'email_host', None) or settings.EMAIL_HOST
-    email_port = getattr(p_settings, 'email_port', None) or settings.EMAIL_PORT
-    email_user = getattr(p_settings, 'email_user', None) or settings.EMAIL_HOST_USER
-    email_password = getattr(p_settings, 'email_password', None) or settings.EMAIL_HOST_PASSWORD
+    provider = getattr(p_settings, 'email_provider', 'smtp')
     email_from = getattr(p_settings, 'email_from', None) or settings.DEFAULT_FROM_EMAIL
-    use_tls = getattr(p_settings, 'email_use_tls', True)
-    use_ssl = getattr(p_settings, 'email_use_ssl', False)
+    email_from_name = getattr(p_settings, 'email_from_name', 'Registra')
 
-    connection = get_connection(
-        host=email_host,
-        port=email_port,
-        username=email_user,
-        password=email_password,
-        use_tls=use_tls,
-        use_ssl=use_ssl,
-        timeout=10
-    )
-
-    # 6. Create Email Message
-    email = EmailMultiAlternatives(
-        subject=subject,
-        body=text_content,
-        from_email=email_from,
-        to=[recipient_email],
-        connection=connection
-    )
-    email.attach_alternative(html_content, "text/html")
-
-    # 6. Send & Log
     status = 'sent'
     error_message = ''
-    try:
-        email.send()
-    except Exception as e:
-        status = 'failed'
-        error_message = str(e)
-        logger.error(f"Failed to send email '{template_name}' to {recipient_email}: {e}")
+
+    if provider == 'brevo_api' and p_settings.email_api_key:
+        # Use Brevo API
+        url = "https://api.brevo.com/v3/smtp/email"
+        headers = {
+            "accept": "application/json",
+            "content-type": "application/json",
+            "api-key": p_settings.email_api_key
+        }
+        payload = {
+            "sender": {"name": email_from_name, "email": email_from},
+            "to": [{"email": recipient_email}],
+            "subject": subject,
+            "htmlContent": html_content,
+            "textContent": text_content
+        }
+        try:
+            response = requests.post(url, json=payload, headers=headers, timeout=10)
+            if response.status_code not in [200, 201, 202]:
+                status = 'failed'
+                error_message = response.text
+                logger.error(f"Brevo API error: {response.text}")
+        except Exception as e:
+            status = 'failed'
+            error_message = str(e)
+            logger.error(f"Failed to send Brevo API email: {e}")
+    else:
+        # Use Dynamic SMTP (fallback to settings.py)
+        email_host = getattr(p_settings, 'email_host', None) or settings.EMAIL_HOST
+        email_port = getattr(p_settings, 'email_port', None) or settings.EMAIL_PORT
+        email_user = getattr(p_settings, 'email_user', None) or settings.EMAIL_HOST_USER
+        email_password = getattr(p_settings, 'email_password', None) or settings.EMAIL_HOST_PASSWORD
+        use_tls = getattr(p_settings, 'email_use_tls', True)
+        use_ssl = getattr(p_settings, 'email_use_ssl', False)
+
+        try:
+            connection = get_connection(
+                host=email_host,
+                port=email_port,
+                username=email_user,
+                password=email_password,
+                use_tls=use_tls,
+                use_ssl=use_ssl,
+                timeout=10
+            )
+
+            email = EmailMultiAlternatives(
+                subject=subject,
+                body=text_content,
+                from_email=f"{email_from_name} <{email_from}>",
+                to=[recipient_email],
+                connection=connection
+            )
+            email.attach_alternative(html_content, "text/html")
+            email.send()
+        except Exception as e:
+            status = 'failed'
+            error_message = str(e)
+            logger.error(f"Failed to send SMTP email '{template_name}' to {recipient_email}: {e}")
 
     # 7. Create Log Entry
     try:

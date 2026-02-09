@@ -4,6 +4,8 @@ services:
   db:
     image: postgres:15-alpine
     container_name: registra_db
+    ports:
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     env_file:
@@ -15,6 +17,8 @@ services:
   redis:
     image: redis:7-alpine
     container_name: registra_redis
+    ports:
+      - "6379:6379"
     restart: always
     networks:
       - coolify

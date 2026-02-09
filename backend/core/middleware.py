@@ -61,6 +61,11 @@ class AuditLogMiddleware:
             else:
                 self._log_activity(request, response)
 
+        # Log SUCCESSFUL login attempts
+        if hasattr(response, 'status_code') and response.status_code in [200, 201]:
+             if '/token/' in request.path or '/login/' in request.path:
+                 self._log_activity(request, response)
+
         # Log FAILED login attempts (Brute force detection)
         if hasattr(response, 'status_code') and response.status_code in [401, 403]:
              if '/token/' in request.path or '/login/' in request.path:

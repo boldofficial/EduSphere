@@ -4,8 +4,8 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useSchoolStore } from '@/lib/store';
-import { useStudents, useSettings } from '@/lib/hooks/use-data';
-import { UserRole, Student } from '@/lib/types';
+import { useSettings } from '@/lib/hooks/use-data';
+import { UserRole } from '@/lib/types';
 import {
     ShieldCheck,
     Users,
@@ -18,7 +18,6 @@ import {
     Mail,
     CheckCircle,
     KeyRound,
-    Globe,
     School
 } from 'lucide-react';
 import * as Utils from '@/lib/utils';
@@ -26,8 +25,8 @@ import * as Utils from '@/lib/utils';
 export const LoginView = () => {
     const router = useRouter();
     const { login } = useSchoolStore();
-    // Use TanStack Query for data
-    const { data: students = [] } = useStudents();
+
+    // Removed useStudents() on mount to prevent unauthorized fetch errors
     const { data: settings = Utils.INITIAL_SETTINGS } = useSettings();
     const isDemo = false; // Disabled Demo Mode
     const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
@@ -48,26 +47,6 @@ export const LoginView = () => {
     const [adminSecretCount, setAdminSecretCount] = useState(0);
     const [showSystemLogin, setShowSystemLogin] = useState(false);
 
-    React.useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const host = window.location.host;
-            const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'myregistra.net';
-            const cleanHost = host.replace(/^www\./, '');
-
-            // Flexible detection: 
-            // 1. Matches configured root or clean version of it
-            // 2. Localhost
-            // 3. Vercel deployment (root)
-            const isRoot = cleanHost === rootDomain ||
-                host.startsWith('localhost:') ||
-                (host.includes('.vercel.app') && !host.includes('--')) ||
-                cleanHost === 'registra.net' || // Fallback for the base domain
-                host === 'localhost';
-
-            setIsSystemRoot(isRoot);
-        }
-    }, []);
-
     // Forgot password state
     const [showForgotPassword, setShowForgotPassword] = useState(false);
     const [forgotStudentNo, setForgotStudentNo] = useState('');
@@ -75,6 +54,29 @@ export const LoginView = () => {
     const [forgotError, setForgotError] = useState('');
     const [forgotSuccess, setForgotSuccess] = useState(false);
     const [newPassword, setNewPassword] = useState('');
+
+    React.useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const host = window.location.host;
+            // Clean host to remove port for comparison
+            const cleanHost = host.split(':')[0];
+
+            const rootDomain = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'myregistra.net').split(':')[0];
+            const cleanRootDomain = rootDomain.replace(/^www\./, '');
+            const finalHost = cleanHost.replace(/^www\./, '');
+
+            // Flexible detection: 
+            // 1. Matches configured root or clean version of it
+            // 2. Localhost
+            // 3. Vercel deployment (root)
+            const isRoot =
+                finalHost === cleanRootDomain ||
+                finalHost === 'localhost' ||
+                (finalHost.includes('vercel.app') && !finalHost.includes('-'));
+
+            setIsSystemRoot(isRoot);
+        }
+    }, []);
 
     const roles = [
         {
@@ -124,10 +126,9 @@ export const LoginView = () => {
             const data = await res.json();
 
             // Construct the login URL for the found school
-            const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'myregistra.net';
+            const rootDomain = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'myregistra.net').split(':')[0];
             const targetDomain = data.custom_domain || `${data.slug}.${rootDomain}`;
 
-            // Using window.location.href to handle cross-origin redirect if necessary
             window.location.href = `${window.location.protocol}//${targetDomain}/login`;
         } catch (err: any) {
             setSearchError(err.message);
@@ -141,30 +142,21 @@ export const LoginView = () => {
         setIsLoading(true);
 
         try {
-            // Determine tenant slug
             let tenantSlug = '';
 
             if (isSystemRoot) {
                 if (!searchSlug && selectedRole !== 'super_admin') {
-                    // If searching for school
                     setLoginError('Please find your school first.');
                     setIsLoading(false);
                     return;
                 }
                 tenantSlug = searchSlug;
             } else {
-                const host = window.location.host;
-                const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'myregistra.net';
+                const host = window.location.host.split(':')[0];
+                const rootDomain = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'myregistra.net').split(':')[0];
                 tenantSlug = host.replace(`.${rootDomain}`, '');
             }
 
-            // For Super Admin, we might not have a tenant, OR we might be logging into a specific tenant as super admin.
-            // But usually Super Admin accounts are global or attached to 'preschool' (default).
-            // Let's pass the tenantSlug if we have it.
-
-            // Username logic:
-            // For students, we append the @tenant suffix to match the backend unique username format
-            // while allowing students to type just their ID (e.g., '001')
             let usernamePayload = email.trim().toLowerCase();
             if (selectedRole === 'student' && tenantSlug) {
                 usernamePayload = `${email}@${tenantSlug}`;
@@ -188,8 +180,6 @@ export const LoginView = () => {
             }
 
             const data = await res.json();
-
-            // Update store
             const role = selectedRole || 'admin';
             login(role, {
                 id: data.user.id,
@@ -217,12 +207,9 @@ export const LoginView = () => {
         setIsLoading(true);
 
         try {
-            // Determine tenant slug
             let tenantSlug = '';
 
             if (isSystemRoot) {
-                // If on root domain, we rely on the searched school or can't login as student directly without context
-                // But usually students are at school.myregistra.net
                 if (!searchSlug) {
                     setLoginError('Please find your school first.');
                     setIsLoading(false);
@@ -230,20 +217,18 @@ export const LoginView = () => {
                 }
                 tenantSlug = searchSlug;
             } else {
-                // Extract from hostname
-                const host = window.location.host;
-                const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'myregistra.net';
+                const host = window.location.host.split(':')[0];
+                const rootDomain = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'myregistra.net').split(':')[0];
                 tenantSlug = host.replace(`.${rootDomain}`, '');
             }
 
-            // Construct scoped username matching backend format: ST001@vine-heritage
             const scopedUsername = `${studentNo.trim()}@${tenantSlug}`;
 
             const res = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'x-tenant-id': tenantSlug // Pass explicit tenant header
+                    'x-tenant-id': tenantSlug
                 },
                 body: JSON.stringify({
                     username: scopedUsername,
@@ -257,16 +242,13 @@ export const LoginView = () => {
             }
 
             const data = await res.json();
-
-            // Store student session
             login('student', {
                 id: data.user.id,
-                name: data.user.username, // or fetch real name
+                name: data.user.username,
                 email: data.user.email,
                 role: 'student'
             });
 
-            // Redirect to dashboard
             router.push('/dashboard');
         } catch (err: any) {
             console.error('Student login error:', err);
@@ -276,54 +258,41 @@ export const LoginView = () => {
         }
     };
 
-    const handleForgotPassword = (e: React.FormEvent) => {
+    const handleForgotPassword = async (e: React.FormEvent) => {
         e.preventDefault();
         setForgotError('');
         setIsLoading(true);
 
-        const student = students.find(
-            (s: Student) => s.student_no.toLowerCase() === forgotStudentNo.toLowerCase().trim()
-        );
+        try {
+            const res = await fetch('/api/proxy/students/forgot-password/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    student_no: forgotStudentNo.trim(),
+                    email: forgotEmail.trim()
+                })
+            });
 
-        setTimeout(() => {
-            setIsLoading(false);
-
-            if (!student) {
-                setForgotError('Student not found. Please check your Student Number.');
-                return;
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.detail || 'Could not find a student with these details.');
             }
 
-            if (!student.parent_email) {
-                setForgotError('No email on file. Please contact the school admin.');
-                return;
+            const data = await res.json();
+            if (data.temp_password) {
+                setNewPassword(data.temp_password);
             }
-
-            if (student.parent_email.toLowerCase() !== forgotEmail.toLowerCase().trim()) {
-                setForgotError('Email does not match our records.');
-                return;
-            }
-
-            // Generate new password and update student record
-            const generatedPassword = 'Pass' + Math.random().toString(36).substring(2, 8);
-            setNewPassword(generatedPassword);
-
-            // Update student in storage
-            const updatedStudents = students.map((s: Student) =>
-                s.id === student.id ? { ...s, password: generatedPassword, updated_at: Date.now() } : s
-            );
-            Utils.saveToStorage(Utils.STORAGE_KEYS.STUDENTS, updatedStudents);
-
             setForgotSuccess(true);
-        }, 1000);
+        } catch (err: any) {
+            setForgotError(err.message);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleDirectLogin = (role: UserRole) => {
-        const mockUser = {
-            role: role,
-            name: 'Demo User',
-            student_id: undefined
-        };
-        login(role, mockUser);
+        // Mock login only for development if needed, but disabled by isDemo = false
+        login(role, { id: 'demo', name: 'Demo User', role });
     };
 
     return (
@@ -394,7 +363,6 @@ export const LoginView = () => {
                                 className="group relative bg-white/5 backdrop-blur-xl rounded-[2.5rem] p-8 border transition-all duration-500 text-left hover:-translate-y-3 border-white/10 hover:bg-white/10 hover:border-accent-500/50 shadow-2xl overflow-hidden flex flex-col h-full"
                                 style={{ animationDelay: `${idx * 100}ms` }}
                             >
-                                {/* Decorative Glow */}
                                 <div
                                     className="absolute -top-24 -right-24 w-48 h-48 rounded-full opacity-0 group-hover:opacity-20 transition-opacity duration-700 blur-[80px]"
                                     style={{ backgroundColor: role.themeColor }}
@@ -424,8 +392,6 @@ export const LoginView = () => {
                                         <ArrowRight size={20} className="transition-transform group-hover:translate-x-1" />
                                     </div>
                                 </div>
-
-                                {/* Bottom Border Highlight */}
                                 <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-accent-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                             </button>
                         ))}
@@ -435,7 +401,6 @@ export const LoginView = () => {
                 {/* System Root View: Find School or Secret Super Admin */}
                 {isSystemRoot && !selectedRole && (
                     <div className={`w-full max-w-4xl grid grid-cols-1 ${showSystemLogin ? 'md:grid-cols-2' : 'max-w-md'} gap-8 px-4`}>
-                        {/* Search Section */}
                         <div className="bg-white rounded-3xl shadow-2xl p-8 flex flex-col justify-center">
                             <h2 className="text-3xl font-black text-gray-900 mb-2">Find your School</h2>
                             <p className="text-gray-500 mb-8 font-medium">Enter your school's unique ID or subdomain to access your portal.</p>
@@ -475,7 +440,6 @@ export const LoginView = () => {
                                 </button>
                             </form>
 
-                            {/* Onboarding Link */}
                             <div className="mt-8 pt-8 border-t border-gray-100 text-center">
                                 <p className="text-gray-500 font-medium mb-3">Not registered yet?</p>
                                 <Link href="/onboarding" className="text-brand-600 hover:text-brand-700 font-bold flex items-center justify-center gap-1 group">
@@ -485,7 +449,6 @@ export const LoginView = () => {
                             </div>
                         </div>
 
-                        {/* Super Admin Section (Hidden by default) */}
                         {showSystemLogin && (
                             <div className="bg-black/40 backdrop-blur-md rounded-3xl p-8 border border-white/10 flex flex-col justify-between animate-in slide-in-from-right-8 duration-500">
                                 <div>
@@ -582,8 +545,7 @@ export const LoginView = () => {
                     </div>
                 )}
 
-                {/* Direct Login for Admin/Teacher/Staff */}
-                {/* Login Form for Admin/Teacher/Staff */}
+                {/* Admin/Teacher/Staff Login Form */}
                 {selectedRole && selectedRole !== 'student' && (
                     <div className="w-full max-w-md animate-in slide-in-from-bottom-6 fade-in duration-500">
                         <div className="bg-white rounded-3xl shadow-2xl p-8">
@@ -597,7 +559,6 @@ export const LoginView = () => {
                                 <h2 className="text-2xl font-bold text-gray-900">{roles.find(r => r.id === selectedRole)?.name} Login</h2>
                             </div>
 
-                            {/* Show Direct Login button ONLY in Demo Mode */}
                             {isDemo ? (
                                 <div className="flex flex-col gap-4">
                                     <div className="bg-amber-50 text-amber-800 p-4 rounded-xl text-sm flex items-start gap-2">
@@ -613,7 +574,6 @@ export const LoginView = () => {
                                     </button>
                                 </div>
                             ) : (
-                                /* Real API Login Form */
                                 <form onSubmit={handleLogin} className="space-y-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>

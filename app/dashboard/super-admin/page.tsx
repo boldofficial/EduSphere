@@ -104,7 +104,7 @@ export default function SuperAdminDashboard() {
     useEffect(() => {
         if (!hasHydrated) return; // Wait for store to hydrate
 
-        if (currentUser && currentRole !== 'super_admin') {
+        if (currentUser && currentRole?.toLowerCase() !== 'super_admin') {
             router.push('/dashboard');
         }
     }, [currentUser, currentRole, router, hasHydrated]);
@@ -159,7 +159,7 @@ export default function SuperAdminDashboard() {
 
 
     // Debugging Role
-    if (currentRole !== 'super_admin') {
+    if (currentRole?.toLowerCase() !== 'super_admin') {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center p-4">
                 <div className="bg-red-50 p-6 rounded-xl border border-red-200 text-center max-w-md">
@@ -1424,6 +1424,147 @@ function PlatformSettingsTab({ settings }: { settings: any }) {
                                 placeholder="Registra Global"
                             />
                         </div>
+                    </div>
+                </div>
+
+                {/* Email Configuration Section */}
+                <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm group">
+                    <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                        <span className="w-8 h-8 bg-brand-50 rounded-lg flex items-center justify-center text-brand-600">
+                            <Mail size={18} />
+                        </span>
+                        Email Delivery Configuration
+                    </h3>
+
+                    <div className="space-y-6">
+                        {/* Provider Selection */}
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Email Provider</label>
+                            <div className="flex gap-4">
+                                {['smtp', 'brevo_api'].map((p) => (
+                                    <button
+                                        key={p}
+                                        type="button"
+                                        onClick={() => setEditedSettings({ ...editedSettings, email_provider: p })}
+                                        className={`flex-1 py-3 px-4 rounded-xl border-2 transition-all flex items-center justify-center gap-2 font-bold uppercase text-xs tracking-wider ${editedSettings.email_provider === p
+                                            ? 'border-brand-600 bg-brand-50 text-brand-600'
+                                            : 'border-gray-100 bg-gray-50 text-gray-400 hover:border-gray-200'
+                                            }`}
+                                    >
+                                        {p === 'smtp' ? <Server size={14} /> : <Zap size={14} />}
+                                        {p === 'smtp' ? 'Standard SMTP' : 'Brevo API'}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">From Email Address</label>
+                                <input
+                                    type="email"
+                                    value={editedSettings.email_from || ''}
+                                    onChange={(e) => setEditedSettings({ ...editedSettings, email_from: e.target.value })}
+                                    className="w-full bg-gray-50 border-0 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-brand-600 transition-all outline-none"
+                                    placeholder="noreply@myregistra.net"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Sender Display Name</label>
+                                <input
+                                    value={editedSettings.email_from_name || ''}
+                                    onChange={(e) => setEditedSettings({ ...editedSettings, email_from_name: e.target.value })}
+                                    className="w-full bg-gray-50 border-0 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-brand-600 transition-all outline-none"
+                                    placeholder="Registra Notifications"
+                                />
+                            </div>
+                        </div>
+
+                        {editedSettings.email_provider === 'brevo_api' ? (
+                            <div className="space-y-2 bg-slate-50 p-6 rounded-2xl border border-dashed border-gray-200">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Brevo API Key</label>
+                                <input
+                                    type="password"
+                                    value={editedSettings.email_api_key || ''}
+                                    onChange={(e) => setEditedSettings({ ...editedSettings, email_api_key: e.target.value })}
+                                    className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm font-mono focus:ring-2 focus:ring-brand-500 transition-all outline-none"
+                                    placeholder="xkeysib-..."
+                                />
+                                <p className="text-[10px] text-gray-400 italic">Fetch this from your Brevo SMTP & API dashboard.</p>
+                            </div>
+                        ) : (
+                            <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100 space-y-6">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <div className="space-y-2 md:col-span-2">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">SMTP Host</label>
+                                        <input
+                                            value={editedSettings.email_host || ''}
+                                            onChange={(e) => setEditedSettings({ ...editedSettings, email_host: e.target.value })}
+                                            className="w-full bg-white border-0 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-brand-600 transition-all outline-none"
+                                            placeholder="smtp.brevo.com"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">SMTP Port</label>
+                                        <input
+                                            type="number"
+                                            value={editedSettings.email_port || 587}
+                                            onChange={(e) => setEditedSettings({ ...editedSettings, email_port: parseInt(e.target.value) })}
+                                            className="w-full bg-white border-0 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-brand-600 transition-all outline-none"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">SMTP Username</label>
+                                        <input
+                                            value={editedSettings.email_user || ''}
+                                            onChange={(e) => setEditedSettings({ ...editedSettings, email_user: e.target.value })}
+                                            className="w-full bg-white border-0 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-brand-600 transition-all outline-none"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">SMTP Password</label>
+                                        <input
+                                            type="password"
+                                            value={editedSettings.email_password || ''}
+                                            onChange={(e) => setEditedSettings({ ...editedSettings, email_password: e.target.value })}
+                                            className="w-full bg-white border-0 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-brand-600 transition-all outline-none"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-8 pt-2">
+                                    <label className="flex items-center gap-3 cursor-pointer group">
+                                        <div className="relative">
+                                            <input
+                                                type="checkbox"
+                                                checked={editedSettings.email_use_tls}
+                                                onChange={(e) => setEditedSettings({ ...editedSettings, email_use_tls: e.target.checked })}
+                                                className="sr-only"
+                                            />
+                                            <div className={`w-10 h-6 bg-gray-200 rounded-full transition-colors group-hover:bg-gray-300 ${editedSettings.email_use_tls ? 'bg-brand-600 group-hover:bg-brand-700' : ''}`} />
+                                            <div className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform ${editedSettings.email_use_tls ? 'translate-x-4' : ''}`} />
+                                        </div>
+                                        <span className="text-xs font-bold text-gray-600 uppercase tracking-wider">Use TLS</span>
+                                    </label>
+                                    <label className="flex items-center gap-3 cursor-pointer group">
+                                        <div className="relative">
+                                            <input
+                                                type="checkbox"
+                                                checked={editedSettings.email_use_ssl}
+                                                onChange={(e) => setEditedSettings({ ...editedSettings, email_use_ssl: e.target.checked })}
+                                                className="sr-only"
+                                            />
+                                            <div className={`w-10 h-6 bg-gray-200 rounded-full transition-colors group-hover:bg-gray-300 ${editedSettings.email_use_ssl ? 'bg-brand-600 group-hover:bg-brand-700' : ''}`} />
+                                            <div className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform ${editedSettings.email_use_ssl ? 'translate-x-4' : ''}`} />
+                                        </div>
+                                        <span className="text-xs font-bold text-gray-600 uppercase tracking-wider">Use SSL</span>
+                                    </label>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 

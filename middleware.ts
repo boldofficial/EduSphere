@@ -7,26 +7,24 @@ export async function middleware(request: NextRequest) {
     rootDomain = rootDomain.split(':')[0];
 
     // 1. Identify if we are on a subdomain of the root domain
-    // Example: vine.myregistra.net vs myregistra.net
-    // Cleanup host to remove port if present (e.g. for local dev or proxy mismatch)
     const host = hostname.split(':')[0];
-    const isSubdomain = host.endsWith(`.${rootDomain}`);
     const isRoot = host === rootDomain || host === `www.${rootDomain}`;
+
+    // Subdomain mode: Only if it's NOT root and ends with .rootDomain
+    const isSubdomain = !isRoot && host.endsWith(`.${rootDomain}`);
 
     let tenantId = null;
 
     if (isSubdomain) {
-        // Subdomain mode: extract the slug
         tenantId = host.replace(`.${rootDomain}`, '');
     } else if (!isRoot && host !== 'localhost' && !host.includes('127.0.0.1')) {
-        // Custom Domain mode: use the full hostname to look up in DB
         tenantId = host;
     }
 
-    console.log(`[MIDDLEWARE_DEBUG] Host: ${host}, Root: ${rootDomain}, isSubdomain: ${isSubdomain}, isRoot: ${isRoot}, tenantId: ${tenantId}`);
-
-    const accessToken = request.cookies.get('access_token')?.value;
     const { pathname } = request.nextUrl;
+    const accessToken = request.cookies.get('access_token')?.value;
+
+    // console.log(`[MIDDLEWARE] ${request.method} ${host}${pathname} | tenantId: ${tenantId}`);
 
     console.log(`[MIDDLEWARE] ${request.method} ${host}${pathname} | tenantId: ${tenantId}`);
 
@@ -43,7 +41,6 @@ export async function middleware(request: NextRequest) {
     }
 
     // 2. Access Control
-    // ... rest of the logic
     if (!accessToken &&
         !pathname.startsWith('/api/') &&
         pathname !== '/login' &&
@@ -53,6 +50,10 @@ export async function middleware(request: NextRequest) {
     ) {
         const url = request.nextUrl.clone();
         url.pathname = '/login';
+
+        // Prevent infinite loop if already on /login
+        if (pathname === '/login') return NextResponse.next();
+
         return NextResponse.redirect(url);
     }
 
@@ -62,11 +63,19 @@ export async function middleware(request: NextRequest) {
         requestHeaders.set('x-tenant-id', tenantId);
     }
 
-    return NextResponse.next({
+    // Add trace headers for debugging
+    requestHeaders.set('x-middleware-auth', accessToken ? 'true' : 'false');
+    requestHeaders.set('x-middleware-tenant', tenantId || 'none');
+
+    const response = NextResponse.next({
         request: {
             headers: requestHeaders,
         },
     });
+
+    // Add trace to response so browser network tab shows it
+    response.headers.set('x-middleware-trace', '1');
+    return response;
 }
 
 export const config = {
