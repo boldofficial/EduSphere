@@ -94,12 +94,6 @@ services:
     networks:
       - coolify
     # Coolify will handle the routing via the FQDN field in the UI
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.registra-wildcard.rule=HostRegexp(`{subdomain:[a-z0-9-]+}.myregistra.net`)"
-      - "traefik.http.routers.registra-wildcard.entrypoints=websecure"
-      - "traefik.http.routers.registra-wildcard.tls=true"
-      - "traefik.http.services.registra-wildcard.loadbalancer.server.port=80"
     depends_on:
       - frontend
     restart: always
