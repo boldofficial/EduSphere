@@ -1,5 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server'
 
+console.log('>>> MIDDLEWARE_FILE_LOADED_V3');
+
 export async function middleware(request: NextRequest) {
     const hostname = request.headers.get('host') || '';
     let rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'myregistra.net';
