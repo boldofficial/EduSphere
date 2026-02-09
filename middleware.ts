@@ -6,17 +6,21 @@ export async function middleware(request: NextRequest) {
     // Cleanup rootDomain to remove port if present
     rootDomain = rootDomain.split(':')[0];
 
-    // 1. Identify if we are on a subdomain of the root domain
+    // 1. Identify domain and tenant
     const host = hostname.split(':')[0];
-    const isRoot = host === rootDomain || host === `www.${rootDomain}`;
+    const cleanRoot = rootDomain.replace(/^www\./, '');
+    const cleanHost = host.replace(/^www\./, '');
+
+    // It's root if it matches the root domain (ignoring www prefix)
+    const isRoot = cleanHost === cleanRoot;
 
     // Subdomain mode: Only if it's NOT root and ends with .rootDomain
     const isSubdomain = !isRoot && host.endsWith(`.${rootDomain}`);
 
     let tenantId = null;
-
     if (isSubdomain) {
-        tenantId = host.replace(`.${rootDomain}`, '');
+        // Handle www.tenant.domain -> should still be tenant
+        tenantId = cleanHost.replace(`.${cleanRoot}`, '');
     } else if (!isRoot && host !== 'localhost' && !host.includes('127.0.0.1')) {
         tenantId = host;
     }
@@ -24,9 +28,10 @@ export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
     const accessToken = request.cookies.get('access_token')?.value;
 
-    // console.log(`[MIDDLEWARE] ${request.method} ${host}${pathname} | tenantId: ${tenantId}`);
-
-    console.log(`[MIDDLEWARE] ${request.method} ${host}${pathname} | tenantId: ${tenantId}`);
+    // Deep Tracing for Debugging
+    console.log(`[MIDDLEWARE_TRACE] ${request.method} ${host}${pathname}`);
+    console.log(`[MIDDLEWARE_INFO] isRoot: ${isRoot}, isSubdomain: ${isSubdomain}, tenantId: ${tenantId}`);
+    console.log(`[MIDDLEWARE_HEADERS] Proto: ${request.headers.get('x-forwarded-proto')}, Host: ${request.headers.get('x-forwarded-host')}`);
 
     // Debug helper: allow checking if middleware is active on subdomain
     if (pathname === '/api/middleware-check') {
@@ -41,17 +46,33 @@ export async function middleware(request: NextRequest) {
     }
 
     // 2. Access Control
-    if (!accessToken &&
-        !pathname.startsWith('/api/') &&
-        pathname !== '/login' &&
-        pathname !== '/' &&
-        !pathname.startsWith('/(marketing)') &&
-        !pathname.startsWith('/onboarding')
-    ) {
+    // Define public paths that don't require authentication
+    const publicPaths = [
+        '/',
+        '/login',
+        '/onboarding',
+        '/privacy-policy',
+        '/terms-of-service',
+        '/blog',
+        '/careers',
+        '/developers',
+        '/help',
+        '/resources',
+        '/success-stories',
+        '/admission'
+    ];
+
+    const isPublicPath = publicPaths.includes(pathname) ||
+        publicPaths.some(p => pathname.startsWith(p + '/')) ||
+        pathname.startsWith('/api/') ||
+        pathname.includes('.'); // Static files (fallback)
+
+    if (!accessToken && !isPublicPath) {
+        console.log(`[MIDDLEWARE_REDIRECT] Redirecting unauthenticated user from ${pathname} to /login`);
         const url = request.nextUrl.clone();
         url.pathname = '/login';
 
-        // Prevent infinite loop if already on /login
+        // Prevent infinite loop
         if (pathname === '/login') return NextResponse.next();
 
         return NextResponse.redirect(url);
@@ -73,8 +94,9 @@ export async function middleware(request: NextRequest) {
         },
     });
 
-    // Add trace to response so browser network tab shows it
-    response.headers.set('x-middleware-trace', '1');
+    // Add trace to response for browser viewing
+    response.headers.set('x-middleware-trace', '2');
+    response.headers.set('x-tenant-detected', tenantId || 'none');
     return response;
 }
 
