@@ -21,7 +21,11 @@ export async function middleware(request: NextRequest) {
     if (isSubdomain) {
         // Handle www.tenant.domain -> should still be tenant
         tenantId = cleanHost.replace(`.${cleanRoot}`, '');
-    } else if (!isRoot && host !== 'localhost' && !host.includes('127.0.0.1')) {
+    } else if (!isRoot &&
+        host !== 'localhost' &&
+        !host.includes('127.0.0.1') &&
+        !host.includes('localhost') // Defensive against things like localhost:3001
+    ) {
         tenantId = host;
     }
 
