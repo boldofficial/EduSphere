@@ -95,8 +95,9 @@ services:
       - coolify
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.registra-wildcard.rule=Host(`myregistra.net`) || HostRegexp(`{subdomain:[a-z0-9-]+}.myregistra.net`)"
-      - "traefik.http.routers.registra-wildcard.entrypoints=web"
+      - "traefik.http.routers.registra-wildcard.rule=Host(`myregistra.net`, `www.myregistra.net`) || HostRegexp(`{subdomain:[a-z0-9-]+}.myregistra.net`)"
+      - "traefik.http.routers.registra-wildcard.entrypoints=web,websecure"
+      - "traefik.http.routers.registra-wildcard.tls=true"
       - "traefik.http.routers.registra-wildcard.priority=100"
       - "traefik.http.services.registra-wildcard.loadbalancer.server.port=80"
     depends_on:
