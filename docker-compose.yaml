@@ -41,12 +41,11 @@ services:
     restart: always
     labels:
       - "traefik.enable=true"
-      # Rule captures main domain and dynamic subdomains for API/Admin paths
-      - "traefik.http.routers.backend.rule=(Host(`myregistra.net`, `www.myregistra.net`) || HostRegexp(`{subdomain:[a-z0-9-]+}.myregistra.net`)) && PathPrefix(`/api`, `/admin`, `/django-static`, `/media`)"
+      # Separated Host calls and used Traefik v3 Regexp syntax
+      - "traefik.http.routers.backend.rule=(Host(`myregistra.net`) || Host(`www.myregistra.net`) || HostRegexp(`^.+\\.myregistra\\.net$`)) && PathPrefix(`/api`, `/admin`, `/django-static`, `/media`)"
       - "traefik.http.routers.backend.entrypoints=https"
       - "traefik.http.routers.backend.tls=true"
-      # Uses the Cloudflare DNS challenge resolver from your proxy config
-      - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.backend.tls.certresolver=letsencrypt-dns"
       - "traefik.http.routers.backend.priority=100"
       - "traefik.http.services.backend.loadbalancer.server.port=8000"
       - "traefik.docker.network=coolify"
@@ -65,11 +64,11 @@ services:
       - coolify
     labels:
       - "traefik.enable=true"
-      # Catch-all for the main domain and all tenant subdomains
-      - "traefik.http.routers.frontend.rule=Host(`myregistra.net`, `www.myregistra.net`) || HostRegexp(`{subdomain:[a-z0-9-]+}.myregistra.net`)"
+      # Separated Host calls for main and www, then catch-all for subdomains
+      - "traefik.http.routers.frontend.rule=Host(`myregistra.net`) || Host(`www.myregistra.net`) || HostRegexp(`^.+\\.myregistra\\.net$`)"
       - "traefik.http.routers.frontend.entrypoints=https"
       - "traefik.http.routers.frontend.tls=true"
-      - "traefik.http.routers.frontend.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.frontend.tls.certresolver=letsencrypt-dns"
       - "traefik.http.routers.frontend.priority=50"
       - "traefik.http.services.frontend.loadbalancer.server.port=3000"
       - "traefik.docker.network=coolify"
