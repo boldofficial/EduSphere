@@ -87,7 +87,7 @@ class Subscription(models.Model):
         ('active', 'Active'),
         ('expired', 'Expired'),
         ('cancelled', 'Cancelled'),
-        ('pending', 'Pending Payment'),
+        ('pending', 'Approval Pending'),
     )
 
     school = models.OneToOneField(School, on_delete=models.CASCADE, related_name='subscription')

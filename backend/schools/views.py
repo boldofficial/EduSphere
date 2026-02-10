@@ -728,18 +728,31 @@ class RegisterSchoolView(APIView):
                 Subscription.objects.create(
                     school=school,
                     plan=plan,
-                    status='active', # Default to active for trial access
+                    status='pending', # Default to pending until super admin approval
                     payment_method=data.get('payment_method', 'paystack'),
                     payment_proof=data.get('payment_proof'),
                     end_date=timezone.now() + timezone.timedelta(days=plan.duration_days)
                 )
 
-                # 4. Log the event
+                # 4. Notify Super Admins
+                from core.models import Notification
+                super_admins = User.objects.filter(role='SUPER_ADMIN')
+                for sa in super_admins:
+                    Notification.objects.create(
+                        user=sa,
+                        school=school,
+                        title="New School Registration",
+                        message=f"School '{school.name}' has registered and is pending approval.",
+                        category='system',
+                        link=f"/super-admin/schools" # Assuming this is the frontend route
+                    )
+
+                # 5. Log the event
                 GlobalActivityLog.objects.create(
                     action='SCHOOL_SIGNUP',
                     school=school,
                     user=admin_user,
-                    description=f"New school '{school.name}' registered with plan '{plan.name}'"
+                    description=f"New school '{school.name}' registered (Status: PENDING) with plan '{plan.name}'"
                 )
 
             logger.info(f"New school registered: '{school.name}' by {data['email']}")
