@@ -402,11 +402,9 @@ class SystemHealthView(APIView):
 
         # 2. Redis Connection Check
         redis_status = 'disconnected'
+        redis_error = None
         try:
             from django.core.cache import cache
-            from django_redis import get_redis_connection
-            # Try to get a genuine redis connection if possible, otherwise check if cache is redis
-            # We check if 'default' cache backend is 'django_redis.cache.RedisCache'
             from django.conf import settings
             cache_backend = settings.CACHES.get('default', {}).get('BACKEND', '')
             
@@ -414,30 +412,36 @@ class SystemHealthView(APIView):
                 cache.set('__health_check__', 'ok', timeout=5)
                 if cache.get('__health_check__') == 'ok':
                     redis_status = 'connected'
+                else:
+                    redis_status = 'degraded'
+                    redis_error = "Cache set/get mismatch"
             else:
-                redis_status = 'not_configured (using LocMem)'
+                redis_status = f'not_configured ({cache_backend})'
         except Exception as e:
             logger.warning(f"Health check: Redis disconnected: {e}")
             redis_status = 'disconnected'
+            redis_error = str(e)
 
         # 3. Celery Worker Check
         celery_status = 'offline'
+        celery_error = None
         try:
             from config.celery import app as celery_app
             insp = celery_app.control.inspect()
             stats = insp.stats()
             if stats:
                 celery_status = 'active'
-                # Optional: count active workers
-                # worker_count = len(stats)
             else:
-                # Check if it responds to ping
                 pings = celery_app.control.ping(timeout=0.5)
                 if pings:
                     celery_status = 'active'
+                else:
+                    celery_status = 'offline'
+                    celery_error = "No workers responded to ping"
         except Exception as e:
             logger.warning(f"Health check: Celery offline: {e}")
             celery_status = 'offline'
+            celery_error = str(e)
 
         # 4. Database Latency
         import time
@@ -447,9 +451,11 @@ class SystemHealthView(APIView):
         db_latency = f"{round((time.time() - db_start) * 1000, 2)}ms"
 
         return Response({
-            'status': 'healthy' if redis_status != 'disconnected' and celery_status != 'offline' else 'partially_degraded',
+            'status': 'healthy' if redis_status == 'connected' and celery_status == 'active' else 'partially_degraded',
             'redis_status': redis_status,
+            'redis_error': redis_error,
             'celery_status': celery_status,
+            'celery_error': celery_error,
             'db_latency': db_latency,
             'platform_stats': platform_stats,
             'timestamp': timezone.now()

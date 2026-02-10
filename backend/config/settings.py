@@ -325,6 +325,12 @@ if not DEBUG:
     
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+    
+    # Allow cookies across subdomains
+    _root_domain = os.environ.get('ROOT_DOMAIN', 'myregistra.net')
+    SESSION_COOKIE_DOMAIN = f".{_root_domain}"
+    CSRF_COOKIE_DOMAIN = f".{_root_domain}"
+    
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     
