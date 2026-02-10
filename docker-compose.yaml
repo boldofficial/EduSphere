@@ -39,16 +39,18 @@ services:
       - db
       - redis
     restart: always
+    environment:
+      - REDIS_URL=redis://registra_redis:6379/0
+      - DB_HOST=registra_db
     labels:
       - "traefik.enable=true"
       # Higher priority (1000) for backend to catch API/Admin requests first
       - "traefik.http.routers.backend.priority=1000"
-      # Rule matches Main domain OR Subdomains AND specific paths
       # Rule matches Main domain OR Subdomains AND specific paths using explicit grouped ORs
-      - "traefik.http.routers.backend.rule=(Host(`myregistra.net`) || Host(`www.myregistra.net`) || HostRegexp(`{subdomain:[a-z0-9-]+}.myregistra.net`)) && (PathPrefix(`/api`) || PathPrefix(`/admin`) || PathPrefix(`/django-static`) || PathPrefix(`/media`))"
+      - "traefik.http.routers.backend.rule=(Host(`myregistra.net`) || Host(`www.myregistra.net`) || HostRegexp(`^.+\\.myregistra\\.net$`)) && (PathPrefix(`/api`) || PathPrefix(`/admin`) || PathPrefix(`/django-static`) || PathPrefix(`/media`))"
       - "traefik.http.routers.backend.entrypoints=https"
       - "traefik.http.routers.backend.tls=true"
-      # REMOVED CERTRESOLVER: Let Coolify handle certificates automatically via its default entrypoint configuration
+      - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
       - "traefik.http.services.backend.loadbalancer.server.port=8000"
       - "traefik.docker.network=coolify"
 
@@ -71,17 +73,17 @@ services:
 
       # 1. High Priority (2000): Protect Next.js Auth & Proxy routes from being stolen by Backend
       - "traefik.http.routers.frontend-auth.priority=2000"
-      - "traefik.http.routers.frontend-auth.rule=(Host(`myregistra.net`) || Host(`www.myregistra.net`) || HostRegexp(`{subdomain:[a-z0-9-]+}.myregistra.net`)) && (PathPrefix(`/api/auth`) || PathPrefix(`/api/proxy`))"
+      - "traefik.http.routers.frontend-auth.rule=(Host(`myregistra.net`) || Host(`www.myregistra.net`) || HostRegexp(`^.+\\.myregistra\\.net$`)) && (PathPrefix(`/api/auth`) || PathPrefix(`/api/proxy`))"
       - "traefik.http.routers.frontend-auth.entrypoints=https"
       - "traefik.http.routers.frontend-auth.tls=true"
-      # REMOVED CERTRESOLVER
-      # (Implicitly points to frontend service)
+      - "traefik.http.routers.frontend-auth.tls.certresolver=letsencrypt"
 
       # 2. Low Priority (100): Catch-all for the UI
       - "traefik.http.routers.frontend.priority=100"
-      - "traefik.http.routers.frontend.rule=Host(`myregistra.net`) || Host(`www.myregistra.net`) || HostRegexp(`{subdomain:[a-z0-9-]+}.myregistra.net`)"
+      - "traefik.http.routers.frontend.rule=Host(`myregistra.net`) || Host(`www.myregistra.net`) || HostRegexp(`^.+\\.myregistra\\.net$`)"
       - "traefik.http.routers.frontend.entrypoints=https"
       - "traefik.http.routers.frontend.tls=true"
+      - "traefik.http.routers.frontend.tls.certresolver=letsencrypt"
       - "traefik.http.services.frontend.loadbalancer.server.port=3000"
       - "traefik.docker.network=coolify"
 
@@ -97,6 +99,9 @@ services:
       - db
       - redis
     restart: always
+    environment:
+      - REDIS_URL=redis://registra_redis:6379/0
+      - DB_HOST=registra_db
     networks:
       - coolify
 
@@ -112,6 +117,9 @@ services:
       - db
       - redis
     restart: always
+    environment:
+      - REDIS_URL=redis://registra_redis:6379/0
+      - DB_HOST=registra_db
     networks:
       - coolify
 

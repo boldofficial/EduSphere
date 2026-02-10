@@ -147,6 +147,12 @@ if DATABASES['default'].get('ENGINE') == 'django.db.backends.postgresql':
         'connect_timeout': 10,
     })
 
+# Networking Fix: Allow DB_HOST to override the host parsed from DATABASE_URL
+# This ensures Docker services can reach 'registra_db' even if .env has 'localhost'
+if os.environ.get('DB_HOST'):
+    DATABASES['default']['HOST'] = os.environ.get('DB_HOST')
+
+
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
