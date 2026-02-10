@@ -76,21 +76,9 @@ const nextConfig = {
     async rewrites() {
         const DJANGO_API_URL = process.env.DJANGO_API_URL || 'http://127.0.0.1:8000';
         return {
-            // 'beforeFiles' rewrites are checked AFTER Next.js API routes,
-            // but we use 'afterFiles' so that file-based API routes take priority.
-            afterFiles: [
-                {
-                    source: '/api/:path*',
-                    has: [
-                        {
-                            type: 'header',
-                            key: 'x-nextjs-rewrite-skip',
-                        },
-                    ],
-                    destination: `${DJANGO_API_URL}/api/:path*`,
-                },
-            ],
-            // Fallback rewrites only apply when no page/API route/afterFiles rewrite matches
+            // Fallback rewrites only apply when no matching Next.js page or API route exists.
+            // This ensures Route Handlers (e.g. /api/auth/login, /api/proxy/*) take priority,
+            // while Django still handles /api/users/, /api/schools/, /admin/, etc.
             fallback: [
                 {
                     source: '/api/:path*',

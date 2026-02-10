@@ -10,8 +10,10 @@ RUN npm ci
 # Copy source code and build
 COPY . .
 
-# Environment variables for build time (if any)
+# Environment variables for build time
 ENV NEXT_TELEMETRY_DISABLED 1
+ARG DJANGO_API_URL=http://backend:8000
+ENV DJANGO_API_URL=${DJANGO_API_URL}
 
 RUN npm run build
 

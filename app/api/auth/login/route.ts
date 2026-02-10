@@ -35,8 +35,6 @@ export async function POST(request: NextRequest) {
         });
 
         console.log('Django token response status:', response.status);
-        const responseClone = response.clone();
-        console.log('Django response body:', await responseClone.text());
 
         if (!response.ok) {
             const errorText = await response.text();
