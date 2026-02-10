@@ -39,6 +39,13 @@ services:
       - db
       - redis
     restart: always
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.registra-backend.rule=(Host(`myregistra.net`) || Host(`www.myregistra.net`) || HostRegexp(`{subdomain:[a-z0-9-]+}.myregistra.net`)) && PathPrefix(`/api`, `/admin`, `/django-static`, `/media`)"
+      - "traefik.http.routers.registra-backend.entrypoints=websecure"
+      - "traefik.http.routers.registra-backend.tls=true"
+      - "traefik.http.routers.registra-backend.priority=100"
+      - "traefik.http.services.registra-backend.loadbalancer.server.port=8000"
 
   frontend:
     build:
@@ -55,7 +62,7 @@ services:
       - "traefik.http.routers.registra-frontend.rule=Host(`myregistra.net`) || Host(`www.myregistra.net`) || HostRegexp(`{subdomain:[a-z0-9-]+}.myregistra.net`)"
       - "traefik.http.routers.registra-frontend.entrypoints=websecure"
       - "traefik.http.routers.registra-frontend.tls=true"
-      - "traefik.http.routers.registra-frontend.priority=10"
+      - "traefik.http.routers.registra-frontend.priority=50"
       - "traefik.http.services.registra-frontend.loadbalancer.server.port=3000"
     networks:
       - coolify
