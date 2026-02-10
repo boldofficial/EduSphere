@@ -1,6 +1,7 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.exceptions import PermissionDenied
 from .models import FeeCategory, FeeItem, StudentFee, Payment, Expense, Scholarship
 from .serializers import (
     FeeCategorySerializer, FeeItemSerializer, StudentFeeSerializer, PaymentSerializer, 
@@ -13,9 +14,22 @@ from django.utils import timezone
 from django.db.models import Sum, Q, Count
 import uuid
 
+
+class IsAdminOrBursar(permissions.BasePermission):
+    """
+    Write operations restricted to SCHOOL_ADMIN, SUPER_ADMIN, TEACHER (bursar), or superusers.
+    STUDENT and other roles are read-only.
+    """
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        if not request.user or not request.user.is_authenticated:
+            return False
+        return request.user.role in ('SCHOOL_ADMIN', 'SUPER_ADMIN', 'TEACHER') or request.user.is_superuser
+
 class TenantViewSet(CachingMixin, viewsets.ModelViewSet):
     """Base ViewSet for multi-tenant models - filters by school"""
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsAdminOrBursar]
 
     def get_queryset(self):
         user = self.request.user
@@ -36,6 +50,23 @@ class TenantViewSet(CachingMixin, viewsets.ModelViewSet):
             save_kwargs['school'] = self.request.user.school
         
         serializer.save(**save_kwargs)
+
+    def perform_update(self, serializer):
+        instance = serializer.instance
+        user = self.request.user
+        if not user.is_superuser and hasattr(instance, 'school'):
+            user_school = getattr(user, 'school', None)
+            if user_school and instance.school != user_school:
+                raise PermissionDenied('You cannot modify records belonging to another school.')
+        super().perform_update(serializer)
+
+    def perform_destroy(self, instance):
+        user = self.request.user
+        if not user.is_superuser and hasattr(instance, 'school'):
+            user_school = getattr(user, 'school', None)
+            if user_school and instance.school != user_school:
+                raise PermissionDenied('You cannot delete records belonging to another school.')
+        super().perform_destroy(instance)
 
 class ScholarshipViewSet(TenantViewSet):
     queryset = Scholarship.objects.select_related('school').all()
@@ -60,19 +91,59 @@ class StudentFeeViewSet(TenantViewSet):
     @action(detail=False, methods=['post'], url_path='send-reminders')
     def send_reminders(self, request):
         """
-        Simulate sending reminders to debtors.
-        In a real app, this would trigger Email/SMS via a background task.
+        Send fee reminders to debtors via email.
+        Body: { "student_ids": [...], "message": "Custom message text" }
         """
+        from emails.tasks import send_email_task
+        
         student_ids = request.data.get('student_ids', [])
         message_template = request.data.get('message', 'Friendly reminder of your outstanding balance.')
         
-        # Logic to "send" would go here
-        count = len(student_ids) if student_ids else StudentFee.objects.filter(school=request.user.school).count()
+        # Get unpaid fees for the specified students (or all if none specified)
+        fees_qs = StudentFee.objects.filter(school=request.user.school).select_related('student', 'fee_item')
+        if student_ids:
+            fees_qs = fees_qs.filter(student_id__in=student_ids)
+        
+        # Group by student and send one email per student
+        sent_count = 0
+        student_fees = {}
+        for fee in fees_qs:
+            if fee.student_id not in student_fees:
+                student_fees[fee.student_id] = {
+                    'student': fee.student,
+                    'total_balance': 0,
+                    'items': []
+                }
+            student_fees[fee.student_id]['total_balance'] += float(fee.fee_item.amount) - float(fee.amount_paid or 0)
+            student_fees[fee.student_id]['items'].append(fee.fee_item.name if hasattr(fee.fee_item, 'name') else str(fee.fee_item))
+        
+        for student_id, data in student_fees.items():
+            student = data['student']
+            # Try parent email first, then student user email
+            recipient_email = getattr(student, 'parent_email', None) or getattr(student, 'email', None)
+            if not recipient_email and hasattr(student, 'user') and student.user:
+                recipient_email = student.user.email
+            
+            if recipient_email and data['total_balance'] > 0:
+                try:
+                    send_email_task.delay(
+                        'fee_reminder',
+                        recipient_email,
+                        {
+                            'student_name': student.names if hasattr(student, 'names') else str(student),
+                            'balance': f"{data['total_balance']:,.2f}",
+                            'message': message_template,
+                            'school_name': request.user.school.name,
+                        }
+                    )
+                    sent_count += 1
+                except Exception:
+                    pass  # Silently skip failed queues; email task handles logging
         
         return Response({
             "status": "success",
-            "message": f"Reminders queued for {count} students/parents.",
-            "template_used": message_template
+            "message": f"Reminders queued for {sent_count} students/parents.",
+            "total_students_processed": len(student_fees),
         })
 
 class PaymentViewSet(TenantViewSet):

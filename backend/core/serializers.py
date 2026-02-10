@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import SchoolMessage, GlobalActivityLog, PlatformAnnouncement
+from .models import SchoolMessage, GlobalActivityLog, PlatformAnnouncement, Notification
 
 class SchoolMessageSerializer(serializers.ModelSerializer):
     sender_name = serializers.CharField(source='sender.username', read_only=True)
@@ -10,7 +10,7 @@ class SchoolMessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = SchoolMessage
         fields = ['id', 'sender', 'sender_name', 'sender_role', 'recipient', 'recipient_name', 
-                  'recipient_role', 'subject', 'body', 'is_read', 'read_at', 'created_at', 'updated_at']
+                  'recipient_role', 'subject', 'body', 'attachment_url', 'is_read', 'read_at', 'created_at', 'updated_at']
         read_only_fields = ['sender', 'read_at', 'created_at', 'updated_at']
 
 class GlobalActivityLogSerializer(serializers.ModelSerializer):
@@ -27,3 +27,10 @@ class PlatformAnnouncementSerializer(serializers.ModelSerializer):
         model = PlatformAnnouncement
         fields = ['id', 'title', 'message', 'priority', 'is_active', 'target_role', 'created_by', 'created_at', 'expires_at']
         read_only_fields = ['created_at']
+
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = ['id', 'title', 'message', 'category', 'link', 'is_read', 'created_at']
+        read_only_fields = ['created_at']
+

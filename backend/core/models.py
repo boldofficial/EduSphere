@@ -67,6 +67,7 @@ class SchoolMessage(models.Model):
     recipient = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='received_messages')
     subject = models.CharField(max_length=255, blank=True)
     body = models.TextField()
+    attachment_url = models.CharField(max_length=500, blank=True, default='', help_text="URL to an attached file (uploaded via FileUploadView)")
     is_read = models.BooleanField(default=False)
     read_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -83,5 +84,33 @@ class SchoolMessage(models.Model):
     def __str__(self):
         return f"Message from {self.sender.username} to {self.recipient.username}"
 
+
+class Notification(models.Model):
+    """Per-user in-app notifications (assignment posted, fee recorded, etc.)"""
+    CATEGORY_CHOICES = (
+        ('academic', 'Academic'),
+        ('bursary', 'Bursary'),
+        ('attendance', 'Attendance'),
+        ('announcement', 'Announcement'),
+        ('system', 'System'),
+    )
+
+    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='notifications')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications')
+    title = models.CharField(max_length=255)
+    message = models.TextField(blank=True)
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='system')
+    link = models.CharField(max_length=500, blank=True, default='', help_text="Deep link path e.g. /dashboard/reports")
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user', 'is_read']),
+            models.Index(fields=['school', 'created_at']),
+        ]
+
     def __str__(self):
-        return f"Message from {self.sender.username} to {self.recipient.username}"
+        return f"[{self.category}] {self.title} → {self.user.username}"
+

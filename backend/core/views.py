@@ -3,17 +3,18 @@ from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework import viewsets, permissions
+from rest_framework.decorators import action
 from django.core.files.storage import default_storage
 from django.conf import settings
 from django.utils import timezone
 from django.db.models import Q
 import uuid
 import os
-from .models import GlobalActivityLog, SchoolMessage, PlatformAnnouncement
+from .models import GlobalActivityLog, SchoolMessage, PlatformAnnouncement, Notification
 # from emails.models import EmailTemplate
 from .serializers import (
     GlobalActivityLogSerializer, SchoolMessageSerializer, PlatformAnnouncementSerializer,
-    # EmailTemplateSerializer
+    NotificationSerializer
 )
 from emails.utils import send_template_email
 from .pagination import StandardPagination
@@ -128,6 +129,12 @@ class SettingsView(APIView):
             })
 
     def put(self, request):
+        # Security: Only authenticated admins can update settings
+        if not request.user.is_authenticated:
+            return Response({'error': 'Authentication required'}, status=401)
+        if request.user.role not in ('SCHOOL_ADMIN', 'SUPER_ADMIN') and not request.user.is_superuser:
+            return Response({'error': 'Only admins can update settings'}, status=403)
+
         school = self.get_school(request)
         if not school:
             return Response({'error': 'School not found'}, status=404)
@@ -322,37 +329,27 @@ class SchoolMessageViewSet(CachingMixin, viewsets.ModelViewSet):
         else:
             serializer.save()
 
-# class EmailTemplateViewSet(viewsets.ModelViewSet):
-#     """
-#     CRUD for Email Templates + Test Sending Action
-#     """
-#     permission_classes = [permissions.IsAdminUser]  # Only Super Admins
-#     queryset = EmailTemplate.objects.all()
-#     serializer_class = EmailTemplateSerializer
+class NotificationViewSet(viewsets.ModelViewSet):
+    """Per-user in-app notifications"""
+    permission_classes = [IsAuthenticated]
+    serializer_class = NotificationSerializer
+    pagination_class = StandardPagination
 
-#     @action(detail=True, methods=['post'])
-#     def send_test(self, request, pk=None):
-#         """
-#         Sends a test email of this template to the current admin user.
-#         Payload: { "context": { "variable_name": "value" } }
-#         """
-#         template = self.get_object()
-#         recipient = request.user.email
-#         context = request.data.get('context', {})
-        
-#         # Add default context if missing
-#         if 'user_name' not in context:
-#             context['user_name'] = request.user.username
-#         if 'school_name' not in context:
-#             context['school_name'] = "Test School"
-#         if 'login_url' not in context:
-#             context['login_url'] = "https://myregistra.net/login"
+    def get_queryset(self):
+        user = self.request.user
+        if not user.is_authenticated:
+            return Notification.objects.none()
+        return Notification.objects.filter(user=user).order_by('-created_at')
 
-#         try:
-#             success = send_template_email(template.slug, recipient, context)
-#             if success:
-#                 return Response({'status': 'sent', 'recipient': recipient})
-#             else:
-#                 return Response({'error': 'Failed to send email. Check logs.'}, status=500)
-#         except Exception as e:
-#             return Response({'error': str(e)}, status=500)
+    def perform_create(self, serializer):
+        serializer.save(
+            user=self.request.user,
+            school=self.request.user.school if hasattr(self.request.user, 'school') else None
+        )
+
+    @action(detail=False, methods=['post'], url_path='mark-all-read')
+    def mark_all_read(self, request):
+        """Mark all notifications as read for the current user."""
+        count = Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
+        return Response({"marked_read": count})
+

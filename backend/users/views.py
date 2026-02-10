@@ -6,6 +6,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
 from academic.models import Teacher
 import logging
+logger = logging.getLogger(__name__)
 from .models import User
 
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -212,9 +213,15 @@ class PasswordResetRequestView(APIView):
         User = get_user_model()
         try:
             user = User.objects.get(email=email)
-            # In a real app, generate a secure token
-            reset_token = "dummy-token-" + str(uuid.uuid4())[:8]
-            reset_url = f"https://myregistra.net/reset-password?token={reset_token}"
+            # Generate a real, secure reset token
+            from django.contrib.auth.tokens import PasswordResetTokenGenerator
+            from django.utils.http import urlsafe_base64_encode
+            from django.utils.encoding import force_bytes
+            
+            token_generator = PasswordResetTokenGenerator()
+            token = token_generator.make_token(user)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            reset_url = f"https://myregistra.net/reset-password?uid={uid}&token={token}"
             
             send_email_task.delay(
                 'password_reset',
@@ -228,4 +235,43 @@ class PasswordResetRequestView(APIView):
             pass
 
         return Response({"message": "If an account exists with this email, a reset link has been sent."})
+
+
+class PasswordResetConfirmView(APIView):
+    """
+    Endpoint to confirm a password reset using the token from the email link.
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        uid = request.data.get('uid')
+        token = request.data.get('token')
+        new_password = request.data.get('new_password')
+
+        if not uid or not token or not new_password:
+            raise ValidationError({"detail": "uid, token, and new_password are required"})
+
+        from django.contrib.auth.tokens import PasswordResetTokenGenerator
+        from django.utils.http import urlsafe_base64_decode
+        from django.utils.encoding import force_str
+
+        User = get_user_model()
+        try:
+            user_pk = force_str(urlsafe_base64_decode(uid))
+            user = User.objects.get(pk=user_pk)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            return Response({"detail": "Invalid reset link."}, status=400)
+
+        token_generator = PasswordResetTokenGenerator()
+        if not token_generator.check_token(user, token):
+            return Response({"detail": "Reset link has expired or is invalid."}, status=400)
+
+        if len(new_password) < 8:
+            return Response({"detail": "Password must be at least 8 characters."}, status=400)
+
+        user.set_password(new_password)
+        user.save()
+        logger.info(f"Password reset completed for {user.email}")
+
+        return Response({"message": "Password has been reset successfully."})
 

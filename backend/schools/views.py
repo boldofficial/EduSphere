@@ -351,7 +351,7 @@ class PlanManagementView(APIView):
 
 class PlatformSettingsView(APIView):
     """Manage global platform settings (Super Admin only)."""
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def get_settings(self):
         from .models import PlatformSettings

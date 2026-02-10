@@ -18,19 +18,19 @@ router.register(r'scores', views.SubjectScoreViewSet)
 router.register(r'attendance-sessions', views.AttendanceSessionViewSet)
 router.register(r'attendance-records', views.AttendanceRecordViewSet)
 router.register(r'events', views.SchoolEventViewSet)
-router.register(r'announcements', views.SchoolEventViewSet, basename='announcements')
-router.register(r'newsletters', views.SchoolEventViewSet, basename='newsletters')
 router.register(r'lessons', views.LessonViewSet)
 router.register(r'conduct-entries', views.ConductEntryViewSet)
 
-# New Module Endpoints
+# Timetable & Grading Module Endpoints
 router.register(r'periods', views.PeriodViewSet, basename='periods')
 router.register(r'timetables', views.TimetableViewSet, basename='timetables')
 router.register(r'timetable-entries', views.TimetableEntryViewSet, basename='timetable-entries')
 router.register(r'grading-schemes', views.GradingSchemeViewSet, basename='grading-schemes')
 router.register(r'grade-ranges', views.GradeRangeViewSet, basename='grade-ranges')
 router.register(r'subject_teachers', views.SubjectTeacherViewSet, basename='subject_teachers')
+router.register(r'broadsheet', views.BroadsheetView, basename='broadsheet')
 
 urlpatterns = [
     path('', include(router.urls)),
 ]
+

@@ -1,7 +1,22 @@
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.exceptions import PermissionDenied
 from django.db import transaction, models
+
+
+class IsAdminOrReadOnly(permissions.BasePermission):
+    """
+    Write operations restricted to SCHOOL_ADMIN, SUPER_ADMIN, or superusers.
+    TEACHER role gets write access too (they need to create scores, attendance etc).
+    STUDENT and other roles are read-only.
+    """
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        if not request.user or not request.user.is_authenticated:
+            return False
+        return request.user.role in ('SCHOOL_ADMIN', 'SUPER_ADMIN', 'TEACHER') or request.user.is_superuser
 from .models import (
     Subject, Teacher, Class, Student, 
     ReportCard, SubjectScore, AttendanceSession, AttendanceRecord,
@@ -20,7 +35,7 @@ from core.pagination import StandardPagination, LargePagination
 from core.cache_utils import CachingMixin
 
 class TenantViewSet(CachingMixin, viewsets.ModelViewSet):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsAdminOrReadOnly]
 
     def get_queryset(self):
         user = self.request.user
@@ -54,10 +69,23 @@ class TenantViewSet(CachingMixin, viewsets.ModelViewSet):
         self.invalidate_cache()
 
     def perform_update(self, serializer):
+        instance = serializer.instance
+        user = self.request.user
+        # Tenant isolation: verify the object belongs to the user's school
+        if not user.is_superuser and hasattr(instance, 'school'):
+            user_school = getattr(user, 'school', None) or getattr(self.request, 'tenant', None)
+            if user_school and instance.school != user_school:
+                raise PermissionDenied('You cannot modify records belonging to another school.')
         super().perform_update(serializer)
         self.invalidate_cache()
 
     def perform_destroy(self, instance):
+        user = self.request.user
+        # Tenant isolation: verify the object belongs to the user's school
+        if not user.is_superuser and hasattr(instance, 'school'):
+            user_school = getattr(user, 'school', None) or getattr(self.request, 'tenant', None)
+            if user_school and instance.school != user_school:
+                raise PermissionDenied('You cannot delete records belonging to another school.')
         super().perform_destroy(instance)
         self.invalidate_cache()
 
@@ -340,3 +368,75 @@ class SubjectTeacherViewSet(TenantViewSet):
             qs = qs.filter(session=session)
             
         return qs
+
+
+class BroadsheetView(viewsets.ViewSet):
+    """
+    Broadsheet / Master Result Sheet — aggregates SubjectScores across all subjects
+    for a class in a given session and term. Returns a pivoted table.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def list(self, request):
+        school = getattr(request.user, 'school', None) or getattr(request, 'tenant', None)
+        if not school:
+            return Response({"error": "School context not found"}, status=400)
+
+        class_id = request.query_params.get('class_id')
+        session = request.query_params.get('session')
+        term = request.query_params.get('term')
+
+        if not all([class_id, session, term]):
+            return Response({"error": "class_id, session, and term are required"}, status=400)
+
+        scores = SubjectScore.objects.filter(
+            school=school,
+            student__current_class_id=class_id,
+            session=session,
+            term=term
+        ).select_related('student', 'subject').order_by('student__names', 'subject__name')
+
+        # Pivot: { student_id: { name, subjects: { subject_name: { ca, exam, total } }, grand_total } }
+        broadsheet = {}
+        all_subjects = set()
+
+        for score in scores:
+            sid = str(score.student_id)
+            subject_name = score.subject.name
+            all_subjects.add(subject_name)
+
+            if sid not in broadsheet:
+                broadsheet[sid] = {
+                    'student_id': sid,
+                    'student_name': score.student.names if hasattr(score.student, 'names') else str(score.student),
+                    'student_no': getattr(score.student, 'student_no', ''),
+                    'subjects': {},
+                    'grand_total': 0,
+                }
+
+            total = float(score.ca_score or 0) + float(score.exam_score or 0)
+            broadsheet[sid]['subjects'][subject_name] = {
+                'ca': float(score.ca_score or 0),
+                'exam': float(score.exam_score or 0),
+                'total': total,
+                'grade': getattr(score, 'grade', ''),
+            }
+            broadsheet[sid]['grand_total'] += total
+
+        # Sort students by name and subjects alphabetically
+        rows = sorted(broadsheet.values(), key=lambda x: x['student_name'])
+        subjects = sorted(all_subjects)
+
+        # Calculate position (rank by grand_total descending)
+        sorted_by_total = sorted(rows, key=lambda x: x['grand_total'], reverse=True)
+        for idx, row in enumerate(sorted_by_total, 1):
+            row['position'] = idx
+
+        return Response({
+            'subjects': subjects,
+            'students': rows,
+            'class_id': class_id,
+            'session': session,
+            'term': term,
+        })
+
