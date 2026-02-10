@@ -75,24 +75,41 @@ const nextConfig = {
 
     async rewrites() {
         const DJANGO_API_URL = process.env.DJANGO_API_URL || 'http://127.0.0.1:8000';
-        return [
-            {
-                source: '/api/:path*',
-                destination: `${DJANGO_API_URL}/api/:path*`,
-            },
-            {
-                source: '/admin/:path*',
-                destination: `${DJANGO_API_URL}/admin/:path*`,
-            },
-            {
-                source: '/django-static/:path*',
-                destination: `${DJANGO_API_URL}/django-static/:path*`,
-            },
-            {
-                source: '/media/:path*',
-                destination: `${DJANGO_API_URL}/media/:path*`,
-            },
-        ];
+        return {
+            // 'beforeFiles' rewrites are checked AFTER Next.js API routes,
+            // but we use 'afterFiles' so that file-based API routes take priority.
+            afterFiles: [
+                {
+                    source: '/api/:path*',
+                    has: [
+                        {
+                            type: 'header',
+                            key: 'x-nextjs-rewrite-skip',
+                        },
+                    ],
+                    destination: `${DJANGO_API_URL}/api/:path*`,
+                },
+            ],
+            // Fallback rewrites only apply when no page/API route/afterFiles rewrite matches
+            fallback: [
+                {
+                    source: '/api/:path*',
+                    destination: `${DJANGO_API_URL}/api/:path*`,
+                },
+                {
+                    source: '/admin/:path*',
+                    destination: `${DJANGO_API_URL}/admin/:path*`,
+                },
+                {
+                    source: '/django-static/:path*',
+                    destination: `${DJANGO_API_URL}/django-static/:path*`,
+                },
+                {
+                    source: '/media/:path*',
+                    destination: `${DJANGO_API_URL}/media/:path*`,
+                },
+            ],
+        };
     },
 }
 

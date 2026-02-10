@@ -150,8 +150,10 @@ if DATABASES['default'].get('ENGINE') == 'django.db.backends.postgresql':
         'connect_timeout': 10,
     })
 
-# NOTE: DB_HOST override removed. The database is cloud-hosted (Neon),
-# so the host from DATABASE_URL must NOT be overridden.
+# Networking Fix: Allow DB_HOST to override the host parsed from DATABASE_URL
+# Database is local on Hostinger VPS (registra_db container)
+if os.environ.get('DB_HOST'):
+    DATABASES['default']['HOST'] = os.environ.get('DB_HOST')
 
 
 # Default primary key field type
