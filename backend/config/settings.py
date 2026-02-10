@@ -150,10 +150,8 @@ if DATABASES['default'].get('ENGINE') == 'django.db.backends.postgresql':
         'connect_timeout': 10,
     })
 
-# Networking Fix: Allow DB_HOST to override the host parsed from DATABASE_URL
-# Database is local on Hostinger VPS (registra_db container)
-if os.environ.get('DB_HOST'):
-    DATABASES['default']['HOST'] = os.environ.get('DB_HOST')
+# NOTE: Coolify manages database connections via DATABASE_URL environment variable
+# with dynamically generated container hostnames. Do not override DB_HOST.
 
 
 # Default primary key field type
