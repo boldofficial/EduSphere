@@ -316,8 +316,12 @@ if not DEBUG:
     # SECURE_PROXY_SSL_HEADER is critical for detecting HTTPS behind Coolify/Traefik
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     
+    # Trust the X-Forwarded-Host header from Traefik
+    USE_X_FORWARDED_HOST = True
+    
     # Let the proxy (Coolify/Nginx) handle the redirect to avoid internal Docker network loops
     SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'False').lower() == 'true'
+
     
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True

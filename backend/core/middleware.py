@@ -35,12 +35,17 @@ class TenantMiddleware(MiddlewareMixin):
                 ).first()
                 if request.tenant:
                     logger.info(f"[TENANT_DEBUG] Found Tenant: {request.tenant.domain}")
+                    request.subdomain = tenant_domain
                 else:
                     logger.warning(f"[TENANT_DEBUG] No tenant found for domain: {tenant_domain}")
+                    request.subdomain = None
                 # Also set back to tenant_domain for consistency in serializer checks
                 request.tenant_id = tenant_domain
             except Exception as e:
                 logger.error(f"Tenant lookup error: {e}")
+                request.subdomain = None
+        else:
+            request.subdomain = None
 
         # If no tenant found and we're not on a known system domain, 
         # it might be a custom domain not in our DB yet or a malformed request
