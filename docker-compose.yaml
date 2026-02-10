@@ -117,7 +117,6 @@ services:
     restart: always
     environment:
       - REDIS_URL=redis://registra_redis:6379/0
-      - DB_HOST=registra_db
     networks:
       - coolify
 
