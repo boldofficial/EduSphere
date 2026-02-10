@@ -111,8 +111,6 @@ services:
       - db
       - redis
     restart: always
-    environment:
-      - REDIS_URL=redis://registra_redis:6379/0
     networks:
       - coolify
 
