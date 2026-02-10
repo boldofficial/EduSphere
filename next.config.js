@@ -77,6 +77,18 @@ const nextConfig = {
         const DJANGO_API_URL = process.env.DJANGO_API_URL || 'http://127.0.0.1:8000';
         return [
             {
+                source: '/api/:path*',
+                destination: `${DJANGO_API_URL}/api/:path*`,
+            },
+            {
+                source: '/admin/:path*',
+                destination: `${DJANGO_API_URL}/admin/:path*`,
+            },
+            {
+                source: '/django-static/:path*',
+                destination: `${DJANGO_API_URL}/django-static/:path*`,
+            },
+            {
                 source: '/media/:path*',
                 destination: `${DJANGO_API_URL}/media/:path*`,
             },

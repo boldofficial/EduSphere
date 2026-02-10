@@ -41,11 +41,12 @@ services:
     restart: always
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.backend.rule=(Host(`myregistra.net`) || Host(`www.myregistra.net`) || HostRegexp(`{subdomain:[a-z0-9-]+}.myregistra.net`)) && PathPrefix(`/api`, `/admin`, `/django-static`, `/media`)"
-      - "traefik.http.routers.backend.entrypoints=https"
-      - "traefik.http.routers.backend.tls=true"
-      - "traefik.http.routers.backend.priority=100"
-      - "traefik.http.services.backend.loadbalancer.server.port=8000"
+      - "traefik.http.routers.registra-backend-root.rule=Host(`myregistra.net`, `www.myregistra.net`) && PathPrefix(`/api`, `/admin`, `/django-static`, `/media`)"
+      - "traefik.http.routers.registra-backend-root.entrypoints=https"
+      - "traefik.http.routers.registra-backend-root.tls=true"
+      - "traefik.http.routers.registra-backend-root.priority=100"
+      - "traefik.http.routers.registra-backend-root.service=registra-backend-svc"
+      - "traefik.http.services.registra-backend-svc.loadbalancer.server.port=8000"
       - "traefik.docker.network=coolify"
 
   frontend:
@@ -60,11 +61,12 @@ services:
     restart: always
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.frontend.rule=Host(`myregistra.net`) || Host(`www.myregistra.net`) || HostRegexp(`{subdomain:[a-z0-9-]+}.myregistra.net`)"
-      - "traefik.http.routers.frontend.entrypoints=https"
-      - "traefik.http.routers.frontend.tls=true"
-      - "traefik.http.routers.frontend.priority=50"
-      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
+      - "traefik.http.routers.registra-frontend.rule=Host(`myregistra.net`, `www.myregistra.net`) || HostRegexp(`^[a-z0-9-]+\\.myregistra\\.net$`)"
+      - "traefik.http.routers.registra-frontend.entrypoints=https"
+      - "traefik.http.routers.registra-frontend.tls=true"
+      - "traefik.http.routers.registra-frontend.priority=50"
+      - "traefik.http.routers.registra-frontend.service=registra-frontend-svc"
+      - "traefik.http.services.registra-frontend-svc.loadbalancer.server.port=3000"
       - "traefik.docker.network=coolify"
     networks:
       - coolify
