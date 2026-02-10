@@ -100,6 +100,18 @@ export default function SuperAdminDashboard() {
         }
     };
 
+    const handleLogout = async () => {
+        try {
+            await fetch('/api/auth/logout', { method: 'POST' });
+            logout();
+            window.location.href = '/';
+        } catch (error) {
+            console.error("Logout failed", error);
+            logout();
+            window.location.href = '/login';
+        }
+    };
+
     // Verify Access
     useEffect(() => {
         if (!hasHydrated) return; // Wait for store to hydrate
@@ -229,7 +241,7 @@ export default function SuperAdminDashboard() {
                 </nav>
 
                 <div className="p-4 border-t border-white/10">
-                    <button onClick={logout} className="flex items-center gap-3 px-4 py-3 w-full text-slate-300 hover:text-white hover:bg-white/5 rounded-xl transition-all">
+                    <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 w-full text-slate-300 hover:text-white hover:bg-white/5 rounded-xl transition-all">
                         <LogOut size={20} />
                         <span className="font-medium">Logout</span>
                     </button>

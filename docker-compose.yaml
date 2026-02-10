@@ -42,7 +42,7 @@ services:
     labels:
       - "traefik.enable=true"
       # Separated Host calls and used Traefik v3 Regexp syntax
-      - "traefik.http.routers.backend.rule=((Host(`myregistra.net`) || Host(`www.myregistra.net`)) && PathPrefix(`/api`, `/admin`, `/django-static`, `/media`)) || (HostRegexp(`^.+\\.myregistra\\.net$`) && PathPrefix(`/admin`, `/django-static`, `/media`))"
+      - "traefik.http.routers.backend.rule=((Host(`myregistra.net`) || Host(`www.myregistra.net`)) && PathPrefix(`/admin`, `/django-static`, `/media`)) || (HostRegexp(`^.+\\.myregistra\\.net$`) && PathPrefix(`/admin`, `/django-static`, `/media`))"
       - "traefik.http.routers.backend.entrypoints=https"
       - "traefik.http.routers.backend.tls=true"
       - "traefik.http.routers.backend.tls.certresolver=letsencrypt-dns"
