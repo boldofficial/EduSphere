@@ -55,10 +55,13 @@ if 'localhost' not in ALLOWED_HOSTS:
 if '127.0.0.1' not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append('127.0.0.1')
 
-# ALWAYS include internal docker service names for container-to-container communication
-# This prevents 502/400 errors when the Frontend calls the Backend via http://backend:8000
+# IMPORANT: Include container names for internal Docker communication
+# "backend" is the service name, "registra_backend" is the container name
+# Next.js calls http://backend:8000, so Django sees "Host: backend:8000"
 INTERNAL_HOSTS = ['backend', 'registra_backend', 'frontend', 'registra_frontend', 'nginx']
-ALLOWED_HOSTS.extend([h for h in INTERNAL_HOSTS if h not in ALLOWED_HOSTS])
+for h in INTERNAL_HOSTS:
+    if h not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(h)
 
 ROOT_DOMAIN = os.environ.get('ROOT_DOMAIN', 'myregistra.net')
 
