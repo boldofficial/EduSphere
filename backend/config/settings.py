@@ -458,7 +458,8 @@ LOGGING = {
 # REDIS / CACHING CONFIGURATION
 # =============================================================================
 
-REDIS_URL = os.environ.get('REDIS_URL')
+# Default to the Docker service name 'registra_redis' if not set
+REDIS_URL = os.environ.get('REDIS_URL', 'redis://registra_redis:6379/1')
 
 if REDIS_URL:
     CACHES = {
@@ -483,6 +484,9 @@ else:
 if not DEBUG:
     SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
     SESSION_CACHE_ALIAS = 'default'
+    # Critical for subdomains
+    SESSION_COOKIE_DOMAIN = '.myregistra.net'
+    CSRF_COOKIE_DOMAIN = '.myregistra.net'
 
 
 # =============================================================================

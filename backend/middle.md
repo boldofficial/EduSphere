@@ -1,76 +1,69 @@
-To help your AI coding agent implement this correctly within your **Registra** project, you can provide it with the following technical specification. This explanation ensures it handles the subdomain extraction while respecting the proxy headers sent by **Coolify/Traefik**.
+To resolve the "401 Unauthorized" error on your Super Admin dashboard and restore the background workers, your AI coding agent must synchronize the security settings between **Django**, **Next.js**, and the **Traefik proxy**.
+
+The issue stems from the fact that once you enabled subdomains, the "Origin" of your requests changed. Even the main domain (`myregistra.net`) now requires explicit cross-origin permission to share authentication cookies with your API.
 
 ---
 
-## Technical Instruction for AI Coding Agent
+### Instructions for your AI Coding Agent
 
-### Objective
+#### 1. Synchronize CORS & CSRF Settings
 
-Implement a custom Django middleware to extract the tenant subdomain from the `Host` header for a multi-tenant school management system.
-
-### Step 1: Create the Middleware
-
-In the `apps/tenants` directory (or your preferred core app), create `middleware.py`:
+The agent must update `settings.py` to allow the Super Admin dashboard to send credentials to the backend.
 
 ```python
-from django.conf import settings
+# settings.py
 
-class TenantMiddleware:
-    """
-    Extracts the subdomain from the request host and attaches it to request.subdomain.
-    Used for multi-tenancy identification in the Registra platform.
-    """
-    def __init__(self, get_response):
-        self.get_response = get_response
+# 1. Place at the VERY top of MIDDLEWARE
+MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
+    # ... other middlewares
+]
 
-    def __call__(self, request):
-        # Use get_host() which respects USE_X_FORWARDED_HOST from Traefik
-        host = request.get_host().split(':')[0].lower()
-        domain_parts = host.split('.')
+# 2. Allow credentials (cookies/Auth headers)
+CORS_ALLOW_CREDENTIALS = True 
 
-        # Logic for myregistra.net or www.myregistra.net
-        # If parts > 2 (e.g., school1.myregistra.net), the first part is the tenant
-        if len(domain_parts) > 2:
-            subdomain = domain_parts[0]
-            if subdomain in ['www', 'api', 'admin']:
-                request.subdomain = None
-            else:
-                request.subdomain = subdomain
-        else:
-            request.subdomain = None
+# 3. Explicitly trust the main dashboard and future subdomains
+CORS_ALLOWED_ORIGINS = [
+    "https://myregistra.net",
+    "https://www.myregistra.net",
+]
 
-        return self.get_response(request)
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://[a-zA-Z0-9-]+\.myregistra\.net$",
+]
+
+# 4. Critical: Trust CSRF origins for POST/PUT requests
+CSRF_TRUSTED_ORIGINS = [
+    "https://myregistra.net",
+    "https://*.myregistra.net",
+]
 
 ```
 
-### Step 2: Configure `settings.py`
+#### 2. Configure Global Cookie Scope
 
-The agent must update the configuration to trust the headers passed by the Traefik proxy and register the middleware.
+To ensure the Super Admin remains logged in across the entire `myregistra.net` ecosystem, the agent must set the cookie domain with a leading dot.
 
-1. **Trust Proxy Headers:**
-* Set `USE_X_FORWARDED_HOST = True` so `get_host()` reads the tenant domain instead of the internal container IP.
-* Set `SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')`.
+```python
+# settings.py
+SESSION_COOKIE_DOMAIN = '.myregistra.net'
+CSRF_COOKIE_DOMAIN = '.myregistra.net'
 
+```
 
-2. **Register Middleware:**
-* Add `'apps.tenants.middleware.TenantMiddleware'` to the `MIDDLEWARE` list. It should be placed after `django.middleware.common.CommonMiddleware`.
+#### 3. Restore Celery & Redis Internal Links
 
+The workers stopped because they likely lost connection to the **internal Docker service names** after the network was reset during the subdomain deployment.
 
-3. **Update `ALLOWED_HOSTS`:**
-* Ensure `.myregistra.net` is included to permit all subdomains.
+The agent should verify the `.env` variables used by the `celery_worker`:
 
+* **Incorrect:** `CELERY_BROKER_URL=redis://localhost:6379/0`
+* **Correct:** `CELERY_BROKER_URL=redis://registra_redis:6379/0` (Matches your `container_name` in the Compose file).
 
+#### 4. Verification Step
 
-### Step 3: Implementation Verification
+Ask the agent to check the browser's **Network Tab** for the failed Super Admin requests:
 
-The agent should verify that:
+* If the error is **401 Unauthorized** with a header `WWW-Authenticate`, the agent must ensure the `Authorization: Bearer <token>` header is actually being sent by the Next.js frontend.
+* If it is a **CORS error**, the `CORS_ALLOWED_ORIGINS` list above needs to be double-checked for exact protocol matches (e.g., `https://` vs `http://`).
 
-* The middleware handles the "naked" domain (`myregistra.net`) by setting `request.subdomain` to `None`.
-* The middleware ignores technical subdomains like `www` or `api`.
-* All database queries can now be filtered using `request.subdomain`.
-
----
-
-### Why this is necessary for Registra
-
-Because your **Coolify** setup uses a wildcard `HostRegexp`, Traefik passes the original URL (e.g., `oxford.myregistra.net`) to the Django container. Without this middleware, Django treats every request as coming to the same application; with it, you can serve different school data based on that `request.subdomain` value.
