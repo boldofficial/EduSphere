@@ -41,12 +41,13 @@ services:
     restart: always
     labels:
       - "traefik.enable=true"
-      # Separated Host calls and used Traefik v3 Regexp syntax
-      - "traefik.http.routers.backend.rule=((Host(`myregistra.net`) || Host(`www.myregistra.net`)) && PathPrefix(`/admin`, `/django-static`, `/media`)) || (HostRegexp(`^.+\\.myregistra\\.net$`) && PathPrefix(`/admin`, `/django-static`, `/media`))"
+      # Higher priority (1000) for backend to catch API/Admin requests first
+      - "traefik.http.routers.backend.priority=1000"
+      # Rule matches Main domain OR Subdomains AND specific paths
+      - "traefik.http.routers.backend.rule=(Host(`myregistra.net`) || Host(`www.myregistra.net`) || HostRegexp(`^.+\\.myregistra\\.net$`)) && (PathPrefix(`/api`) || PathPrefix(`/admin`) || PathPrefix(`/django-static`) || PathPrefix(`/media`))"
       - "traefik.http.routers.backend.entrypoints=https"
       - "traefik.http.routers.backend.tls=true"
       - "traefik.http.routers.backend.tls.certresolver=letsencrypt-dns"
-      - "traefik.http.routers.backend.priority=100"
       - "traefik.http.services.backend.loadbalancer.server.port=8000"
       - "traefik.docker.network=coolify"
 
@@ -66,12 +67,12 @@ services:
       - DJANGO_API_URL=http://backend:8000
     labels:
       - "traefik.enable=true"
-      # Separated Host calls for main and www, then catch-all for subdomains
+      # Lower priority (100) for frontend to catch everything else
+      - "traefik.http.routers.frontend.priority=100"
       - "traefik.http.routers.frontend.rule=Host(`myregistra.net`) || Host(`www.myregistra.net`) || HostRegexp(`^.+\\.myregistra\\.net$`)"
       - "traefik.http.routers.frontend.entrypoints=https"
       - "traefik.http.routers.frontend.tls=true"
       - "traefik.http.routers.frontend.tls.certresolver=letsencrypt-dns"
-      - "traefik.http.routers.frontend.priority=50"
       - "traefik.http.services.frontend.loadbalancer.server.port=3000"
       - "traefik.docker.network=coolify"
 
