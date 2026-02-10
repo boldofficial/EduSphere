@@ -298,6 +298,12 @@ CORS_ALLOWED_ORIGINS = [
     if origin.strip()
 ]
 
+# Use a regex to allow all tenant subdomains (e.g. https://schoolname.myregistra.net)
+# This is cleaner than manual wildcard addition and safer
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://[a-zA-Z0-9-]+\.myregistra\.net$",
+]
+
 CORS_ALLOW_CREDENTIALS = True
 CORS_EXPOSE_HEADERS = ['Content-Type', 'X-CSRFToken']
 
@@ -306,7 +312,8 @@ CSRF_TRUSTED_ORIGINS = [
     origin.replace('http://', 'https://') if origin.startswith('http://') else origin
     for origin in CORS_ALLOWED_ORIGINS
 ]
-# Explicitly add wildcard for subdomains if root domain is set
+
+# Explicitly add root and wildcard for subdomains (Critical for Admin POST requests)
 _root = os.environ.get('ROOT_DOMAIN', 'myregistra.net')
 if f"https://{_root}" not in CSRF_TRUSTED_ORIGINS:
     CSRF_TRUSTED_ORIGINS.append(f"https://{_root}")
