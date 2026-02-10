@@ -4,10 +4,10 @@ from .serializers import EmailTemplateSerializer, EmailLogSerializer
 
 class IsSuperAdmin(permissions.BasePermission):
     """
-    Allows access only to users with 'super_admin' role.
+    Allows access only to users with 'SUPER_ADMIN' role.
     """
     def has_permission(self, request, view):
-        return bool(request.user and request.user.is_authenticated and request.user.role == 'super_admin')
+        return bool(request.user and request.user.is_authenticated and request.user.role == 'SUPER_ADMIN')
 
 class EmailTemplateViewSet(viewsets.ModelViewSet):
     queryset = EmailTemplate.objects.all().order_by('-created_at')
