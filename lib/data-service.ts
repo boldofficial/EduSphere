@@ -108,7 +108,7 @@ export async function uploadFile(
     formData.append('folder', folder);
 
     try {
-        const response = await apiClient.post('/upload/', formData, {
+        const response = await apiClient.post('upload/', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
