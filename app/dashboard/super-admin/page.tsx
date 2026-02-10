@@ -122,7 +122,7 @@ export default function SuperAdminDashboard() {
     }, [currentUser, currentRole, router, hasHydrated]);
 
     // Fetch Data using TanStack Query for robustness
-    const { data: healthData, isLoading: healthLoading } = useSystemHealth();
+    const { data: healthData, isLoading: healthLoading, error: healthError } = useSystemHealth();
     const { data: schools = [], isLoading: schoolsLoading } = useAdminSchools();
     const { data: plans = [], isLoading: plansLoading } = useAdminPlans();
     const { data: revenueStats = { total_revenue: 0 }, isLoading: revenueLoading } = useAdminRevenue();
@@ -360,6 +360,16 @@ export default function SuperAdminDashboard() {
                 </header>
 
                 <div className="p-8">
+                    {healthError && (
+                        <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center gap-3">
+                            <AlertCircle size={20} />
+                            <div>
+                                <p className="font-bold">System Health Check Failed</p>
+                                <p className="text-sm">{(healthError as any)?.message || 'Unknown error occurred while fetching system data.'}</p>
+                                <p className="text-xs font-mono mt-1">{(healthError as any)?.response?.data?.detail || JSON.stringify((healthError as any)?.response?.data)}</p>
+                            </div>
+                        </div>
+                    )}
                     {activeTab === 'overview' && (
                         <OverviewTab
                             schools={schools}
