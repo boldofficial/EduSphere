@@ -203,21 +203,21 @@ class SettingsView(APIView):
             if 'landing_core_values' in data:
                 settings_obj.landing_core_values = data['landing_core_values']
 
-            if 'landing_academic_programs' in data:
+            if 'landing_academic_programs' in data and isinstance(data['landing_academic_programs'], list):
                 programs = []
                 for p in data['landing_academic_programs']:
                     # Handle image upload if present
                     img = p.get('image')
-                    if img and img.startswith('data:image'):
+                    if img and isinstance(img, str) and img.startswith('data:image'):
                         img = process_base64(img)
                     programs.append({**p, 'image': img})
                 settings_obj.landing_academic_programs = programs
 
-            if 'landing_testimonials' in data:
+            if 'landing_testimonials' in data and isinstance(data['landing_testimonials'], list):
                 testimonials = []
                 for t in data['landing_testimonials']:
                     img = t.get('image')
-                    if img and img.startswith('data:image'):
+                    if img and isinstance(img, str) and img.startswith('data:image'):
                         img = process_base64(img)
                     testimonials.append({**t, 'image': img})
                 settings_obj.landing_testimonials = testimonials
@@ -238,7 +238,11 @@ class SettingsView(APIView):
             settings_obj.save()
             return self.get(request)
         except Exception as e:
-            return Response({'error': str(e)}, status=400)
+            logger.exception(f"Settings update failed for school {school.domain}: {str(e)}")
+            return Response({
+                'error': 'Failed to save settings',
+                'detail': str(e)
+            }, status=400)
 
 class PublicStatsView(APIView):
     """

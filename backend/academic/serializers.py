@@ -32,28 +32,21 @@ class Base64ImageField(serializers.CharField):
                 
                 file_name = default_storage.save(filename, ContentFile(decoded_file))
                 
-                # Log the upload for debugging
-                with open('r2_upload_log.txt', 'a') as log:
-                    log.write(f"[{datetime.datetime.now()}] Base64ImageField Saved Path: {file_name}\n")
-                
                 # Store ONLY the relative path in DB
                 return file_name
             except Exception as e:
                 import traceback
-                print(f"Base64 Image Upload Failed: {e}")
-                with open('r2_upload_log.txt', 'a') as log:
-                    import datetime
-                    log.write(f"[{datetime.datetime.now()}] Base64ImageField ERROR: {e}\n")
-                    log.write(traceback.format_exc())
+                logger.error(f"Base64 Image Upload Failed: {e}")
                 return data
         
-        # If it's already a full URL (legacy), try to extract just the path part
-        # to eventually migrate data to relative paths.
-        if data and isinstance(data, str) and (data.startswith('http') or '?' in data):
-             parts = data.split('?')[0].split('/')
-             if 'passports' in parts:
+        # If it's already a path or full URL, return as is (avoiding re-upload)
+        if data and isinstance(data, str) and (data.startswith('http') or '/' in data):
+             # Extract path if it contains 'passports' to maintain consistency
+             if 'passports' in data:
+                 parts = data.split('?')[0].split('/')
                  idx = parts.index('passports')
                  return "/".join(parts[idx:])
+             return data
                  
         return super().to_internal_value(data)
 
@@ -268,12 +261,7 @@ class StudentSerializer(serializers.ModelSerializer):
                     
             return instance
         except Exception as e:
-            import traceback
-            with open('r2_upload_log.txt', 'a') as log:
-                import datetime
-                log.write(f"[{datetime.datetime.now()}] UPDATE FAILED: {str(e)}\n")
-                log.write(traceback.format_exc())
-                log.write("\n")
+            logger.exception(f"Student update failed: {str(e)}")
             raise e
 
 class SubjectScoreSerializer(serializers.ModelSerializer):
