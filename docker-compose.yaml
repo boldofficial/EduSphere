@@ -43,8 +43,8 @@ services:
       - "traefik.enable=true"
       # Higher priority (1000) for backend to catch API/Admin requests first
       - "traefik.http.routers.backend.priority=1000"
-      # Rule matches Main domain OR Subdomains AND specific paths (EXCLUDING /api because Next.js handles /api/auth and /api/proxy)
-      - "traefik.http.routers.backend.rule=(Host(`myregistra.net`) || Host(`www.myregistra.net`) || HostRegexp(`^.+\\.myregistra\\.net$`)) && (PathPrefix(`/admin`) || PathPrefix(`/django-static`) || PathPrefix(`/media`))"
+      # Rule matches Main domain OR Subdomains AND specific paths using explicit grouped ORs
+      - "traefik.http.routers.backend.rule=(Host(`myregistra.net`) || Host(`www.myregistra.net`) || HostRegexp(`^.+\\.myregistra\\.net$`)) && (PathPrefix(`/api`) || PathPrefix(`/admin`) || PathPrefix(`/django-static`) || PathPrefix(`/media`))"
       - "traefik.http.routers.backend.entrypoints=https"
       - "traefik.http.routers.backend.tls=true"
       - "traefik.http.routers.backend.tls.certresolver=letsencrypt-dns"
@@ -67,7 +67,16 @@ services:
       - DJANGO_API_URL=http://backend:8000
     labels:
       - "traefik.enable=true"
-      # Lower priority (100) for frontend to catch everything else
+
+      # 1. High Priority (2000): Protect Next.js Auth & Proxy routes from being stolen by Backend
+      - "traefik.http.routers.frontend-auth.priority=2000"
+      - "traefik.http.routers.frontend-auth.rule=(Host(`myregistra.net`) || Host(`www.myregistra.net`) || HostRegexp(`^.+\\.myregistra\\.net$`)) && (PathPrefix(`/api/auth`) || PathPrefix(`/api/proxy`))"
+      - "traefik.http.routers.frontend-auth.entrypoints=https"
+      - "traefik.http.routers.frontend-auth.tls=true"
+      - "traefik.http.routers.frontend-auth.tls.certresolver=letsencrypt-dns"
+      # (Implicitly points to frontend service)
+
+      # 2. Low Priority (100): Catch-all for the UI
       - "traefik.http.routers.frontend.priority=100"
       - "traefik.http.routers.frontend.rule=Host(`myregistra.net`) || Host(`www.myregistra.net`) || HostRegexp(`^.+\\.myregistra\\.net$`)"
       - "traefik.http.routers.frontend.entrypoints=https"

@@ -298,6 +298,12 @@ CORS_ALLOWED_ORIGINS = [
     if origin.strip()
 ]
 
+# Explicitly add main domains as requested
+_main_domains = ["https://myregistra.net", "https://www.myregistra.net"]
+for dom in _main_domains:
+    if dom not in CORS_ALLOWED_ORIGINS:
+        CORS_ALLOWED_ORIGINS.append(dom)
+
 # Use a regex to allow all tenant subdomains (e.g. https://schoolname.myregistra.net)
 # This is cleaner than manual wildcard addition and safer
 CORS_ALLOWED_ORIGIN_REGEXES = [
@@ -459,7 +465,7 @@ LOGGING = {
 # =============================================================================
 
 # Default to the Docker service name 'registra_redis' if not set
-REDIS_URL = os.environ.get('REDIS_URL', 'redis://registra_redis:6379/1')
+REDIS_URL = os.environ.get('REDIS_URL', 'redis://registra_redis:6379/0')
 
 if REDIS_URL:
     CACHES = {
