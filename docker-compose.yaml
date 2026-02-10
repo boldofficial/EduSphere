@@ -41,9 +41,12 @@ services:
     restart: always
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.backend.rule=Host(`myregistra.net`, `www.myregistra.net`) && PathPrefix(`/api`, `/admin`, `/django-static`, `/media`)"
+      # Rule captures main domain and dynamic subdomains for API/Admin paths
+      - "traefik.http.routers.backend.rule=(Host(`myregistra.net`, `www.myregistra.net`) || HostRegexp(`{subdomain:[a-z0-9-]+}.myregistra.net`)) && PathPrefix(`/api`, `/admin`, `/django-static`, `/media`)"
       - "traefik.http.routers.backend.entrypoints=https"
       - "traefik.http.routers.backend.tls=true"
+      # Uses the Cloudflare DNS challenge resolver from your proxy config
+      - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
       - "traefik.http.routers.backend.priority=100"
       - "traefik.http.services.backend.loadbalancer.server.port=8000"
       - "traefik.docker.network=coolify"
@@ -58,16 +61,18 @@ services:
     depends_on:
       - backend
     restart: always
+    networks:
+      - coolify
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.frontend.rule=Host(`myregistra.net`, `www.myregistra.net`, `*.myregistra.net`)"
+      # Catch-all for the main domain and all tenant subdomains
+      - "traefik.http.routers.frontend.rule=Host(`myregistra.net`, `www.myregistra.net`) || HostRegexp(`{subdomain:[a-z0-9-]+}.myregistra.net`)"
       - "traefik.http.routers.frontend.entrypoints=https"
       - "traefik.http.routers.frontend.tls=true"
+      - "traefik.http.routers.frontend.tls.certresolver=letsencrypt"
       - "traefik.http.routers.frontend.priority=50"
       - "traefik.http.services.frontend.loadbalancer.server.port=3000"
       - "traefik.docker.network=coolify"
-    networks:
-      - coolify
 
   celery_worker:
     build:
@@ -109,7 +114,6 @@ services:
       - media_volume:/app/media
     networks:
       - coolify
-    # Coolify will handle the routing via the FQDN field in the UI
     depends_on:
       - frontend
     restart: always
