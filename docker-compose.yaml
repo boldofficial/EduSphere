@@ -41,7 +41,6 @@ services:
     restart: always
     environment:
       - REDIS_URL=redis://registra_redis:6379/0
-      - DB_HOST=registra_db
     labels:
       - "traefik.enable=true"
       # Higher priority (1000) for backend to catch API/Admin requests first
@@ -101,7 +100,6 @@ services:
     restart: always
     environment:
       - REDIS_URL=redis://registra_redis:6379/0
-      - DB_HOST=registra_db
     networks:
       - coolify
 
@@ -119,7 +117,6 @@ services:
     restart: always
     environment:
       - REDIS_URL=redis://registra_redis:6379/0
-      - DB_HOST=registra_db
     networks:
       - coolify
 
