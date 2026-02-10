@@ -49,6 +49,12 @@ DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 'yes')
 _env_hosts = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,.myregistra.net').split(',')
 ALLOWED_HOSTS = [host.strip() for host in _env_hosts if host.strip()]
 
+# Explicitly add localhost and 127.0.0.1 to handle internal health checks/curls
+if 'localhost' not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append('localhost')
+if '127.0.0.1' not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append('127.0.0.1')
+
 # ALWAYS include internal docker service names for container-to-container communication
 # This prevents 502/400 errors when the Frontend calls the Backend via http://backend:8000
 INTERNAL_HOSTS = ['backend', 'registra_backend', 'frontend', 'registra_frontend', 'nginx']
