@@ -44,10 +44,11 @@ services:
       # Higher priority (1000) for backend to catch API/Admin requests first
       - "traefik.http.routers.backend.priority=1000"
       # Rule matches Main domain OR Subdomains AND specific paths
+      # Rule matches Main domain OR Subdomains AND specific paths using explicit grouped ORs
       - "traefik.http.routers.backend.rule=(Host(`myregistra.net`) || Host(`www.myregistra.net`) || HostRegexp(`{subdomain:[a-z0-9-]+}.myregistra.net`)) && (PathPrefix(`/api`) || PathPrefix(`/admin`) || PathPrefix(`/django-static`) || PathPrefix(`/media`))"
       - "traefik.http.routers.backend.entrypoints=https"
       - "traefik.http.routers.backend.tls=true"
-      - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
+      # REMOVED CERTRESOLVER: Let Coolify handle certificates automatically via its default entrypoint configuration
       - "traefik.http.services.backend.loadbalancer.server.port=8000"
       - "traefik.docker.network=coolify"
 
@@ -73,7 +74,7 @@ services:
       - "traefik.http.routers.frontend-auth.rule=(Host(`myregistra.net`) || Host(`www.myregistra.net`) || HostRegexp(`{subdomain:[a-z0-9-]+}.myregistra.net`)) && (PathPrefix(`/api/auth`) || PathPrefix(`/api/proxy`))"
       - "traefik.http.routers.frontend-auth.entrypoints=https"
       - "traefik.http.routers.frontend-auth.tls=true"
-      - "traefik.http.routers.frontend-auth.tls.certresolver=letsencrypt"
+      # REMOVED CERTRESOLVER
       # (Implicitly points to frontend service)
 
       # 2. Low Priority (100): Catch-all for the UI
@@ -81,7 +82,7 @@ services:
       - "traefik.http.routers.frontend.rule=Host(`myregistra.net`) || Host(`www.myregistra.net`) || HostRegexp(`{subdomain:[a-z0-9-]+}.myregistra.net`)"
       - "traefik.http.routers.frontend.entrypoints=https"
       - "traefik.http.routers.frontend.tls=true"
-      - "traefik.http.routers.frontend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
       - "traefik.docker.network=coolify"
 
   celery_worker:
