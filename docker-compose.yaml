@@ -43,8 +43,8 @@ services:
       - "traefik.enable=true"
       # Higher priority (1000) for backend to catch API/Admin requests first
       - "traefik.http.routers.backend.priority=1000"
-      # Rule matches Main domain OR Subdomains AND specific paths
-      - "traefik.http.routers.backend.rule=(Host(`myregistra.net`) || Host(`www.myregistra.net`) || HostRegexp(`^.+\\.myregistra\\.net$`)) && (PathPrefix(`/api`) || PathPrefix(`/admin`) || PathPrefix(`/django-static`) || PathPrefix(`/media`))"
+      # Rule matches Main domain OR Subdomains AND specific paths (EXCLUDING /api because Next.js handles /api/auth and /api/proxy)
+      - "traefik.http.routers.backend.rule=(Host(`myregistra.net`) || Host(`www.myregistra.net`) || HostRegexp(`^.+\\.myregistra\\.net$`)) && (PathPrefix(`/admin`) || PathPrefix(`/django-static`) || PathPrefix(`/media`))"
       - "traefik.http.routers.backend.entrypoints=https"
       - "traefik.http.routers.backend.tls=true"
       - "traefik.http.routers.backend.tls.certresolver=letsencrypt-dns"
