@@ -2,6 +2,7 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework.exceptions import AuthenticationFailed
 from .models import User
+from schools.models import School
 
 import logging
 logger = logging.getLogger(__name__)
@@ -94,15 +95,19 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         # 2. Check school subscription status
         if self.user.school:
-            # We need to access the related subscription safely
-            if hasattr(self.user.school, 'subscription'):
-                status = self.user.school.subscription.status
+            from schools.models import Subscription
+            # Use query instead of reverse attribute to avoid RelatedObjectDoesNotExist crashes
+            sub = Subscription.objects.filter(school=self.user.school).first()
+            if sub:
+                status = sub.status
                 if status == 'pending':
                     raise AuthenticationFailed('School account is pending approval.')
                 elif status == 'cancelled':
                     raise AuthenticationFailed('School account is suspended.')
                 elif status == 'expired':
                     raise AuthenticationFailed('School subscription has expired.')
+            else:
+                logger.warning(f"[AUTH_DEBUG] School {self.user.school.name} has NO subscription record.")
         
         # Add custom claims or user data
         data['role'] = self.user.role
