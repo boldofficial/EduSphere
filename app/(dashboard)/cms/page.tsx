@@ -34,11 +34,17 @@ export default function CMSPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(localSettings)
             });
-            if (!response.ok) throw new Error('Failed to save settings');
+
+            const result = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                const errorMsg = result.detail || result.error || 'Failed to save settings';
+                throw new Error(errorMsg);
+            }
             addToast('Website content updated successfully!', 'success');
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            addToast('Failed to save changes.', 'error');
+            addToast(error.message || 'Failed to save changes.', 'error');
         } finally {
             setIsSaving(false);
         }

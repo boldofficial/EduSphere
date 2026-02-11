@@ -256,7 +256,12 @@ class SettingsView(APIView):
                 
                 # 4. Promotion, Finance & Permissions
                 try:
-                    if 'promotion_threshold' in data: settings_obj.promotion_threshold = data['promotion_threshold']
+                    def to_int(val, default=0):
+                        if val is None or val == '': return default
+                        try: return int(val)
+                        except: return default
+
+                    if 'promotion_threshold' in data: settings_obj.promotion_threshold = to_int(data['promotion_threshold'], 50)
                     if 'promotion_rules' in data: settings_obj.promotion_rules = data['promotion_rules']
                     
                     if 'show_bank_details' in data: settings_obj.show_bank_details = data['show_bank_details']
@@ -265,9 +270,12 @@ class SettingsView(APIView):
                     if 'bank_account_number' in data: settings_obj.bank_account_number = data['bank_account_number']
                     if 'bank_sort_code' in data: settings_obj.bank_sort_code = data['bank_sort_code']
                     if 'invoice_notes' in data: settings_obj.invoice_notes = data['invoice_notes']
-                    if 'invoice_due_days' in data: settings_obj.invoice_due_days = data['invoice_due_days']
+                    if 'invoice_due_days' in data: settings_obj.invoice_due_days = to_int(data['invoice_due_days'], 14)
                     
                     if 'role_permissions' in data: settings_obj.role_permissions = data['role_permissions']
+                    
+                    # Also handle report_scale if present
+                    if 'report_scale' in data: settings_obj.report_scale = to_int(data['report_scale'], 100)
                 except Exception as finance_e:
                     logger.error(f"[SETTINGS_PUT] Finance/Permissions update failed: {str(finance_e)}")
                     raise finance_e
@@ -277,11 +285,17 @@ class SettingsView(APIView):
             
             return self.get(request)
         except Exception as e:
-            logger.exception(f"Settings update CRASHED for school {school.domain}: {str(e)}")
+            import traceback
+            error_trace = traceback.format_exc()
+            logger.error(f"Settings update FAILED for school {school.domain if school else 'unknown'}")
+            logger.error(f"Error: {str(e)}")
+            logger.error(f"Traceback: {error_trace}")
+            
             return Response({
                 'error': 'Failed to save settings',
                 'detail': str(e),
-                'type': type(e).__name__
+                'type': type(e).__name__,
+                'hint': 'Please check if all numeric fields are valid numbers.'
             }, status=400)
 
 class PublicStatsView(APIView):
