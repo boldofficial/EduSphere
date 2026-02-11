@@ -1,14 +1,19 @@
 'use client';
 
-import React from 'react';
-import { Briefcase, Heart, Globe, Rocket, CheckCircle2 } from 'lucide-react';
-import { SystemPageLayout } from '@/components/features/SystemPageLayout';
+import React, { useState } from 'react';
+
+import { Briefcase, Heart, Globe, Rocket, CheckCircle2, ArrowRight } from 'lucide-react';
+import { LandingNav } from '@/components/features/landing/LandingNav';
+import { LandingFooter } from '@/components/features/landing/LandingContactFooter';
 import * as Utils from '@/lib/utils';
 
 export default function CareersPage() {
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     return (
-        <SystemPageLayout>
-            <main className="flex-grow pt-24">
+        <div className="min-h-screen bg-gray-50 flex flex-col font-primary pt-20">
+            <LandingNav mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} />
+
+            <main className="flex-grow pt-10">
                 {/* Hero */}
                 <div className="bg-brand-900 text-white py-24 px-4 text-center">
                     <div className="max-w-4xl mx-auto space-y-6">
@@ -88,7 +93,9 @@ export default function CareersPage() {
                     </div>
                 </div>
             </main>
-        </SystemPageLayout>
+
+            <LandingFooter />
+        </div>
     );
 }
 
@@ -126,5 +133,3 @@ function JobCard({ title, department, location, type }: any) {
         </div>
     );
 }
-
-import { ArrowRight } from 'lucide-react';

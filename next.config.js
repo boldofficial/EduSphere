@@ -6,13 +6,6 @@ const nextConfig = {
 
     turbopack: {},
 
-    eslint: {
-        ignoreDuringBuilds: true,
-    },
-    typescript: {
-        ignoreBuildErrors: true,
-    },
-
     // Security headers for production
     async headers() {
         return [

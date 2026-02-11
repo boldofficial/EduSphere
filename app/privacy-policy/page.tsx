@@ -2,45 +2,19 @@
 
 import React, { useState, useEffect } from 'react';
 import { Shield, Lock, FileText, Globe } from 'lucide-react';
-import SiteHeader from '@/components/features/SiteHeader';
-import SiteFooter from '@/components/features/SiteFooter';
+import { LandingNav } from '@/components/features/landing/LandingNav';
+import { LandingFooter } from '@/components/features/landing/LandingContactFooter';
 import * as Utils from '@/lib/utils';
 import * as DataService from '@/lib/data-service';
 
 const PrivacyPolicy = () => {
-    const [settings, setSettings] = useState(Utils.INITIAL_SETTINGS);
-    const [isLoaded, setIsLoaded] = useState(false);
-
-    useEffect(() => {
-        const loadData = async () => {
-            try {
-                const loadedSettings = await DataService.fetchSettings();
-                setSettings(loadedSettings);
-            } catch (error) {
-                console.error('Error loading settings:', error);
-            } finally {
-                setIsLoaded(true);
-            }
-        };
-        loadData();
-    }, []);
-
-    if (!isLoaded) {
-        return (
-            <div className="h-screen w-full flex items-center justify-center bg-brand-900">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-16 w-16 border-4 border-white border-t-transparent mx-auto mb-4"></div>
-                    <p className="text-white/60 font-medium">Loading...</p>
-                </div>
-            </div>
-        );
-    }
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col">
-            <SiteHeader settings={settings} />
+        <div className="min-h-screen bg-gray-50 flex flex-col pt-20">
+            <LandingNav mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} />
 
-            <main className="flex-grow max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
+            <main className="flex-grow max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
                 <div className="bg-white rounded-2xl shadow-sm p-8 md:p-12">
                     <div className="flex items-center gap-4 mb-8 border-b pb-8">
                         <div className="h-12 w-12 bg-brand-100 rounded-xl flex items-center justify-center text-brand-600">
@@ -108,7 +82,7 @@ const PrivacyPolicy = () => {
                 </div>
             </main>
 
-            <SiteFooter settings={settings} />
+            <LandingFooter />
         </div>
     );
 };

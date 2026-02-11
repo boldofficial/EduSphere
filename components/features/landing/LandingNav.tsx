@@ -16,13 +16,13 @@ interface LandingNavProps {
 }
 
 const navItems = [
-    { id: 'home', label: 'Home', href: '/#home' },
-    { id: 'features', label: 'Features', href: '/#features' },
-    { id: 'how-it-works', label: 'How It Works', href: '/#how-it-works' },
-    { id: 'testimonials', label: 'Testimonials', href: '/#testimonials' },
-    { id: 'pricing', label: 'Pricing', href: '/#pricing' },
-    { id: 'faq', label: 'FAQ', href: '/#faq' },
-    { id: 'contact', label: 'Contact', href: '/#contact' },
+    { id: 'home', label: 'Home', href: '#home' },
+    { id: 'features', label: 'Features', href: '#features' },
+    { id: 'about', label: 'About Us', href: '#about' },
+    { id: 'testimonials', label: 'Testimonials', href: '#testimonials' },
+    { id: 'pricing', label: 'Pricing', href: '#pricing' },
+    { id: 'faq', label: 'FAQ', href: '#faq' },
+    { id: 'contact', label: 'Contact', href: '#contact' },
 ];
 
 export const LandingNav: React.FC<LandingNavProps> = ({ mobileMenuOpen, setMobileMenuOpen }) => {

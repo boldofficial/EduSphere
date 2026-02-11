@@ -1,14 +1,19 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
+
 import { Play, Download, FileText, Video } from 'lucide-react';
-import { SystemPageLayout } from '@/components/features/SystemPageLayout';
+import { LandingNav } from '@/components/features/landing/LandingNav';
+import { LandingFooter } from '@/components/features/landing/LandingContactFooter';
 import * as Utils from '@/lib/utils';
 
 export default function ResourcesPage() {
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     return (
-        <SystemPageLayout>
-            <main className="flex-grow pt-24 px-4 pb-20">
+        <div className="min-h-screen bg-gray-50 flex flex-col font-primary pt-20">
+            <LandingNav mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} />
+
+            <main className="flex-grow pt-10 px-4 pb-20">
                 <div className="text-center py-16 max-w-4xl mx-auto">
                     <h1 className="text-4xl md:text-5xl font-black text-gray-900 mb-6">Resources & Tutorials</h1>
                     <p className="text-xl text-gray-500 leading-relaxed">
@@ -75,7 +80,9 @@ export default function ResourcesPage() {
 
                 </div>
             </main>
-        </SystemPageLayout>
+
+            <LandingFooter />
+        </div>
     );
 }
 

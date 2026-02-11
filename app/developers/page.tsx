@@ -1,32 +1,19 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
+
 import { Terminal, Code, Cpu, Lock, ChevronRight } from 'lucide-react';
-import SiteHeader from '@/components/features/SiteHeader';
-import SiteFooter from '@/components/features/SiteFooter';
+import { LandingNav } from '@/components/features/landing/LandingNav';
+import { LandingFooter } from '@/components/features/landing/LandingContactFooter';
 import * as Utils from '@/lib/utils';
 
 export default function DevelopersPage() {
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     return (
-        <div className="min-h-screen bg-[#0f172a] text-white flex flex-col font-mono">
-            {/* Custom Dark Header */}
-            <header className="fixed top-0 left-0 right-0 z-50 bg-[#0f172a]/80 backdrop-blur-md border-b border-white/10 h-20 flex items-center justify-between px-8">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-brand-600 rounded-lg flex items-center justify-center font-black text-xl">R</div>
-                    <span className="font-bold text-xl tracking-tight">Registra <span className="text-brand-500">API</span></span>
-                </div>
-                <nav className="hidden md:flex items-center gap-8 text-sm font-bold text-gray-400">
-                    <a href="#" className="hover:text-white transition-colors">Documentation</a>
-                    <a href="#" className="hover:text-white transition-colors">Reference</a>
-                    <a href="#" className="hover:text-white transition-colors">SDKs</a>
-                    <a href="#" className="hover:text-white transition-colors">Status</a>
-                </nav>
-                <a href="/" className="px-5 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-bold transition-all">
-                    Exit Developer Mode
-                </a>
-            </header>
+        <div className="min-h-screen bg-[#0f172a] text-white flex flex-col font-mono pt-20">
+            <LandingNav mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} />
 
-            <main className="flex-grow pt-32 px-4 pb-20">
+            <main className="flex-grow pt-10 px-4 pb-20">
                 <div className="max-w-6xl mx-auto">
                     <div className="flex flex-col md:flex-row items-center gap-16 mb-24">
                         <div className="flex-1 space-y-6">
@@ -34,30 +21,30 @@ export default function DevelopersPage() {
                                 <span className="w-2 h-2 rounded-full bg-brand-500 animate-pulse"></span>
                                 v1.0.4 Live
                             </div>
-                            <h1 className="text-5xl md:text-6xl font-black tracking-tight leading-tight">
+                            <h1 className="text-5xl md:text-6xl font-black tracking-tight leading-tight font-primary">
                                 Build on the Operating System for <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-purple-500">Education</span>
                             </h1>
-                            <p className="text-xl text-slate-400 leading-relaxed max-w-xl">
+                            <p className="text-xl text-slate-400 leading-relaxed max-w-xl font-primary">
                                 Seamlessly integrate your applications with Registra's student data, grading systems, and payment infrastructure.
                             </p>
                             <div className="flex gap-4 pt-4">
-                                <button className="px-6 py-3 bg-brand-600 hover:bg-brand-500 rounded-lg font-bold flex items-center gap-2 transition-all">
+                                <button className="px-6 py-3 bg-brand-600 hover:bg-brand-500 rounded-lg font-bold flex items-center gap-2 transition-all font-primary text-white">
                                     Read Definitions <ChevronRight size={18} />
                                 </button>
-                                <button className="px-6 py-3 border border-slate-700 hover:border-slate-500 rounded-lg font-bold transition-all">
+                                <button className="px-6 py-3 border border-slate-700 hover:border-slate-500 rounded-lg font-bold transition-all font-primary text-white">
                                     Get API Key
                                 </button>
                             </div>
                         </div>
                         <div className="flex-1 w-full">
-                            <div className="bg-[#1e293b] rounded-2xl border border-slate-700 p-6 shadow-2xl relative overflow-hidden group">
+                            <div className="bg-[#1e293b] rounded-2xl border border-slate-700 p-6 shadow-2xl relative overflow-hidden group font-mono">
                                 <div className="flex items-center gap-2 mb-4 border-b border-slate-700 pb-4">
                                     <div className="w-3 h-3 bg-red-500 rounded-full"></div>
                                     <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
                                     <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                                     <div className="ml-auto text-xs text-slate-500 font-bold">bash</div>
                                 </div>
-                                <div className="space-y-2 font-mono text-sm">
+                                <div className="space-y-2 text-sm">
                                     <p className="text-slate-400"># Fetch student details</p>
                                     <p className="text-purple-400">curl <span className="text-white">-X GET</span> \</p>
                                     <p className="pl-4 text-green-400">"https://api.myregistra.net/v1/students/ST-2024-001"</p>
@@ -98,9 +85,7 @@ export default function DevelopersPage() {
                 </div>
             </main>
 
-            <footer className="border-t border-white/10 py-12 text-center text-slate-500 text-sm">
-                <p>&copy; {new Date().getFullYear()} Registra Developer Platform. <a href="#" className="hover:text-white underline">Terms</a> &bull; <a href="#" className="hover:text-white underline">Privacy</a></p>
-            </footer>
+            <LandingFooter />
         </div>
     );
 }
@@ -111,7 +96,7 @@ function FeatureBox({ icon: Icon, title, description }: any) {
             <div className="w-12 h-12 bg-indigo-500/20 text-indigo-400 rounded-xl flex items-center justify-center mb-6">
                 <Icon size={24} />
             </div>
-            <h3 className="text-xl font-bold text-white mb-3">{title}</h3>
+            <h3 className="text-xl font-bold text-white mb-3 font-primary">{title}</h3>
             <p className="text-slate-400 leading-relaxed font-primary">{description}</p>
         </div>
     );

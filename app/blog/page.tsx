@@ -1,11 +1,14 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
+
 import { Calendar, User, ArrowRight, Tag } from 'lucide-react';
-import { SystemPageLayout } from '@/components/features/SystemPageLayout';
+import { LandingNav } from '@/components/features/landing/LandingNav';
+import { LandingFooter } from '@/components/features/landing/LandingContactFooter';
 import * as Utils from '@/lib/utils';
 
 export default function BlogPage() {
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const posts = [
         {
             id: 1,
@@ -37,8 +40,10 @@ export default function BlogPage() {
     ];
 
     return (
-        <SystemPageLayout>
-            <main className="flex-grow pt-32 pb-20 px-4">
+        <div className="min-h-screen bg-gray-50 flex flex-col font-primary pt-20">
+            <LandingNav mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} />
+
+            <main className="flex-grow pt-10 lg:pt-20 pb-20 px-4">
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center mb-16">
                         <span className="text-brand-600 font-black uppercase tracking-widest text-sm bg-brand-50 px-4 py-2 rounded-full mb-4 inline-block">
@@ -92,6 +97,8 @@ export default function BlogPage() {
                     </div>
                 </div>
             </main>
-        </SystemPageLayout>
+
+            <LandingFooter />
+        </div>
     );
 }

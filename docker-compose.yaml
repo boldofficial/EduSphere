@@ -55,16 +55,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        - NEXT_PUBLIC_ROOT_DOMAIN
-        - NEXT_PUBLIC_SUPABASE_URL
-        - NEXT_PUBLIC_SUPABASE_ANON_KEY
-        - R2_ACCOUNT_ID
-        - R2_ACCESS_KEY_ID
-        - R2_SECRET_ACCESS_KEY
-        - R2_BUCKET_NAME
-        - R2_PUBLIC_URL
-        - DJANGO_API_URL
     container_name: registra_frontend
     env_file:
       - .env

@@ -124,12 +124,12 @@ export const ContactSection: React.FC = () => (
                         <h4 className="font-semibold text-gray-900 mb-4">Follow Us</h4>
                         <div className="flex gap-4">
                             {[
-                                { icon: Facebook, href: '#' },
-                                { icon: Twitter, href: '#' },
-                                { icon: Instagram, href: '#' },
-                                { icon: Youtube, href: '#' }
+                                { icon: Facebook, href: 'https://facebook.com/myregistra' },
+                                { icon: Twitter, href: 'https://twitter.com/myregistra' },
+                                { icon: Instagram, href: 'https://instagram.com/myregistra' },
+                                { icon: Youtube, href: 'https://youtube.com/myregistra' }
                             ].map((social, index) => (
-                                <a key={index} href={social.href} className="w-12 h-12 bg-gray-100 hover:bg-brand-100 rounded-xl flex items-center justify-center text-gray-600 hover:text-brand-600 transition-colors">
+                                <a key={index} href={social.href} target="_blank" rel="noopener noreferrer" className="w-12 h-12 bg-gray-100 hover:bg-brand-100 rounded-xl flex items-center justify-center text-gray-600 hover:text-brand-600 transition-colors">
                                     <social.icon size={20} />
                                 </a>
                             ))}
@@ -155,12 +155,12 @@ export const LandingFooter: React.FC = () => (
                     </p>
                     <div className="flex gap-4">
                         {[
-                            { icon: Facebook, href: '#' },
-                            { icon: Twitter, href: '#' },
-                            { icon: Instagram, href: '#' },
-                            { icon: Youtube, href: '#' }
+                            { icon: Facebook, href: 'https://facebook.com/myregistra' },
+                            { icon: Twitter, href: 'https://twitter.com/myregistra' },
+                            { icon: Instagram, href: 'https://instagram.com/myregistra' },
+                            { icon: Youtube, href: 'https://youtube.com/myregistra' }
                         ].map((social, index) => (
-                            <a key={index} href={social.href} className="w-10 h-10 bg-gray-800 hover:bg-brand-600 rounded-lg flex items-center justify-center text-gray-400 hover:text-white transition-colors">
+                            <a key={index} href={social.href} target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gray-800 hover:bg-brand-600 rounded-lg flex items-center justify-center text-gray-400 hover:text-white transition-colors">
                                 <social.icon size={18} />
                             </a>
                         ))}
@@ -171,9 +171,9 @@ export const LandingFooter: React.FC = () => (
                 <div>
                     <h4 className="font-bold text-white mb-6">Product</h4>
                     <ul className="space-y-4 text-sm text-gray-400">
-                        <li><Link href="/#features" className="hover:text-brand-400 transition-colors">Features</Link></li>
-                        <li><Link href="/#pricing" className="hover:text-brand-400 transition-colors">Pricing</Link></li>
-                        <li><Link href="/onboarding" className="hover:text-brand-400 transition-colors">Request Demo</Link></li>
+                        <li><Link href="#features" className="hover:text-brand-400 transition-colors">Features</Link></li>
+                        <li><Link href="#pricing" className="hover:text-brand-400 transition-colors">Pricing</Link></li>
+                        <li><Link href="#demo" className="hover:text-brand-400 transition-colors">Request Demo</Link></li>
                         <li><Link href="/onboarding" className="hover:text-brand-400 transition-colors">Get Started</Link></li>
                         <li><Link href="/login" className="hover:text-brand-400 transition-colors">Sign In</Link></li>
                     </ul>
@@ -195,7 +195,7 @@ export const LandingFooter: React.FC = () => (
                 <div>
                     <h4 className="font-bold text-white mb-6">Company</h4>
                     <ul className="space-y-4 text-sm text-gray-400">
-                        <li><Link href="/#how-it-works" className="hover:text-brand-400 transition-colors">How It Works</Link></li>
+                        <li><Link href="/#about" className="hover:text-brand-400 transition-colors">About Us</Link></li>
                         <li><Link href="/careers" className="hover:text-brand-400 transition-colors">Careers</Link></li>
                         <li><Link href="/#contact" className="hover:text-brand-400 transition-colors">Contact</Link></li>
                         <li><Link href="/privacy-policy" className="hover:text-brand-400 transition-colors">Privacy Policy</Link></li>

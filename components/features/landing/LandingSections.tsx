@@ -140,7 +140,7 @@ export const FeaturesSection: React.FC = () => (
 );
 
 export const HowItWorksSection: React.FC = () => (
-    <section id="how-it-works" className="py-24 bg-white">
+    <section id="about" className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -247,6 +247,7 @@ export const TestimonialsSection: React.FC = () => (
 
 export const FAQSection: React.FC = () => (
     <section id="faq" className="py-24 bg-gray-50">
+        <div id="demo" className="sr-only">Request Demo Anchor</div>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
