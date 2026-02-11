@@ -27,7 +27,11 @@ def send_school_status_email(sender, instance, created, **kwargs):
     # Note: We need to check if the status *changed* to active, not just if it is active.
     # In a real-world scenario, we'd use a pre_save signal or a specific field tracker.
     # For now, if status is active and not created, we assume it was just approved.
-    elif not created and instance.status == 'active':
+    sub_status = 'none'
+    if hasattr(instance, 'subscription') and instance.subscription:
+        sub_status = instance.subscription.status
+
+    if not created and sub_status == 'active':
         # Ideally, check if previous status was 'pending' using a field tracker package
         # or by checking instance._state.adding (already handled by 'created')
         logger.info(f"School activated: {instance.name}. Queueing approval email.")
