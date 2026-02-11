@@ -145,112 +145,143 @@ class SettingsView(APIView):
 
         school = self.get_school(request)
         if not school:
-            logger.error("[SETTINGS_PUT] School contexts not found")
+            logger.error("[SETTINGS_PUT] School context not found")
             return Response({'error': 'School not found'}, status=404)
 
-        logger.info(f"[SETTINGS_PUT] Updating settings for school: {school.domain}")
+        logger.info(f"[SETTINGS_PUT] Starting update for school: {school.domain}")
+        from django.db import transaction
+        
         try:
-            data = request.data
-            settings_obj, created = SchoolSettings.objects.get_or_create(school=school)
-            if created:
-                logger.info(f"[SETTINGS_PUT] Created new settings object for {school.domain}")
-            
-            # Helper to handle base64 images for CharFields (e.g. school.logo)
-            def process_base64(val):
-                if val and isinstance(val, str) and val.startswith('data:image'):
-                    field = Base64ImageField()
-                    return field.to_internal_value(val)
-                return val
+            with transaction.atomic():
+                data = request.data
+                if not isinstance(data, dict):
+                    logger.warning(f"[SETTINGS_PUT] Unexpected data format: {type(data)}")
+                
+                settings_obj, created = SchoolSettings.objects.get_or_create(school=school)
+                if created:
+                    logger.info(f"[SETTINGS_PUT] Created new settings object for {school.domain}")
+                
+                # Helper to handle base64 images for CharFields (e.g. school.logo)
+                def process_base64(val):
+                    if val and isinstance(val, str) and val.startswith('data:image'):
+                        try:
+                            field = Base64ImageField()
+                            return field.to_internal_value(val)
+                        except Exception as img_e:
+                            logger.error(f"[SETTINGS_PUT] Base64 processing failed: {str(img_e)}")
+                            return val
+                    return val
 
-            def clean_date(val):
-                if not val or val == '': return None
-                return val
+                def clean_date(val):
+                    if not val or val == '': return None
+                    return val
 
-            # Update School model
-            if 'school_name' in data: school.name = data['school_name']
-            if 'school_address' in data: school.address = data['school_address']
-            if 'school_email' in data: school.email = data['school_email']
-            if 'school_phone' in data: school.phone = data['school_phone']
-            if 'logo_media' in data: 
-                school.logo = process_base64(data['logo_media'])
-            school.save()
-            
-            # Update SchoolSettings model
-            if 'current_session' in data: settings_obj.current_session = data['current_session']
-            if 'current_term' in data: settings_obj.current_term = data['current_term']
-            if 'school_tagline' in data: settings_obj.school_tagline = data['school_tagline']
-            if 'watermark_media' in data: settings_obj.watermark_media = process_base64(data['watermark_media'])
-            
-            if 'director_name' in data: settings_obj.director_name = data['director_name']
-            if 'director_signature' in data: settings_obj.director_signature = process_base64(data['director_signature'])
-            if 'head_of_school_name' in data: settings_obj.head_of_school_name = data['head_of_school_name']
-            if 'head_of_school_signature' in data: settings_obj.head_of_school_signature = process_base64(data['head_of_school_signature'])
-            
-            if 'subjects_global' in data: settings_obj.subjects_global = data['subjects_global']
-            if 'terms' in data: settings_obj.terms_list = data['terms']
-            if 'show_position' in data: settings_obj.show_position = data['show_position']
-            if 'show_skills' in data: settings_obj.show_skills = data['show_skills']
-            if 'tiled_watermark' in data: settings_obj.tiled_watermark = data['tiled_watermark']
-            if 'next_term_begins' in data: settings_obj.next_term_begins = clean_date(data['next_term_begins'])
-            if 'class_teacher_label' in data: settings_obj.class_teacher_label = data['class_teacher_label']
-            if 'head_teacher_label' in data: settings_obj.head_teacher_label = data['head_teacher_label']
-            if 'report_font_family' in data: settings_obj.report_font_family = data['report_font_family']
-            if 'report_scale' in data: settings_obj.report_scale = data['report_scale']
-            
-            if 'landing_hero_title' in data: settings_obj.landing_hero_title = data['landing_hero_title']
-            if 'landing_hero_subtitle' in data: settings_obj.landing_hero_subtitle = data['landing_hero_subtitle']
-            if 'landing_features' in data: settings_obj.landing_features = data['landing_features']
-            if 'landing_about_text' in data: settings_obj.landing_about_text = data['landing_about_text']
-            # Continue with other landing fields... (Keeping it robust)
-            if 'landing_hero_image' in data: settings_obj.landing_hero_image = process_base64(data['landing_hero_image'])
-            if 'landing_gallery_images' in data:
-                settings_obj.landing_gallery_images = [process_base64(img) for img in data['landing_gallery_images']]
-            
-            for field in ['landing_primary_color', 'landing_show_stats', 'landing_cta_text', 'landing_stats_config']:
-                if field in data: setattr(settings_obj, field, data[field])
+                # 1. Update School model
+                try:
+                    if 'school_name' in data: school.name = data['school_name']
+                    if 'school_address' in data: school.address = data['school_address']
+                    if 'school_email' in data: school.email = data['school_email']
+                    if 'school_phone' in data: school.phone = data['school_phone']
+                    if 'logo_media' in data: 
+                        school.logo = process_base64(data['logo_media'])
+                    school.save()
+                except Exception as school_e:
+                    logger.error(f"[SETTINGS_PUT] School model save failed: {str(school_e)}")
+                    raise school_e
+                
+                # 2. Update SchoolSettings model - Basic Fields
+                try:
+                    if 'current_session' in data: settings_obj.current_session = data['current_session']
+                    if 'current_term' in data: settings_obj.current_term = data['current_term']
+                    if 'school_tagline' in data: settings_obj.school_tagline = data['school_tagline']
+                    if 'watermark_media' in data: settings_obj.watermark_media = process_base64(data['watermark_media'])
+                    
+                    if 'director_name' in data: settings_obj.director_name = data['director_name']
+                    if 'director_signature' in data: settings_obj.director_signature = process_base64(data['director_signature'])
+                    if 'head_of_school_name' in data: settings_obj.head_of_school_name = data['head_of_school_name']
+                    if 'head_of_school_signature' in data: settings_obj.head_of_school_signature = process_base64(data['head_of_school_signature'])
+                    
+                    if 'subjects_global' in data: settings_obj.subjects_global = data['subjects_global']
+                    if 'terms' in data: settings_obj.terms_list = data['terms']
+                    if 'show_position' in data: settings_obj.show_position = data['show_position']
+                    if 'show_skills' in data: settings_obj.show_skills = data['show_skills']
+                    if 'tiled_watermark' in data: settings_obj.tiled_watermark = data['tiled_watermark']
+                    if 'next_term_begins' in data: settings_obj.next_term_begins = clean_date(data['next_term_begins'])
+                    if 'class_teacher_label' in data: settings_obj.class_teacher_label = data['class_teacher_label']
+                    if 'head_teacher_label' in data: settings_obj.head_teacher_label = data['head_teacher_label']
+                    if 'report_font_family' in data: settings_obj.report_font_family = data['report_font_family']
+                    if 'report_scale' in data: settings_obj.report_scale = data['report_scale']
+                except Exception as basic_e:
+                    logger.error(f"[SETTINGS_PUT] Basic settings update failed: {str(basic_e)}")
+                    raise basic_e
+                
+                # 3. CMS / Landing Page Fields
+                try:
+                    if 'landing_hero_title' in data: settings_obj.landing_hero_title = data['landing_hero_title']
+                    if 'landing_hero_subtitle' in data: settings_obj.landing_hero_subtitle = data['landing_hero_subtitle']
+                    if 'landing_features' in data: settings_obj.landing_features = data['landing_features']
+                    if 'landing_about_text' in data: settings_obj.landing_about_text = data['landing_about_text']
+                    if 'landing_hero_image' in data: settings_obj.landing_hero_image = process_base64(data['landing_hero_image'])
+                    if 'landing_gallery_images' in data and isinstance(data['landing_gallery_images'], list):
+                        settings_obj.landing_gallery_images = [process_base64(img) for img in data['landing_gallery_images']]
+                    
+                    for field in ['landing_primary_color', 'landing_show_stats', 'landing_cta_text', 'landing_stats_config']:
+                        if field in data: setattr(settings_obj, field, data[field])
 
-            if 'landing_core_values' in data:
-                settings_obj.landing_core_values = data['landing_core_values']
+                    if 'landing_core_values' in data:
+                        settings_obj.landing_core_values = data['landing_core_values']
 
-            if 'landing_academic_programs' in data and isinstance(data['landing_academic_programs'], list):
-                programs = []
-                for p in data['landing_academic_programs']:
-                    # Handle image upload if present
-                    img = p.get('image')
-                    if img and isinstance(img, str) and img.startswith('data:image'):
-                        img = process_base64(img)
-                    programs.append({**p, 'image': img})
-                settings_obj.landing_academic_programs = programs
+                    if 'landing_academic_programs' in data and isinstance(data['landing_academic_programs'], list):
+                        programs = []
+                        for p in data['landing_academic_programs']:
+                            if not isinstance(p, dict): continue
+                            img = p.get('image')
+                            if img and isinstance(img, str) and img.startswith('data:image'):
+                                img = process_base64(img)
+                            programs.append({**p, 'image': img})
+                        settings_obj.landing_academic_programs = programs
 
-            if 'landing_testimonials' in data and isinstance(data['landing_testimonials'], list):
-                testimonials = []
-                for t in data['landing_testimonials']:
-                    img = t.get('image')
-                    if img and isinstance(img, str) and img.startswith('data:image'):
-                        img = process_base64(img)
-                    testimonials.append({**t, 'image': img})
-                settings_obj.landing_testimonials = testimonials
+                    if 'landing_testimonials' in data and isinstance(data['landing_testimonials'], list):
+                        testimonials = []
+                        for t in data['landing_testimonials']:
+                            if not isinstance(t, dict): continue
+                            img = t.get('image')
+                            if img and isinstance(img, str) and img.startswith('data:image'):
+                                img = process_base64(img)
+                            testimonials.append({**t, 'image': img})
+                        settings_obj.landing_testimonials = testimonials
+                except Exception as cms_e:
+                    logger.error(f"[SETTINGS_PUT] CMS settings update failed: {str(cms_e)}")
+                    raise cms_e
+                
+                # 4. Promotion, Finance & Permissions
+                try:
+                    if 'promotion_threshold' in data: settings_obj.promotion_threshold = data['promotion_threshold']
+                    if 'promotion_rules' in data: settings_obj.promotion_rules = data['promotion_rules']
+                    
+                    if 'show_bank_details' in data: settings_obj.show_bank_details = data['show_bank_details']
+                    if 'bank_name' in data: settings_obj.bank_name = data['bank_name']
+                    if 'bank_account_name' in data: settings_obj.bank_account_name = data['bank_account_name']
+                    if 'bank_account_number' in data: settings_obj.bank_account_number = data['bank_account_number']
+                    if 'bank_sort_code' in data: settings_obj.bank_sort_code = data['bank_sort_code']
+                    if 'invoice_notes' in data: settings_obj.invoice_notes = data['invoice_notes']
+                    if 'invoice_due_days' in data: settings_obj.invoice_due_days = data['invoice_due_days']
+                    
+                    if 'role_permissions' in data: settings_obj.role_permissions = data['role_permissions']
+                except Exception as finance_e:
+                    logger.error(f"[SETTINGS_PUT] Finance/Permissions update failed: {str(finance_e)}")
+                    raise finance_e
+                
+                settings_obj.save()
+                logger.info(f"[SETTINGS_PUT] Successfully saved all settings for {school.domain}")
             
-            if 'promotion_threshold' in data: settings_obj.promotion_threshold = data['promotion_threshold']
-            if 'promotion_rules' in data: settings_obj.promotion_rules = data['promotion_rules']
-            
-            if 'show_bank_details' in data: settings_obj.show_bank_details = data['show_bank_details']
-            if 'bank_name' in data: settings_obj.bank_name = data['bank_name']
-            if 'bank_account_name' in data: settings_obj.bank_account_name = data['bank_account_name']
-            if 'bank_account_number' in data: settings_obj.bank_account_number = data['bank_account_number']
-            if 'bank_sort_code' in data: settings_obj.bank_sort_code = data['bank_sort_code']
-            if 'invoice_notes' in data: settings_obj.invoice_notes = data['invoice_notes']
-            if 'invoice_due_days' in data: settings_obj.invoice_due_days = data['invoice_due_days']
-            
-            if 'role_permissions' in data: settings_obj.role_permissions = data['role_permissions']
-            
-            settings_obj.save()
             return self.get(request)
         except Exception as e:
-            logger.exception(f"Settings update failed for school {school.domain}: {str(e)}")
+            logger.exception(f"Settings update CRASHED for school {school.domain}: {str(e)}")
             return Response({
                 'error': 'Failed to save settings',
-                'detail': str(e)
+                'detail': str(e),
+                'type': type(e).__name__
             }, status=400)
 
 class PublicStatsView(APIView):

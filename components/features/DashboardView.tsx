@@ -266,7 +266,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
     const tabs = [
         { id: 'overview' as TabType, name: 'Executive Overview', icon: TrendingUp },
-        { id: 'cms' as TabType, name: 'Website CMS', icon: Globe, module: 'cms' },
         { id: 'roles' as TabType, name: 'Roles & Access', icon: Lock },
         { id: 'schools' as TabType, name: 'Schools Management', icon: ShieldCheck, superAdminOnly: true },
         { id: 'analytics_strategic' as TabType, name: 'Strategic Analytics', icon: TrendingUp, superAdminOnly: true },
@@ -275,7 +274,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         { id: 'platform_settings' as TabType, name: 'Platform Settings', icon: Settings, superAdminOnly: true },
     ].filter(t => {
         if (t.superAdminOnly && user?.role !== 'SUPER_ADMIN') return false;
-        return !t.module || allowedModules.includes(t.module);
+        return true;
     });
 
     return (
@@ -364,27 +363,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         </div>
                     </div>
                 </div>
-            )}
-
-            {/* CMS Tab */}
-            {activeTab === 'cms' && (
-                <DashboardCmsTab
-                    editedSettings={editedSettings}
-                    handleChange={handleChange}
-                    handleSaveSettings={handleSaveSettings}
-                    handleImageUpload={handleImageUpload}
-                    features={features}
-                    newFeature={newFeature}
-                    setNewFeature={setNewFeature}
-                    addFeature={addFeature}
-                    removeFeature={removeFeature}
-                    handleCoreValueChange={handleCoreValueChange}
-                    addCoreValue={addCoreValue}
-                    removeCoreValue={removeCoreValue}
-                    handleAcademicProgramChange={handleAcademicProgramChange}
-                    addAcademicProgram={addAcademicProgram}
-                    removeAcademicProgram={removeAcademicProgram}
-                />
             )}
 
             {/* Roles Tab */}

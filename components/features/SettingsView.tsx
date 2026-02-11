@@ -165,32 +165,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, onUpdate }
                         <textarea value={formData.invoice_notes || ''} onChange={e => handleChange('invoice_notes', e.target.value)} placeholder="Invoice notes (optional)..." rows={1} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500" />
                     </div>
                 </Card>
-                <Card title="Homepage Settings" className="md:col-span-2">
-                    <p className="text-xs text-gray-500 mb-4">Configure the content displayed on your public-facing homepage.</p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <Input label="Hero Title" value={formData.landing_hero_title || ''} onChange={e => handleChange('landing_hero_title', e.target.value)} placeholder="e.g. Welcome to Our School" />
-                        <Input label="Hero Subtitle" value={formData.landing_hero_subtitle || ''} onChange={e => handleChange('landing_hero_subtitle', e.target.value)} placeholder="e.g. Faith-Based Excellence" />
-                        <div className="md:col-span-2">
-                            <label className="text-xs font-bold text-gray-500 uppercase block mb-1">About Section Text</label>
-                            <textarea
-                                value={formData.landing_about_text || ''}
-                                onChange={e => handleChange('landing_about_text', e.target.value)}
-                                placeholder="Describe your school's mission, vision, and values..."
-                                rows={3}
-                                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
-                            />
-                        </div>
-                        <div className="md:col-span-2">
-                            <Input label="Features (comma-separated)" value={formData.landing_features || ''} onChange={e => handleChange('landing_features', e.target.value)} placeholder="e.g. Faith-Based Education, Modern Facilities, Expert Teachers" />
-                            <p className="text-[10px] text-gray-400 mt-1">These values feed into the "Why Choose Us" section. (Currently using Core Values: CARE, RESPECT, EXCELLENCE)</p>
-                        </div>
-                        <Input label="CTA Button Text" value={formData.landing_cta_text || ''} onChange={e => handleChange('landing_cta_text', e.target.value)} placeholder="e.g. Apply for Admission" />
-                        <div className="flex items-center gap-2 pt-4">
-                            <input type="checkbox" id="landing_show_stats" checked={formData.landing_show_stats} onChange={e => handleChange('landing_show_stats', e.target.checked)} className="h-4 w-4 text-brand-600 border-gray-300 rounded" />
-                            <label htmlFor="landing_show_stats" className="text-sm font-medium text-gray-700">Show Stats in Hero (Students, Teachers, etc.)</label>
-                        </div>
-                    </div>
-                </Card>
             </div>
         </div>
     );
