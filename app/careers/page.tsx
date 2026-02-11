@@ -2,15 +2,12 @@
 
 import React from 'react';
 import { Briefcase, Heart, Globe, Rocket, CheckCircle2 } from 'lucide-react';
-import SiteHeader from '@/components/features/SiteHeader';
-import SiteFooter from '@/components/features/SiteFooter';
+import { SystemPageLayout } from '@/components/features/SystemPageLayout';
 import * as Utils from '@/lib/utils';
 
 export default function CareersPage() {
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col font-primary">
-            <SiteHeader settings={Utils.INITIAL_SETTINGS} />
-
+        <SystemPageLayout>
             <main className="flex-grow pt-24">
                 {/* Hero */}
                 <div className="bg-brand-900 text-white py-24 px-4 text-center">
@@ -91,9 +88,7 @@ export default function CareersPage() {
                     </div>
                 </div>
             </main>
-
-            <SiteFooter settings={Utils.INITIAL_SETTINGS} />
-        </div>
+        </SystemPageLayout>
     );
 }
 

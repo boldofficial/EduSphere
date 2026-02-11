@@ -171,9 +171,9 @@ export const LandingFooter: React.FC = () => (
                 <div>
                     <h4 className="font-bold text-white mb-6">Product</h4>
                     <ul className="space-y-4 text-sm text-gray-400">
-                        <li><Link href="#features" className="hover:text-brand-400 transition-colors">Features</Link></li>
-                        <li><Link href="#pricing" className="hover:text-brand-400 transition-colors">Pricing</Link></li>
-                        <li><Link href="#demo" className="hover:text-brand-400 transition-colors">Request Demo</Link></li>
+                        <li><Link href="/#features" className="hover:text-brand-400 transition-colors">Features</Link></li>
+                        <li><Link href="/#pricing" className="hover:text-brand-400 transition-colors">Pricing</Link></li>
+                        <li><Link href="/onboarding" className="hover:text-brand-400 transition-colors">Request Demo</Link></li>
                         <li><Link href="/onboarding" className="hover:text-brand-400 transition-colors">Get Started</Link></li>
                         <li><Link href="/login" className="hover:text-brand-400 transition-colors">Sign In</Link></li>
                     </ul>
@@ -195,7 +195,7 @@ export const LandingFooter: React.FC = () => (
                 <div>
                     <h4 className="font-bold text-white mb-6">Company</h4>
                     <ul className="space-y-4 text-sm text-gray-400">
-                        <li><Link href="/#about" className="hover:text-brand-400 transition-colors">About Us</Link></li>
+                        <li><Link href="/#how-it-works" className="hover:text-brand-400 transition-colors">How It Works</Link></li>
                         <li><Link href="/careers" className="hover:text-brand-400 transition-colors">Careers</Link></li>
                         <li><Link href="/#contact" className="hover:text-brand-400 transition-colors">Contact</Link></li>
                         <li><Link href="/privacy-policy" className="hover:text-brand-400 transition-colors">Privacy Policy</Link></li>

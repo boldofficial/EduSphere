@@ -2,15 +2,12 @@
 
 import React from 'react';
 import { Search, HelpCircle, Book, MessageCircle, FileText, ChevronRight } from 'lucide-react';
-import SiteHeader from '@/components/features/SiteHeader';
-import SiteFooter from '@/components/features/SiteFooter';
+import { SystemPageLayout } from '@/components/features/SystemPageLayout';
 import * as Utils from '@/lib/utils';
 
 export default function HelpCenterPage() {
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col font-primary">
-            <SiteHeader settings={Utils.INITIAL_SETTINGS} />
-
+        <SystemPageLayout>
             <main className="flex-grow pt-24 pb-16">
                 {/* Hero Section */}
                 <div className="bg-brand-900 text-white py-16 px-4">
@@ -97,9 +94,7 @@ export default function HelpCenterPage() {
                     </div>
                 </div>
             </main>
-
-            <SiteFooter settings={Utils.INITIAL_SETTINGS} />
-        </div>
+        </SystemPageLayout>
     );
 }
 

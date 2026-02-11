@@ -2,15 +2,12 @@
 
 import React from 'react';
 import { Play, Download, FileText, Video } from 'lucide-react';
-import SiteHeader from '@/components/features/SiteHeader';
-import SiteFooter from '@/components/features/SiteFooter';
+import { SystemPageLayout } from '@/components/features/SystemPageLayout';
 import * as Utils from '@/lib/utils';
 
 export default function ResourcesPage() {
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col font-primary">
-            <SiteHeader settings={Utils.INITIAL_SETTINGS} />
-
+        <SystemPageLayout>
             <main className="flex-grow pt-24 px-4 pb-20">
                 <div className="text-center py-16 max-w-4xl mx-auto">
                     <h1 className="text-4xl md:text-5xl font-black text-gray-900 mb-6">Resources & Tutorials</h1>
@@ -78,9 +75,7 @@ export default function ResourcesPage() {
 
                 </div>
             </main>
-
-            <SiteFooter settings={Utils.INITIAL_SETTINGS} />
-        </div>
+        </SystemPageLayout>
     );
 }
 

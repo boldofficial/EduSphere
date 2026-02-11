@@ -2,8 +2,7 @@
 
 import React from 'react';
 import { Calendar, User, ArrowRight, Tag } from 'lucide-react';
-import SiteHeader from '@/components/features/SiteHeader';
-import SiteFooter from '@/components/features/SiteFooter';
+import { SystemPageLayout } from '@/components/features/SystemPageLayout';
 import * as Utils from '@/lib/utils';
 
 export default function BlogPage() {
@@ -38,9 +37,7 @@ export default function BlogPage() {
     ];
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col font-primary">
-            <SiteHeader settings={Utils.INITIAL_SETTINGS} />
-
+        <SystemPageLayout>
             <main className="flex-grow pt-32 pb-20 px-4">
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center mb-16">
@@ -95,8 +92,6 @@ export default function BlogPage() {
                     </div>
                 </div>
             </main>
-
-            <SiteFooter settings={Utils.INITIAL_SETTINGS} />
-        </div>
+        </SystemPageLayout>
     );
 }
