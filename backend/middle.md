@@ -8,7 +8,7 @@ Action: Update all certresolver labels in docker-compose.yml from letsencrypt-dn
 
 Action: Remove any labels containing HostSNI.
 
-Action: Use this exact rule for the backend to ensure /api and /admin are correctly intercepted with high priority: "traefik.http.routers.backend.rule=(Host(\myregistra.net`) || Host(`www.myregistra.net`) || HostRegexp(`^.+\.myregistra\.net$`)) && (PathPrefix(`/api`) || PathPrefix(`/admin`) || PathPrefix(`/django-static`) || PathPrefix(`/media`))"`
+Action: Use this exact rule for the backend to ensure /api and /admin are correctly intercepted with high priority: "traefik.http.routers.backend.rule=(Host(`myregistra.net`) || Host(`www.myregistra.net`) || HostRegexp(`^.+\.myregistra\.net$`)) && (PathPrefix(`/api`) || PathPrefix(`/admin`) || PathPrefix(`/django-static`) || PathPrefix(`/media`))"
 
 Action: Set traefik.http.routers.backend.priority=1000 and traefik.http.routers.frontend.priority=100.
 

@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { useSchoolStore } from '@/lib/store';
 import { useSettings } from '@/lib/hooks/use-data';
 import { UserRole } from '@/lib/types';
@@ -10,31 +9,30 @@ import {
     ShieldCheck,
     Users,
     GraduationCap,
-    ArrowRight,
     Briefcase,
-    AlertCircle,
-    Eye,
-    EyeOff,
-    Mail,
-    CheckCircle,
-    KeyRound,
-    School
+    ArrowRight
 } from 'lucide-react';
 import * as Utils from '@/lib/utils';
+
+// Extracted Components
+import { RoleSelection } from './login/RoleSelection';
+import { FindSchoolSection } from './login/FindSchoolSection';
+import { StudentLoginForm } from './login/StudentLoginForm';
+import { StaffLoginForm } from './login/StaffLoginForm';
+import { ForgotPasswordModal } from './login/ForgotPasswordModal';
 
 export const LoginView = () => {
     const router = useRouter();
     const { login } = useSchoolStore();
-
-    // Removed useStudents() on mount to prevent unauthorized fetch errors
     const { data: settings = Utils.INITIAL_SETTINGS } = useSettings();
+
     const isDemo = false; // Disabled Demo Mode
     const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
 
-    // Student/Parent login form state
+    // Form states
     const [studentNo, setStudentNo] = useState('');
     const [password, setPassword] = useState('');
-    const [email, setEmail] = useState(''); // Added for admin login
+    const [email, setEmail] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [loginError, setLoginError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -57,78 +55,43 @@ export const LoginView = () => {
 
     React.useEffect(() => {
         if (typeof window !== 'undefined') {
-            const host = window.location.host;
-            // Clean host to remove port for comparison
-            const cleanHost = host.split(':')[0];
+            const host = window.location.host.split(':')[0].replace(/^www\./, '');
+            const rootDomain = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'myregistra.net').split(':')[0].replace(/^www\./, '');
 
-            const rootDomain = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'myregistra.net').split(':')[0];
-            const cleanRootDomain = rootDomain.replace(/^www\./, '');
-            const finalHost = cleanHost.replace(/^www\./, '');
-
-            // Flexible detection: 
-            // 1. Matches configured root or clean version of it
-            // 2. Localhost
-            // 3. Vercel deployment (root)
             const isRoot =
-                finalHost === cleanRootDomain ||
-                finalHost === 'localhost' ||
-                (finalHost.includes('vercel.app') && !finalHost.includes('-'));
+                host === rootDomain ||
+                host === 'localhost' ||
+                (host.includes('vercel.app') && !host.includes('-'));
 
             setIsSystemRoot(isRoot);
         }
     }, []);
 
-    const roles = [
-        {
-            id: 'admin' as UserRole,
-            name: 'Admin',
-            icon: ShieldCheck,
-            themeColor: '#3B82F6',
-            color: 'bg-blue-600',
-            desc: 'System Administration'
-        },
-        {
-            id: 'teacher' as UserRole,
-            name: 'Teacher',
-            icon: Users,
-            themeColor: '#10B981',
-            color: 'bg-emerald-600',
-            desc: 'Class & Grade Management'
-        },
-        {
-            id: 'student' as UserRole,
-            name: 'Student / Parent',
-            icon: GraduationCap,
-            themeColor: '#8B5CF6',
-            color: 'bg-violet-600',
-            desc: 'Academic Portal'
-        },
-        {
-            id: 'staff' as UserRole,
-            name: 'Non Teaching',
-            icon: Briefcase,
-            themeColor: '#F59E0B',
-            color: 'bg-amber-600',
-            desc: 'Operations Dashboard'
-        },
+    const roleDefinitions = [
+        { id: 'admin' as UserRole, name: 'Admin', icon: ShieldCheck, themeColor: '#3B82F6', color: 'bg-blue-600', desc: 'System Administration' },
+        { id: 'teacher' as UserRole, name: 'Teacher', icon: Users, themeColor: '#10B981', color: 'bg-emerald-600', desc: 'Class & Grade Management' },
+        { id: 'student' as UserRole, name: 'Student / Parent', icon: GraduationCap, themeColor: '#8B5CF6', color: 'bg-violet-600', desc: 'Academic Portal' },
+        { id: 'staff' as UserRole, name: 'Non Teaching', icon: Briefcase, themeColor: '#F59E0B', color: 'bg-amber-600', desc: 'Operations Dashboard' },
     ];
+
+    const resetForms = () => {
+        setLoginError('');
+        setStudentNo('');
+        setPassword('');
+        setEmail('');
+        setShowPassword(false);
+    };
 
     const handleFindSchool = async (e: React.FormEvent) => {
         e.preventDefault();
         setSearchError('');
         setIsSearching(true);
-
         try {
             const res = await fetch(`/api/proxy/schools/verify-slug/${searchSlug.trim().toLowerCase()}/`);
-            if (!res.ok) {
-                throw new Error('School not found. Please check the spelling.');
-            }
+            if (!res.ok) throw new Error('School not found. Please check the spelling.');
             const data = await res.json();
-
-            // Construct the login URL for the found school
             const rootDomain = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'myregistra.net').split(':')[0];
             const targetDomain = data.custom_domain || `${data.slug}.${rootDomain}`;
-
             window.location.href = `${window.location.protocol}//${targetDomain}/login`;
         } catch (err: any) {
             setSearchError(err.message);
@@ -140,10 +103,8 @@ export const LoginView = () => {
         e.preventDefault();
         setLoginError('');
         setIsLoading(true);
-
         try {
             let tenantSlug = '';
-
             if (isSystemRoot) {
                 if (!searchSlug && selectedRole !== 'super_admin') {
                     setLoginError('Please find your school first.');
@@ -152,9 +113,7 @@ export const LoginView = () => {
                 }
                 tenantSlug = searchSlug;
             } else {
-                const host = window.location.host.split(':')[0];
-                const rootDomain = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'myregistra.net').split(':')[0];
-                tenantSlug = host.replace(`.${rootDomain}`, '');
+                tenantSlug = window.location.host.split('.')[0];
             }
 
             let usernamePayload = email.trim().toLowerCase();
@@ -164,14 +123,8 @@ export const LoginView = () => {
 
             const res = await fetch('/api/auth/login', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-tenant-id': tenantSlug
-                },
-                body: JSON.stringify({
-                    username: usernamePayload,
-                    password
-                }),
+                headers: { 'Content-Type': 'application/json', 'x-tenant-id': tenantSlug },
+                body: JSON.stringify({ username: usernamePayload, password }),
             });
 
             if (!res.ok) {
@@ -181,20 +134,9 @@ export const LoginView = () => {
 
             const data = await res.json();
             const role = selectedRole || 'admin';
-            login(role, {
-                id: data.user.id,
-                name: data.user.username,
-                email: email,
-                role: role
-            });
-
-            if (role === 'super_admin') {
-                router.push('/dashboard/super-admin');
-            } else {
-                router.push('/dashboard');
-            }
+            login(role, { id: data.user.id, name: data.user.username, email: email, role });
+            router.push(role === 'super_admin' ? '/dashboard/super-admin' : '/dashboard');
         } catch (err: any) {
-            console.error(err);
             setLoginError(err.message || 'Invalid credentials');
         } finally {
             setIsLoading(false);
@@ -205,35 +147,18 @@ export const LoginView = () => {
         e.preventDefault();
         setLoginError('');
         setIsLoading(true);
-
         try {
-            let tenantSlug = '';
-
-            if (isSystemRoot) {
-                if (!searchSlug) {
-                    setLoginError('Please find your school first.');
-                    setIsLoading(false);
-                    return;
-                }
-                tenantSlug = searchSlug;
-            } else {
-                const host = window.location.host.split(':')[0];
-                const rootDomain = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'myregistra.net').split(':')[0];
-                tenantSlug = host.replace(`.${rootDomain}`, '');
+            let tenantSlug = isSystemRoot ? searchSlug : window.location.host.split('.')[0];
+            if (!tenantSlug && isSystemRoot) {
+                setLoginError('Please find your school first.');
+                setIsLoading(false);
+                return;
             }
-
-            const scopedUsername = `${studentNo.trim()}@${tenantSlug}`;
 
             const res = await fetch('/api/auth/login', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-tenant-id': tenantSlug
-                },
-                body: JSON.stringify({
-                    username: scopedUsername,
-                    password: password
-                }),
+                headers: { 'Content-Type': 'application/json', 'x-tenant-id': tenantSlug },
+                body: JSON.stringify({ username: `${studentNo.trim()}@${tenantSlug}`, password }),
             });
 
             if (!res.ok) {
@@ -242,16 +167,9 @@ export const LoginView = () => {
             }
 
             const data = await res.json();
-            login('student', {
-                id: data.user.id,
-                name: data.user.username,
-                email: data.user.email,
-                role: 'student'
-            });
-
+            login('student', { id: data.user.id, name: data.user.username, email: data.user.email, role: 'student' });
             router.push('/dashboard');
         } catch (err: any) {
-            console.error('Student login error:', err);
             setLoginError(err.message || 'Login failed. Please check your credentials.');
         } finally {
             setIsLoading(false);
@@ -262,15 +180,11 @@ export const LoginView = () => {
         e.preventDefault();
         setForgotError('');
         setIsLoading(true);
-
         try {
             const res = await fetch('/api/proxy/students/forgot-password/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    student_no: forgotStudentNo.trim(),
-                    email: forgotEmail.trim()
-                })
+                body: JSON.stringify({ student_no: forgotStudentNo.trim(), email: forgotEmail.trim() })
             });
 
             if (!res.ok) {
@@ -279,9 +193,7 @@ export const LoginView = () => {
             }
 
             const data = await res.json();
-            if (data.temp_password) {
-                setNewPassword(data.temp_password);
-            }
+            if (data.temp_password) setNewPassword(data.temp_password);
             setForgotSuccess(true);
         } catch (err: any) {
             setForgotError(err.message);
@@ -290,23 +202,13 @@ export const LoginView = () => {
         }
     };
 
-    const handleDirectLogin = (role: UserRole) => {
-        // Mock login only for development if needed, but disabled by isDemo = false
-        login(role, { id: 'demo', name: 'Demo User', role });
-    };
-
     return (
         <div className="min-h-screen relative flex flex-col items-center justify-center p-4 md:p-6 font-primary overflow-hidden">
-            {/* Background Image with Overlay */}
             <div className="absolute inset-0 z-0">
-                <div
-                    className="absolute inset-0 bg-cover bg-center transition-all duration-1000"
-                    style={{ backgroundImage: "url('/login-bg-classroom.png')" }}
-                />
+                <div className="absolute inset-0 bg-cover bg-center transition-all duration-1000" style={{ backgroundImage: "url('/login-bg-classroom.png')" }} />
                 <div className="absolute inset-0 bg-brand-950/80 backdrop-blur-[1px]" />
             </div>
 
-            {/* Return to Home Button */}
             <a href="/" className="absolute top-6 left-6 z-20 flex items-center gap-2 text-white/80 hover:text-white transition-colors bg-black/20 hover:bg-black/40 px-4 py-2 rounded-full backdrop-blur-md">
                 <ArrowRight className="rotate-180" size={18} />
                 <span className="text-sm font-bold">Back to Home</span>
@@ -317,33 +219,20 @@ export const LoginView = () => {
                     {!isSystemRoot ? (
                         <>
                             <div className="inline-block p-4 bg-white rounded-3xl shadow-2xl mb-4 border-4 border-white">
-                                <img
-                                    src={settings.logo_media || "/logo.png"}
-                                    alt={settings.school_name || "School Logo"}
-                                    className="h-24 md:h-32 object-contain"
-                                />
+                                <img src={settings.logo_media || "/logo.png"} alt={settings.school_name || "School Logo"} className="h-24 md:h-32 object-contain" />
                             </div>
-                            <h1 className="text-3xl md:text-6xl font-black text-white uppercase tracking-tight drop-shadow-md">
-                                {settings.school_name}
-                            </h1>
+                            <h1 className="text-3xl md:text-6xl font-black text-white uppercase tracking-tight drop-shadow-md">{settings.school_name}</h1>
                         </>
                     ) : (
-                        <>
-                            <div className="inline-block mb-4 cursor-pointer select-none active:scale-95 transition-transform"
-                                onClick={() => {
-                                    const newCount = adminSecretCount + 1;
-                                    setAdminSecretCount(newCount);
-                                    if (newCount >= 5) {
-                                        setShowSystemLogin(true);
-                                        setAdminSecretCount(0);
-                                    }
-                                }}
-                            >
-                                <div className="h-24 md:h-32 flex items-center justify-center mb-8">
-                                    <img src="/footer-logo.png" alt="Registra" className="h-full w-auto object-contain drop-shadow-md" />
-                                </div>
+                        <div className="inline-block mb-4 cursor-pointer select-none active:scale-95 transition-transform" onClick={() => {
+                            const newCount = adminSecretCount + 1;
+                            setAdminSecretCount(newCount);
+                            if (newCount >= 5) { setShowSystemLogin(true); setAdminSecretCount(0); }
+                        }}>
+                            <div className="h-24 md:h-32 flex items-center justify-center mb-8">
+                                <img src="/footer-logo.png" alt="Registra" className="h-full w-auto object-contain drop-shadow-md" />
                             </div>
-                        </>
+                        </div>
                     )}
                     <p className="text-brand-100 text-base md:text-xl font-medium max-w-2xl mx-auto">
                         {!isSystemRoot
@@ -353,291 +242,57 @@ export const LoginView = () => {
                     </p>
                 </div>
 
-                {/* Role Selection Cards */}
                 {!selectedRole && !isSystemRoot && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 px-4 md:px-0 w-full max-w-7xl">
-                        {roles.map((role, idx) => (
-                            <button
-                                key={role.id}
-                                onClick={() => setSelectedRole(role.id)}
-                                className="group relative bg-white/5 backdrop-blur-xl rounded-[2.5rem] p-8 border transition-all duration-500 text-left hover:-translate-y-3 border-white/10 hover:bg-white/10 hover:border-accent-500/50 shadow-2xl overflow-hidden flex flex-col h-full"
-                                style={{ animationDelay: `${idx * 100}ms` }}
-                            >
-                                <div
-                                    className="absolute -top-24 -right-24 w-48 h-48 rounded-full opacity-0 group-hover:opacity-20 transition-opacity duration-700 blur-[80px]"
-                                    style={{ backgroundColor: role.themeColor }}
-                                />
-
-                                <div className="relative z-10">
-                                    <div
-                                        className="w-16 h-16 rounded-2xl flex items-center justify-center mb-8 shadow-inner transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3"
-                                        style={{ backgroundColor: `${role.themeColor}20`, border: `1px solid ${role.themeColor}40` }}
-                                    >
-                                        <role.icon size={32} style={{ color: role.themeColor }} />
-                                    </div>
-
-                                    <h3 className="text-2xl font-black text-white mb-3 tracking-tight group-hover:text-accent-400 transition-colors">
-                                        {role.name}
-                                    </h3>
-                                    <p className="text-gray-400 text-sm font-medium mb-10 leading-relaxed min-h-[3rem]">
-                                        {role.desc}
-                                    </p>
-                                </div>
-
-                                <div className="mt-auto relative z-10 flex items-center justify-between">
-                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 group-hover:text-white transition-colors">
-                                        Access Portal
-                                    </span>
-                                    <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white group-hover:bg-accent-500 group-hover:text-brand-950 transition-all duration-300">
-                                        <ArrowRight size={20} className="transition-transform group-hover:translate-x-1" />
-                                    </div>
-                                </div>
-                                <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-accent-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                            </button>
-                        ))}
-                    </div>
+                    <RoleSelection roles={roleDefinitions} onSelectRole={setSelectedRole} />
                 )}
 
-                {/* System Root View: Find School or Secret Super Admin */}
                 {isSystemRoot && !selectedRole && (
-                    <div className={`w-full max-w-4xl grid grid-cols-1 ${showSystemLogin ? 'md:grid-cols-2' : 'max-w-md'} gap-8 px-4`}>
-                        <div className="bg-white rounded-3xl shadow-2xl p-8 flex flex-col justify-center">
-                            <h2 className="text-3xl font-black text-gray-900 mb-2">Find your School</h2>
-                            <p className="text-gray-500 mb-8 font-medium">Enter your school's unique ID or subdomain to access your portal.</p>
-
-                            <form onSubmit={handleFindSchool} className="space-y-6">
-                                <div>
-                                    <div className="relative">
-                                        <School className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                                        <input
-                                            type="text"
-                                            value={searchSlug}
-                                            onChange={e => setSearchSlug(e.target.value)}
-                                            placeholder="e.g. vine-heritage"
-                                            className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 font-bold"
-                                            required
-                                        />
-                                    </div>
-                                    {searchError && (
-                                        <p className="text-red-600 text-sm mt-2 font-medium flex items-center gap-1">
-                                            <AlertCircle size={14} /> {searchError}
-                                        </p>
-                                    )}
-                                </div>
-
-                                <button
-                                    type="submit"
-                                    disabled={isSearching}
-                                    className="w-full py-4 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-2xl transition-all shadow-xl shadow-brand-600/30 flex items-center justify-center gap-2 disabled:opacity-50"
-                                >
-                                    {isSearching ? (
-                                        <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
-                                    ) : (
-                                        <>
-                                            Find Portal <ArrowRight size={20} />
-                                        </>
-                                    )}
-                                </button>
-                            </form>
-
-                            <div className="mt-8 pt-8 border-t border-gray-100 text-center">
-                                <p className="text-gray-500 font-medium mb-3">Not registered yet?</p>
-                                <Link href="/onboarding" className="text-brand-600 hover:text-brand-700 font-bold flex items-center justify-center gap-1 group">
-                                    Create a school portal
-                                    <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-                                </Link>
-                            </div>
-                        </div>
-
-                        {showSystemLogin && (
-                            <div className="bg-black/40 backdrop-blur-md rounded-3xl p-8 border border-white/10 flex flex-col justify-between animate-in slide-in-from-right-8 duration-500">
-                                <div>
-                                    <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center text-white mb-6 shadow-lg">
-                                        <ShieldCheck size={32} />
-                                    </div>
-                                    <h3 className="text-2xl font-black text-white mb-2">System Login</h3>
-                                    <p className="text-brand-100/70 mb-8">Access the platform management dashboard. For Super Admins only.</p>
-                                </div>
-
-                                <button
-                                    onClick={() => setSelectedRole('super_admin')}
-                                    className="w-full py-4 bg-white/10 hover:bg-white/20 text-white font-bold rounded-2xl border border-white/20 transition-all flex items-center justify-center gap-2"
-                                >
-                                    Login as Super Admin <ArrowRight size={20} />
-                                </button>
-                            </div>
-                        )}
-                    </div>
+                    <FindSchoolSection
+                        searchSlug={searchSlug}
+                        setSearchSlug={setSearchSlug}
+                        searchError={searchError}
+                        isSearching={isSearching}
+                        showSystemLogin={showSystemLogin}
+                        onFindSchool={handleFindSchool}
+                        onSelectSuperAdmin={() => setSelectedRole('super_admin')}
+                    />
                 )}
 
-                {/* Student/Parent Login Form */}
                 {selectedRole === 'student' && (
-                    <div className="w-full max-w-md animate-in slide-in-from-bottom-6 fade-in duration-500">
-                        <div className="bg-white rounded-3xl shadow-2xl p-8">
-                            <div className="text-center mb-6">
-                                <div className="h-14 w-14 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                    <GraduationCap size={28} className="text-purple-600" />
-                                </div>
-                                <h2 className="text-2xl font-bold text-gray-900">Student / Parent Portal</h2>
-                            </div>
-
-                            <form onSubmit={handleStudentLogin} className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Student Number</label>
-                                    <input
-                                        type="text"
-                                        value={studentNo}
-                                        onChange={e => { setStudentNo(e.target.value); setLoginError(''); }}
-                                        placeholder="e.g. ST001"
-                                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                                    <div className="relative">
-                                        <input
-                                            type={showPassword ? 'text' : 'password'}
-                                            value={password}
-                                            onChange={e => { setPassword(e.target.value); setLoginError(''); }}
-                                            placeholder="Enter your password"
-                                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 pr-12"
-                                            required
-                                        />
-                                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                                            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {loginError && (
-                                    <div className="flex items-center gap-2 text-red-600 text-sm bg-red-50 p-3 rounded-xl">
-                                        <AlertCircle size={18} />
-                                        {loginError}
-                                    </div>
-                                )}
-
-                                <button
-                                    type="submit"
-                                    disabled={isLoading}
-                                    className="w-full py-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-50"
-                                >
-                                    {isLoading ? (
-                                        <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
-                                    ) : (
-                                        <>
-                                            Login to Portal
-                                            <ArrowRight size={20} />
-                                        </>
-                                    )}
-                                </button>
-                            </form>
-
-                            <div className="flex items-center justify-between mt-4">
-                                <button onClick={() => { setSelectedRole(null); setLoginError(''); setStudentNo(''); setPassword(''); }} className="text-sm text-gray-500 hover:text-gray-700 font-medium">
-                                    ← Back
-                                </button>
-                                <button onClick={() => setShowForgotPassword(true)} className="text-sm text-purple-600 hover:text-purple-800 font-medium">
-                                    Forgot Password?
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                    <StudentLoginForm
+                        studentNo={studentNo}
+                        setStudentNo={setStudentNo}
+                        password={password}
+                        setPassword={setPassword}
+                        showPassword={showPassword}
+                        setShowPassword={setShowPassword}
+                        loginError={loginError}
+                        setLoginError={setLoginError}
+                        isLoading={isLoading}
+                        onSubmit={handleStudentLogin}
+                        onBack={() => { setSelectedRole(null); resetForms(); }}
+                        onForgotPassword={() => setShowForgotPassword(true)}
+                    />
                 )}
 
-                {/* Admin/Teacher/Staff Login Form */}
                 {selectedRole && selectedRole !== 'student' && (
-                    <div className="w-full max-w-md animate-in slide-in-from-bottom-6 fade-in duration-500">
-                        <div className="bg-white rounded-3xl shadow-2xl p-8">
-                            <div className="text-center mb-6">
-                                <div className={`h-14 w-14 ${roles.find(r => r.id === selectedRole)?.color.replace('bg-', 'bg-').replace('600', '100')} rounded-2xl flex items-center justify-center mx-auto mb-4`}>
-                                    {(() => {
-                                        const Icon = roles.find(r => r.id === selectedRole)?.icon;
-                                        return Icon ? <Icon size={28} className={roles.find(r => r.id === selectedRole)?.color.replace('bg-', 'text-')} /> : null;
-                                    })()}
-                                </div>
-                                <h2 className="text-2xl font-bold text-gray-900">{roles.find(r => r.id === selectedRole)?.name} Login</h2>
-                            </div>
-
-                            {isDemo ? (
-                                <div className="flex flex-col gap-4">
-                                    <div className="bg-amber-50 text-amber-800 p-4 rounded-xl text-sm flex items-start gap-2">
-                                        <AlertCircle size={16} className="mt-0.5 shrink-0" />
-                                        <p>You are in <strong>Demo Mode</strong>. Click to login instantly without credentials.</p>
-                                    </div>
-                                    <button
-                                        onClick={() => handleDirectLogin(selectedRole)}
-                                        className="w-full py-4 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl transition-all shadow-lg flex items-center justify-center gap-2"
-                                    >
-                                        Enter as {roles.find(r => r.id === selectedRole)?.name}
-                                        <ArrowRight size={20} />
-                                    </button>
-                                </div>
-                            ) : (
-                                <form onSubmit={handleLogin} className="space-y-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                                        <div className="relative">
-                                            <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                                            <input
-                                                type="text"
-                                                value={email}
-                                                onChange={e => { setEmail(e.target.value); setLoginError(''); }}
-                                                placeholder={`admin@school.com`}
-                                                className="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
-                                                required
-                                            />
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                                        <div className="relative">
-                                            <KeyRound size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                                            <input
-                                                type={showPassword ? 'text' : 'password'}
-                                                value={password}
-                                                onChange={e => { setPassword(e.target.value); setLoginError(''); }}
-                                                placeholder="Enter your password"
-                                                className="w-full pl-11 pr-12 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
-                                                required
-                                            />
-                                            <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                                                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    {loginError && (
-                                        <div className="flex items-center gap-2 text-red-600 text-sm bg-red-50 p-3 rounded-xl">
-                                            <AlertCircle size={18} />
-                                            {loginError}
-                                        </div>
-                                    )}
-
-                                    <button
-                                        type="submit"
-                                        disabled={isLoading}
-                                        className="w-full py-4 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-50"
-                                    >
-                                        {isLoading ? (
-                                            <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
-                                        ) : (
-                                            <>
-                                                Login
-                                                <ArrowRight size={20} />
-                                            </>
-                                        )}
-                                    </button>
-                                </form>
-                            )}
-
-                            <div className="flex justify-center mt-6">
-                                <button onClick={() => { setSelectedRole(null); setLoginError(''); setEmail(''); setPassword(''); }} className="text-sm text-gray-500 hover:text-gray-700 font-medium flex items-center gap-1">
-                                    ← Select a different role
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                    <StaffLoginForm
+                        selectedRole={selectedRole}
+                        roles={roleDefinitions}
+                        isDemo={isDemo}
+                        email={email}
+                        setEmail={setEmail}
+                        password={password}
+                        setPassword={setPassword}
+                        showPassword={showPassword}
+                        setShowPassword={setShowPassword}
+                        loginError={loginError}
+                        setLoginError={setLoginError}
+                        isLoading={isLoading}
+                        onLogin={handleLogin}
+                        onDirectLogin={(role) => login(role, { id: 'demo', name: 'Demo User', role })}
+                        onBack={() => { setSelectedRole(null); resetForms(); }}
+                    />
                 )}
 
                 <div className="pt-12 pb-6 text-center z-10 w-full px-4">
@@ -647,94 +302,21 @@ export const LoginView = () => {
                 </div>
             </div>
 
-            {/* Forgot Password Modal */}
-            {showForgotPassword && (
-                <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => { setShowForgotPassword(false); setForgotSuccess(false); setForgotError(''); setForgotStudentNo(''); setForgotEmail(''); }}>
-                    <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 animate-in zoom-in-95 fade-in duration-300" onClick={e => e.stopPropagation()}>
-                        {!forgotSuccess ? (
-                            <>
-                                <div className="text-center mb-6">
-                                    <div className="h-14 w-14 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                        <KeyRound size={28} className="text-purple-600" />
-                                    </div>
-                                    <h2 className="text-2xl font-bold text-gray-900">Reset Password</h2>
-                                    <p className="text-sm text-gray-500 mt-2">Enter your Student Number and registered email to reset your password.</p>
-                                </div>
-
-                                <form onSubmit={handleForgotPassword} className="space-y-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Student Number</label>
-                                        <input
-                                            type="text"
-                                            value={forgotStudentNo}
-                                            onChange={e => { setForgotStudentNo(e.target.value); setForgotError(''); }}
-                                            placeholder="e.g. ST001"
-                                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                                            required
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Registered Parent Email</label>
-                                        <div className="relative">
-                                            <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                                            <input
-                                                type="email"
-                                                value={forgotEmail}
-                                                onChange={e => { setForgotEmail(e.target.value); setForgotError(''); }}
-                                                placeholder="parent@example.com"
-                                                className="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                                                required
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {forgotError && (
-                                        <div className="flex items-center gap-2 text-red-600 text-sm bg-red-50 p-3 rounded-xl">
-                                            <AlertCircle size={18} />
-                                            {forgotError}
-                                        </div>
-                                    )}
-
-                                    <button
-                                        type="submit"
-                                        disabled={isLoading}
-                                        className="w-full py-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-50"
-                                    >
-                                        {isLoading ? (
-                                            <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
-                                        ) : (
-                                            'Reset Password'
-                                        )}
-                                    </button>
-                                </form>
-
-                                <button onClick={() => { setShowForgotPassword(false); setForgotError(''); setForgotStudentNo(''); setForgotEmail(''); }} className="w-full mt-4 text-sm text-gray-500 hover:text-gray-700 font-medium">
-                                    Cancel
-                                </button>
-                            </>
-                        ) : (
-                            <div className="text-center">
-                                <div className="h-16 w-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                                    <CheckCircle size={32} className="text-green-600" />
-                                </div>
-                                <h2 className="text-2xl font-bold text-gray-900 mb-2">Password Reset!</h2>
-                                <p className="text-gray-600 mb-6">Your new password has been generated. Please save it securely.</p>
-                                <div className="bg-gray-100 rounded-xl p-4 mb-6">
-                                    <p className="text-xs text-gray-500 uppercase font-medium mb-1">New Password</p>
-                                    <p className="text-2xl font-mono font-bold text-gray-900 tracking-wider">{newPassword}</p>
-                                </div>
-                                <p className="text-xs text-gray-500 mb-6">In a real system, this password would be sent to your registered email.</p>
-                                <button
-                                    onClick={() => { setShowForgotPassword(false); setForgotSuccess(false); setForgotStudentNo(''); setForgotEmail(''); }}
-                                    className="w-full py-3 bg-gray-900 text-white font-bold rounded-xl hover:bg-gray-800 transition-colors"
-                                >
-                                    Done
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            )}
+            <ForgotPasswordModal
+                isOpen={showForgotPassword}
+                onClose={() => { setShowForgotPassword(false); setForgotSuccess(false); setForgotError(''); setForgotStudentNo(''); setForgotEmail(''); }}
+                studentNo={forgotStudentNo}
+                setStudentNo={setForgotStudentNo}
+                email={forgotEmail}
+                setEmail={setForgotEmail}
+                error={forgotError}
+                setError={setForgotError}
+                success={forgotSuccess}
+                setSuccess={setForgotSuccess}
+                newPassword={newPassword}
+                isLoading={isLoading}
+                onSubmit={handleForgotPassword}
+            />
         </div>
     );
 };
