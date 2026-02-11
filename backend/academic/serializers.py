@@ -1,4 +1,7 @@
 from django.db import transaction, models
+import logging
+
+logger = logging.getLogger(__name__)
 from rest_framework import serializers
 from users.models import User
 from .models import (
