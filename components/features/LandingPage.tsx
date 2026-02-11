@@ -189,17 +189,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ settings, stats }) => 
 
                     {/* Main Heading */}
                     <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white mb-4 tracking-tight">
-                        {settings.school_name || "Registra"}
+                        {settings.landing_hero_title || settings.school_name || "Registra"}
                     </h1>
 
-                    {/* Tagline */}
+                    {/* Tagline / Subtitle */}
                     <p className="text-xl md:text-2xl font-semibold italic mb-6" style={{ color: settings.landing_primary_color === '#1A3A5C' ? '#FBBF24' : '#FFFFFF' }}>
-                        {settings.school_tagline || "The operating system for modern schools."}
-                    </p>
-
-                    {/* Description */}
-                    <p className="text-lg text-gray-300 max-w-2xl mx-auto mb-10 leading-relaxed">
-                        A faith-based school dedicated to nurturing academic excellence, moral integrity, and godly character in every child.
+                        {settings.landing_hero_subtitle || settings.school_tagline || "The operating system for modern schools."}
                     </p>
 
                     {/* CTA Buttons */}
@@ -209,7 +204,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ settings, stats }) => 
                             className="px-8 py-4 text-lg font-bold rounded-lg transition-all shadow-lg flex items-center justify-center gap-2 group"
                             style={{ backgroundColor: settings.landing_primary_color === '#1A3A5C' ? '#FBBF24' : settings.landing_primary_color, color: settings.landing_primary_color === '#1A3A5C' ? '#1A3A5C' : '#FFFFFF' }}
                         >
-                            Apply for Admission
+                            {settings.landing_cta_text || "Apply for Admission"}
                             <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                         </Link>
                         <Link
