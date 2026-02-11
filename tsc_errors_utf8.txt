@@ -1,0 +1,272 @@
+﻿app/(dashboard)/dashboard/page.tsx(1,8): error TS1259: Module '"C:/Users/HomePC/Documents/school_manager02/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+app/(dashboard)/dashboard/page.tsx(2,29): error TS2307: Cannot find module '@/lib/api-server' or its corresponding type declarations.
+app/(dashboard)/dashboard/page.tsx(3,31): error TS2307: Cannot find module '@/components/features/DashboardView' or its corresponding type declarations.
+app/(dashboard)/dashboard/page.tsx(4,38): error TS2307: Cannot find module '@/components/features/TeacherDashboardView' or its corresponding type declarations.
+app/(dashboard)/dashboard/page.tsx(5,38): error TS2307: Cannot find module '@/components/features/StudentDashboardView' or its corresponding type declarations.
+app/(dashboard)/dashboard/page.tsx(6,36): error TS2307: Cannot find module '@/components/features/StaffDashboardView' or its corresponding type declarations.
+app/(dashboard)/dashboard/page.tsx(7,24): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+app/(dashboard)/dashboard/page.tsx(110,16): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+app/(dashboard)/dashboard/page.tsx(114,16): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+app/(dashboard)/dashboard/page.tsx(118,16): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+app/(dashboard)/dashboard/page.tsx(123,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(3,8): error TS1259: Module '"C:/Users/HomePC/Documents/school_manager02/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+components/features/dashboard/PlatformGovernanceTab.tsx(9,24): error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+components/features/dashboard/PlatformGovernanceTab.tsx(31,22): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(32,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(33,28): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(34,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(35,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(42,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(44,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(45,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(46,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(47,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(48,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(49,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(52,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(54,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(55,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(56,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(58,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(59,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(64,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(65,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(67,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(68,37): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(69,41): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(70,79): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(72,41): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(73,45): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(74,49): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(75,49): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(76,53): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(79,45): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(80,45): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(81,49): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(82,53): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(83,53): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(85,49): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(86,53): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(87,53): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(100,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(102,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(103,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(104,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(107,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(108,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(109,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(110,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(113,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(115,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(120,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(122,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(123,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(124,37): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(128,37): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(130,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(131,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(132,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(133,37): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(134,41): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(135,41): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(139,37): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(149,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(150,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(151,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(155,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(156,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(157,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(158,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(159,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(161,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(162,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(166,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(167,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(168,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(169,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(171,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(172,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(176,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(177,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(178,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(179,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/PlatformGovernanceTab.tsx(181,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(3,8): error TS1259: Module '"C:/Users/HomePC/Documents/school_manager02/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+components/features/dashboard/StrategicAnalyticsTab.tsx(26,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(27,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(28,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(36,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(38,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(39,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(40,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(41,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(43,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(44,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(45,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(46,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(50,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(51,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(52,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(54,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(55,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(56,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(57,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(61,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(62,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(63,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(65,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(66,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(67,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(68,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(74,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(76,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(77,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(78,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(79,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(80,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(82,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(83,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(86,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(87,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(87,26): error TS2322: Type '{ width: "100%"; height: "100%"; }' is not assignable to type 'Props & RefAttributes<HTMLDivElement>'.
+  Property 'children' is missing in type '{ width: "100%"; height: "100%"; }' but required in type 'Props'.
+components/features/dashboard/StrategicAnalyticsTab.tsx(88,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(89,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(90,37): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(91,41): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(92,41): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(95,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(96,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(97,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(98,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(102,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(109,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(110,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(111,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(112,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(113,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(115,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(116,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(119,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(120,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(120,26): error TS2322: Type '{ width: "100%"; height: "100%"; }' is not assignable to type 'Props & RefAttributes<HTMLDivElement>'.
+  Property 'children' is missing in type '{ width: "100%"; height: "100%"; }' but required in type 'Props'.
+components/features/dashboard/StrategicAnalyticsTab.tsx(121,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(122,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(123,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(124,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(125,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(129,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(136,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(137,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(138,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(139,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(140,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(142,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(143,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(146,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(147,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(147,26): error TS2322: Type '{ width: "100%"; height: "100%"; }' is not assignable to type 'Props & RefAttributes<HTMLDivElement>'.
+  Property 'children' is missing in type '{ width: "100%"; height: "100%"; }' but required in type 'Props'.
+components/features/dashboard/StrategicAnalyticsTab.tsx(148,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(149,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(160,41): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(163,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(168,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(170,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(171,37): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(172,37): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(173,37): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(181,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(182,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(183,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(184,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(186,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(187,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(188,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(189,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(191,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(192,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(193,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(195,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(196,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(197,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(202,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/dashboard/StrategicAnalyticsTab.tsx(203,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/DashboardView.tsx(3,8): error TS1259: Module '"C:/Users/HomePC/Documents/school_manager02/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+components/features/DashboardView.tsx(14,35): error TS2307: Cannot find module '@/lib/hooks/use-data' or its corresponding type declarations.
+components/features/DashboardView.tsx(15,26): error TS2307: Cannot find module '@/components/providers/toast-provider' or its corresponding type declarations.
+components/features/DashboardView.tsx(16,24): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+components/features/DashboardView.tsx(17,24): error TS2307: Cannot find module '@/lib/types' or its corresponding type declarations.
+components/features/DashboardView.tsx(18,23): error TS2307: Cannot find module '@/lib/api-client' or its corresponding type declarations.
+components/features/DashboardView.tsx(21,32): error TS6142: Module './dashboard/DashboardStats' was resolved to 'C:/Users/HomePC/Documents/school_manager02/components/features/dashboard/DashboardStats.tsx', but '--jsx' is not set.
+components/features/DashboardView.tsx(22,30): error TS6142: Module './dashboard/FinanceChart' was resolved to 'C:/Users/HomePC/Documents/school_manager02/components/features/dashboard/FinanceChart.tsx', but '--jsx' is not set.
+components/features/DashboardView.tsx(23,30): error TS6142: Module './dashboard/QuickActions' was resolved to 'C:/Users/HomePC/Documents/school_manager02/components/features/dashboard/QuickActions.tsx', but '--jsx' is not set.
+components/features/DashboardView.tsx(24,35): error TS6142: Module './dashboard/StudentPopulation' was resolved to 'C:/Users/HomePC/Documents/school_manager02/components/features/dashboard/StudentPopulation.tsx', but '--jsx' is not set.
+components/features/DashboardView.tsx(25,36): error TS6142: Module './dashboard/RecentTransactions' was resolved to 'C:/Users/HomePC/Documents/school_manager02/components/features/dashboard/RecentTransactions.tsx', but '--jsx' is not set.
+components/features/DashboardView.tsx(26,35): error TS6142: Module './dashboard/AdvancedAnalytics' was resolved to 'C:/Users/HomePC/Documents/school_manager02/components/features/dashboard/AdvancedAnalytics.tsx', but '--jsx' is not set.
+components/features/DashboardView.tsx(29,33): error TS6142: Module './dashboard/DashboardCmsTab' was resolved to 'C:/Users/HomePC/Documents/school_manager02/components/features/dashboard/DashboardCmsTab.tsx', but '--jsx' is not set.
+components/features/DashboardView.tsx(30,35): error TS6142: Module './dashboard/DashboardRolesTab' was resolved to 'C:/Users/HomePC/Documents/school_manager02/components/features/dashboard/DashboardRolesTab.tsx', but '--jsx' is not set.
+components/features/DashboardView.tsx(36,8): error TS6142: Module './dashboard/DashboardAdminTabs' was resolved to 'C:/Users/HomePC/Documents/school_manager02/components/features/dashboard/DashboardAdminTabs.tsx', but '--jsx' is not set.
+components/features/DashboardView.tsx(38,39): error TS6142: Module './dashboard/StrategicAnalyticsTab' was resolved to 'C:/Users/HomePC/Documents/school_manager02/components/features/dashboard/StrategicAnalyticsTab.tsx', but '--jsx' is not set.
+components/features/DashboardView.tsx(39,39): error TS6142: Module './dashboard/PlatformGovernanceTab' was resolved to 'C:/Users/HomePC/Documents/school_manager02/components/features/dashboard/PlatformGovernanceTab.tsx', but '--jsx' is not set.
+components/features/DashboardView.tsx(247,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/DashboardView.tsx(249,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/DashboardView.tsx(250,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/DashboardView.tsx(251,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/DashboardView.tsx(253,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/DashboardView.tsx(256,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/DashboardView.tsx(258,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/DashboardView.tsx(259,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/DashboardView.tsx(261,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/DashboardView.tsx(269,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/DashboardView.tsx(279,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/DashboardView.tsx(281,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/DashboardView.tsx(288,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/DashboardView.tsx(292,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/DashboardView.tsx(294,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/DashboardView.tsx(295,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/DashboardView.tsx(297,37): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/DashboardView.tsx(299,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/DashboardView.tsx(308,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/DashboardView.tsx(309,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/DashboardView.tsx(318,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/DashboardView.tsx(319,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/DashboardView.tsx(320,68): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/DashboardView.tsx(322,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/DashboardView.tsx(324,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/DashboardView.tsx(326,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/DashboardView.tsx(327,69): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/DashboardView.tsx(328,68): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/DashboardView.tsx(336,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/DashboardView.tsx(351,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/DashboardView.tsx(367,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/DashboardView.tsx(378,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/DashboardView.tsx(386,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/DashboardView.tsx(391,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/DashboardView.tsx(399,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+components/features/DashboardView.tsx(407,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+node_modules/next/dist/build/templates/app-page.d.ts(3,25): error TS2307: Cannot find module 'VAR_MODULE_GLOBAL_ERROR' or its corresponding type declarations.
+node_modules/next/dist/build/webpack-config.d.ts(10,104): error TS2694: Namespace '"C:/Users/HomePC/Documents/school_manager02/node_modules/next/dist/compiled/webpack/webpack".webpack' has no exported member 'RuleSetUseItem'.
+node_modules/next/dist/build/webpack/loaders/next-app-loader/index.d.ts(1,13): error TS2613: Module '"C:/Users/HomePC/Documents/school_manager02/node_modules/next/dist/compiled/webpack/webpack"' has no default export. Did you mean to use 'import { webpack } from "C:/Users/HomePC/Documents/school_manager02/node_modules/next/dist/compiled/webpack/webpack"' instead?
+node_modules/next/dist/client/components/error-boundary.d.ts(1,8): error TS1259: Module '"C:/Users/HomePC/Documents/school_manager02/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/next/dist/client/components/http-access-fallback/error-boundary.d.ts(11,8): error TS1259: Module '"C:/Users/HomePC/Documents/school_manager02/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/next/dist/client/components/layout-router.d.ts(2,8): error TS1259: Module '"C:/Users/HomePC/Documents/school_manager02/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/next/dist/client/with-router.d.ts(1,8): error TS1259: Module '"C:/Users/HomePC/Documents/school_manager02/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/next/dist/lib/metadata/metadata.d.ts(1,8): error TS1259: Module '"C:/Users/HomePC/Documents/school_manager02/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/next/dist/next-devtools/userspace/pages/pages-dev-overlay-setup.d.ts(1,8): error TS1259: Module '"C:/Users/HomePC/Documents/school_manager02/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/next/dist/server/app-render/entry-base.d.ts(1,114): error TS2307: Cannot find module 'react-server-dom-webpack/server' or its corresponding type declarations.
+node_modules/next/dist/server/app-render/entry-base.d.ts(2,27): error TS2307: Cannot find module 'react-server-dom-webpack/static' or its corresponding type declarations.
+node_modules/next/dist/server/web/spec-extension/adapters/headers.d.ts(39,16): error TS2304: Cannot find name 'HeadersIterator'.
+node_modules/next/dist/server/web/spec-extension/adapters/headers.d.ts(40,13): error TS2304: Cannot find name 'HeadersIterator'.
+node_modules/next/dist/server/web/spec-extension/adapters/headers.d.ts(41,15): error TS2304: Cannot find name 'HeadersIterator'.
+node_modules/next/dist/server/web/spec-extension/adapters/headers.d.ts(42,26): error TS2304: Cannot find name 'HeadersIterator'.
+node_modules/next/dist/shared/lib/app-router-context.shared-runtime.d.ts(4,8): error TS1259: Module '"C:/Users/HomePC/Documents/school_manager02/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/next/dist/shared/lib/app-router-types.d.ts(7,13): error TS1259: Module '"C:/Users/HomePC/Documents/school_manager02/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/next/dist/shared/lib/head-manager-context.shared-runtime.d.ts(1,8): error TS1259: Module '"C:/Users/HomePC/Documents/school_manager02/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/next/dist/shared/lib/image-config-context.shared-runtime.d.ts(1,8): error TS1259: Module '"C:/Users/HomePC/Documents/school_manager02/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/next/dist/shared/lib/loadable-context.shared-runtime.d.ts(1,8): error TS1259: Module '"C:/Users/HomePC/Documents/school_manager02/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/next/dist/shared/lib/loadable.shared-runtime.d.ts(21,8): error TS1259: Module '"C:/Users/HomePC/Documents/school_manager02/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/next/dist/shared/lib/router-context.shared-runtime.d.ts(1,8): error TS1259: Module '"C:/Users/HomePC/Documents/school_manager02/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/next/dist/shared/lib/server-inserted-html.shared-runtime.d.ts(1,8): error TS1259: Module '"C:/Users/HomePC/Documents/school_manager02/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/next/dist/shared/lib/utils.d.ts(10,13): error TS1192: Module '"fs"' has no default export.

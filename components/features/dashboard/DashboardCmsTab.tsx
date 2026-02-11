@@ -8,7 +8,8 @@
 import React from 'react';
 import {
     Save, Eye, Trash2, Plus, Upload,
-    Palette, Type, FileText, Settings, CheckCircle
+    Palette, Type, FileText, Settings, CheckCircle,
+    Heart, GraduationCap
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,11 +25,19 @@ interface DashboardCmsTabProps {
     setNewFeature: (v: string) => void;
     addFeature: () => void;
     removeFeature: (index: number) => void;
+    handleCoreValueChange: (index: number, field: keyof Types.CoreValue, value: string) => void;
+    addCoreValue: () => void;
+    removeCoreValue: (index: number) => void;
+    handleAcademicProgramChange: (index: number, field: keyof Types.AcademicProgram, value: any) => void;
+    addAcademicProgram: () => void;
+    removeAcademicProgram: (index: number) => void;
 }
 
 export const DashboardCmsTab: React.FC<DashboardCmsTabProps> = ({
     editedSettings, handleChange, handleSaveSettings, handleImageUpload,
-    features, newFeature, setNewFeature, addFeature, removeFeature
+    features, newFeature, setNewFeature, addFeature, removeFeature,
+    handleCoreValueChange, addCoreValue, removeCoreValue,
+    handleAcademicProgramChange, addAcademicProgram, removeAcademicProgram
 }) => (
     <div className="space-y-8">
         {/* Save Bar */}
@@ -152,21 +161,178 @@ export const DashboardCmsTab: React.FC<DashboardCmsTabProps> = ({
                 </div>
             </div>
 
-            {/* About Section */}
+            {/* About & Mission Section */}
             <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
                 <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
                     <FileText size={18} className="text-brand-500" />
-                    About Section
+                    About & Mission
                 </h3>
-                <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">About Text</label>
-                    <textarea
-                        value={editedSettings.landing_about_text}
-                        onChange={(e) => handleChange('landing_about_text', e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none"
-                        rows={6}
-                        placeholder="Tell visitors about your school..."
-                    />
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-2">About Our School</label>
+                        <textarea
+                            value={editedSettings.landing_about_text}
+                            onChange={(e) => handleChange('landing_about_text', e.target.value)}
+                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none"
+                            rows={4}
+                            placeholder="Tell visitors about your school..."
+                        />
+                    </div>
+                    {/* Add Mission/Vision if fields exist in Settings, or use placeholder logic */}
+                    <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-2">School Tagline</label>
+                        <Input
+                            value={editedSettings.school_tagline}
+                            onChange={(e) => handleChange('school_tagline', e.target.value)}
+                            placeholder="Nurturing Excellence"
+                        />
+                    </div>
+                </div>
+            </div>
+
+            {/* Core Values */}
+            <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 lg:col-span-2">
+                <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                        <Heart size={18} className="text-brand-500" />
+                        Core Values
+                    </h3>
+                    <Button onClick={addCoreValue} size="sm" variant="outline" className="flex items-center gap-2">
+                        <Plus size={14} /> Add Value
+                    </Button>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {editedSettings.landing_core_values?.map((value, index) => (
+                        <div key={index} className="p-4 bg-gray-50 rounded-2xl relative border border-gray-100 group">
+                            <button
+                                onClick={() => removeCoreValue(index)}
+                                className="absolute -top-2 -right-2 p-1.5 bg-white shadow-sm border border-gray-200 text-gray-400 hover:text-red-500 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                                <Trash2 size={14} />
+                            </button>
+                            <div className="space-y-3">
+                                <div>
+                                    <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Title</label>
+                                    <Input
+                                        value={value.title}
+                                        onChange={(e) => handleCoreValueChange(index, 'title', e.target.value)}
+                                        placeholder="e.g. Excellence"
+                                        className="bg-white"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Icon (Lucide name)</label>
+                                    <Input
+                                        value={value.icon}
+                                        onChange={(e) => handleCoreValueChange(index, 'icon', e.target.value)}
+                                        placeholder="Heart, Star, Shield..."
+                                        className="bg-white"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Description</label>
+                                    <textarea
+                                        value={value.description}
+                                        onChange={(e) => handleCoreValueChange(index, 'description', e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none bg-white font-medium"
+                                        rows={3}
+                                        placeholder="Brief description..."
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                    {(editedSettings.landing_core_values?.length || 0) === 0 && (
+                        <div className="col-span-full py-12 text-center border-2 border-dashed border-gray-100 rounded-3xl text-gray-400">
+                            No core values added yet
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Academic Programs */}
+            <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 lg:col-span-2">
+                <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                        <GraduationCap size={18} className="text-brand-500" />
+                        Academic Divisions
+                    </h3>
+                    <Button onClick={addAcademicProgram} size="sm" variant="outline" className="flex items-center gap-2">
+                        <Plus size={14} /> Add Division
+                    </Button>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {editedSettings.landing_academic_programs?.map((program, index) => (
+                        <div key={index} className="bg-gray-50 rounded-2xl overflow-hidden border border-gray-100 group relative">
+                            <button
+                                onClick={() => removeAcademicProgram(index)}
+                                className="absolute top-2 right-2 z-10 p-1.5 bg-white/90 backdrop-blur shadow-sm border border-gray-200 text-gray-400 hover:text-red-500 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                                <Trash2 size={14} />
+                            </button>
+                            <div className="p-4 space-y-3">
+                                <div className="h-32 bg-gray-200 rounded-xl overflow-hidden mb-3 relative group/img">
+                                    {program.image ? (
+                                        <img src={program.image} alt={program.title} className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className="w-full h-full flex flex-col items-center justify-center text-gray-400">
+                                            <Upload size={24} className="mb-2" />
+                                            <span className="text-[10px] font-bold">No Image</span>
+                                        </div>
+                                    )}
+                                    <label className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity cursor-pointer">
+                                        <Upload size={20} className="text-white" />
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            className="hidden"
+                                            onChange={(e) => {
+                                                const file = e.target.files?.[0];
+                                                if (file) {
+                                                    const reader = new FileReader();
+                                                    reader.onloadend = () => handleAcademicProgramChange(index, 'image', reader.result as string);
+                                                    reader.readAsDataURL(file);
+                                                }
+                                            }}
+                                        />
+                                    </label>
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Division Name</label>
+                                    <Input
+                                        value={program.title}
+                                        onChange={(e) => handleAcademicProgramChange(index, 'title', e.target.value)}
+                                        placeholder="e.g. Primary School"
+                                        className="bg-white"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Age Range</label>
+                                    <Input
+                                        value={program.age_range}
+                                        onChange={(e) => handleAcademicProgramChange(index, 'age_range', e.target.value)}
+                                        placeholder="e.g. Ages 6 - 11"
+                                        className="bg-white"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Description</label>
+                                    <textarea
+                                        value={program.description}
+                                        onChange={(e) => handleAcademicProgramChange(index, 'description', e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none bg-white font-medium"
+                                        rows={3}
+                                        placeholder="Program details..."
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                    {(editedSettings.landing_academic_programs?.length || 0) === 0 && (
+                        <div className="col-span-full py-12 text-center border-2 border-dashed border-gray-100 rounded-3xl text-gray-400">
+                            No academic divisions added yet
+                        </div>
+                    )}
                 </div>
             </div>
 

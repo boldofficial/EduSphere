@@ -130,10 +130,45 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         handleChange('landing_features', features.filter((_, i) => i !== index).join(', '));
     };
 
+    // CMS Handlers (Core Values & Academic Programs)
+    const handleCoreValueChange = (index: number, field: keyof Types.CoreValue, value: string) => {
+        const updated = [...(editedSettings.landing_core_values || [])];
+        if (!updated[index]) return;
+        updated[index] = { ...updated[index], [field]: value };
+        handleChange('landing_core_values', updated);
+    };
+
+    const addCoreValue = () => {
+        const updated = [...(editedSettings.landing_core_values || []), { title: 'New Value', description: '', icon: 'Heart' }];
+        handleChange('landing_core_values', updated);
+    };
+
+    const removeCoreValue = (index: number) => {
+        const updated = (editedSettings.landing_core_values || []).filter((_, i) => i !== index);
+        handleChange('landing_core_values', updated);
+    };
+
+    const handleAcademicProgramChange = (index: number, field: keyof Types.AcademicProgram, value: any) => {
+        const updated = [...(editedSettings.landing_academic_programs || [])];
+        if (!updated[index]) return;
+        updated[index] = { ...updated[index], [field]: value };
+        handleChange('landing_academic_programs', updated);
+    };
+
+    const addAcademicProgram = () => {
+        const updated = [...(editedSettings.landing_academic_programs || []), { title: 'New Division', age_range: '', description: '', image: null }];
+        handleChange('landing_academic_programs', updated);
+    };
+
+    const removeAcademicProgram = (index: number) => {
+        const updated = (editedSettings.landing_academic_programs || []).filter((_, i) => i !== index);
+        handleChange('landing_academic_programs', updated);
+    };
+
     // Super Admin Actions
     const handleApproveSchool = async (schoolId: number) => {
         try {
-            await apiClient.patch(`/schools/management/${schoolId}/`, { action: 'approve' });
+            await apiClient.patch(`schools/management/${schoolId}/`, { action: 'approve' });
             addToast('School approved and activated!', 'success');
             window.location.reload();
         } catch { addToast('Approval failed', 'error'); }
@@ -141,14 +176,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
     const handleSavePlatformSettings = async () => {
         try {
-            await apiClient.put('/schools/platform-settings/', editedPlatformSettings);
+            await apiClient.put('schools/platform-settings/', editedPlatformSettings);
             addToast('Platform settings updated!', 'success');
         } catch { addToast('Update failed', 'error'); }
     };
 
     const handleUpdateSchool = async (schoolId: number, data: any) => {
         try {
-            await apiClient.put(`/schools/management/${schoolId}/`, data);
+            await apiClient.put(`schools/management/${schoolId}/`, data);
             addToast('School details updated!', 'success');
             window.location.reload();
         } catch { addToast('Update failed', 'error'); }
@@ -343,6 +378,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     setNewFeature={setNewFeature}
                     addFeature={addFeature}
                     removeFeature={removeFeature}
+                    handleCoreValueChange={handleCoreValueChange}
+                    addCoreValue={addCoreValue}
+                    removeCoreValue={removeCoreValue}
+                    handleAcademicProgramChange={handleAcademicProgramChange}
+                    addAcademicProgram={addAcademicProgram}
+                    removeAcademicProgram={removeAcademicProgram}
                 />
             )}
 
