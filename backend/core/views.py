@@ -22,6 +22,10 @@ from .serializers import (
 from emails.utils import send_template_email
 from .pagination import StandardPagination
 from .cache_utils import CachingMixin
+from schools.models import SchoolSettings
+from academic.serializers import Base64ImageField
+
+SETTINGS_VERSION = "1.0.2"
 
 class SettingsView(APIView):
     # Allow Any for now to prevent login page blocks if settings are fetched globally
@@ -121,6 +125,7 @@ class SettingsView(APIView):
                 'role_permissions': settings_obj.role_permissions,
                 'subscription_status': sub_status,
                 'school_domain': school.domain,
+                'api_version': SETTINGS_VERSION,
             })
         except Exception as e:
             # Fallback to demo if anything goes wrong during GET
@@ -140,14 +145,15 @@ class SettingsView(APIView):
 
         school = self.get_school(request)
         if not school:
+            logger.error("[SETTINGS_PUT] School contexts not found")
             return Response({'error': 'School not found'}, status=404)
 
+        logger.info(f"[SETTINGS_PUT] Updating settings for school: {school.domain}")
         try:
-            from schools.models import SchoolSettings
-            from academic.serializers import Base64ImageField
-            
-            settings_obj, _ = SchoolSettings.objects.get_or_create(school=school)
             data = request.data
+            settings_obj, created = SchoolSettings.objects.get_or_create(school=school)
+            if created:
+                logger.info(f"[SETTINGS_PUT] Created new settings object for {school.domain}")
             
             # Helper to handle base64 images for CharFields (e.g. school.logo)
             def process_base64(val):
