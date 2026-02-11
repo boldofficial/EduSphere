@@ -35,7 +35,10 @@ import {
     SchoolManagementModal
 } from './dashboard/DashboardAdminTabs';
 
-type TabType = 'overview' | 'cms' | 'roles' | 'health' | 'schools' | 'platform_settings';
+import { StrategicAnalyticsTab } from './dashboard/StrategicAnalyticsTab';
+import { PlatformGovernanceTab } from './dashboard/PlatformGovernanceTab';
+
+type TabType = 'overview' | 'cms' | 'roles' | 'health' | 'schools' | 'platform_settings' | 'analytics_strategic' | 'governance';
 
 interface UserSubscription {
     plan_name: string;
@@ -48,6 +51,8 @@ interface UserProfile {
     username: string;
     role: string;
     subscription?: UserSubscription;
+    analyticsData?: any;
+    governanceData?: any;
 }
 
 interface DashboardViewProps {
@@ -228,8 +233,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         { id: 'overview' as TabType, name: 'Executive Overview', icon: TrendingUp },
         { id: 'cms' as TabType, name: 'Website CMS', icon: Globe, module: 'cms' },
         { id: 'roles' as TabType, name: 'Roles & Access', icon: Lock },
-        { id: 'health' as TabType, name: 'System Health', icon: Database },
         { id: 'schools' as TabType, name: 'Schools Management', icon: ShieldCheck, superAdminOnly: true },
+        { id: 'analytics_strategic' as TabType, name: 'Strategic Analytics', icon: TrendingUp, superAdminOnly: true },
+        { id: 'governance' as TabType, name: 'Governance & Logs', icon: ShieldCheck, superAdminOnly: true },
+        { id: 'health' as TabType, name: 'System Health', icon: Database },
         { id: 'platform_settings' as TabType, name: 'Platform Settings', icon: Settings, superAdminOnly: true },
     ].filter(t => {
         if (t.superAdminOnly && user?.role !== 'SUPER_ADMIN') return false;
@@ -237,25 +244,29 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     });
 
     return (
-        <div className="space-y-8">
+        <div className={`space-y-8 ${user?.role === 'SUPER_ADMIN' ? 'p-1 bg-gradient-to-br from-indigo-50/50 via-white to-purple-50/50 rounded-[40px] border border-indigo-100 shadow-xl shadow-indigo-100/20' : ''}`}>
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-6 pt-6">
                 <div>
-                    <h1 className="text-3xl font-black text-gray-900 uppercase">Executive Dashboard</h1>
-                    <p className="text-gray-500 font-medium">Overview for {settings.current_session} • {settings.current_term}</p>
+                    <h1 className="text-4xl font-black text-gray-900 uppercase tracking-tighter">
+                        {user?.role === 'SUPER_ADMIN' ? (
+                            <span className="bg-gradient-to-r from-brand-600 to-indigo-600 bg-clip-text text-transparent">Platform Director</span>
+                        ) : 'Executive Dashboard'}
+                    </h1>
+                    <p className="text-gray-500 font-bold uppercase text-[10px] tracking-[0.2em]">{settings.current_session} • {settings.current_term}</p>
                 </div>
                 <div className="w-full md:w-auto overflow-x-auto scrollbar-hide -mx-1 px-1">
-                    <div className="flex bg-gray-100 p-1 rounded-xl w-max min-w-full md:min-w-0">
+                    <div className="flex bg-gray-200/50 p-1.5 rounded-2xl w-max min-w-full md:min-w-0 border border-gray-100 shadow-inner">
                         {tabs.map(tab => (
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-lg transition-all whitespace-nowrap ${activeTab === tab.id
-                                    ? 'bg-white shadow text-gray-900'
-                                    : 'text-gray-500 hover:text-gray-700'
+                                className={`flex items-center gap-2 px-5 py-2.5 text-[11px] font-black uppercase tracking-wider rounded-xl transition-all duration-300 whitespace-nowrap ${activeTab === tab.id
+                                    ? 'bg-white shadow-lg shadow-brand-500/10 text-brand-600 ring-1 ring-brand-100'
+                                    : 'text-gray-500 hover:text-brand-500 hover:bg-white/50'
                                     }`}
                             >
-                                <tab.icon size={16} />
+                                <tab.icon size={14} strokeWidth={3} />
                                 {tab.name}
                             </button>
                         ))}
@@ -367,6 +378,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <DashboardSchoolsTab
                     schools={schools}
                     onSelectSchool={(school) => { setSelectedSchool(school); setIsSchoolModalOpen(true); }}
+                />
+            )}
+
+            {/* Strategic Analytics Tab */}
+            {activeTab === 'analytics_strategic' && (
+                <StrategicAnalyticsTab data={user?.analyticsData} />
+            )}
+
+            {/* Platform Governance Tab */}
+            {activeTab === 'governance' && (
+                <PlatformGovernanceTab
+                    activities={user?.governanceData?.activities || []}
+                    announcements={user?.governanceData?.announcements || []}
                 />
             )}
 

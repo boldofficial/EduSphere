@@ -41,7 +41,7 @@ export default async function DashboardPage() {
         return Array.isArray(data) ? data : [];
     };
 
-    if (currentRole === 'super_admin' || currentRole === 'admin' || currentRole === 'staff') { // Staff might need some data too
+    if (currentRole === 'super_admin' || currentRole === 'admin' || currentRole === 'staff') {
         try {
             const results = await Promise.all([
                 fetchServer('/students/').catch(() => []),
@@ -53,9 +53,11 @@ export default async function DashboardPage() {
                 fetchServer('/classes/').catch(() => []),
                 fetchServer('/settings/').catch(() => Utils.INITIAL_SETTINGS),
                 fetchServer('/schools/announcements/').catch(() => []),
-                // Super Admin specific
+                // Super Admin specific fetches
                 currentRole === 'super_admin' ? fetchServer('/schools/management/').catch(() => []) : Promise.resolve([]),
                 currentRole === 'super_admin' ? fetchServer('/schools/platform-settings/').catch(() => null) : Promise.resolve(null),
+                currentRole === 'super_admin' ? fetchServer('/schools/analytics/strategic/').catch(() => null) : Promise.resolve(null),
+                currentRole === 'super_admin' ? fetchServer('/schools/governance/').catch(() => null) : Promise.resolve(null),
             ]);
 
             students = normalize(results[0]);
@@ -65,14 +67,21 @@ export default async function DashboardPage() {
             expenses = normalize(results[4]);
             fees = normalize(results[5]);
             classes = normalize(results[6]);
-            settings = results[7]; // This is an object
+            settings = results[7];
             announcements = normalize(results[8]);
             schools = normalize(results[9]);
             platformSettings = results[10];
+
+            // Inject extra data for Super Admin features
+            if (currentRole === 'super_admin') {
+                (user as any).analyticsData = results[11];
+                (user as any).governanceData = results[12];
+            }
         } catch (error) {
             console.error('Error fetching dashboard data:', error);
         }
-    } else if (currentRole === 'teacher') {
+    }
+    else if (currentRole === 'teacher') {
         // Teachers need classes, students...
         try {
             const results = await Promise.all([
