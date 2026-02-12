@@ -105,12 +105,19 @@ export async function POST(request: NextRequest) {
             name: error?.name,
             message: error?.message,
             stack: error?.stack,
-            cause: error?.cause
+            cause: error?.cause,
+            code: error?.code
         });
+
+        // Try to determine if it's a connection error
+        const isConnectionError = error?.code === 'ECONNREFUSED' || error?.message?.includes('fetch failed');
+
         return NextResponse.json({
-            error: 'Internal Server Error',
+            error: isConnectionError ? 'Backend Connection Error' : 'Internal Server Error',
             details: error?.message,
-            django_url: process.env.DJANGO_API_URL
+            code: error?.code,
+            django_url: process.env.DJANGO_API_URL,
+            timestamp: new Date().toISOString()
         }, { status: 500 });
     }
 }
