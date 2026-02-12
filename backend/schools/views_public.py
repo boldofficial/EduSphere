@@ -136,3 +136,25 @@ class RegisterSchoolView(APIView):
         except Exception as e:
             logger.exception(f"School registration failed: {e}")
             raise ValidationError({'detail': 'Registration failed. Please try again.'})
+
+from .models import DemoRequest
+from .serializers import DemoRequestSerializer
+
+class DemoRequestViewSet(APIView):
+    """
+    Handle demo requests from the landing page.
+    Public access for creation.
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = DemoRequestSerializer(data=request.data)
+        if serializer.is_valid():
+            demo_request = serializer.save()
+            
+            # TODO: Trigger notification to admin (email/in-app)
+            # For now, just log it
+            logger.info(f"New Demo Request: {demo_request}")
+            
+            return Response({'success': True, 'message': 'Request submitted successfully'}, status=201)
+        return Response(serializer.errors, status=400)

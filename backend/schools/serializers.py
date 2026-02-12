@@ -68,3 +68,11 @@ class RegisterSchoolSerializer(serializers.Serializer):
     payment_method = serializers.CharField(max_length=20, default='paystack')
     payment_proof = serializers.CharField(required=False, allow_blank=True)
 
+from .models import DemoRequest
+
+class DemoRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DemoRequest
+        fields = ['id', 'name', 'email', 'phone', 'school_name', 'role', 'status', 'created_at']
+        read_only_fields = ['id', 'status', 'created_at']
+

@@ -6,6 +6,7 @@ from .views import (
     GlobalSearchView, MaintenanceModeView, PlatformModulesView, ModuleToggleView,
     VerifySchoolSlugView, PlatformSettingsView
 )
+from .views_public import DemoRequestViewSet
 
 urlpatterns = [
     path('verify-slug/<str:slug>/', VerifySchoolSlugView.as_view(), name='verify-slug'),
@@ -28,4 +29,5 @@ urlpatterns = [
     path('management/', SchoolManagementView.as_view(), name='school-management'),
     path('management/<int:pk>/', SchoolManagementView.as_view(), name='school-detail'),
     path('platform-settings/', PlatformSettingsView.as_view(), name='platform-settings'),
+    path('demo-request/', DemoRequestViewSet.as_view(), name='demo-request'),
 ]

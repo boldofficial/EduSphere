@@ -222,3 +222,36 @@ class PlatformSettings(models.Model):
     class Meta:
         verbose_name = "Platform Settings"
         verbose_name_plural = "Platform Settings"
+
+class DemoRequest(models.Model):
+    STATUS_CHOICES = (
+        ('pending', 'Pending Review'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    )
+    
+    name = models.CharField(max_length=255)
+    email = models.EmailField()
+    phone = models.CharField(max_length=20, null=True, blank=True)
+    school_name = models.CharField(max_length=255)
+    role = models.CharField(max_length=100, null=True, blank=True)
+    
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    
+    # Internal notes
+    admin_notes = models.TextField(null=True, blank=True)
+    # Using string reference to avoid circular import if User is in different app
+    approved_by = models.ForeignKey('users.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_demos')
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.email} - {self.school_name} ({self.status})"
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['email']),
+            models.Index(fields=['status']),
+            models.Index(fields=['created_at']),
+        ]

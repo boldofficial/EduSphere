@@ -92,7 +92,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onOpenDemoModal }) => 
                                 className="px-8 py-4 bg-white border-2 border-brand-200 text-brand-700 text-lg font-bold rounded-2xl hover:border-brand-600 hover:bg-brand-50 transition-all duration-300 flex items-center justify-center gap-2 group"
                             >
                                 <Rocket size={20} className="text-brand-600 group-hover:animate-bounce" />
-                                Try Live Demo
+                                Request Demo
                             </button>
                             <Link
                                 href="#demo"
