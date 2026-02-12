@@ -53,6 +53,19 @@ class Base64ImageField(serializers.CharField):
                  
         return super().to_internal_value(data)
 
+class GradeRangeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GradeRange
+        fields = ['grade', 'min_score', 'max_score', 'remark', 'gpa_point']
+        read_only_fields = ('school',)
+
+class GradingSchemeSerializer(serializers.ModelSerializer):
+    ranges = GradeRangeSerializer(many=True, read_only=True)
+    class Meta:
+        model = GradingScheme
+        fields = ['id', 'name', 'is_default', 'description', 'ranges']
+        read_only_fields = ('school',)
+
 class SubjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subject
@@ -446,18 +459,6 @@ class ConductEntrySerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ('school', 'recorded_by')
 
-class GradeRangeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = GradeRange
-        fields = ['grade', 'min_score', 'max_score', 'remark', 'gpa_point']
-        read_only_fields = ('school',)
-
-class GradingSchemeSerializer(serializers.ModelSerializer):
-    ranges = GradeRangeSerializer(many=True, read_only=True)
-    class Meta:
-        model = GradingScheme
-        fields = ['id', 'name', 'is_default', 'description', 'ranges']
-        read_only_fields = ('school',)
 
 class PeriodSerializer(serializers.ModelSerializer):
     class Meta:
