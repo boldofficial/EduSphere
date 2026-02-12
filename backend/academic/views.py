@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
 from django.db import transaction, models
 from django.http import FileResponse
-from .utils import BroadsheetPDFGenerator
+from .utils import BroadsheetPDFGenerator, ReportCardPDFGenerator
 
 
 class IsAdminOrReadOnly(permissions.BasePermission):
