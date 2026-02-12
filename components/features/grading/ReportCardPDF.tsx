@@ -30,7 +30,7 @@ export const ReportCardPDF: React.FC<ReportCardPDFProps> = ({
             let filename = 'ReportCard.pdf';
 
             if (reportId) {
-                url = `report-cards/${reportId}/export-pdf/`;
+                url = `reports/${reportId}/export-pdf/`;
                 filename = `ReportCard_${studentName || reportId}.pdf`;
             } else if (classId && session && term) {
                 url = `classes/${classId}/bulk-export-report-cards-pdf/`;
