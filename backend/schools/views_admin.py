@@ -378,3 +378,65 @@ class PlatformSettingsView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=400)
+
+
+class AdminDemoRequestView(APIView):
+    """Manage demo requests (Super Admin only)."""
+    permission_classes = [IsAuthenticated]
+
+    def check_super_admin(self, request):
+        if request.user.role != 'SUPER_ADMIN':
+            raise PermissionDenied('Only Super Admins can access this resource')
+
+    def get(self, request):
+        """List all demo requests."""
+        from .models import DemoRequest
+        from .serializers import DemoRequestSerializer
+        
+        self.check_super_admin(request)
+        requests = DemoRequest.objects.all().order_by('-created_at')
+        serializer = DemoRequestSerializer(requests, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, pk=None):
+        """Approve a demo request."""
+        from .models import DemoRequest
+        from emails.utils import send_template_email
+        
+        self.check_super_admin(request)
+        
+        if not pk:
+            raise ValidationError({'detail': 'Request ID is required'})
+            
+        try:
+            demo_req = DemoRequest.objects.get(pk=pk)
+        except DemoRequest.DoesNotExist:
+            raise NotFound('Demo request not found')
+            
+        if demo_req.status == 'approved':
+            return Response({'message': 'Request already approved'}, status=200)
+            
+        # Approve and Send Email
+        demo_req.status = 'approved'
+        demo_req.approved_by = request.user
+        demo_req.save()
+        
+        # Send Email
+        context = {
+            'name': demo_req.name,
+            'email': demo_req.email,
+            'school_name': demo_req.school_name,
+            'login_url': "https://demo.myregistra.net/login",
+            'username': "demo_admin",
+            'password': "demo_pressure_2025"
+        }
+        
+        email_sent = False
+        if send_template_email:
+            email_sent = send_template_email('demo-approved', demo_req.email, context)
+            
+        return Response({
+            'success': True,
+            'message': 'Request approved and email sent' if email_sent else 'Request approved but email failed',
+            'email_sent': email_sent
+        })

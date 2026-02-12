@@ -4,7 +4,7 @@ from .views import (
     SchoolRevenueView, RecordPaymentView, PlanManagementView, SystemHealthView,
     StrategicAnalyticsView, PlatformGovernanceView, UserAnnouncementsView,
     GlobalSearchView, MaintenanceModeView, PlatformModulesView, ModuleToggleView,
-    VerifySchoolSlugView, PlatformSettingsView
+    VerifySchoolSlugView, PlatformSettingsView, AdminDemoRequestView
 )
 from .views_public import DemoRequestViewSet
 
@@ -30,4 +30,7 @@ urlpatterns = [
     path('management/<int:pk>/', SchoolManagementView.as_view(), name='school-detail'),
     path('platform-settings/', PlatformSettingsView.as_view(), name='platform-settings'),
     path('demo-request/', DemoRequestViewSet.as_view(), name='demo-request'),
+    # Super Admin Demo Management
+    path('admin/demo-requests/', AdminDemoRequestView.as_view(), name='admin-demo-list'),
+    path('admin/demo-requests/<int:pk>/approve/', AdminDemoRequestView.as_view(), name='admin-demo-approve'),
 ]

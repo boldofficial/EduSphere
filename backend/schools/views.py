@@ -23,7 +23,9 @@ from .views_admin import (
     SchoolRevenueView,
     RecordPaymentView,
     PlanManagementView,
+    PlanManagementView,
     PlatformSettingsView,
+    AdminDemoRequestView,
 )
 
 # Analytics & monitoring views
@@ -48,4 +50,5 @@ __all__ = [
     'SystemHealthView', 'StrategicAnalyticsView',
     'GlobalSearchView', 'MaintenanceModeView',
     'PlatformGovernanceView', 'UserAnnouncementsView',
+    'AdminDemoRequestView',
 ]

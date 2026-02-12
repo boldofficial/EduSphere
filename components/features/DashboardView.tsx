@@ -37,8 +37,9 @@ import {
 
 import { StrategicAnalyticsTab } from './dashboard/StrategicAnalyticsTab';
 import { PlatformGovernanceTab } from './dashboard/PlatformGovernanceTab';
+import { DashboardDemoRequestsTab } from './dashboard/DashboardDemoRequestsTab';
 
-type TabType = 'overview' | 'cms' | 'roles' | 'health' | 'schools' | 'platform_settings' | 'analytics_strategic' | 'governance';
+type TabType = 'overview' | 'cms' | 'roles' | 'health' | 'schools' | 'platform_settings' | 'analytics_strategic' | 'governance' | 'demo_requests';
 
 interface UserSubscription {
     plan_name: string;
@@ -272,6 +273,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         { id: 'governance' as TabType, name: 'Governance & Logs', icon: ShieldCheck, superAdminOnly: true },
         { id: 'health' as TabType, name: 'System Health', icon: Database },
         { id: 'platform_settings' as TabType, name: 'Platform Settings', icon: Settings, superAdminOnly: true },
+        { id: 'demo_requests' as TabType, name: 'Demo Requests', icon: Users, superAdminOnly: true },
     ].filter(t => {
         if (t.superAdminOnly && user?.role !== 'SUPER_ADMIN') return false;
         return true;
@@ -420,6 +422,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     setEditedPlatformSettings={setEditedPlatformSettings}
                     handleSavePlatformSettings={handleSavePlatformSettings}
                 />
+            )}
+
+            {/* Demo Requests Tab */}
+            {activeTab === 'demo_requests' && (
+                <DashboardDemoRequestsTab />
             )}
 
             {/* School Management Modal */}
