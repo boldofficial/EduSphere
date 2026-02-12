@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { getCookieOptions, getDeleteOptions } from '@/lib/auth-utils';
 
 const DJANGO_API_URL = process.env.DJANGO_API_URL || 'http://127.0.0.1:8000';
 
@@ -32,8 +33,9 @@ export async function POST(request: NextRequest) {
             // Refresh token is likely expired or invalid
             const res = NextResponse.json({ error: 'Token refresh failed' }, { status: 401 });
             // Clear invalid cookies
-            res.cookies.delete('access_token');
-            res.cookies.delete('refresh_token');
+            const deleteOptions = getDeleteOptions();
+            res.cookies.set('access_token', '', { ...deleteOptions, maxAge: 0 });
+            res.cookies.set('refresh_token', '', { ...deleteOptions, maxAge: 0 });
             return res;
         }
 
@@ -42,23 +44,11 @@ export async function POST(request: NextRequest) {
         const res = NextResponse.json({ success: true });
 
         // Update access token cookie
-        res.cookies.set('access_token', data.access, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            maxAge: 60 * 60, // 1 hour
-            path: '/',
-        });
+        res.cookies.set('access_token', data.access, getCookieOptions('access'));
 
         // Update refresh token if rotated by backend
         if (data.refresh) {
-            res.cookies.set('refresh_token', data.refresh, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'lax',
-                maxAge: 60 * 60 * 24 * 7, // 7 days
-                path: '/',
-            });
+            res.cookies.set('refresh_token', data.refresh, getCookieOptions('refresh'));
         }
 
         return res;

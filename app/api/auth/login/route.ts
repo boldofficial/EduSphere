@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { getCookieOptions } from '@/lib/auth-utils';
 
 const DJANGO_API_URL = process.env.DJANGO_API_URL || 'http://127.0.0.1:8000'; // Define strictly for server-side
 
@@ -55,23 +56,11 @@ export async function POST(request: NextRequest) {
         console.log(`[AUTH_LOG] Setting cookies for tenant: ${tenantId}`);
 
         // Access Token
-        cookieStore.set('access_token', access, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            path: '/',
-            maxAge: 60 * 60, // 1 hour
-        });
+        cookieStore.set('access_token', access, getCookieOptions('access'));
         console.log(`[AUTH_LOG] access_token set (length: ${access.length})`);
 
         // Refresh Token
-        cookieStore.set('refresh_token', refresh, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            path: '/',
-            maxAge: 60 * 60 * 24, // 1 day
-        });
+        cookieStore.set('refresh_token', refresh, getCookieOptions('refresh'));
 
         const meUrl = `${baseUrl.replace(/\/$/, '')}/api/users/me/`;
         console.log('Fetching user details from:', meUrl);

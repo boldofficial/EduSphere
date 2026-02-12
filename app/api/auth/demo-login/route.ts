@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { getCookieOptions } from '@/lib/auth-utils';
 
 const DJANGO_API_URL = process.env.DJANGO_API_URL || 'http://127.0.0.1:8000';
 
@@ -27,22 +28,10 @@ export async function POST(request: NextRequest) {
         const cookieStore = await cookies();
 
         // Access Token
-        cookieStore.set('access_token', access, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            path: '/',
-            maxAge: 60 * 60, // 1 hour
-        });
+        cookieStore.set('access_token', access, getCookieOptions('access'));
 
         // Refresh Token
-        cookieStore.set('refresh_token', refresh, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            path: '/',
-            maxAge: 60 * 60 * 24, // 1 day
-        });
+        cookieStore.set('refresh_token', refresh, getCookieOptions('refresh'));
 
         return NextResponse.json({ success: true, user });
     } catch (error: any) {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { getCookieOptions } from '@/lib/auth-utils';
 
 const DJANGO_API_URL = process.env.DJANGO_API_URL || 'http://127.0.0.1:8000';
 
@@ -34,22 +35,10 @@ export async function POST(request: NextRequest) {
         const data = await response.json();
         const { access, refresh, user } = data;
 
-        // 3. Set the NEW cookies (logging out of super admin, into target user)
-        cookieStore.set('access_token', access, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            path: '/',
-            maxAge: 60 * 60, // 1 hour
-        });
+        // 3. Set the NEW cookies
+        cookieStore.set('access_token', access, getCookieOptions('access'));
 
-        cookieStore.set('refresh_token', refresh, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            path: '/',
-            maxAge: 60 * 60 * 24, // 1 day
-        });
+        cookieStore.set('refresh_token', refresh, getCookieOptions('refresh'));
 
         // 4. Return success and new user data
         return NextResponse.json({
