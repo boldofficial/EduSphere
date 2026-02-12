@@ -24,8 +24,8 @@ export const DashboardDemoRequestsTab: React.FC = () => {
 
     const fetchRequests = async () => {
         try {
-            const data = await apiClient.get('schools/admin/demo-requests/');
-            setRequests(data);
+            const response = await apiClient.get('schools/admin/demo-requests/');
+            setRequests(response.data);
         } catch (error) {
             console.error('Failed to fetch demo requests:', error);
             addToast('Failed to load demo requests', 'error');
@@ -42,8 +42,8 @@ export const DashboardDemoRequestsTab: React.FC = () => {
         setProcessingId(id);
         try {
             const response = await apiClient.post(`schools/admin/demo-requests/${id}/approve/`, {});
-            if (response.success) {
-                addToast(response.message || 'Request approved successfully', 'success');
+            if (response.data.success) {
+                addToast(response.data.message || 'Request approved successfully', 'success');
                 // Refresh list
                 setRequests(prev => prev.map(req =>
                     req.id === id ? { ...req, status: 'approved' } : req
@@ -113,8 +113,8 @@ export const DashboardDemoRequestsTab: React.FC = () => {
                                         </td>
                                         <td className="py-4 px-4">
                                             <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase ${req.status === 'approved' ? 'bg-green-100 text-green-700' :
-                                                    req.status === 'rejected' ? 'bg-red-100 text-red-700' :
-                                                        'bg-amber-100 text-amber-700'
+                                                req.status === 'rejected' ? 'bg-red-100 text-red-700' :
+                                                    'bg-amber-100 text-amber-700'
                                                 }`}>
                                                 {req.status}
                                             </span>
