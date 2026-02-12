@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Search, User, Edit, Trash2, UserCheck } from 'lucide-react';
+import { Plus, Search, User, Edit, Trash2, UserCheck, Zap } from 'lucide-react';
 import * as Types from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -8,6 +8,7 @@ import { Select } from '@/components/ui/select';
 import { Modal } from '@/components/ui/modal';
 import { PhotoUpload } from '@/components/ui/photo-upload';
 import { useToast } from '@/components/providers/toast-provider';
+import { useAutoPromoteStudents, useSettings } from '@/lib/hooks/use-data';
 
 interface StudentsViewProps {
     students: Types.Student[];
@@ -34,9 +35,21 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
     const [filterClass, setFilterClass] = useState('all');
     const [search, setSearch] = useState('');
     const [isSaving, setIsSaving] = useState(false);
+    const [showPromoteModal, setShowPromoteModal] = useState(false);
+    const [promoteSession, setPromoteSession] = useState('');
+    const [promoteTerm, setPromoteTerm] = useState('');
 
     const [formData, setFormData] = useState<Partial<Types.Student>>({});
     const { addToast } = useToast();
+    const { data: settings } = useSettings();
+    const autoPromoteMutation = useAutoPromoteStudents();
+
+    React.useEffect(() => {
+        if (settings) {
+            setPromoteSession(settings.current_session || '');
+            setPromoteTerm(settings.current_term || '');
+        }
+    }, [settings]);
 
     const handleSearch = (val: string) => {
         setSearch(val);
@@ -100,6 +113,25 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
         }
     };
 
+    const handleAutoPromote = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!promoteSession || !promoteTerm) {
+            addToast('Please select session and term', 'error');
+            return;
+        }
+
+        try {
+            await autoPromoteMutation.mutateAsync({
+                session: promoteSession,
+                term: promoteTerm
+            });
+            addToast('Automated promotion engine started successfully', 'success');
+            setShowPromoteModal(false);
+        } catch (error: any) {
+            addToast(error.message || 'Failed to start promotion engine', 'error');
+        }
+    };
+
     const filteredStudents = (onSearchChange || onFilterClassChange)
         ? students
         : students.filter(s => {
@@ -115,7 +147,12 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                     <h1 className="text-2xl font-bold text-gray-900">Student Directory</h1>
                     <p className="text-gray-500">Manage student admissions and records</p>
                 </div>
-                <Button onClick={handleCreate}><Plus className="h-4 w-4 mr-2" /> Register Student</Button>
+                <div className="flex gap-2">
+                    <Button variant="outline" onClick={() => setShowPromoteModal(true)} className="border-brand-200 text-brand-700 hover:bg-brand-50">
+                        <Zap className="h-4 w-4 mr-2" /> Auto-Promote
+                    </Button>
+                    <Button onClick={handleCreate}><Plus className="h-4 w-4 mr-2" /> Register Student</Button>
+                </div>
             </div>
 
             <div className="flex flex-col md:flex-row gap-4 bg-white p-4 rounded-lg border shadow-sm">
@@ -233,6 +270,60 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                         {isSaving ? 'Saving...' : (editingId ? 'Update Record' : 'Complete Registration')}
                     </Button>
                 </form>
+            </Modal>
+
+            <Modal isOpen={showPromoteModal} onClose={() => setShowPromoteModal(false)} title="Promotion Autopilot">
+                <div className="space-y-4">
+                    <div className="p-4 bg-brand-50 rounded-xl border border-brand-100 mb-4">
+                        <div className="flex items-center gap-3 mb-2">
+                            <Zap className="text-brand-600 h-5 w-5" />
+                            <h4 className="font-bold text-brand-900">How it works</h4>
+                        </div>
+                        <p className="text-xs text-brand-800 leading-relaxed">
+                            The engine will analyze all students in the selected term. Students who scored above the
+                            <span className="font-bold"> pass threshold ({settings?.promotion_threshold}%)</span> will be
+                            moved to their predefined <span className="font-bold">Next Class</span>. Final year students will be graduated.
+                        </p>
+                    </div>
+
+                    <form onSubmit={handleAutoPromote} className="space-y-4">
+                        <div className="grid grid-cols-1 gap-4">
+                            <Input
+                                label="Session to Process"
+                                required
+                                value={promoteSession}
+                                onChange={e => setPromoteSession(e.target.value)}
+                                placeholder="e.g. 2024/2025"
+                            />
+                            <Select
+                                label="Term to Analyze"
+                                required
+                                value={promoteTerm}
+                                onChange={e => setPromoteTerm(e.target.value)}
+                            >
+                                <option value="">Select Term</option>
+                                {settings?.terms?.map((t: string) => <option key={t} value={t}>{t}</option>)}
+                                {!settings?.terms?.length && (
+                                    <>
+                                        <option value="First Term">First Term</option>
+                                        <option value="Second Term">Second Term</option>
+                                        <option value="Third Term">Third Term</option>
+                                    </>
+                                )}
+                            </Select>
+                        </div>
+                        <div className="bg-amber-50 border border-amber-200 p-3 rounded-lg flex items-start gap-3">
+                            <UserCheck className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                            <p className="text-[10px] text-amber-800">
+                                <span className="font-bold">Warning:</span> This action will modify multiple student records in the background.
+                                Ensure you have confirmed all scores for this term before proceeding.
+                            </p>
+                        </div>
+                        <Button type="submit" className="w-full" disabled={autoPromoteMutation.isPending}>
+                            {autoPromoteMutation.isPending ? 'Starting Engine...' : 'Initialize Autopilot'}
+                        </Button>
+                    </form>
+                </div>
             </Modal>
         </div>
     );

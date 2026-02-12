@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Printer, LayoutList } from 'lucide-react';
+import { Printer, LayoutList, FileDown } from 'lucide-react';
 import * as Types from '@/lib/types';
 import * as Utils from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
+import apiClient from '@/lib/api-client';
 
 interface BroadsheetViewProps {
     students: Types.Student[];
@@ -14,6 +15,7 @@ interface BroadsheetViewProps {
 
 export const BroadsheetView: React.FC<BroadsheetViewProps> = ({ students, classes, scores, settings }) => {
     const [selectedClass, setSelectedClass] = useState(classes[0]?.id || '');
+    const [isExporting, setIsExporting] = useState(false);
     const currentClass = classes.find(c => c.id === selectedClass);
     const activeStudents = students.filter(s => s.class_id === selectedClass);
     const subjects = Utils.getSubjectsForClass(currentClass);
@@ -31,11 +33,49 @@ export const BroadsheetView: React.FC<BroadsheetViewProps> = ({ students, classe
         return { ...s, scores: subjectScores, total, average: subjects.length > 0 ? total / subjects.length : 0 };
     }).sort((a, b) => b.average - a.average);
 
+    const handleExportPDF = async () => {
+        if (!selectedClass) return;
+        setIsExporting(true);
+        try {
+            const response = await apiClient.get(`classes/${selectedClass}/export-broadsheet-pdf/`, {
+                params: {
+                    session: settings.current_session,
+                    term: settings.current_term
+                },
+                responseType: 'blob'
+            });
+
+            const blob = new Blob([response.data], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `Broadsheet_${currentClass?.name}_${settings.current_session}_${settings.current_term}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Export failed', error);
+        } finally {
+            setIsExporting(false);
+        }
+    };
+
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center no-print">
                 <div><h1 className="text-2xl font-bold text-gray-900">Master Broadsheet</h1><p className="text-gray-500">Class-wide results analysis</p></div>
-                <div className="flex gap-4"><Select value={selectedClass} onChange={e => setSelectedClass(e.target.value)}>{classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</Select><Button onClick={() => window.print()}><Printer className="h-4 w-4 mr-2" /> Print Sheet</Button></div>
+                <div className="flex gap-4">
+                    <Select value={selectedClass} onChange={e => setSelectedClass(e.target.value)}>
+                        {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </Select>
+                    <Button variant="outline" onClick={handleExportPDF} disabled={isExporting}>
+                        <FileDown className="h-4 w-4 mr-2" /> {isExporting ? 'Exporting...' : 'Export to PDF'}
+                    </Button>
+                    <Button onClick={() => window.print()}>
+                        <Printer className="h-4 w-4 mr-2" /> Print Sheet
+                    </Button>
+                </div>
             </div>
             <div className="overflow-x-auto bg-white border rounded-lg shadow-sm print:shadow-none print:border-none">
                 <div className="p-4 border-b bg-gray-50 text-center print:block hidden">

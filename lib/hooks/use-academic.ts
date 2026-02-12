@@ -128,6 +128,15 @@ export function useBulkPromoteStudents() {
     });
 }
 
+export function useAutoPromoteStudents() {
+    return useMutation({
+        mutationFn: async (data: { session: string; term: string }) => {
+            const response = await apiClient.post('students/trigger-auto-promotion/', data);
+            return response.data;
+        },
+    });
+}
+
 // =============================================
 // LESSONS
 // =============================================

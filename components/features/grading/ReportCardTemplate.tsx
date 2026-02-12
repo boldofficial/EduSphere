@@ -22,8 +22,8 @@ interface ReportCardTemplateProps {
     subjects: string[];
 }
 
-// Grading key for the report card
-const GRADING_KEY = [
+// Default grading key if not provided by backend
+const DEFAULT_GRADING_KEY = [
     { grade: 'A', range: '75-100', remark: 'Excellent', color: '#10b981' },
     { grade: 'B', range: '65-74', remark: 'Very Good', color: '#3b82f6' },
     { grade: 'C', range: '50-64', remark: 'Good', color: '#f59e0b' },
@@ -78,6 +78,14 @@ export const ReportCardTemplate: React.FC<ReportCardTemplateProps> = ({
     const attendancePercent = score?.attendance_total
         ? Math.round((score.attendance_present || 0) / score.attendance_total * 100)
         : null;
+
+    // Use dynamic grading key from backend if available
+    const gradingKey = (score as any).grading_scheme_details?.ranges?.map((r: any) => ({
+        grade: r.grade,
+        range: `${r.min_score}-${r.max_score}`,
+        remark: r.remark,
+        color: r.grade === 'A' ? '#10b981' : r.grade === 'B' ? '#3b82f6' : r.grade === 'C' ? '#f59e0b' : r.grade === 'D' ? '#f97316' : '#ef4444'
+    })) || DEFAULT_GRADING_KEY;
 
     // Data for charts
     const chartData = subjects.map(subj => {
@@ -142,6 +150,11 @@ export const ReportCardTemplate: React.FC<ReportCardTemplateProps> = ({
                             <span className="text-lg font-bold tracking-tight">Academic Performance Report</span>
                         </div>
                         <div className="flex flex-col items-end gap-1">
+                            {score?.is_passed && (
+                                <div className="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-emerald-200 mb-2">
+                                    ✓ Published & Verified
+                                </div>
+                            )}
                             <span className="text-sm font-black text-slate-800 tracking-tight">{settings?.current_term}</span>
                             <span className="text-xs font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded border border-slate-100">{settings?.current_session} Session</span>
                         </div>
@@ -380,16 +393,14 @@ export const ReportCardTemplate: React.FC<ReportCardTemplateProps> = ({
                 {/* Legend & Next Term */}
                 <div className="flex flex-col gap-6 pt-6 border-t border-slate-100">
                     <div className="flex justify-between items-center text-[9px]">
-                        <div className="flex gap-4">
-                            <span className="font-black text-slate-400 uppercase tracking-widest">Grading Matrix:</span>
-                            {GRADING_KEY.map(g => (
-                                <div key={g.grade} className="flex items-center gap-1.5 font-bold">
-                                    <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: g.color }} />
-                                    <span className="text-slate-800">{g.grade}</span>
-                                    <span className="text-slate-400 italic">({g.range})</span>
-                                </div>
-                            ))}
-                        </div>
+                        <span className="font-black text-slate-400 uppercase tracking-widest">Grading Matrix:</span>
+                        {gradingKey.map((g: any) => (
+                            <div key={g.grade} className="flex items-center gap-1.5 font-bold">
+                                <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: g.color }} />
+                                <span className="text-slate-800">{g.grade}</span>
+                                <span className="text-slate-400 italic">({g.range})</span>
+                            </div>
+                        ))}
                     </div>
 
                     <div className="flex justify-between items-center bg-slate-900 p-6 rounded-3xl shadow-2xl text-white">

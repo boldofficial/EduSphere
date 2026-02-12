@@ -3,6 +3,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
 from django.db import transaction, models
+from django.http import FileResponse
+from .utils import BroadsheetPDFGenerator
 
 
 class IsAdminOrReadOnly(permissions.BasePermission):
@@ -122,6 +124,48 @@ class ClassViewSet(TenantViewSet):
     serializer_class = ClassSerializer
     pagination_class = StandardPagination
 
+    @action(detail=True, methods=['get'], url_path='export-broadsheet-pdf')
+    def export_broadsheet_pdf(self, request, pk=None):
+        """
+        Export the master broadsheet for a class as a PDF.
+        Query params: session, term
+        """
+        instance = self.get_object()
+        session = request.query_params.get('session')
+        term = request.query_params.get('term')
+
+        if not session or not term:
+            return Response({"error": "session and term are required query parameters"}, status=400)
+
+        school = getattr(request.user, 'school', None) or getattr(request, 'tenant', None)
+        
+        generator = BroadsheetPDFGenerator(school, instance, session, term)
+        pdf_buffer = generator.generate()
+
+        filename = f"Broadsheet_{instance.name.replace(' ', '_')}_{session.replace('/', '-')}_{term.replace(' ', '_')}.pdf"
+        return FileResponse(pdf_buffer, as_attachment=True, filename=filename, content_type='application/pdf')
+
+    @action(detail=True, methods=['get'], url_path='bulk-export-report-cards-pdf')
+    def bulk_export_report_cards_pdf(self, request, pk=None):
+        """
+        Export all report cards for a class as a single PDF.
+        Query params: session, term
+        """
+        instance = self.get_object()
+        session = request.query_params.get('session')
+        term = request.query_params.get('term')
+
+        if not session or not term:
+            return Response({"error": "session and term are required query parameters"}, status=400)
+
+        school = getattr(request.user, 'school', None) or getattr(request, 'tenant', None)
+        
+        generator = ReportCardPDFGenerator(school)
+        pdf_buffer = generator.generate_bulk(instance, session, term)
+
+        filename = f"Reports_{instance.name.replace(' ', '_')}_{session.replace('/', '-')}_{term.replace(' ', '_')}.pdf"
+        return FileResponse(pdf_buffer, as_attachment=True, filename=filename, content_type='application/pdf')
+
 class StudentViewSet(TenantViewSet):
     queryset = Student.objects.select_related('user', 'current_class', 'school').all()
     serializer_class = StudentSerializer
@@ -173,12 +217,48 @@ class StudentViewSet(TenantViewSet):
                 except (Student.DoesNotExist, Class.DoesNotExist):
                     continue
         
-        return Response({"message": f"Successfully processed {updated_count} students"})
+    @action(detail=False, methods=['post'], url_path='trigger-auto-promotion')
+    def trigger_auto_promotion(self, request):
+        """
+        Trigger the automated promotion task for students who meet the threshold.
+        Body: { "session": "2024/2025", "term": "Third Term" }
+        """
+        session = request.data.get('session')
+        term = request.data.get('term')
+
+        if not session or not term:
+            return Response({"error": "session and term are required"}, status=400)
+
+        school = getattr(request.user, 'school', None) or getattr(request, 'tenant', None)
+        if not school:
+            return Response({"error": "School context not found"}, status=403)
+
+        from .tasks import promote_students_task
+        task = promote_students_task.delay(school.id, session, term)
+
+        return Response({
+            "message": "Automated promotion task started.",
+            "task_id": task.id
+        }, status=202)
 
 class ReportCardViewSet(TenantViewSet):
     queryset = ReportCard.objects.select_related('student', 'student_class', 'school').prefetch_related('scores__subject').all()
     serializer_class = ReportCardSerializer
     pagination_class = StandardPagination
+
+    @action(detail=True, methods=['get'], url_path='export-pdf')
+    def export_pdf(self, request, pk=None):
+        """
+        Export a single student report card as a PDF.
+        """
+        instance = self.get_object()
+        school = getattr(request.user, 'school', None) or getattr(request, 'tenant', None)
+        
+        generator = ReportCardPDFGenerator(school)
+        pdf_buffer = generator.generate_single(instance)
+
+        filename = f"Report_{instance.student.names.replace(' ', '_')}_{instance.session.replace('/', '-')}.pdf"
+        return FileResponse(pdf_buffer, as_attachment=True, filename=filename, content_type='application/pdf')
 
     def get_queryset(self):
         qs = super().get_queryset()

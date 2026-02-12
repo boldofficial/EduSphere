@@ -11,6 +11,7 @@ import { Card } from '@/components/ui/card';
 import { Select } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { ReportCardTemplate } from './ReportCardTemplate';
+import { ReportCardPDF } from './ReportCardPDF';
 
 interface ReportPreviewTabProps {
     classes: Types.Class[];
@@ -54,10 +55,20 @@ export const ReportPreviewTab: React.FC<ReportPreviewTabProps> = ({
                             ))}
                         </div>
                         {reportStudentId && (
-                            <Button className="w-full mt-4 flex items-center justify-center gap-2" onClick={handlePrint}>
-                                <Printer className="h-4 w-4" />
-                                {reportStudentId === 'all' ? `Print All (${activeStudents.length} students)` : 'Print / Save as PDF'}
-                            </Button>
+                            <div className="mt-4 space-y-2">
+                                <ReportCardPDF
+                                    reportId={reportStudentId !== 'all' ? previewScore?.id : undefined}
+                                    classId={reportStudentId === 'all' ? selectedClass : undefined}
+                                    session={settings.current_session}
+                                    term={settings.current_term}
+                                    studentName={selectedStudent?.names}
+                                    variant="primary"
+                                />
+                                <Button variant="outline" className="w-full flex items-center justify-center gap-2" onClick={handlePrint}>
+                                    <Printer className="h-4 w-4" />
+                                    Browser Print
+                                </Button>
+                            </div>
                         )}
                     </div>
                 </Card>

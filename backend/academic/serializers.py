@@ -286,6 +286,7 @@ class ReportCardSerializer(serializers.ModelSerializer):
     class_id = serializers.PrimaryKeyRelatedField(
         queryset=Class.objects.all(), source='student_class'
     )
+    grading_scheme_details = GradingSchemeSerializer(source='grading_scheme', read_only=True)
 
     class Meta:
         model = ReportCard
@@ -295,6 +296,7 @@ class ReportCardSerializer(serializers.ModelSerializer):
             'attendance_present', 'attendance_total', 'affective', 'psychomotor',
             'teacher_remark', 'head_teacher_remark', 'next_term_begins', 
             'promoted_to', 'is_passed', 'passed_at', 'passed_by', 'rows',
+            'grading_scheme', 'grading_scheme_details',
             'created_at', 'updated_at'
         ]
         read_only_fields = ('school',)
@@ -444,16 +446,17 @@ class ConductEntrySerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ('school', 'recorded_by')
 
-class GradingSchemeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = GradingScheme
-        fields = '__all__'
-        read_only_fields = ('school',)
-
 class GradeRangeSerializer(serializers.ModelSerializer):
     class Meta:
         model = GradeRange
-        fields = '__all__'
+        fields = ['grade', 'min_score', 'max_score', 'remark', 'gpa_point']
+        read_only_fields = ('school',)
+
+class GradingSchemeSerializer(serializers.ModelSerializer):
+    ranges = GradeRangeSerializer(many=True, read_only=True)
+    class Meta:
+        model = GradingScheme
+        fields = ['id', 'name', 'is_default', 'description', 'ranges']
         read_only_fields = ('school',)
 
 class PeriodSerializer(serializers.ModelSerializer):

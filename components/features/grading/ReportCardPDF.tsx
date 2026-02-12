@@ -1,98 +1,82 @@
 'use client';
 
-import React from 'react';
-import { Download } from 'lucide-react';
+import React, { useState } from 'react';
+import { Download, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import apiClient from '@/lib/api-client';
+import { useToast } from '@/components/providers/toast-provider';
 
 interface ReportCardPDFProps {
-    onDownload: () => void;
+    reportId?: string;
+    classId?: string;
+    session?: string;
+    term?: string;
+    studentName?: string;
     disabled?: boolean;
+    variant?: 'outline' | 'primary' | 'secondary' | 'danger' | 'ghost';
 }
 
-export const ReportCardPDF: React.FC<ReportCardPDFProps> = ({ onDownload, disabled }) => {
+export const ReportCardPDF: React.FC<ReportCardPDFProps> = ({
+    reportId, classId, session, term, studentName, disabled, variant = 'outline'
+}) => {
+    const [isDownloading, setIsDownloading] = useState(false);
+    const { addToast } = useToast();
+
     const handleDownloadPDF = async () => {
-        // Use browser's print functionality to generate PDF
-        // The report card already has print-optimized styles
-        const printWindow = window.open('', '_blank');
-        if (!printWindow) {
-            alert('Please allow pop-ups to download PDF');
-            return;
+        setIsDownloading(true);
+        try {
+            let url = '';
+            let params = {};
+            let filename = 'ReportCard.pdf';
+
+            if (reportId) {
+                url = `report-cards/${reportId}/export-pdf/`;
+                filename = `ReportCard_${studentName || reportId}.pdf`;
+            } else if (classId && session && term) {
+                url = `classes/${classId}/bulk-export-report-cards-pdf/`;
+                params = { session, term };
+                filename = `Bulk_ReportCards_${classId}_${session}_${term}.pdf`;
+            } else {
+                throw new Error('Invalid download parameters');
+            }
+
+            const response = await apiClient.get(url, {
+                params,
+                responseType: 'blob'
+            });
+
+            const blob = new Blob([response.data], { type: 'application/pdf' });
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.setAttribute('download', filename.replace(/\//g, '-'));
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(downloadUrl);
+
+            addToast('Report Card PDF downloaded successfully', 'success');
+        } catch (error: any) {
+            console.error('Export failed', error);
+            addToast(error.message || 'Failed to download PDF', 'error');
+        } finally {
+            setIsDownloading(false);
         }
-
-        const reportCard = document.getElementById('report-card');
-        if (!reportCard) {
-            alert('Report card not found');
-            return;
-        }
-
-        // Clone the report card content
-        const content = reportCard.cloneNode(true) as HTMLElement;
-
-        // Get all stylesheets
-        const styles = Array.from(document.styleSheets)
-            .map(sheet => {
-                try {
-                    return Array.from(sheet.cssRules)
-                        .map(rule => rule.cssText)
-                        .join('\n');
-                } catch {
-                    return '';
-                }
-            })
-            .join('\n');
-
-        printWindow.document.write(`
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>Report Card</title>
-                <style>
-                    ${styles}
-                    @page { 
-                        margin: 0.5in; 
-                        size: A4;
-                    }
-                    body { 
-                        margin: 0; 
-                        padding: 20px;
-                        background: white;
-                    }
-                    .page-break { 
-                        page-break-before: always; 
-                        break-before: page;
-                    }
-                    @media print {
-                        body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-                    }
-                </style>
-            </head>
-            <body>
-                ${content.outerHTML}
-            </body>
-            </html>
-        `);
-
-        printWindow.document.close();
-
-        // Wait for content to load then trigger print
-        printWindow.onload = () => {
-            setTimeout(() => {
-                printWindow.print();
-                // Close after a delay to allow print dialog
-                setTimeout(() => printWindow.close(), 1000);
-            }, 250);
-        };
     };
 
     return (
         <Button
-            variant="outline"
+            variant={variant}
             onClick={handleDownloadPDF}
-            disabled={disabled}
+            disabled={disabled || isDownloading}
             className="flex items-center gap-2"
         >
-            <Download className="h-4 w-4" />
-            Download PDF
+            {isDownloading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+                <Download className="h-4 w-4" />
+            )}
+            {isDownloading ? 'Downloading...' : reportId ? 'Download PDF' : 'Bulk Download PDFs'}
         </Button>
     );
 };

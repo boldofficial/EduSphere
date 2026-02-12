@@ -227,6 +227,9 @@ export interface Score extends Entity {
   is_passed?: boolean; // Admin must pass/approve report card before student/parent can view
   passed_at?: number; // Timestamp when report card was passed
   passed_by?: string; // Admin user ID who passed the report card
+
+  grading_scheme?: string;
+  grading_scheme_details?: GradingScheme;
 }
 
 export interface AttendanceRecord {

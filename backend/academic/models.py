@@ -45,6 +45,10 @@ class Class(TenantModel):
     name = models.CharField(max_length=100)
     class_teacher = models.ForeignKey(Teacher, on_delete=models.SET_NULL, null=True, related_name='classes')
     subjects = models.ManyToManyField(Subject, blank=True)
+    
+    # Promotion Autopilot fields
+    next_class = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='previous_classes', help_text="The class students will be promoted to.")
+    is_graduation_class = models.BooleanField(default=False, help_text="Check if this is the final class (e.g., SS3).")
 
     def __str__(self):
         return f"{self.name} ({self.school.name})"
