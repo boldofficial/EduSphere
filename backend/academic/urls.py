@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     SubjectViewSet, TeacherViewSet, ClassViewSet, StudentViewSet,
     ReportCardViewSet, SubjectScoreViewSet, AttendanceSessionViewSet, AttendanceRecordViewSet,
-    SchoolEventViewSet
+    SchoolEventViewSet, HeaderEchoView
 )
 from . import views
 
@@ -31,6 +31,7 @@ router.register(r'subject_teachers', views.SubjectTeacherViewSet, basename='subj
 router.register(r'broadsheet', views.BroadsheetView, basename='broadsheet')
 
 urlpatterns = [
+    path('debug-headers/', HeaderEchoView.as_view(), name='debug-headers'),
     path('', include(router.urls)),
 ]
 

@@ -33,6 +33,17 @@ from .serializers import (
     PeriodSerializer, TimetableSerializer, TimetableEntrySerializer, GradingSchemeSerializer, GradeRangeSerializer,
     SubjectTeacherSerializer
 )
+from rest_framework.views import APIView
+
+class HeaderEchoView(APIView):
+    permission_classes = [permissions.AllowAny]
+    def get(self, request):
+        return Response({
+            "headers": {k: v for k, v in request.headers.items()},
+            "user": str(request.user),
+            "tenant": str(getattr(request, 'tenant', 'None')),
+            "subdomain": str(getattr(request, 'subdomain', 'None'))
+        })
 from core.pagination import StandardPagination, LargePagination
 from core.cache_utils import CachingMixin
 
