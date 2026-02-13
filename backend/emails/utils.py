@@ -68,7 +68,7 @@ def send_template_email(template_name, recipient_email, context=None):
         provider = p_settings.email_provider
         email_from = p_settings.email_from or settings.DEFAULT_FROM_EMAIL
         email_from_name = p_settings.email_from_name or 'Registra'
-        api_key = p_settings.email_api_key
+        api_key = p_settings.email_api_key.strip() if p_settings.email_api_key else None
 
     status = 'sent'
     error_message = ''
