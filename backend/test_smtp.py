@@ -30,16 +30,17 @@ def test_send():
         print(f"✅ Found PlatformSettings (ID: {p_settings.id})")
         provider = p_settings.email_provider
         if provider == 'smtp':
-            host = p_settings.email_host or host
+            host = (p_settings.email_host.strip() if p_settings.email_host else host)
             port = p_settings.email_port or port
-            user = p_settings.email_user or user
-            password = p_settings.email_password or password
+            user = (p_settings.email_user.strip() if p_settings.email_user else user)
+            password = (p_settings.email_password.strip() if p_settings.email_password else password)
             use_tls = p_settings.email_use_tls
-            from_email = p_settings.email_from or from_email
+            from_email = (p_settings.email_from.strip() if p_settings.email_from else from_email)
             print(f"   - Provider: Standard SMTP")
             print(f"   - Host: {host}")
             print(f"   - Port: {port}")
             print(f"   - User: {user}")
+            # print(f"   - Password: [HIDDEN]") 
             print(f"   - From: {from_email}")
             print(f"   - TLS: {use_tls}")
         else:

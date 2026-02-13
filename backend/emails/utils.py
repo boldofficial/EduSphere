@@ -101,16 +101,16 @@ def send_template_email(template_name, recipient_email, context=None):
     else:
         # Use Dynamic SMTP (fallback to settings.py)
         email_host = getattr(p_settings, 'email_host', None) if p_settings else None
-        email_host = email_host or settings.EMAIL_HOST
+        email_host = (email_host.strip() if email_host else settings.EMAIL_HOST)
         
         email_port = getattr(p_settings, 'email_port', None) if p_settings else None
         email_port = email_port or settings.EMAIL_PORT
         
         email_user = getattr(p_settings, 'email_user', None) if p_settings else None
-        email_user = email_user or settings.EMAIL_HOST_USER
+        email_user = (email_user.strip() if email_user else settings.EMAIL_HOST_USER)
         
         email_password = getattr(p_settings, 'email_password', None) if p_settings else None
-        email_password = email_password or settings.EMAIL_HOST_PASSWORD
+        email_password = (email_password.strip() if email_password else settings.EMAIL_HOST_PASSWORD)
         
         use_tls = getattr(p_settings, 'email_use_tls', True) if p_settings else True
         use_ssl = getattr(p_settings, 'email_use_ssl', False) if p_settings else False
@@ -137,8 +137,11 @@ def send_template_email(template_name, recipient_email, context=None):
             email.send()
         except Exception as e:
             status = 'failed'
-            error_message = str(e)
-            logger.error(f"Failed to send SMTP email '{template_name}' to {recipient_email}: {e}")
+            error_message = f"{type(e).__name__}: {str(e)}"
+            logger.error(f"Failed to send SMTP email '{template_name}' to {recipient_email}: {error_message}")
+            if settings.DEBUG:
+                import traceback
+                logger.error(traceback.format_exc())
 
     # 7. Create Log Entry
     try:
