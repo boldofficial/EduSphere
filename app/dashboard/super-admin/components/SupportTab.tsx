@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import {
     useSupportTickets, useRespondToTicket, useResolveTicket,
     useCreateSupportTicket, useAdminSchools
@@ -6,7 +7,7 @@ import * as Types from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { X, Plus, Ghost } from 'lucide-react';
+import { X, Plus, Ghost, MessageSquare, School, User, Clock, CheckCircle, Send } from 'lucide-react';
 
 export function SupportTab() {
     const { data: tickets = [], isLoading, refetch } = useSupportTickets();
