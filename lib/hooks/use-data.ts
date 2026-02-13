@@ -89,6 +89,7 @@ export {
     useClasses, useCreateClass, useUpdateClass, useDeleteClass,
     useStudents, usePaginatedStudents, useCreateStudent, useUpdateStudent, useDeleteStudent,
     useBulkPromoteStudents, useAutoPromoteStudents,
+    useStudentHistory, useStudentAchievements,
     useLessons, useCreateLesson,
     useConductEntries, useCreateConductEntry,
     useTeachers, useCreateTeacher, useUpdateTeacher, useDeleteTeacher,

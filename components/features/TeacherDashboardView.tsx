@@ -25,6 +25,9 @@ import { Button } from '@/components/ui/button';
 import { GradingView } from './GradingView';
 import { AttendanceView } from './AttendanceView';
 import { MessageInboxWidget } from './dashboard/MessageInboxWidget';
+import { NextLessonWidget } from './dashboard/NextLessonWidget';
+import { AttendanceAnalytics } from './dashboard/AttendanceAnalytics';
+import { ConductLogWidget } from './dashboard/ConductLogWidget';
 
 // Internal components for the modules
 const MySubjectsModule = ({ subjects, classes }: { subjects: any[], classes: any[] }) => {
@@ -284,6 +287,10 @@ export const TeacherDashboardView = () => {
                         </div>
 
                         <div className="space-y-8">
+                            <NextLessonWidget teacherId={myTeacherProfile.id} />
+
+                            <ConductLogWidget students={myStudents} />
+
                             <div className="bg-brand-900 text-white p-6 rounded-3xl shadow-xl relative overflow-hidden">
                                 <div className="relative z-10">
                                     <h3 className="text-lg font-bold mb-2">Notice Board</h3>

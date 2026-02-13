@@ -366,3 +366,18 @@ export const ordinalSuffix = (i: number) => {
   if (j === 3 && k !== 13) return i + "rd";
   return i + "th";
 };
+
+export function formatDate(date: string | number | Date, formatStr: string = 'PP') {
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return String(date);
+
+  // Simple format mapping for common cases
+  if (formatStr === 'MMM d, yyyy') {
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+  if (formatStr === 'MMM yyyy') {
+    return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+  }
+
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}

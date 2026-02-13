@@ -24,6 +24,7 @@ import { QuickActions } from './dashboard/QuickActions';
 import { StudentPopulation } from './dashboard/StudentPopulation';
 import { RecentTransactions } from './dashboard/RecentTransactions';
 import { AdvancedAnalytics } from './dashboard/AdvancedAnalytics';
+import { AttendanceAnalytics } from './dashboard/AttendanceAnalytics';
 
 // Dashboard tab components
 import { DashboardCmsTab } from './dashboard/DashboardCmsTab';
@@ -365,6 +366,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                             />
                         </div>
                         <div className="space-y-6">
+                            {allowedModules.includes('attendance') && <AttendanceAnalytics />}
                             {allowedModules.includes('students') && <StudentPopulation students={students} />}
                             {allowedModules.includes('bursary') && <RecentTransactions payments={payments} students={students} />}
                         </div>

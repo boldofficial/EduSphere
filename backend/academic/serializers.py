@@ -430,6 +430,9 @@ class ReportCardSerializer(serializers.ModelSerializer):
         report_card.update_totals()
 
 class AttendanceSessionSerializer(serializers.ModelSerializer):
+    records = AttendanceRecordSerializer(many=True, read_only=True)
+    class_name = serializers.CharField(source='student_class.name', read_only=True)
+    
     class Meta:
         model = AttendanceSession
         fields = '__all__'

@@ -138,6 +138,25 @@ export function useAutoPromoteStudents() {
 }
 
 // =============================================
+// STUDENT HISTORY & ACHIEVEMENTS
+// =============================================
+export function useStudentHistory(studentId?: string) {
+    return useQuery({
+        queryKey: ['student_history', studentId],
+        queryFn: () => fetchAll<any>('students/history/', { student: studentId }),
+        enabled: !!studentId,
+    });
+}
+
+export function useStudentAchievements(studentId?: string) {
+    return useQuery({
+        queryKey: ['student_achievements', studentId],
+        queryFn: () => fetchAll<any>('students/achievements/', { student: studentId }),
+        enabled: !!studentId,
+    });
+}
+
+// =============================================
 // LESSONS
 // =============================================
 export function useLessons() {

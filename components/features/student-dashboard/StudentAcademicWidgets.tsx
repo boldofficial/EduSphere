@@ -4,6 +4,7 @@ import React from 'react';
 import { ClipboardList, Award, Timer } from 'lucide-react';
 import Link from 'next/link';
 import { AcademicProgressChart } from '../grading/AcademicProgressChart';
+import { AchievementShowcase } from '../dashboard/AchievementShowcase';
 
 interface StudentAcademicWidgetsProps {
     isResultPublished: boolean;
@@ -149,6 +150,14 @@ export const StudentAcademicWidgets: React.FC<StudentAcademicWidgetsProps> = ({
                     </div>
                 </div>
             )}
+            {/* Achievements Widget */}
+            <div className="space-y-4">
+                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2 px-2">
+                    <Award size={20} className="text-brand-500" />
+                    Achievements & Awards
+                </h2>
+                <AchievementShowcase studentId={studentId} />
+            </div>
         </div>
     );
 };

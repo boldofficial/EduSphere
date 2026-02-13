@@ -20,6 +20,7 @@ import * as Utils from '@/lib/utils';
 import * as Types from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { MessageInboxWidget } from './dashboard/MessageInboxWidget';
+import { StudentJourney } from './dashboard/StudentJourney';
 
 // Extracted Components
 import { StudentProfileHeader } from './student-dashboard/StudentProfileHeader';
@@ -202,6 +203,8 @@ export const StudentDashboardView = () => {
                         upcomingEvents={eventsData.upcoming}
                         nextTermBegins={settings.next_term_begins}
                     />
+
+                    <StudentJourney studentId={student.id} />
 
                     <MessageInboxWidget maxMessages={3} />
                 </div>
