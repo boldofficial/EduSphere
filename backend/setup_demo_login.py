@@ -12,10 +12,9 @@ def setup_demo():
     
     # 1. Ensure Demo School exists
     school, created = School.objects.get_or_create(
-        slug='demo',
+        domain='demo',
         defaults={
             'name': 'Demo School',
-            'domain': 'demo',
             'email': 'admin@demo.com',
             'status': 'active'
         }

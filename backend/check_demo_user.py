@@ -9,11 +9,11 @@ from schools.models import School
 
 def check():
     print("--- Checking Demo School ---")
-    s = School.objects.filter(slug='demo').first()
+    s = School.objects.filter(domain='demo').first()
     if s:
-        print(f"School: {s.name} (Slug: {s.slug}, ID: {s.id})")
+        print(f"School: {s.name} (Domain: {s.domain}, ID: {s.id})")
     else:
-        print("❌ School with slug 'demo' not found.")
+        print("❌ School with domain 'demo' not found.")
 
     print("\n--- Checking Demo User ---")
     u = User.objects.filter(username='demo_admin').first()
