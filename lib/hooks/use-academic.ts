@@ -325,3 +325,18 @@ export function useDeleteSubjectTeacher() {
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.subjectTeachers }); },
     });
 }
+
+// =============================================
+// GLOBAL SEARCH
+// =============================================
+export function useAcademicGlobalSearch(query: string, enabled = false) {
+    return useQuery({
+        queryKey: ['academic_global_search', query],
+        queryFn: async () => {
+            const response = await apiClient.get('/global-search/', { params: { q: query } });
+            return response.data;
+        },
+        enabled: enabled && query.length >= 2,
+        staleTime: 1000 * 60 * 5, // 5 minutes
+    });
+}

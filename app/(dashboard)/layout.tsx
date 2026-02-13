@@ -6,7 +6,7 @@ import {
     CalendarCheck, CreditCard, Database, Settings as SettingsIcon,
     LogOut, Menu, ClipboardList, BadgeCheck, UserCog,
     Megaphone, Calendar, BarChart3, FileCheck, Newspaper, Mail, ShieldCheck, Globe,
-    MessageSquare
+    MessageSquare, Search
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -17,6 +17,8 @@ import * as Utils from '@/lib/utils';
 import { LoginView } from '@/components/features/LoginView';
 import { NotificationCenter } from '@/components/features/NotificationCenter';
 import { DemoBanner } from '@/components/features/DemoBanner';
+import { UniversalSearch } from '@/components/features/UniversalSearch';
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     // Auth from store (keep this)
     const { currentRole, currentUser, logout, login: storeLogin } = useSchoolStore();
@@ -47,6 +49,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const { data: teacherList = [], isLoading: teacherLoading } = useTeachers();
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Start closed on mobile
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
     const pathname = usePathname();
 
     // Get current staff member's profile with assigned_modules
@@ -82,6 +85,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         handleResize(); // Check on mount
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    // Global Search Shortcut (Cmd+K)
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                setIsSearchOpen(prev => !prev);
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
     }, []);
 
     const handleLogout = async () => {
@@ -263,7 +278,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 rounded-md transition-colors hover:bg-gray-100 lg:hidden">
                         <Menu className="h-5 w-5 text-gray-600" />
                     </button>
-                    <div className="hidden lg:block" />
+                    <div className="hidden lg:flex items-center gap-4">
+                        <button
+                            onClick={() => setIsSearchOpen(true)}
+                            className="flex items-center gap-2 px-4 py-2 bg-gray-50 border border-gray-100 rounded-2xl text-gray-400 hover:text-brand-600 hover:bg-white hover:border-brand-200 transition-all group group"
+                        >
+                            <Search size={18} className="group-hover:scale-110 transition-transform" />
+                            <span className="text-sm font-medium">Search anything...</span>
+                            <kbd className="hidden md:inline-flex items-center gap-1 px-1.5 py-0.5 border border-gray-200 rounded text-[10px] font-black text-gray-400">⌘K</kbd>
+                        </button>
+                    </div>
                     <div className="flex items-center gap-3 lg:gap-6">
                         <NotificationCenter />
                         <div className="flex items-center gap-2 lg:gap-4 border-l pl-3 lg:pl-6">
@@ -284,6 +308,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     </div>
                 </div>
             </main>
+
+            <UniversalSearch
+                isOpen={isSearchOpen}
+                onClose={() => setIsSearchOpen(false)}
+                navigation={filteredNavigation}
+            />
         </div>
     );
 }

@@ -24,14 +24,14 @@ from .models import (
     ReportCard, SubjectScore, AttendanceSession, AttendanceRecord,
     SchoolEvent, Lesson, ConductEntry,
     Period, Timetable, TimetableEntry, GradingScheme, GradeRange,
-    SubjectTeacher
+    SubjectTeacher, StudentHistory, StudentAchievement
 )
 from .serializers import (
     SubjectSerializer, TeacherSerializer, ClassSerializer, StudentSerializer,
     ReportCardSerializer, SubjectScoreSerializer, AttendanceSessionSerializer, AttendanceRecordSerializer,
     SchoolEventSerializer, LessonSerializer, ConductEntrySerializer,
     PeriodSerializer, TimetableSerializer, TimetableEntrySerializer, GradingSchemeSerializer, GradeRangeSerializer,
-    SubjectTeacherSerializer
+    SubjectTeacherSerializer, StudentHistorySerializer, StudentAchievementSerializer
 )
 from rest_framework.views import APIView
 
@@ -297,6 +297,67 @@ class ReportCardViewSet(TenantViewSet):
              
         return qs
 
+    @action(detail=True, methods=['post'], url_path='suggest-remark')
+    def suggest_remark(self, request, pk=None):
+        """
+        AI-powered remark suggestion based on student scores.
+        """
+        import os
+        report_card = self.get_object()
+        scores = report_card.scores.all()
+        
+        # Simple Logic for now: Summarize performance
+        excellent_count = scores.filter(total__gte=80).count()
+        average_count = scores.filter(total__lt=80, total__gte=50).count()
+        poor_count = scores.filter(total__lt=50).count()
+        
+        # Structure the data for the AI prompt
+        performance_data = {
+            "excellent": excellent_count,
+            "average": average_count,
+            "poor": poor_count,
+            "subjects_count": scores.count(),
+            "student_name": report_card.student.names
+        }
+        
+        # Placeholder for Gemini integration
+        gemini_api_key = os.environ.get('GEMINI_API_KEY')
+        if gemini_api_key:
+            # Here we would call the Gemini API
+            remark = f"AI Remark for {report_card.student.names} based on {scores.count()} subjects. (Gemini Integrated)"
+        else:
+            # Fallback heuristic remark
+            if excellent_count > (scores.count() / 2):
+                remark = f"{report_card.student.names} has shown exceptional performance this term. Keep up the excellent work!"
+            elif poor_count > 0:
+                remark = f"{report_card.student.names} needs to focus more on certain subjects where performance was below average."
+            else:
+                remark = f"A good performance overall by {report_card.student.names}. Consistent effort will lead to even better results."
+                
+        return Response({"suggestion": remark, "data": performance_data})
+
+class StudentHistoryViewSet(TenantViewSet):
+    queryset = StudentHistory.objects.all()
+    serializer_class = StudentHistorySerializer
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        student_id = self.request.query_params.get('student')
+        if student_id:
+            qs = qs.filter(student__id=student_id)
+        return qs
+
+class StudentAchievementViewSet(TenantViewSet):
+    queryset = StudentAchievement.objects.all()
+    serializer_class = StudentAchievementSerializer
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        student_id = self.request.query_params.get('student')
+        if student_id:
+            qs = qs.filter(student__id=student_id)
+        return qs
+
 class SubjectScoreViewSet(TenantViewSet):
     queryset = SubjectScore.objects.select_related('student', 'subject', 'school').all()
     serializer_class = SubjectScoreSerializer
@@ -529,5 +590,44 @@ class BroadsheetView(viewsets.ViewSet):
             'class_id': class_id,
             'session': session,
             'term': term,
+        })
+
+class GlobalSearchView(APIView):
+    """
+    Search across Students, Staff, and Classes for the current school.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        query = request.query_params.get('q', '')
+        if len(query) < 2:
+            return Response({"students": [], "staff": [], "classes": []})
+
+        school = getattr(request.user, 'school', None) or getattr(request, 'tenant', None)
+        if not school:
+            return Response({"error": "No school context found"}, status=400)
+
+        # 1. Search Students
+        students = Student.objects.filter(
+            models.Q(names__icontains=query) | models.Q(student_no__icontains=query),
+            school=school
+        )[:10]
+
+        # 2. Search Staff (Teachers)
+        staff = Teacher.objects.filter(
+            models.Q(name__icontains=query) | models.Q(email__icontains=query),
+            school=school
+        )[:10]
+
+        # 3. Search Classes
+        classes = Class.objects.filter(
+            name__icontains=query,
+            school=school
+        )[:10]
+
+        return Response({
+            "students": [{"id": s.id, "names": s.names, "student_no": s.student_no, "current_class": s.current_class.name if s.current_class else "N/A"} for s in students],
+            "staff": [{"id": s.id, "name": s.name, "staff_type": s.staff_type} for s in staff],
+            "classes": [{"id": c.id, "name": c.name} for c in classes]
         })
 

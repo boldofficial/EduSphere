@@ -9,7 +9,7 @@ from .models import (
     ReportCard, SubjectScore, AttendanceSession, AttendanceRecord,
     SchoolEvent, Lesson, ConductEntry,
     Period, Timetable, TimetableEntry, GradingScheme, GradeRange,
-    SubjectTeacher
+    SubjectTeacher, StudentHistory, StudentAchievement
 )
 
 class Base64ImageField(serializers.CharField):
@@ -162,7 +162,7 @@ class StudentSerializer(serializers.ModelSerializer):
             'id', 'student_no', 'names', 'gender', 'current_class', 'class_id',
             'dob', 'parent_name', 'parent_email', 'parent_phone', 'address',
             'passport_url', 'assigned_fees', 'discounts', 'password',
-            'created_at', 'updated_at'
+            'status', 'created_at', 'updated_at'
         ]
         read_only_fields = ('school', 'user', 'current_class')
 
@@ -279,6 +279,18 @@ class StudentSerializer(serializers.ModelSerializer):
         except Exception as e:
             logger.exception(f"Student update failed: {str(e)}")
             raise e
+
+class StudentHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StudentHistory
+        fields = '__all__'
+        read_only_fields = ('school',)
+
+class StudentAchievementSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StudentAchievement
+        fields = '__all__'
+        read_only_fields = ('school',)
 
 class SubjectScoreSerializer(serializers.ModelSerializer):
     subject = serializers.CharField(source='subject.name', required=False)

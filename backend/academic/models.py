@@ -86,6 +86,15 @@ class Student(TenantModel):
     address = models.TextField(blank=True)
     passport_url = models.CharField(max_length=512, blank=True, null=True)
     
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('graduated', 'Graduated'),
+        ('withdrawn', 'Withdrawn'),
+        ('suspended', 'Suspended'),
+        ('alumni', 'Alumni'),
+    ]
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active', db_index=True)
+    
     # Financial Persistence
     assigned_fees = models.JSONField(default=list, blank=True) # List of FeeItem IDs
     discounts = models.JSONField(default=list, blank=True)     # List of discount objects
@@ -97,6 +106,7 @@ class Student(TenantModel):
         indexes = [
             models.Index(fields=['school', 'student_no']),
             models.Index(fields=['school', 'current_class']),
+            models.Index(fields=['school', 'status']),
             models.Index(fields=['names']),
         ]
         constraints = [
@@ -105,6 +115,52 @@ class Student(TenantModel):
                 name='unique_student_no_per_school'
             )
         ]
+
+class StudentHistory(TenantModel):
+    """
+    Historical snapshots of a student's academic journey (e.g., Promotion, Graduation).
+    """
+    EVENT_CHOICES = [
+        ('promotion', 'Promotion'),
+        ('graduation', 'Graduation'),
+        ('withdrawal', 'Withdrawal'),
+        ('suspension', 'Suspension'),
+        ('reactivation', 'Reactivation'),
+    ]
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='history')
+    event_type = models.CharField(max_length=50, choices=EVENT_CHOICES)
+    session = models.CharField(max_length=50) # e.g., "2024/2025"
+    student_class = models.ForeignKey(Class, on_delete=models.SET_NULL, null=True, blank=True)
+    remarks = models.TextField(blank=True)
+    metadata = models.JSONField(default=dict, blank=True) # Additional context
+
+    def __str__(self):
+        return f"{self.student.names} - {self.event_type} ({self.session})"
+
+class StudentHistory(TenantModel):
+    """Tracks status changes and important milestones for a student"""
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='history')
+    action = models.CharField(max_length=100) # e.g. "Status Changed", "Promoted", "Graduated"
+    from_value = models.CharField(max_length=255, blank=True)
+    to_value = models.CharField(max_length=255, blank=True)
+    session = models.CharField(max_length=50, blank=True)
+    term = models.CharField(max_length=50, blank=True)
+    recorded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.student.names} - {self.action} ({self.created_at})"
+
+class StudentAchievement(TenantModel):
+    """Portfolio section for student awards and extracurricular wins"""
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='achievements')
+    title = models.CharField(max_length=255) # e.g. "1st Place 100m Sprint"
+    description = models.TextField(blank=True)
+    date_achieved = models.DateField(null=True, blank=True)
+    category = models.CharField(max_length=100, default='General') # Sports, Academic, Leadership
+    evidence_url = models.CharField(max_length=512, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.student.names} - {self.title}"
 
 class GradingScheme(TenantModel):
     name = models.CharField(max_length=100) # e.g., "British Curriculum", "WASSCE Standard"
