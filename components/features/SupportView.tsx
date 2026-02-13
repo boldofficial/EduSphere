@@ -3,8 +3,8 @@
 import React, { useState } from 'react';
 import {
     MessageSquare, Send, CheckCircle, Clock,
-    AlertCircle, Plus, Ghost, X, User, School,
-    HelpCircle
+    Plus, Ghost, X, User, School,
+    HelpCircle, ChevronRight, Hash
 } from 'lucide-react';
 import {
     useSupportTickets, useCreateSupportTicket,
@@ -21,16 +21,9 @@ export const SupportView: React.FC = () => {
     const respondMutation = useRespondToTicket();
     const resolveMutation = useResolveTicket();
 
-    interface NewTicket {
-        subject: string;
-        category: Types.SupportTicket['category'];
-        priority: Types.SupportTicket['priority'];
-        description: string;
-    }
-
     const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-    const [newTicket, setNewTicket] = useState<NewTicket>({ subject: '', category: 'technical', priority: 'medium', description: '' });
+    const [newTicket, setNewTicket] = useState({ subject: '', category: 'technical', priority: 'medium', description: '' });
     const [replyMessage, setReplyMessage] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -51,7 +44,7 @@ export const SupportView: React.FC = () => {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            await createMutation.mutateAsync(newTicket);
+            await createMutation.mutateAsync(newTicket as any);
             setIsCreateModalOpen(false);
             setNewTicket({ subject: '', category: 'technical', priority: 'medium', description: '' });
             refetch();
@@ -90,10 +83,10 @@ export const SupportView: React.FC = () => {
 
     const getStatusBadge = (status: string) => {
         switch (status) {
-            case 'resolved': return 'bg-green-100 text-green-700';
-            case 'in_progress': return 'bg-blue-100 text-blue-700';
-            case 'open': return 'bg-amber-100 text-amber-700';
-            default: return 'bg-gray-100 text-gray-700';
+            case 'resolved': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+            case 'in_progress': return 'bg-sky-100 text-sky-700 border-sky-200';
+            case 'open': return 'bg-amber-100 text-amber-700 border-amber-200';
+            default: return 'bg-slate-100 text-slate-700 border-slate-200';
         }
     };
 
@@ -104,58 +97,59 @@ export const SupportView: React.FC = () => {
     );
 
     return (
-        <div className="space-y-6 max-w-6xl mx-auto animate-in fade-in duration-500">
+        <div className="flex flex-col gap-6 h-full max-w-7xl mx-auto animate-in fade-in duration-500">
+            {/* Header Area */}
             <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-3xl font-black text-gray-900 tracking-tight">Support & Help Desk</h1>
-                    <p className="text-gray-500 font-medium">Report issues or request customizations directly from the Registra team.</p>
+                <div className="space-y-1">
+                    <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Support & Help Desk</h1>
+                    <p className="text-slate-500 font-medium">Get assistance and request platform features directly.</p>
                 </div>
-                <Button onClick={() => setIsCreateModalOpen(true)} className="rounded-2xl px-6 py-6 font-black shadow-lg shadow-brand-900/20 active:scale-95 transition-all">
+                <Button
+                    onClick={() => setIsCreateModalOpen(true)}
+                    className="rounded-xl px-7 py-6 font-bold shadow-md hover:shadow-lg transition-all active:scale-95 bg-brand-600 hover:bg-brand-700"
+                >
                     <Plus className="mr-2" size={20} /> New Support Ticket
                 </Button>
             </div>
 
-            <div className="flex gap-6 h-[calc(100vh-250px)]">
-                {/* Tickets List */}
-                <Card className="w-1/3 p-0 flex flex-col overflow-hidden border-gray-200 shadow-sm rounded-[32px]">
-                    <div className="p-6 border-b border-gray-50 bg-gray-50/50 flex items-center justify-between">
-                        <span className="font-bold text-gray-900 uppercase tracking-widest text-[10px]">Your Tickets</span>
-                        <span className="text-[10px] font-black bg-white px-2 py-0.5 rounded-lg border border-gray-100 text-gray-500">
-                            {tickets.length} Total
-                        </span>
+            {/* Main Interface Layout */}
+            <div className="flex bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden flex-1 min-h-[600px] h-[calc(100vh-280px)]">
+                {/* Tickets Sidebar */}
+                <div className="w-80 border-r border-slate-100 flex flex-col bg-slate-50/30">
+                    <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+                        <span className="font-bold text-slate-400 uppercase tracking-widest text-[10px]">Your Tickets</span>
+                        <span className="text-[10px] font-bold text-slate-500">{tickets.length}</span>
                     </div>
                     <div className="flex-1 overflow-y-auto custom-scrollbar">
                         {tickets.length === 0 ? (
-                            <div className="p-12 text-center text-gray-400">
-                                <Ghost size={48} className="mx-auto mb-4 opacity-10" />
-                                <p className="text-sm font-medium">No tickets yet.</p>
+                            <div className="p-10 text-center opacity-40">
+                                <Ghost size={32} className="mx-auto mb-3" />
+                                <p className="text-xs font-bold">No tickets yet.</p>
                             </div>
                         ) : (
                             tickets.map((ticket: any) => (
                                 <button
                                     key={ticket.id}
                                     onClick={() => setSelectedTicketId(ticket.id)}
-                                    className={`w-full text-left p-6 border-b border-gray-50 transition-all hover:bg-gray-50 relative group ${selectedTicketId === ticket.id ? 'bg-brand-50/50' : ''
-                                        }`}
+                                    className={`w-full text-left p-5 border-b border-slate-50 transition-all hover:bg-white relative group ${selectedTicketId === ticket.id ? 'bg-white' : ''}`}
                                 >
                                     <div className="flex justify-between items-start mb-2">
-                                        <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border uppercase tracking-tighter ${ticket.priority === 'urgent' ? 'bg-rose-100 text-rose-700 border-rose-200' : 'bg-gray-100 text-gray-600 border-gray-200'
-                                            }`}>
+                                        <span className={`text-[9px] font-black px-2 py-0.5 rounded border uppercase tracking-widest ${ticket.priority === 'urgent' ? 'bg-rose-100 text-rose-700 border-rose-200' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>
                                             {ticket.priority}
                                         </span>
-                                        <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">#{ticket.id.toString().slice(-4)}</span>
+                                        <span className="text-[9px] text-slate-300 font-bold uppercase tracking-widest">#{ticket.id.toString().slice(-4)}</span>
                                     </div>
-                                    <h4 className={`text-sm font-bold mb-3 line-clamp-1 transition-colors ${selectedTicketId === ticket.id ? 'text-brand-900' : 'text-gray-900 group-hover:text-brand-600'
-                                        }`}>
+                                    <h4 className={`text-sm font-bold mb-3 line-clamp-1 transition-colors ${selectedTicketId === ticket.id ? 'text-brand-600' : 'text-slate-900 group-hover:text-brand-600'}`}>
                                         {ticket.subject}
                                     </h4>
                                     <div className="flex items-center justify-between">
-                                        <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg uppercase ${getStatusBadge(ticket.status)}`}>
+                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border ${getStatusBadge(ticket.status)}`}>
                                             {ticket.status.replace('_', ' ')}
                                         </span>
-                                        <span className="text-[10px] text-gray-400 font-bold">
+                                        <div className="flex items-center text-slate-400 text-[10px] font-bold">
                                             {formatDateTime(ticket.updated_at).split(',')[0]}
-                                        </span>
+                                            <ChevronRight size={14} className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                        </div>
                                     </div>
                                     {selectedTicketId === ticket.id && (
                                         <div className="absolute left-0 top-0 bottom-0 w-1 bg-brand-600" />
@@ -164,164 +158,193 @@ export const SupportView: React.FC = () => {
                             ))
                         )}
                     </div>
-                </Card>
+                </div>
 
-                {/* Ticket Discussion */}
-                <Card className="flex-1 p-0 flex flex-col overflow-hidden border-gray-200 shadow-sm rounded-[32px] bg-gray-50/30">
+                {/* Ticket Details & Discussion */}
+                <div className="flex-1 flex flex-col relative bg-white overflow-hidden">
                     {selectedTicket ? (
                         <>
-                            <div className="p-8 bg-white border-b border-gray-100">
+                            {/* Detailed Header */}
+                            <div className="p-8 border-b border-slate-100 shrink-0">
                                 <div className="flex justify-between items-start mb-6">
-                                    <div>
-                                        <h2 className="text-2xl font-black text-gray-900 mb-2">{selectedTicket.subject}</h2>
-                                        <div className="flex items-center gap-4 text-xs font-bold text-gray-400 uppercase tracking-widest">
-                                            <span className="flex items-center gap-1.5"><HelpCircle size={14} /> {selectedTicket.category.replace('_', ' ')}</span>
-                                            <span className="flex items-center gap-1.5"><Clock size={14} /> {formatDateTime(selectedTicket.created_at)}</span>
+                                    <div className="space-y-1">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <Hash size={16} className="text-brand-400" />
+                                            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Case ID: {selectedTicket.id}</span>
+                                        </div>
+                                        <h2 className="text-2xl font-black text-slate-900">{selectedTicket.subject}</h2>
+                                        <div className="flex items-center gap-4 pt-1">
+                                            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500">
+                                                <HelpCircle size={14} className="text-brand-600" />
+                                                <span className="capitalize">{selectedTicket.category}</span>
+                                            </div>
+                                            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500 border-l border-slate-200 pl-4">
+                                                <Clock size={14} /> {formatDateTime(selectedTicket.created_at)}
+                                            </div>
                                         </div>
                                     </div>
                                     {selectedTicket.status !== 'resolved' && (
-                                        <button
+                                        <Button
+                                            variant="outline"
                                             onClick={() => handleResolve(selectedTicket.id)}
-                                            className="px-4 py-2 bg-green-50 text-green-700 border border-green-200 rounded-xl text-xs font-black hover:bg-green-100 transition-all uppercase tracking-tight"
+                                            className="rounded-xl border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 hover:border-emerald-300 font-bold transition-all text-xs"
                                         >
-                                            Mark as Resolved
-                                        </button>
+                                            <CheckCircle size={16} className="mr-2" /> Mark Resolved
+                                        </Button>
                                     )}
                                 </div>
-                                <div className="p-5 bg-gray-50 rounded-2xl border border-gray-100">
-                                    <p className="text-sm text-gray-700 leading-relaxed font-medium whitespace-pre-wrap">{selectedTicket.description}</p>
+                                <div className="p-6 bg-slate-50/80 rounded-2xl border border-slate-100 relative group">
+                                    <div className="absolute -top-3 left-6 px-3 py-1 bg-white border border-slate-100 rounded-lg text-[9px] font-black text-slate-400 uppercase tracking-widest shadow-sm">
+                                        Initial Report
+                                    </div>
+                                    <p className="text-sm text-slate-700 leading-relaxed font-medium whitespace-pre-wrap">{selectedTicket.description}</p>
                                 </div>
                             </div>
 
-                            <div className="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar">
-                                {selectedTicket.responses.map((resp: any) => (
-                                    <div key={resp.id} className={`flex ${resp.is_admin_response ? 'justify-start' : 'justify-end'}`}>
-                                        <div className={`max-w-[80%] rounded-3xl p-5 shadow-sm border ${resp.is_admin_response
-                                            ? 'bg-brand-950 text-white border-brand-900 rounded-tl-none'
-                                            : 'bg-white text-gray-900 border-gray-100 rounded-tr-none'
-                                            }`}>
-                                            <div className="flex items-center justify-between mb-2 gap-8">
-                                                <span className={`text-[10px] font-black uppercase tracking-widest ${resp.is_admin_response ? 'text-brand-400' : 'text-gray-400'
-                                                    }`}>
-                                                    {resp.is_admin_response ? 'Support Agent' : 'You'}
-                                                </span>
-                                                <span className={`text-[10px] ${resp.is_admin_response ? 'text-brand-500' : 'text-gray-400'}`}>
-                                                    {formatDateTime(resp.created_at).split(',')[1]}
-                                                </span>
-                                            </div>
-                                            <p className="text-sm leading-relaxed font-medium">{resp.message}</p>
-                                        </div>
+                            {/* Thread - Flex 1 handles the scrolling correctly */}
+                            <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar pb-32">
+                                {selectedTicket.responses.length === 0 ? (
+                                    <div className="py-20 text-center opacity-30">
+                                        <MessageSquare size={48} className="mx-auto mb-4" />
+                                        <p className="text-sm font-bold uppercase tracking-wider">Awaiting response from Support Agent</p>
                                     </div>
-                                ))}
+                                ) : (
+                                    selectedTicket.responses.map((resp: any) => (
+                                        <div key={resp.id} className={`flex ${resp.is_admin_response ? 'justify-start' : 'justify-end'}`}>
+                                            <div className="space-y-2 max-w-[85%]">
+                                                <div className={`flex items-center gap-2 mb-1 px-1 ${resp.is_admin_response ? 'justify-start' : 'justify-end flex-row-reverse'}`}>
+                                                    <span className="text-[10px] font-black text-slate-400 capitalize">
+                                                        {resp.is_admin_response ? 'Support Agent' : 'You'}
+                                                    </span>
+                                                    <span className="text-[9px] text-slate-300 font-bold">
+                                                        {formatDateTime(resp.created_at).split(',')[1]}
+                                                    </span>
+                                                </div>
+                                                <div className={`rounded-2xl p-5 shadow-sm border text-sm leading-relaxed font-medium ${resp.is_admin_response
+                                                    ? 'bg-brand-900 text-white border-brand-800'
+                                                    : 'bg-white text-slate-900 border-slate-100'
+                                                    }`}>
+                                                    {resp.message}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
                             </div>
 
+                            {/* Sticky Interaction Area */}
                             {selectedTicket.status !== 'resolved' && (
-                                <div className="p-8 bg-white border-t border-gray-100">
-                                    <form onSubmit={handleRespond} className="relative">
+                                <div className="absolute bottom-0 left-0 right-0 p-8 pt-10 bg-gradient-to-t from-white via-white to-transparent pointer-events-none">
+                                    <form onSubmit={handleRespond} className="relative group pointer-events-auto">
                                         <textarea
                                             value={replyMessage}
                                             onChange={(e) => setReplyMessage(e.target.value)}
-                                            placeholder="Write your follow-up here..."
-                                            className="w-full bg-gray-50 border-2 border-transparent focus:border-brand-600 focus:bg-white rounded-[24px] p-5 pr-32 min-h-[80px] outline-none transition-all text-gray-900 text-sm font-medium resize-none shadow-inner"
+                                            placeholder="Type your message here..."
+                                            className="w-full bg-white border-2 border-slate-200 focus:border-brand-600 rounded-3xl p-5 pr-36 min-h-[90px] outline-none transition-all text-slate-900 text-sm font-medium shadow-xl shadow-slate-200/50 resize-none"
                                         />
-                                        <button
+                                        <Button
                                             type="submit"
                                             disabled={isSubmitting || !replyMessage.trim()}
-                                            className="absolute bottom-4 right-4 flex items-center gap-2 px-5 py-2.5 bg-brand-600 text-white rounded-xl font-black hover:bg-brand-700 transition-all shadow-lg active:scale-95 disabled:opacity-50"
+                                            className="absolute bottom-4 right-4 rounded-xl px-6 py-4 bg-brand-600 hover:bg-brand-700 text-white font-black shadow-lg shadow-brand-900/10 active:scale-95 disabled:opacity-50"
                                         >
-                                            <Send size={16} /> Send
-                                        </button>
+                                            <Send size={18} className="mr-2" /> {isSubmitting ? 'Sending...' : 'Send'}
+                                        </Button>
                                     </form>
                                 </div>
                             )}
                         </>
                     ) : (
-                        <div className="flex-1 flex flex-col items-center justify-center p-12 text-center">
-                            <div className="w-24 h-24 bg-white rounded-[32px] flex items-center justify-center mb-6 border border-gray-100 shadow-xl shadow-gray-200/50">
-                                <MessageSquare className="text-gray-100" size={48} />
+                        <div className="flex-1 flex flex-col items-center justify-center p-20 text-center bg-slate-50/10">
+                            <div className="w-24 h-24 bg-white rounded-[32px] flex items-center justify-center mb-8 border border-slate-100 shadow-xl shadow-slate-100/50">
+                                <MessageSquare className="text-slate-100" size={56} />
                             </div>
-                            <h3 className="text-xl font-black text-gray-900 mb-2">Select a ticket to view conversation</h3>
-                            <p className="text-gray-400 max-w-xs font-medium text-sm">Select a ticket from the left to read responses or send follow-up messages.</p>
+                            <h3 className="text-2xl font-black text-slate-900 mb-3 tracking-tight">Support Interaction</h3>
+                            <p className="text-slate-400 max-w-sm font-medium leading-relaxed">Select a ticket from the sidebar to view the conversation thread or send a follow-up.</p>
                         </div>
                     )}
-                </Card>
+                </div>
             </div>
 
-            {/* Create Modal */}
+            {/* Creation Flow Modal */}
             {isCreateModalOpen && (
-                <div className="fixed inset-0 bg-brand-950/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
-                    <Card className="w-full max-w-xl p-8 rounded-[40px] shadow-2xl border-white/10 animate-in zoom-in-95 duration-200">
-                        <div className="flex justify-between items-center mb-8">
-                            <div>
-                                <h3 className="text-2xl font-black text-gray-900 tracking-tight">Open New Ticket</h3>
-                                <p className="text-gray-500 font-medium text-sm">Tell us what you need help with.</p>
+                <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
+                    <Card className="w-full max-w-xl p-0 rounded-[40px] shadow-2xl border-none overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="p-10 border-b border-slate-50">
+                            <div className="flex justify-between items-center mb-10">
+                                <div className="space-y-1">
+                                    <h3 className="text-2xl font-black text-slate-900 tracking-tight">Open New Ticket</h3>
+                                    <p className="text-slate-500 font-medium text-sm">Tell us more about your issue or request.</p>
+                                </div>
+                                <button
+                                    onClick={() => setIsCreateModalOpen(false)}
+                                    className="p-3 hover:bg-slate-100 rounded-2xl transition-all text-slate-300 hover:text-slate-900"
+                                >
+                                    <X size={24} />
+                                </button>
                             </div>
-                            <button onClick={() => setIsCreateModalOpen(false)} className="p-3 hover:bg-gray-100 rounded-2xl transition-all">
-                                <X size={20} />
-                            </button>
+
+                            <form onSubmit={handleCreateTicket} className="space-y-8">
+                                <div className="space-y-3">
+                                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Overall Subject</label>
+                                    <Input
+                                        placeholder="Briefly describe the theme"
+                                        value={newTicket.subject}
+                                        onChange={e => setNewTicket(prev => ({ ...prev, subject: e.target.value }))}
+                                        required
+                                        className="p-6 h-14 rounded-2xl border-2 border-slate-100 focus:border-brand-600 transition-all text-sm font-bold shadow-sm"
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div className="space-y-3">
+                                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Category</label>
+                                        <select
+                                            className="w-full p-4 h-14 rounded-2xl border-2 border-slate-100 focus:border-brand-600 bg-slate-50 outline-none text-sm font-bold appearance-none transition-all shadow-sm"
+                                            value={newTicket.category}
+                                            onChange={e => setNewTicket(prev => ({ ...prev, category: e.target.value as any }))}
+                                        >
+                                            <option value="technical">Technical Issue</option>
+                                            <option value="billing">Billing & Finance</option>
+                                            <option value="customization">Customization</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Priority</label>
+                                        <select
+                                            className="w-full p-4 h-14 rounded-2xl border-2 border-slate-100 focus:border-brand-600 bg-slate-50 outline-none text-sm font-bold appearance-none transition-all shadow-sm"
+                                            value={newTicket.priority}
+                                            onChange={e => setNewTicket(prev => ({ ...prev, priority: e.target.value as any }))}
+                                        >
+                                            <option value="low">Low</option>
+                                            <option value="medium">Medium</option>
+                                            <option value="high">High</option>
+                                            <option value="urgent">Urgent</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Describe in detail</label>
+                                    <textarea
+                                        className="w-full p-6 h-40 rounded-3xl border-2 border-slate-100 focus:border-brand-600 bg-slate-50 outline-none text-sm font-bold resize-none transition-all shadow-sm"
+                                        placeholder="Provide context, steps to reproduce, or requirements..."
+                                        value={newTicket.description}
+                                        onChange={e => setNewTicket(prev => ({ ...prev, description: e.target.value }))}
+                                        required
+                                    />
+                                </div>
+
+                                <div className="flex gap-4 pt-4">
+                                    <Button type="button" variant="outline" className="flex-1 rounded-2xl h-14 font-black border-slate-200" onClick={() => setIsCreateModalOpen(false)}>
+                                        Cancel
+                                    </Button>
+                                    <Button type="submit" disabled={isSubmitting} className="flex-1 rounded-2xl h-14 font-black shadow-lg shadow-brand-900/10 active:scale-95 transition-all bg-brand-600">
+                                        {isSubmitting ? 'Creating...' : 'Submit Support Ticket'}
+                                    </Button>
+                                </div>
+                            </form>
                         </div>
-
-                        <form onSubmit={handleCreateTicket} className="space-y-6">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Subject</label>
-                                <Input
-                                    placeholder="Briefly describe the issue"
-                                    value={newTicket.subject}
-                                    onChange={e => setNewTicket(prev => ({ ...prev, subject: e.target.value }))}
-                                    required
-                                    className="p-4 rounded-2xl border-2 border-gray-100 focus:border-brand-600 focus:ring-0 transition-all text-sm font-bold"
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Category</label>
-                                    <select
-                                        className="w-full p-4 rounded-2xl border-2 border-gray-100 focus:border-brand-600 bg-gray-50 outline-none text-sm font-bold appearance-none transition-all"
-                                        value={newTicket.category}
-                                        onChange={e => setNewTicket(prev => ({ ...prev, category: e.target.value as Types.SupportTicket['category'] }))}
-                                    >
-                                        <option value="technical">Technical Issue</option>
-                                        <option value="billing">Billing & Fees</option>
-                                        <option value="customization">Customization</option>
-                                        <option value="other">Other</option>
-                                    </select>
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Priority</label>
-                                    <select
-                                        className="w-full p-4 rounded-2xl border-2 border-gray-100 focus:border-brand-600 bg-gray-50 outline-none text-sm font-bold appearance-none transition-all"
-                                        value={newTicket.priority}
-                                        onChange={e => setNewTicket(prev => ({ ...prev, priority: e.target.value as Types.SupportTicket['priority'] }))}
-                                    >
-                                        <option value="low">Low</option>
-                                        <option value="medium">Medium</option>
-                                        <option value="high">High</option>
-                                        <option value="urgent">Urgent</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Description</label>
-                                <textarea
-                                    className="w-full p-4 rounded-3xl border-2 border-gray-100 focus:border-brand-600 bg-gray-50 outline-none text-sm font-bold min-h-[150px] resize-none transition-all"
-                                    placeholder="Provide more details about the issue or request..."
-                                    value={newTicket.description}
-                                    onChange={e => setNewTicket(prev => ({ ...prev, description: e.target.value }))}
-                                    required
-                                />
-                            </div>
-
-                            <div className="flex gap-4 pt-4">
-                                <Button type="button" variant="outline" className="flex-1 rounded-2xl py-6 font-black" onClick={() => setIsCreateModalOpen(false)}>
-                                    Cancel
-                                </Button>
-                                <Button type="submit" disabled={isSubmitting} className="flex-1 rounded-2xl py-6 font-black shadow-lg shadow-brand-900/20 active:scale-95 transition-all">
-                                    {isSubmitting ? 'Submitting...' : 'Submit Ticket'}
-                                </Button>
-                            </div>
-                        </form>
                     </Card>
                 </div>
             )}
