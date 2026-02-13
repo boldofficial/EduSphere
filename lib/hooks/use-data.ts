@@ -45,6 +45,7 @@ export const queryKeys = {
     platformSettings: ['platform_settings'] as const,
     emailTemplates: ['email_templates'] as const,
     emailLogs: ['email_logs'] as const,
+    supportTickets: ['support_tickets'] as const,
     me: ['me'] as const,
     scholarships: ['scholarships'] as const,
     assignments: ['assignments'] as const,
@@ -81,6 +82,7 @@ export {
     useStrategicAnalytics, usePlatformGovernance, usePlatformAnnouncements,
     useGlobalSearch, useModules, usePlatformSettings, useUpdatePlatformSettings,
     useEmailTemplates, useUpdateEmailTemplate, useEmailLogs,
+    useSupportTickets, useCreateSupportTicket, useRespondToTicket, useResolveTicket
 } from './use-admin';
 
 export {

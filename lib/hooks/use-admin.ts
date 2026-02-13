@@ -223,3 +223,58 @@ export function useEmailLogs() {
         refetchInterval: 10000,
     });
 }
+
+// =============================================
+// SUPPORT TICKETS
+// =============================================
+export function useSupportTickets() {
+    return useQuery({
+        queryKey: queryKeys.supportTickets,
+        queryFn: async () => {
+            const response = await apiClient.get('schools/support/tickets/');
+            if (response.data && typeof response.data === 'object' && 'results' in response.data) {
+                return response.data.results;
+            }
+            return Array.isArray(response.data) ? response.data : [];
+        },
+    });
+}
+
+export function useCreateSupportTicket() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (ticket: Partial<Types.SupportTicket>) => {
+            const response = await apiClient.post('schools/support/tickets/', ticket);
+            return response.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.supportTickets });
+        },
+    });
+}
+
+export function useRespondToTicket() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ id, message }: { id: number; message: string }) => {
+            const response = await apiClient.post(`schools/support/tickets/${id}/respond/`, { message });
+            return response.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.supportTickets });
+        },
+    });
+}
+
+export function useResolveTicket() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (id: number) => {
+            const response = await apiClient.post(`schools/support/tickets/${id}/resolve/`);
+            return response.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.supportTickets });
+        },
+    });
+}

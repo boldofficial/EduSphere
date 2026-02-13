@@ -447,5 +447,26 @@ export interface GradeRange extends Entity {
 }
 
 
+export interface TicketResponse extends Omit<Entity, 'created_at' | 'updated_at'> {
+  username: string;
+  message: string;
+  is_admin_response: boolean;
+  created_at: string;
+}
+
+export interface SupportTicket extends Omit<Entity, 'created_at' | 'updated_at'> {
+  school_id: number;
+  school_name: string;
+  requester_name: string;
+  subject: string;
+  category: 'technical' | 'billing' | 'customization' | 'other';
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  status: 'open' | 'in_progress' | 'resolved' | 'closed';
+  description: string;
+  responses: TicketResponse[];
+  created_at: string;
+  updated_at: string;
+}
+
 // Restoring UserRole at the end
 export type UserRole = 'super_admin' | 'admin' | 'teacher' | 'student' | 'parent' | 'staff';

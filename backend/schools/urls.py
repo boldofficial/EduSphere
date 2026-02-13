@@ -34,3 +34,11 @@ urlpatterns = [
     path('admin/demo-requests/', AdminDemoRequestView.as_view(), name='admin-demo-list'),
     path('admin/demo-requests/<int:pk>/approve/', AdminDemoRequestView.as_view(), name='admin-demo-approve'),
 ]
+
+from rest_framework.routers import DefaultRouter
+from .views_support import SupportTicketViewSet
+
+router = DefaultRouter()
+router.register(r'support/tickets', SupportTicketViewSet, basename='support-tickets')
+
+urlpatterns += router.urls

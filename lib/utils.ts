@@ -164,11 +164,11 @@ export const INITIAL_SETTINGS: Settings = {
   role_permissions: {
 
     super_admin: {
-      navigation: ['dashboard', 'students', 'teachers', 'staff', 'classes', 'timetables', 'grading', 'attendance', 'bursary', 'learning', 'announcements', 'calendar', 'analytics', 'id_cards', 'broadsheet', 'admissions', 'newsletter', 'messages', 'conduct', 'cms', 'data', 'settings', 'admin_schools', 'admin_revenue', 'system_health'],
+      navigation: ['dashboard', 'students', 'teachers', 'staff', 'classes', 'timetables', 'grading', 'attendance', 'bursary', 'learning', 'announcements', 'calendar', 'analytics', 'id_cards', 'broadsheet', 'admissions', 'newsletter', 'messages', 'conduct', 'cms', 'data', 'settings', 'admin_schools', 'admin_revenue', 'system_health', 'support'],
       dashboardWidgets: ['stats', 'finance_chart', 'student_population', 'quick_actions', 'recent_transactions', 'strategic_analytics', 'platform_governance']
     },
     admin: {
-      navigation: ['dashboard', 'students', 'teachers', 'staff', 'classes', 'timetables', 'grading', 'attendance', 'bursary', 'learning', 'announcements', 'calendar', 'analytics', 'id_cards', 'broadsheet', 'admissions', 'newsletter', 'messages', 'conduct', 'cms', 'data', 'settings'],
+      navigation: ['dashboard', 'students', 'teachers', 'staff', 'classes', 'timetables', 'grading', 'attendance', 'bursary', 'learning', 'announcements', 'calendar', 'analytics', 'id_cards', 'broadsheet', 'admissions', 'newsletter', 'messages', 'conduct', 'cms', 'data', 'settings', 'support'],
       dashboardWidgets: ['stats', 'finance_chart', 'student_population', 'quick_actions', 'recent_transactions']
     },
     teacher: {

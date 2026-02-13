@@ -76,3 +76,25 @@ class DemoRequestSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'email', 'phone', 'school_name', 'role', 'status', 'created_at']
         read_only_fields = ['id', 'status', 'created_at']
 
+from .models import SupportTicket, TicketResponse
+
+class TicketResponseSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
+    class Meta:
+        model = TicketResponse
+        fields = ['id', 'username', 'message', 'is_admin_response', 'created_at']
+
+class SupportTicketSerializer(serializers.ModelSerializer):
+    responses = TicketResponseSerializer(many=True, read_only=True)
+    school_name = serializers.CharField(source='school.name', read_only=True)
+    requester_name = serializers.CharField(source='user.username', read_only=True)
+    
+    class Meta:
+        model = SupportTicket
+        fields = [
+            'id', 'school_id', 'school_name', 'requester_name', 'subject', 
+            'category', 'priority', 'status', 'description', 'responses', 
+            'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'status', 'created_at', 'updated_at']
+

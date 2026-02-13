@@ -255,3 +255,57 @@ class DemoRequest(models.Model):
             models.Index(fields=['status']),
             models.Index(fields=['created_at']),
         ]
+
+class SupportTicket(models.Model):
+    CATEGORY_CHOICES = (
+        ('technical', 'Technical Issue'),
+        ('billing', 'Billing & Subscription'),
+        ('customization', 'Customization Request'),
+        ('other', 'Other'),
+    )
+    PRIORITY_CHOICES = (
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
+        ('urgent', 'Urgent'),
+    )
+    STATUS_CHOICES = (
+        ('open', 'Open'),
+        ('in_progress', 'In Progress'),
+        ('resolved', 'Resolved'),
+        ('closed', 'Closed'),
+    )
+
+    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='support_tickets')
+    user = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='created_tickets')
+    subject = models.CharField(max_length=255)
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='technical')
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='medium')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
+    description = models.TextField()
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"[{self.status}] {self.subject} ({self.school.name})"
+
+    class Meta:
+        ordering = ['-updated_at']
+        indexes = [
+            models.Index(fields=['school', 'status']),
+            models.Index(fields=['created_at']),
+        ]
+
+class TicketResponse(models.Model):
+    ticket = models.ForeignKey(SupportTicket, on_delete=models.CASCADE, related_name='responses')
+    user = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='ticket_responses')
+    message = models.TextField()
+    is_admin_response = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Response to {self.ticket.subject} by {self.user.username}"
+
+    class Meta:
+        ordering = ['created_at']

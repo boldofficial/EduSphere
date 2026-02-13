@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useSchoolStore } from '@/lib/store';
 import {
     LayoutDashboard, School as SchoolIcon, CreditCard, Settings,
-    LogOut, Search, AlertCircle, Grid, ScrollText, Mail, Rocket
+    LogOut, Search, AlertCircle, Grid, ScrollText, Mail, Rocket,
+    MessageSquare
 } from 'lucide-react';
 import {
     useSystemHealth, useAdminSchools, useAdminPlans, useAdminRevenue,
@@ -24,6 +25,7 @@ import { ModulesTab } from './components/ModulesTab';
 import { PlatformSettingsTab } from './components/PlatformSettingsTab';
 import { EmailTemplatesTab, EmailLogsTab } from './components/EmailManagement';
 import { GovernanceTab, BroadcastsTab } from './components/GovernanceTab';
+import { SupportTab } from './components/SupportTab';
 import { SchoolEditModal } from './components/SchoolEditModal';
 import { DashboardDemoRequestsTab } from '@/components/features/dashboard/DashboardDemoRequestsTab';
 
@@ -43,7 +45,7 @@ function SidebarItem({ icon: Icon, label, active, onClick }: any) {
 export default function SuperAdminDashboard() {
     const { currentUser, currentRole, logout, hasHydrated } = useSchoolStore();
     const router = useRouter();
-    const [activeTab, setActiveTab] = useState<'overview' | 'tenants' | 'financials' | 'plans' | 'governance' | 'broadcasts' | 'modules' | 'settings' | 'templates' | 'logs' | 'demo_requests'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'tenants' | 'financials' | 'plans' | 'governance' | 'broadcasts' | 'modules' | 'settings' | 'templates' | 'logs' | 'demo_requests' | 'support'>('overview');
     const [searchQuery, setSearchQuery] = useState('');
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
@@ -177,6 +179,7 @@ export default function SuperAdminDashboard() {
                     <SidebarItem icon={Mail} label="Email Templates" active={activeTab === 'templates'} onClick={() => setActiveTab('templates')} />
                     <SidebarItem icon={ScrollText} label="Delivery Logs" active={activeTab === 'logs'} onClick={() => setActiveTab('logs')} />
                     <SidebarItem icon={Rocket} label="Demo Requests" active={activeTab === 'demo_requests'} onClick={() => setActiveTab('demo_requests')} />
+                    <SidebarItem icon={MessageSquare} label="Support Tickets" active={activeTab === 'support'} onClick={() => setActiveTab('support')} />
                 </nav>
                 <div className="p-4 border-t border-white/10">
                     <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 w-full text-slate-300 hover:text-white hover:bg-white/5 rounded-xl transition-all">
@@ -290,6 +293,7 @@ export default function SuperAdminDashboard() {
                     {activeTab === 'templates' && <EmailTemplatesTab templates={templates} />}
                     {activeTab === 'logs' && <EmailLogsTab logs={emailLogs} />}
                     {activeTab === 'demo_requests' && <DashboardDemoRequestsTab />}
+                    {activeTab === 'support' && <SupportTab />}
                 </div>
             </main>
 
