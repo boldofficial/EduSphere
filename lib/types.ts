@@ -393,6 +393,7 @@ export type ViewState =
   | 'analytics'
   | 'learning'
   | 'conduct'
+  | 'demo_requests'
   | 'users';
 
 //Optionally add new Viewstates here for better control

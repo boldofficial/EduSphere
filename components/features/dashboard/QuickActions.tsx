@@ -1,17 +1,24 @@
 import React from 'react';
-import { Plus, CreditCard, Calendar as CalendarIcon, BadgeCheck } from 'lucide-react';
+import { Plus, CreditCard, Calendar as CalendarIcon, BadgeCheck, Rocket } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import * as Types from '@/lib/types';
 
 interface QuickActionsProps {
     onChangeView: (view: Types.ViewState) => void;
+    onTabChange?: (tab: any) => void;
+    userRole?: string;
     allowedModules?: string[];
 }
 
-export const QuickActions: React.FC<QuickActionsProps> = ({ onChangeView, allowedModules = [] }) => {
+export const QuickActions: React.FC<QuickActionsProps> = ({
+    onChangeView,
+    onTabChange,
+    userRole,
+    allowedModules = []
+}) => {
     return (
         <Card title="Quick Actions">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
                 <button onClick={() => onChangeView('students')} className="group p-3 sm:p-4 bg-white border border-blue-100 hover:border-blue-300 hover:shadow-md rounded-xl flex flex-col items-center justify-center gap-2 sm:gap-3 transition-all">
                     <div className="p-2 sm:p-3 bg-blue-100 text-blue-600 rounded-full group-hover:scale-110 transition-transform"><Plus className="h-5 w-5 sm:h-6 sm:w-6" /></div>
                     <span className="font-semibold text-gray-700 group-hover:text-blue-700 text-xs sm:text-sm">New Student</span>
@@ -32,6 +39,12 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ onChangeView, allowe
                     <button onClick={() => onChangeView('id_cards')} className="group p-3 sm:p-4 bg-white border border-orange-100 hover:border-orange-300 hover:shadow-md rounded-xl flex flex-col items-center justify-center gap-2 sm:gap-3 transition-all">
                         <div className="p-2 sm:p-3 bg-orange-100 text-orange-600 rounded-full group-hover:scale-110 transition-transform"><BadgeCheck className="h-5 w-5 sm:h-6 sm:w-6" /></div>
                         <span className="font-semibold text-gray-700 group-hover:text-orange-700 text-xs sm:text-sm">ID Cards</span>
+                    </button>
+                )}
+                {userRole === 'super_admin' && (
+                    <button onClick={() => onTabChange?.('demo_requests')} className="group p-3 sm:p-4 bg-white border border-brand-100 hover:border-brand-300 hover:shadow-md rounded-xl flex flex-col items-center justify-center gap-2 sm:gap-3 transition-all">
+                        <div className="p-2 sm:p-3 bg-brand-100 text-brand-600 rounded-full group-hover:scale-110 transition-transform"><Rocket className="h-5 w-5 sm:h-6 sm:w-6" /></div>
+                        <span className="font-semibold text-gray-700 group-hover:text-brand-700 text-xs sm:text-sm">Demo Requests</span>
                     </button>
                 )}
             </div>

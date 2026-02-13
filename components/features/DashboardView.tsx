@@ -357,7 +357,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                             {allowedModules.includes('bursary') && (
                                 <AdvancedAnalytics students={students} payments={payments} fees={fees} settings={settings} />
                             )}
-                            <QuickActions onChangeView={onChangeView || (() => { })} allowedModules={allowedModules} />
+                            <QuickActions
+                                onChangeView={onChangeView || (() => { })}
+                                onTabChange={setActiveTab}
+                                userRole={user?.role?.toLowerCase()}
+                                allowedModules={allowedModules}
+                            />
                         </div>
                         <div className="space-y-6">
                             {allowedModules.includes('students') && <StudentPopulation students={students} />}
