@@ -182,7 +182,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     // Master list of allowed IDs considering both Role Permissions AND Plan Limitations
     const masterAllowedNavIds = allowedNavIds.filter((id: string) => {
         // Special Case: Dashboard and Settings are core platform features
-        if (id === 'dashboard' || id === 'settings' || id === 'data' || id === 'timetables') return true;
+        if (id === 'dashboard' || id === 'settings' || id === 'data' || id === 'timetables' || id === 'support') return true;
 
         // The module must be in both the user's role-permission list AND the school's plan-allowed list
         return (schoolAllowedModules as string[]).includes(id);
