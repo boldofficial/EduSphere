@@ -26,7 +26,7 @@ export const LoginView = () => {
     const { login } = useSchoolStore();
     const { data: settings = Utils.INITIAL_SETTINGS } = useSettings();
 
-    const isDemo = false; // Disabled Demo Mode
+    const isDemo = true; // Enabled Demo Mode
     const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
 
     // Form states
@@ -202,6 +202,31 @@ export const LoginView = () => {
         }
     };
 
+    const handleDirectLogin = async (role: UserRole) => {
+        setLoginError('');
+        setIsLoading(true);
+        try {
+            const res = await fetch('/api/auth/demo-login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ role: role === 'super_admin' ? 'admin' : role }),
+            });
+
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.detail || 'Demo login failed');
+            }
+
+            const data = await res.json();
+            login(role, { id: data.user.id, name: data.user.username, email: data.user.email, role });
+            router.push(role === 'super_admin' ? '/dashboard/super-admin' : '/dashboard');
+        } catch (err: any) {
+            setLoginError(err.message || 'Demo login failed');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return (
         <div className="min-h-screen relative flex flex-col items-center justify-center p-4 md:p-6 font-primary overflow-hidden">
             <div className="absolute inset-0 z-0">
@@ -272,6 +297,8 @@ export const LoginView = () => {
                         onSubmit={handleStudentLogin}
                         onBack={() => { setSelectedRole(null); resetForms(); }}
                         onForgotPassword={() => setShowForgotPassword(true)}
+                        isDemo={isDemo}
+                        onDirectLogin={handleDirectLogin}
                     />
                 )}
 
@@ -290,7 +317,7 @@ export const LoginView = () => {
                         setLoginError={setLoginError}
                         isLoading={isLoading}
                         onLogin={handleLogin}
-                        onDirectLogin={(role) => login(role, { id: 'demo', name: 'Demo User', role })}
+                        onDirectLogin={handleDirectLogin}
                         onBack={() => { setSelectedRole(null); resetForms(); }}
                     />
                 )}

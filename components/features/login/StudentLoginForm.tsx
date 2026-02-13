@@ -16,6 +16,8 @@ interface StudentLoginFormProps {
     onSubmit: (e: React.FormEvent) => void;
     onBack: () => void;
     onForgotPassword: () => void;
+    isDemo: boolean;
+    onDirectLogin: (role: 'student') => void;
 }
 
 export const StudentLoginForm: React.FC<StudentLoginFormProps> = ({
@@ -24,7 +26,8 @@ export const StudentLoginForm: React.FC<StudentLoginFormProps> = ({
     showPassword, setShowPassword,
     loginError, setLoginError,
     isLoading,
-    onSubmit, onBack, onForgotPassword
+    onSubmit, onBack, onForgotPassword,
+    isDemo, onDirectLogin
 }) => {
     return (
         <div className="w-full max-w-md animate-in slide-in-from-bottom-6 fade-in duration-500">
@@ -35,6 +38,27 @@ export const StudentLoginForm: React.FC<StudentLoginFormProps> = ({
                     </div>
                     <h2 className="text-2xl font-bold text-gray-900">Student / Parent Portal</h2>
                 </div>
+
+                {isDemo && (
+                    <div className="mb-6">
+                        <div className="bg-purple-50 text-purple-800 p-4 rounded-xl text-sm flex items-start gap-2 mb-4 border border-purple-100">
+                            <AlertCircle size={16} className="mt-0.5 shrink-0" />
+                            <p>You are in <strong>Demo Mode</strong>. One-click access to the student dashboard.</p>
+                        </div>
+                        <button
+                            onClick={() => onDirectLogin('student')}
+                            className="w-full py-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-all shadow-lg flex items-center justify-center gap-2"
+                        >
+                            Enter as Demo Student
+                            <ArrowRight size={20} />
+                        </button>
+
+                        <div className="relative my-6">
+                            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-100"></div></div>
+                            <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-2 text-gray-400">Or Login Manually</span></div>
+                        </div>
+                    </div>
+                )}
 
                 <form onSubmit={onSubmit} className="space-y-4">
                     <div>
