@@ -427,7 +427,7 @@ class AdminDemoRequestView(APIView):
             'email': demo_req.email,
             'school_name': demo_req.school_name,
             'login_url': "https://demo.myregistra.net/login",
-            'username': "demo_admin",
+            'username': "demo@myregistra.net",
             'password': "demo_pressure_2025"
         }
         

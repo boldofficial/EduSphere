@@ -57,7 +57,7 @@ def run_fix():
                     <a href="{{ login_url }}" style="color: #6366f1;">{{ login_url }}</a>
                 </div>
                 <div class="credential-item">
-                    <span class="label">Username:</span>
+                    <span class="label">Email:</span>
                     <span class="value">{{ username }}</span>
                 </div>
                 <div class="credential-item">
@@ -85,7 +85,7 @@ Great news! Your request for access to the {{ school_name }} demo has been appro
 Here are your login credentials:
  
 Login URL: {{ login_url }}
-Username: {{ username }}
+Email: {{ username }}
 Password: {{ password }}
  
 Please log in and explore the platform.
@@ -96,7 +96,7 @@ The Registra Team""",
             'name': 'Applicant Name',
             'school_name': 'School Name',
             'login_url': 'Link to Login',
-            'username': 'Demo Username',
+            'username': 'Demo Email',
             'password': 'Demo Password'
         },
         'is_active': True

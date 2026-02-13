@@ -33,12 +33,13 @@ def setup_demo():
     if not user:
         user = User.objects.create(
             username=username,
-            email='demo_admin@boldideas.edu',
+            email='demo@myregistra.net',
             role=User.Role.SCHOOL_ADMIN
         )
-        print(f"✅ Created user: {username}")
+        print(f"✅ Created user: {username} with email demo@myregistra.net")
     else:
         print(f"ℹ️ User '{username}' already exists. Updating details...")
+        user.email = 'demo@myregistra.net'
 
     # 3. Set password
     user.set_password(password)
