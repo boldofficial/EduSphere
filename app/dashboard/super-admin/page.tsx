@@ -167,7 +167,7 @@ export default function SuperAdminDashboard() {
                         <img src="/footer-logo.png" alt="Registra" className="h-full w-auto object-contain" />
                     </div>
                 </div>
-                <nav className="flex-1 p-4 space-y-2">
+                <nav className="flex-1 p-4 space-y-2 overflow-y-auto custom-scrollbar">
                     <SidebarItem icon={LayoutDashboard} label="Overview" active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} />
                     <SidebarItem icon={SchoolIcon} label="Tenants (Schools)" active={activeTab === 'tenants'} onClick={() => setActiveTab('tenants')} />
                     <SidebarItem icon={CreditCard} label="Financials" active={activeTab === 'financials'} onClick={() => setActiveTab('financials')} />

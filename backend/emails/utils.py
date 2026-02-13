@@ -23,7 +23,18 @@ def send_template_email(template_name, recipient_email, context=None):
     try:
         email_template = EmailTemplate.objects.get(slug=template_name)
     except EmailTemplate.DoesNotExist:
-        logger.error(f"EmailTemplate '{template_name}' not found.")
+        error_msg = f"EmailTemplate '{template_name}' not found."
+        logger.error(error_msg)
+        # Create log entry even without template
+        try:
+            EmailLog.objects.create(
+                recipient=recipient_email,
+                status='failed',
+                error_message=error_msg,
+                metadata=context
+            )
+        except Exception as log_error:
+            logger.error(f"Failed to create EmailLog for missing template: {log_error}")
         return False
 
     # 2. Render Subject
