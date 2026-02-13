@@ -176,10 +176,10 @@ class DemoLoginView(APIView):
         role_type = request.data.get('role', 'admin') # admin, teacher, bursar
         
         username_map = {
-            'admin': 'demo_admin',
-            'teacher': 'demo_teacher',
-            'student': 'demo_student',
-            'staff': 'demo_staff'
+            'admin': 'demo@myregistra.net',
+            'teacher': 'teacher@myregistra.net',
+            'student': 'ST001@demo',
+            'staff': 'staff@myregistra.net'
         }
         
         username = username_map.get(role_type, 'demo_admin')

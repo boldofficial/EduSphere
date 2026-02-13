@@ -72,7 +72,7 @@ def run_fix():
                 <!-- Student -->
                 <div class="portal-card">
                     <span class="portal-name">🎓 Student / Parent</span>
-                    <div class="cred-item"><span class="label">Email:</span> <span class="value">student@myregistra.net</span></div>
+                    <div class="cred-item"><span class="label">Student No:</span> <span class="value">ST001</span></div>
                     <div class="cred-item"><span class="label">Pass:</span> <span class="value">{{ password }}</span></div>
                 </div>
                 
@@ -102,7 +102,7 @@ Here are the login credentials for all portals:
  
 - Admin Portal: demo@myregistra.net
 - Teacher Portal: teacher@myregistra.net
-- Student/Parent Portal: student@myregistra.net
+- Student/Parent Portal: ST001
 - Non-Teaching Portal: staff@myregistra.net
  
 Shared Password: {{ password }}

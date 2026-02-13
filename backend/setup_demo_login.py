@@ -27,25 +27,25 @@ def setup_demo():
     # 2. Define Demo Users
     demo_users = [
         {
-            'username': 'demo_admin',
+            'username': 'demo@myregistra.net',
             'email': 'demo@myregistra.net',
             'role': User.Role.SCHOOL_ADMIN,
             'label': 'Admin'
         },
         {
-            'username': 'demo_teacher',
+            'username': 'teacher@myregistra.net',
             'email': 'teacher@myregistra.net',
             'role': User.Role.TEACHER,
             'label': 'Teacher'
         },
         {
-            'username': 'demo_student',
+            'username': 'ST001@demo',
             'email': 'student@myregistra.net',
             'role': User.Role.STUDENT,
             'label': 'Student / Parent'
         },
         {
-            'username': 'demo_staff',
+            'username': 'staff@myregistra.net',
             'email': 'staff@myregistra.net',
             'role': User.Role.STAFF,
             'label': 'Non Teaching'
@@ -70,12 +70,53 @@ def setup_demo():
 
         user.set_password(password)
         
-        # Link to school
         if user.school != school:
             user.school = school
             print(f"   - Linked to demo school")
         
         user.save()
+
+        # 3. Create Profile Models
+        if user.role == User.Role.STUDENT:
+            from academic.models import Student
+            Student.objects.update_or_create(
+                user=user,
+                defaults={
+                    'school': school,
+                    'student_no': 'ST001',
+                    'names': 'Demo Student',
+                    'gender': 'Male'
+                }
+            )
+            print(f"   - Created Student Profile (NO: ST001)")
+            
+        elif user.role == User.Role.STAFF:
+            from academic.models import Teacher
+            Teacher.objects.update_or_create(
+                user=user,
+                defaults={
+                    'school': school,
+                    'name': 'Demo Staff Member',
+                    'staff_type': 'NON_ACADEMIC',
+                    'role': 'Bursar',
+                    'email': user.email
+                }
+            )
+            print(f"   - Created Non-Academic Staff Profile")
+
+        elif user.role == User.Role.TEACHER:
+            from academic.models import Teacher
+            Teacher.objects.update_or_create(
+                user=user,
+                defaults={
+                    'school': school,
+                    'name': 'Demo Teacher',
+                    'staff_type': 'ACADEMIC',
+                    'email': user.email
+                }
+            )
+            print(f"   - Created Teacher Profile")
+
         print(f"   - Login Email: {user.email}")
         print(f"   - Status: Active")
 
