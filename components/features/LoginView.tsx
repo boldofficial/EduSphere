@@ -23,10 +23,10 @@ import { ForgotPasswordModal } from './login/ForgotPasswordModal';
 
 export const LoginView = () => {
     const router = useRouter();
-    const { login } = useSchoolStore();
     const { data: settings = Utils.INITIAL_SETTINGS } = useSettings();
+    const { login } = useSchoolStore();
 
-    const isDemo = true; // Enabled Demo Mode
+    const [isDemo, setIsDemo] = useState(false);
     const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
 
     // Form states
@@ -64,6 +64,7 @@ export const LoginView = () => {
                 (host.includes('vercel.app') && !host.includes('-'));
 
             setIsSystemRoot(isRoot);
+            setIsDemo(host.startsWith('demo.'));
         }
     }, []);
 
