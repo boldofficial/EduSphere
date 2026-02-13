@@ -48,14 +48,21 @@ def send_template_email(template_name, recipient_email, context=None):
     
     p_settings = PlatformSettings.objects.first()
     
-    provider = getattr(p_settings, 'email_provider', 'smtp')
-    email_from = getattr(p_settings, 'email_from', None) or settings.DEFAULT_FROM_EMAIL
-    email_from_name = getattr(p_settings, 'email_from_name', 'Registra')
+    provider = 'smtp'
+    email_from = settings.DEFAULT_FROM_EMAIL
+    email_from_name = 'Registra'
+    api_key = None
+
+    if p_settings:
+        provider = p_settings.email_provider
+        email_from = p_settings.email_from or settings.DEFAULT_FROM_EMAIL
+        email_from_name = p_settings.email_from_name or 'Registra'
+        api_key = p_settings.email_api_key
 
     status = 'sent'
     error_message = ''
 
-    if provider == 'brevo_api' and p_settings.email_api_key:
+    if provider == 'brevo_api' and api_key:
         # Use Brevo API
         url = "https://api.brevo.com/v3/smtp/email"
         headers = {
@@ -82,12 +89,20 @@ def send_template_email(template_name, recipient_email, context=None):
             logger.error(f"Failed to send Brevo API email: {e}")
     else:
         # Use Dynamic SMTP (fallback to settings.py)
-        email_host = getattr(p_settings, 'email_host', None) or settings.EMAIL_HOST
-        email_port = getattr(p_settings, 'email_port', None) or settings.EMAIL_PORT
-        email_user = getattr(p_settings, 'email_user', None) or settings.EMAIL_HOST_USER
-        email_password = getattr(p_settings, 'email_password', None) or settings.EMAIL_HOST_PASSWORD
-        use_tls = getattr(p_settings, 'email_use_tls', True)
-        use_ssl = getattr(p_settings, 'email_use_ssl', False)
+        email_host = getattr(p_settings, 'email_host', None) if p_settings else None
+        email_host = email_host or settings.EMAIL_HOST
+        
+        email_port = getattr(p_settings, 'email_port', None) if p_settings else None
+        email_port = email_port or settings.EMAIL_PORT
+        
+        email_user = getattr(p_settings, 'email_user', None) if p_settings else None
+        email_user = email_user or settings.EMAIL_HOST_USER
+        
+        email_password = getattr(p_settings, 'email_password', None) if p_settings else None
+        email_password = email_password or settings.EMAIL_HOST_PASSWORD
+        
+        use_tls = getattr(p_settings, 'email_use_tls', True) if p_settings else True
+        use_ssl = getattr(p_settings, 'email_use_ssl', False) if p_settings else False
 
         try:
             connection = get_connection(
