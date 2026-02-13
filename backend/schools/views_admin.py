@@ -424,10 +424,8 @@ class AdminDemoRequestView(APIView):
         # Send Email
         context = {
             'name': demo_req.name,
-            'email': demo_req.email,
             'school_name': demo_req.school_name,
             'login_url': "https://demo.myregistra.net/login",
-            'username': "demo@myregistra.net",
             'password': "demo_pressure_2025"
         }
         
