@@ -43,12 +43,12 @@ export default function OnboardingPage() {
             email: '',
             password: '',
             admin_name: '',
-            plan_slug: searchParams.get('plan') || 'starter',
+            plan_slug: searchParams.get('plan') || 'enterprise',
             phone: '',
             school_email: '',
             address: '',
             contact_person: '',
-            payment_method: 'paystack',
+            payment_method: 'bank_transfer', // Dummy value for free phase
             payment_proof: ''
         }
     });
@@ -137,7 +137,7 @@ export default function OnboardingPage() {
                         <div className={`h-1 flex-1 mx-4 bg-gray-200 rounded-full ${step >= 3 ? 'bg-brand-600' : ''}`}></div>
                         <div className={`flex items-center gap-2 ${step >= 3 ? 'text-brand-600' : ''}`}>
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${step >= 3 ? 'border-brand-600 bg-brand-50' : 'border-gray-200'}`}>3</div>
-                            <span>Payment</span>
+                            <span>Terms</span>
                         </div>
                         <div className={`h-1 flex-1 mx-4 bg-gray-200 rounded-full ${step >= 4 ? 'bg-brand-600' : ''}`}></div>
                         <div className={`flex items-center gap-2 ${step >= 4 ? 'text-brand-600' : ''}`}>
@@ -152,17 +152,29 @@ export default function OnboardingPage() {
                                 <h2 className="text-xl font-bold flex items-center gap-2">
                                     <CreditCard className="text-brand-600" /> Select Subscription
                                 </h2>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    {plans.map(plan => (
+                                <div className="grid grid-cols-1 gap-4">
+                                    {plans.filter(p => p.slug === 'enterprise').map(plan => (
                                         <div
                                             key={plan.id}
-                                            onClick={() => setValue('plan_slug', plan.slug)}
-                                            className={`cursor-pointer p-4 rounded-xl border-2 transition-all ${selectedPlanSlug === plan.slug ? 'border-brand-600 bg-brand-50' : 'border-gray-200 hover:border-brand-300'}`}
+                                            className="p-6 rounded-2xl border-2 border-brand-600 bg-brand-50"
                                         >
-                                            <h3 className="font-bold text-gray-900">{plan.name}</h3>
-                                            <p className="text-sm text-gray-500 mt-1">₦{plan.price}</p>
+                                            <div className="flex justify-between items-center mb-2">
+                                                <h3 className="font-black text-2xl text-gray-900">{plan.name}</h3>
+                                                <span className="px-3 py-1 bg-brand-600 text-white text-xs font-bold rounded-full">PILOT ACCESS</span>
+                                            </div>
+                                            <p className="text-brand-700 font-bold mb-4">FREE for 2025/2026 Session (2nd & 3rd Term)</p>
+                                            <ul className="space-y-2 text-sm text-gray-600">
+                                                <li className="flex items-center gap-2"><CheckCircle2 size={14} className="text-brand-600" /> Full academic & finance automation</li>
+                                                <li className="flex items-center gap-2"><CheckCircle2 size={14} className="text-brand-600" /> Professional PDF report cards</li>
+                                                <li className="flex items-center gap-2"><CheckCircle2 size={14} className="text-brand-600" /> Dedicated priority support</li>
+                                            </ul>
                                         </div>
                                     ))}
+                                    {plans.filter(p => p.slug === 'enterprise').length === 0 && (
+                                        <div className="p-4 bg-gray-50 border border-dashed border-gray-300 rounded-xl text-center text-gray-400">
+                                            Loading pilot plan details...
+                                        </div>
+                                    )}
                                 </div>
                                 {errors.plan_slug && <p className="text-red-500 text-sm">{errors.plan_slug.message}</p>}
                                 <div className="flex justify-end">
@@ -220,87 +232,23 @@ export default function OnboardingPage() {
 
                         {step === 3 && (
                             <div className="space-y-6 animate-in slide-in-from-right duration-300">
-                                <h2 className="text-xl font-bold flex items-center gap-2">
-                                    <CreditCard className="text-brand-600" /> Payment & Provisioning
-                                </h2>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <button
-                                        type="button"
-                                        onClick={() => setValue('payment_method', 'paystack')}
-                                        className={`p-4 rounded-xl border-2 text-center transition-all ${watch('payment_method') === 'paystack' ? 'border-brand-600 bg-brand-50 font-bold' : 'border-gray-200'}`}
-                                    >
-                                        Online Payment
-                                        <p className="text-xs font-normal text-gray-500 mt-1">Instant Activation</p>
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setValue('payment_method', 'bank_transfer')}
-                                        className={`p-4 rounded-xl border-2 text-center transition-all ${watch('payment_method') === 'bank_transfer' ? 'border-brand-600 bg-brand-50 font-bold' : 'border-gray-200'}`}
-                                    >
-                                        Bank Transfer
-                                        <p className="text-xs font-normal text-gray-500 mt-1">Manual Approval</p>
-                                    </button>
-                                </div>
-
-                                {watch('payment_method') === 'bank_transfer' && (
-                                    <div className="p-6 bg-brand-900 text-white rounded-2xl space-y-4">
-                                        <h3 className="font-bold border-b border-white/10 pb-2">Platform Bank Details</h3>
-                                        <div className="grid grid-cols-2 gap-4 text-sm">
-                                            <div>
-                                                <p className="opacity-60">Bank Name</p>
-                                                <p className="font-bold">{platformSettings?.bank_name || 'Registra Central Bank'}</p>
-                                            </div>
-                                            <div>
-                                                <p className="opacity-60">Account Number</p>
-                                                <p className="font-bold">{platformSettings?.account_number || '0123456789'}</p>
-                                            </div>
-                                            <div>
-                                                <p className="opacity-60">Account Name</p>
-                                                <p className="font-bold">{platformSettings?.account_name || 'REGISTRA SOLUTIONS'}</p>
-                                            </div>
-                                        </div>
-
-                                        <div className="pt-4 border-t border-white/10">
-                                            <label className="block text-xs font-bold uppercase tracking-wider mb-2 opacity-60">Upload Reciept / Proof</label>
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                onChange={handleProofUpload}
-                                                className="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-white file:text-brand-600 hover:file:bg-brand-50"
-                                            />
-                                            {watch('payment_proof') && <p className="mt-2 text-xs text-green-400 font-bold flex items-center gap-1"><CheckCircle2 size={12} /> Proof Selected</p>}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {watch('payment_method') === 'paystack' && (
-                                    <div className="p-8 border-2 border-dashed border-gray-200 rounded-2xl text-center flex flex-col items-center gap-4">
-                                        <p className="text-gray-500 font-medium">
-                                            {isPaid
-                                                ? "Payment successful! You can now proceed to the final step."
-                                                : `You will be redirected to Paystack to complete your payment of ₦${plans.find(p => p.slug === selectedPlanSlug)?.price || '...'}`
-                                            }
+                                <div className="p-8 bg-brand-50 border-2 border-brand-100 rounded-2xl">
+                                    <h3 className="font-bold text-brand-900 mb-4">Pilot Program Agreement</h3>
+                                    <div className="space-y-4 text-sm text-brand-800 leading-relaxed">
+                                        <p>
+                                            By proceeding, you agree to use Registra for your school management for the remainder of the 2025/2026 session.
                                         </p>
-                                        {!isPaid && (
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    setIsPaying(true);
-                                                    setTimeout(() => {
-                                                        setIsPaid(true);
-                                                        setIsPaying(false);
-                                                    }, 2000);
-                                                }}
-                                                disabled={isPaying}
-                                                className="px-6 py-2 bg-[#09a5db] text-white font-bold rounded-lg hover:bg-[#0883ae] flex items-center gap-2"
-                                            >
-                                                {isPaying ? <Loader2 className="animate-spin" size={16} /> : "Pay Now (Test Mode)"}
-                                            </button>
-                                        )}
-                                        {isPaid && <CheckCircle2 className="text-green-500" size={32} />}
+                                        <ul className="list-disc pl-5 space-y-2">
+                                            <li>Access is completely free for 2nd and 3rd terms.</li>
+                                            <li>Our team will provide setup and migration assistance.</li>
+                                            <li><strong>Requirement:</strong> You agree to provide a written review and participate in a brief feedback session.</li>
+                                        </ul>
+                                        <div className="pt-4 flex items-start gap-3">
+                                            <input type="checkbox" required className="mt-1 w-4 h-4 text-brand-600 rounded bg-white border-brand-200" />
+                                            <span className="font-medium">I understand this is a pilot program and agree to provide feedback.</span>
+                                        </div>
                                     </div>
-                                )}
+                                </div>
 
                                 <div className="flex justify-between">
                                     <button type="button" onClick={() => setStep(2)} className="text-gray-500 font-bold hover:text-gray-700">Back</button>

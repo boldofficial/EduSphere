@@ -16,45 +16,45 @@ import {
 const features = [
     {
         icon: Users,
-        title: "Student Management",
-        desc: "Holistic 360° profiles tracking academic progress, health records, behavioral history, and extracurricular achievements in one unified view.",
+        title: "Holistic Management",
+        desc: "360° student and staff profiles tracking academic progress, attendance, and behavioral history in one unified view.",
         color: "from-blue-500 to-blue-600",
         bg: "bg-blue-50"
     },
     {
         icon: CreditCard,
-        title: "Smart Finance",
-        desc: "Automated fee reconciliation, intelligent debt recovery tools, and seamless multi-channel payment gateway integration.",
+        title: "Automated Finance",
+        desc: "Smart fee reconciliation, automated invoice generation, and seamless integration with multi-channel payment gateways.",
         color: "from-green-500 to-emerald-600",
         bg: "bg-green-50"
     },
     {
         icon: BarChart3,
-        title: "Academic Analytics",
-        desc: "High-speed Result Engine with psychometric analysis, comparative cohort tracking, and automated report card generation.",
+        title: "Advanced Analytics",
+        desc: "Professional PDF report cards and broadsheets. Psychometric analysis and comparative cohort tracking at your fingertips.",
         color: "from-purple-500 to-purple-600",
         bg: "bg-purple-50"
     },
     {
-        icon: BookOpen,
-        title: "Hybrid LMS & CBT",
-        desc: "Offline-first learning tools, extensive question bank support for CBT, and seamless hybrid classroom management.",
+        icon: MessageCircle,
+        title: "Integrated Support",
+        desc: "Dedicated helpdesk for direct communication with our technical team, ensuring zero downtime for your operations.",
         color: "from-amber-500 to-orange-600",
         bg: "bg-amber-50"
     },
     {
-        icon: ShieldCheck,
-        title: "Bank-Grade Security",
-        desc: "Enterprise-level data protection with granular role-based access control, comprehensive audit logs, and 2FA support.",
-        color: "from-red-500 to-rose-600",
-        bg: "bg-red-50"
-    },
-    {
         icon: Building2,
-        title: "Multi-School Support",
-        desc: "Centralized franchise management for school chains, allowing headquarters to monitor performance across all branches.",
+        title: "Digital Identity",
+        desc: "Instant professional landing pages for every school. Manage your public profile and online presence with ease.",
         color: "from-indigo-500 to-blue-600",
         bg: "bg-indigo-50"
+    },
+    {
+        icon: ShieldCheck,
+        title: "Enterprise Grade",
+        desc: "Bank-level security with granular role-based access control, comprehensive audit logs, and multi-portal ecosystems.",
+        color: "from-red-500 to-rose-600",
+        bg: "bg-red-50"
     }
 ];
 
@@ -81,11 +81,11 @@ const testimonials = [
 ];
 
 const faqs = [
-    { question: "How long does it take to set up Registra for my school?", answer: "Most schools are up and running within 1-2 weeks. Our onboarding team provides personalized guidance throughout the process." },
-    { question: "Can I import my existing student and staff data?", answer: "Yes! We support CSV imports and can help migrate data from most existing school management systems." },
-    { question: "Is my school's data secure?", answer: "Absolutely. We use bank-level encryption, regular security audits, and comply with Nigerian data protection regulations." },
-    { question: "What kind of support do you provide?", answer: "We offer 24/7 technical support, comprehensive documentation, video tutorials, and dedicated account managers for enterprise clients." },
-    { question: "Can I try Registra before committing?", answer: "Yes! We offer a 30-day free trial with full access to all features. No credit card required to get started." }
+    { question: "What is the 2025/2026 Pilot Program?", answer: "We are offering the Enterprise version of Registra for free during the 2nd and 3rd terms of the 2025/2026 session. This allows us to work closely with schools like yours to refine our features while you benefit from world-class automation." },
+    { question: "Is it really free? What's the catch?", answer: "Yes, it's completely free for the pilot session. In exchange, we ask for your honest feedback and a written review to help us continue building the most powerful school OS in the market." },
+    { question: "Can I migrate my existing data?", answer: "Absolutely. Our expert team will help you import your student, staff, and financial records for a seamless transition, free of charge during the pilot." },
+    { question: "What happens after the pilot session?", answer: "You'll have the option to continue with a preferred pricing plan or export your data. There's no obligation to continue, but we're confident you'll love the transformation." },
+    { question: "How do I get started?", answer: "Simply click the 'Start Free Trial' button, set up your school details, and our onboarding team will reach out to guide you through the next steps." }
 ];
 
 export const FeaturesSection: React.FC = () => (

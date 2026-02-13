@@ -11,6 +11,7 @@ import { PricingSection } from './PricingSection';
 import { LandingNav } from './landing/LandingNav';
 import { LandingHero } from './landing/LandingHero';
 import { FeaturesSection, HowItWorksSection, TestimonialsSection, FAQSection } from './landing/LandingSections';
+import { EcosystemSection } from './landing/EcosystemSection';
 import { ContactSection, LandingFooter } from './landing/LandingContactFooter';
 import { DemoRequestModal } from './landing/DemoRequestModal';
 
@@ -23,6 +24,7 @@ export const SystemLandingPage = () => {
             <LandingNav mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} />
             <LandingHero onOpenDemoModal={() => setIsDemoModalOpen(true)} />
             <FeaturesSection />
+            <EcosystemSection />
             <HowItWorksSection />
             <TestimonialsSection />
             <PricingSection />

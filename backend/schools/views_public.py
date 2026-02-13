@@ -28,7 +28,13 @@ class PublicPlanListView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
-        plans = SubscriptionPlan.objects.filter(is_active=True).order_by('price')
+        # Restriction: Only show the 'enterprise' plan for the free pilot period
+        plans = SubscriptionPlan.objects.filter(slug='enterprise', is_active=True)
+        # If enterprise plan is missing, fallback to showing all active but log warning
+        if not plans.exists():
+            logger.warning("Enterprise plan missing! Showing all active plans.")
+            plans = SubscriptionPlan.objects.filter(is_active=True).order_by('price')
+            
         serializer = SubscriptionPlanSerializer(plans, many=True)
         return Response(serializer.data)
 
@@ -93,18 +99,23 @@ class RegisterSchoolView(APIView):
                 )
                 
                 # 3. Create Subscription
+                # Restriction: Force 'enterprise' plan for this pilot phase
                 try:
-                    plan = SubscriptionPlan.objects.get(slug=data['plan_slug'])
+                    plan = SubscriptionPlan.objects.get(slug='enterprise')
                 except SubscriptionPlan.DoesNotExist:
-                    raise ValidationError({'plan_slug': 'Invalid plan selected'})
+                    # Fallback to provided plan if enterprise is not found to prevent crash
+                    try:
+                        plan = SubscriptionPlan.objects.get(slug=data['plan_slug'])
+                    except SubscriptionPlan.DoesNotExist:
+                        raise ValidationError({'plan_slug': 'Invalid plan selected'})
                 
                 Subscription.objects.create(
                     school=school,
                     plan=plan,
-                    status='pending', # Default to pending until super admin approval
-                    payment_method=data.get('payment_method', 'paystack'),
-                    payment_proof=data.get('payment_proof'),
-                    end_date=timezone.now() + timezone.timedelta(days=plan.duration_days)
+                    status='pending', # Keep manual approval required
+                    payment_method='free_pilot',
+                    payment_proof=None,
+                    end_date=timezone.now() + timezone.timedelta(days=730) # 2 years for 2025/26 session coverage
                 )
 
                 # 4. Notify Super Admins

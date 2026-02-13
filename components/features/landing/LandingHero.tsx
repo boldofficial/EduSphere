@@ -56,11 +56,11 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onOpenDemoModal }) => 
                             initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.4, duration: 1 }}
-                            className="text-3xl md:text-5xl lg:text-6xl font-black text-white tracking-tight mb-8 leading-[1.05]"
+                            className="text-3xl md:text-5xl lg:text-7xl font-black text-white tracking-tight mb-8 leading-[1.05]"
                         >
-                            All-in-One School Management System
+                            The Complete School OS
                             <span className="block text-accent-500 drop-shadow-[0_0_15px_rgba(212,175,55,0.3)]">
-                                for Modern Schools
+                                Free for 2025/26
                             </span>
                         </motion.h1>
 
@@ -70,7 +70,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onOpenDemoModal }) => 
                             transition={{ delay: 0.6, duration: 0.8 }}
                             className="text-xl md:text-2xl text-brand-100/90 mb-12 max-w-2xl leading-relaxed font-medium"
                         >
-                            Registra is the operating system that unifies academics, finance, communication, and administration on one powerful platform.
+                            Empowering Nigerian schools with world-class automation. Join our pilot program and get <strong>full enterprise access</strong> free for the 2025/26 session.
                         </motion.p>
 
                         {/* CTA Buttons */}
