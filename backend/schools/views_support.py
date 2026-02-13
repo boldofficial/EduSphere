@@ -20,10 +20,22 @@ class SupportTicketViewSet(viewsets.ModelViewSet):
         return SupportTicket.objects.filter(school=user.school).prefetch_related('responses', 'responses__user', 'school', 'user')
 
     def perform_create(self, serializer):
-        # Auto-assign school and user
+        user = self.request.user
+        school = user.school
+        
+        # Super admin can specify a school
+        if user.role == 'SUPER_ADMIN':
+            school_id = self.request.data.get('school_id')
+            if school_id:
+                 from .models import School
+                 try:
+                     school = School.objects.get(id=school_id)
+                 except School.DoesNotExist:
+                     pass
+
         serializer.save(
-            user=self.request.user,
-            school=self.request.user.school,
+            user=user,
+            school=school,
             status='open'
         )
 
