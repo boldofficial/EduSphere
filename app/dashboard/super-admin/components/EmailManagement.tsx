@@ -118,6 +118,7 @@ export function EmailLogsTab({ logs = [] }: { logs: any[] }) {
                             <th className="px-6 py-4 font-bold text-gray-500 text-sm">Recipient</th>
                             <th className="px-6 py-4 font-bold text-gray-500 text-sm">Template</th>
                             <th className="px-6 py-4 font-bold text-gray-500 text-sm">Status</th>
+                            <th className="px-6 py-4 font-bold text-gray-500 text-sm">Error/Details</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
@@ -128,6 +129,9 @@ export function EmailLogsTab({ logs = [] }: { logs: any[] }) {
                                 <td className="px-6 py-4 text-xs font-black uppercase tracking-widest text-brand-600">{log.template_name || 'Manual Email'}</td>
                                 <td className="px-6 py-4">
                                     <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded ${log.status === 'sent' ? 'bg-emerald-50 text-emerald-700' : log.status === 'failed' ? 'bg-rose-50 text-rose-700' : 'bg-amber-50 text-amber-700'}`}>{log.status}</span>
+                                </td>
+                                <td className="px-6 py-4 text-xs font-medium text-rose-600 max-w-xs truncate" title={log.error_message}>
+                                    {log.error_message || '-'}
                                 </td>
                             </tr>
                         ))}
