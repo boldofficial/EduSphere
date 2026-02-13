@@ -19,8 +19,8 @@ def check():
     u = User.objects.filter(username='demo_admin').first()
     if u:
         print(f"User: {u.username} (ID: {u.id}, Role: {u.role})")
-        print(f"Schools associated with user: {[sc.name for sc in u.schools.all()]}")
-        if s and s not in u.schools.all():
+        print(f"School associated with user: {u.school.name if u.school else 'None'}")
+        if s and u.school != s:
             print(f"⚠️ User is NOT associated with the 'demo' school.")
     else:
         print("❌ User 'demo_admin' not found.")

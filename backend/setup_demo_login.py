@@ -45,8 +45,8 @@ def setup_demo():
     user.role = User.Role.SCHOOL_ADMIN
     
     # Associate with school
-    if school not in user.schools.all():
-        user.schools.add(school)
+    if user.school != school:
+        user.school = school
         print(f"✅ Linked user to school: {school.name}")
     
     user.save()
