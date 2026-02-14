@@ -1,5 +1,6 @@
 import React from 'react';
-import { Plus, CreditCard, Calendar as CalendarIcon, BadgeCheck, Rocket } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Plus, CreditCard, Calendar as CalendarIcon, BadgeCheck, Rocket, Sparkles } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import * as Types from '@/lib/types';
 
@@ -11,42 +12,108 @@ interface QuickActionsProps {
 }
 
 export const QuickActions: React.FC<QuickActionsProps> = ({
-    onChangeView,
     onTabChange,
     userRole,
     allowedModules = []
 }) => {
+    const router = useRouter();
+
+    const actions = [
+        {
+            id: 'students',
+            name: 'New Student',
+            icon: Plus,
+            href: '/students',
+            gradient: 'from-blue-500 to-indigo-600',
+            shadow: 'shadow-blue-200',
+            bg: 'bg-blue-50'
+        },
+        {
+            id: 'bursary',
+            name: 'Record Fee',
+            icon: CreditCard,
+            href: '/bursary',
+            gradient: 'from-emerald-500 to-teal-600',
+            shadow: 'shadow-emerald-200',
+            bg: 'bg-emerald-50',
+            module: 'bursary'
+        },
+        {
+            id: 'attendance',
+            name: 'Attendance',
+            icon: CalendarIcon,
+            href: '/attendance',
+            gradient: 'from-rose-500 to-pink-600',
+            shadow: 'shadow-rose-200',
+            bg: 'bg-rose-50',
+            module: 'attendance'
+        },
+        {
+            id: 'id_cards',
+            name: 'ID Cards',
+            icon: BadgeCheck,
+            href: '/id_cards',
+            gradient: 'from-orange-500 to-amber-600',
+            shadow: 'shadow-orange-200',
+            bg: 'bg-orange-50',
+            module: 'id_cards'
+        },
+    ];
+
+    const filteredActions = actions.filter(a => !a.module || allowedModules.includes(a.module));
+
     return (
-        <Card title="Quick Actions">
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
-                <button onClick={() => onChangeView('students')} className="group p-3 sm:p-4 bg-white border border-blue-100 hover:border-blue-300 hover:shadow-md rounded-xl flex flex-col items-center justify-center gap-2 sm:gap-3 transition-all">
-                    <div className="p-2 sm:p-3 bg-blue-100 text-blue-600 rounded-full group-hover:scale-110 transition-transform"><Plus className="h-5 w-5 sm:h-6 sm:w-6" /></div>
-                    <span className="font-semibold text-gray-700 group-hover:text-blue-700 text-xs sm:text-sm">New Student</span>
-                </button>
-                {allowedModules.includes('bursary') && (
-                    <button onClick={() => onChangeView('bursary')} className="group p-3 sm:p-4 bg-white border border-emerald-100 hover:border-emerald-300 hover:shadow-md rounded-xl flex flex-col items-center justify-center gap-2 sm:gap-3 transition-all">
-                        <div className="p-2 sm:p-3 bg-emerald-100 text-emerald-600 rounded-full group-hover:scale-110 transition-transform"><CreditCard className="h-5 w-5 sm:h-6 sm:w-6" /></div>
-                        <span className="font-semibold text-gray-700 group-hover:text-emerald-700 text-xs sm:text-sm">Record Fee</span>
-                    </button>
-                )}
-                {allowedModules.includes('attendance') && (
-                    <button onClick={() => onChangeView('attendance')} className="group p-3 sm:p-4 bg-white border border-rose-100 hover:border-rose-300 hover:shadow-md rounded-xl flex flex-col items-center justify-center gap-2 sm:gap-3 transition-all">
-                        <div className="p-2 sm:p-3 bg-rose-100 text-rose-600 rounded-full group-hover:scale-110 transition-transform"><CalendarIcon className="h-5 w-5 sm:h-6 sm:w-6" /></div>
-                        <span className="font-semibold text-gray-700 group-hover:text-rose-700 text-xs sm:text-sm">Attendance</span>
-                    </button>
-                )}
-                {allowedModules.includes('id_cards') && (
-                    <button onClick={() => onChangeView('id_cards')} className="group p-3 sm:p-4 bg-white border border-orange-100 hover:border-orange-300 hover:shadow-md rounded-xl flex flex-col items-center justify-center gap-2 sm:gap-3 transition-all">
-                        <div className="p-2 sm:p-3 bg-orange-100 text-orange-600 rounded-full group-hover:scale-110 transition-transform"><BadgeCheck className="h-5 w-5 sm:h-6 sm:w-6" /></div>
-                        <span className="font-semibold text-gray-700 group-hover:text-orange-700 text-xs sm:text-sm">ID Cards</span>
-                    </button>
-                )}
-                {userRole === 'super_admin' && (
-                    <button onClick={() => onTabChange?.('demo_requests')} className="group p-3 sm:p-4 bg-white border border-brand-100 hover:border-brand-300 hover:shadow-md rounded-xl flex flex-col items-center justify-center gap-2 sm:gap-3 transition-all">
-                        <div className="p-2 sm:p-3 bg-brand-100 text-brand-600 rounded-full group-hover:scale-110 transition-transform"><Rocket className="h-5 w-5 sm:h-6 sm:w-6" /></div>
-                        <span className="font-semibold text-gray-700 group-hover:text-brand-700 text-xs sm:text-sm">Demo Requests</span>
-                    </button>
-                )}
+        <Card>
+            <div className="p-1">
+                <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-2">
+                        <div className="p-2 bg-brand-100 rounded-lg text-brand-600">
+                            <Sparkles size={18} className="animate-pulse" />
+                        </div>
+                        <h3 className="text-lg font-black text-gray-900 uppercase tracking-tighter">Quick Actions</h3>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    {filteredActions.map((action) => (
+                        <button
+                            key={action.id}
+                            onClick={() => router.push(action.href)}
+                            className={`group relative overflow-hidden p-4 rounded-[24px] border border-white/50 shadow-sm hover:shadow-xl ${action.shadow} transition-all duration-500 bg-white hover:-translate-y-1`}
+                        >
+                            {/* Colorful Gradient Background on Hover */}
+                            <div className={`absolute inset-0 bg-gradient-to-br ${action.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+
+                            <div className="relative z-10 flex flex-col items-center gap-4">
+                                <div className={`p-4 rounded-2xl ${action.bg} text-gray-700 group-hover:bg-white/20 group-hover:text-white transition-all duration-500 group-hover:scale-110 shadow-sm group-hover:shadow-none`}>
+                                    <action.icon className="h-6 w-6" strokeWidth={2.5} />
+                                </div>
+                                <span className="font-black text-[11px] uppercase tracking-wider text-gray-600 group-hover:text-white transition-colors duration-500">
+                                    {action.name}
+                                </span>
+                            </div>
+
+                            {/* Decorative Sparkle for Premium Look */}
+                            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Sparkles size={12} className="text-white/50" />
+                            </div>
+                        </button>
+                    ))}
+
+                    {userRole === 'super_admin' && (
+                        <button
+                            onClick={() => onTabChange?.('demo_requests')}
+                            className="group relative overflow-hidden p-4 rounded-[24px] border border-indigo-100 shadow-sm hover:shadow-xl shadow-indigo-100 transition-all duration-500 bg-gradient-to-br from-indigo-50 to-white hover:-translate-y-1 flex flex-col items-center gap-4"
+                        >
+                            <div className="p-4 rounded-2xl bg-indigo-100 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-500 group-hover:scale-110 shadow-sm">
+                                <Rocket className="h-6 w-6" strokeWidth={2.5} />
+                            </div>
+                            <span className="font-black text-[11px] uppercase tracking-wider text-indigo-700 transition-colors duration-500 text-center">
+                                Demo Requests
+                            </span>
+                        </button>
+                    )}
+                </div>
             </div>
         </Card>
     );
