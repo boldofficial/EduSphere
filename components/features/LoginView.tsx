@@ -53,6 +53,22 @@ export const LoginView = () => {
     const [forgotSuccess, setForgotSuccess] = useState(false);
     const [newPassword, setNewPassword] = useState('');
 
+    const backgroundImages = [
+        '/login-bg-classroom.png',
+        'https://images.unsplash.com/photo-1523050853064-8504f2f40fd5?auto=format&fit=crop&q=80&w=2000',
+        'https://images.unsplash.com/photo-1541339907198-e08756ebafe3?auto=format&fit=crop&q=80&w=2000',
+        'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&q=80&w=2000'
+    ];
+
+    const [currentBg, setCurrentBg] = useState(0);
+
+    React.useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentBg((prev) => (prev + 1) % backgroundImages.length);
+        }, 8000);
+        return () => clearInterval(interval);
+    }, []);
+
     React.useEffect(() => {
         if (typeof window !== 'undefined') {
             const host = window.location.host.split(':')[0].replace(/^www\./, '');
@@ -229,104 +245,143 @@ export const LoginView = () => {
     };
 
     return (
-        <div className="min-h-screen relative flex flex-col items-center justify-center p-4 md:p-6 font-primary overflow-hidden">
-            <div className="absolute inset-0 z-0">
-                <div className="absolute inset-0 bg-cover bg-center transition-all duration-1000" style={{ backgroundImage: "url('/login-bg-classroom.png')" }} />
-                <div className="absolute inset-0 bg-brand-950/80 backdrop-blur-[1px]" />
-            </div>
+        <div className="min-h-screen relative flex overflow-hidden bg-brand-950">
+            {/* Desktop Left Side - Imagery (Hidden on mobile) */}
+            <div className="hidden lg:flex w-1/2 relative overflow-hidden">
+                {backgroundImages.map((img, idx) => (
+                    <div
+                        key={img}
+                        className={`absolute inset-0 bg-cover bg-center transition-all duration-[2000ms] transform scale-105 ${currentBg === idx ? 'opacity-100 scale-100' : 'opacity-0 scale-110'}`}
+                        style={{ backgroundImage: `url('${img}')` }}
+                    />
+                ))}
+                <div className="absolute inset-0 bg-gradient-to-tr from-brand-950 via-brand-900/40 to-transparent" />
 
-            <a href="/" className="absolute top-6 left-6 z-20 flex items-center gap-2 text-white/80 hover:text-white transition-colors bg-black/20 hover:bg-black/40 px-4 py-2 rounded-full backdrop-blur-md">
-                <ArrowRight className="rotate-180" size={18} />
-                <span className="text-sm font-bold">Back to Home</span>
-            </a>
-
-            <div className="w-full max-w-6xl space-y-8 relative z-10 animate-in fade-in zoom-in duration-500 flex flex-col items-center">
-                <div className="text-center space-y-4">
-                    {!isSystemRoot ? (
-                        <>
-                            <div className="inline-block p-4 bg-white rounded-3xl shadow-2xl mb-4 border-4 border-white">
-                                <img src={settings.logo_media || "/logo.png"} alt={settings.school_name || "School Logo"} className="h-24 md:h-32 object-contain" />
-                            </div>
-                            <h1 className="text-3xl md:text-6xl font-black text-white uppercase tracking-tight drop-shadow-md">{settings.school_name}</h1>
-                        </>
-                    ) : (
-                        <div className="inline-block mb-4 cursor-pointer select-none active:scale-95 transition-transform" onClick={() => {
-                            const newCount = adminSecretCount + 1;
-                            setAdminSecretCount(newCount);
-                            if (newCount >= 5) { setShowSystemLogin(true); setAdminSecretCount(0); }
-                        }}>
-                            <div className="h-24 md:h-32 flex items-center justify-center mb-8">
-                                <img src="/footer-logo.png" alt="Registra" className="h-full w-auto object-contain drop-shadow-md" />
-                            </div>
-                        </div>
-                    )}
-                    <p className="text-brand-100 text-base md:text-xl font-medium max-w-2xl mx-auto">
-                        {!isSystemRoot
-                            ? (selectedRole === 'student' ? 'Enter your Student Number and Password to access your portal.' : 'Welcome to the digital campus. Select your portal to proceed.')
-                            : (showSystemLogin ? 'System Management Access Granted.' : 'Enter your school subdomain to find your specific portal.')
-                        }
-                    </p>
+                {/* Branding Overlay */}
+                <div className="absolute top-12 left-12 z-20 flex items-center gap-3">
+                    <img src="/footer-logo.png" alt="Registra" className="h-10 w-auto" />
+                    <div className="h-6 w-px bg-white/20" />
+                    <span className="text-white/60 text-[10px] font-black uppercase tracking-[0.3em]">Premium Education Suite</span>
                 </div>
 
-                {!selectedRole && !isSystemRoot && (
-                    <RoleSelection roles={roleDefinitions} onSelectRole={setSelectedRole} />
-                )}
-
-                {isSystemRoot && !selectedRole && (
-                    <FindSchoolSection
-                        searchSlug={searchSlug}
-                        setSearchSlug={setSearchSlug}
-                        searchError={searchError}
-                        isSearching={isSearching}
-                        showSystemLogin={showSystemLogin}
-                        onFindSchool={handleFindSchool}
-                        onSelectSuperAdmin={() => setSelectedRole('super_admin')}
-                    />
-                )}
-
-                {selectedRole === 'student' && (
-                    <StudentLoginForm
-                        studentNo={studentNo}
-                        setStudentNo={setStudentNo}
-                        password={password}
-                        setPassword={setPassword}
-                        showPassword={showPassword}
-                        setShowPassword={setShowPassword}
-                        loginError={loginError}
-                        setLoginError={setLoginError}
-                        isLoading={isLoading}
-                        onSubmit={handleStudentLogin}
-                        onBack={() => { setSelectedRole(null); resetForms(); }}
-                        onForgotPassword={() => setShowForgotPassword(true)}
-                        isDemo={isDemo}
-                        onDirectLogin={handleDirectLogin}
-                    />
-                )}
-
-                {selectedRole && selectedRole !== 'student' && (
-                    <StaffLoginForm
-                        selectedRole={selectedRole}
-                        roles={roleDefinitions}
-                        isDemo={isDemo}
-                        email={email}
-                        setEmail={setEmail}
-                        password={password}
-                        setPassword={setPassword}
-                        showPassword={showPassword}
-                        setShowPassword={setShowPassword}
-                        loginError={loginError}
-                        setLoginError={setLoginError}
-                        isLoading={isLoading}
-                        onLogin={handleLogin}
-                        onDirectLogin={handleDirectLogin}
-                        onBack={() => { setSelectedRole(null); resetForms(); }}
-                    />
-                )}
-
-                <div className="pt-12 pb-6 text-center z-10 w-full px-4">
-                    <p className="text-[10px] md:text-xs text-brand-100/60 font-medium flex items-center justify-center gap-1.5 bg-black/40 px-6 py-2 rounded-full backdrop-blur-sm inline-flex">
-                        &copy; {new Date().getFullYear()} Bold Ideas Innovations Ltd <ShieldCheck size={10} />
+                <div className="absolute bottom-20 left-12 z-20 max-w-lg">
+                    <h2 className="text-5xl font-black text-white leading-none mb-6 tracking-tighter uppercase italic">
+                        The Future of <br />
+                        <span className="text-accent-400 not-italic">Academy Management</span>
+                    </h2>
+                    <p className="text-white/60 text-lg font-medium tracking-tight">
+                        Experience a seamless, AI-driven administrative workflow designed for modern institutions.
                     </p>
+                </div>
+            </div>
+
+            {/* Right Side - Login Area */}
+            <div className={`flex-1 relative flex flex-col items-center justify-center p-6 md:p-12 z-10 transition-all duration-500 ${selectedRole ? 'lg:flex-none lg:w-1/2 overflow-y-auto' : ''}`}>
+                {/* Mobile Background Fallback */}
+                <div className="lg:hidden absolute inset-0 z-0 text-white">
+                    <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url('${backgroundImages[0]}')` }} />
+                    <div className="absolute inset-0 bg-brand-950/90 backdrop-blur-sm" />
+                </div>
+
+                <a href="/" className="absolute top-8 right-8 z-20 flex items-center gap-2 text-white/50 hover:text-white transition-all bg-white/5 hover:bg-white/10 px-5 py-2.5 rounded-full backdrop-blur-xl border border-white/10 group">
+                    <ArrowRight className="rotate-180 group-hover:-translate-x-1 transition-transform" size={16} />
+                    <span className="text-[10px] font-black uppercase tracking-widest">Exit to Home</span>
+                </a>
+
+                <div className="w-full max-w-4xl space-y-12 relative z-10 animate-in fade-in slide-in-from-bottom-5 duration-700">
+                    <div className="text-center lg:text-left space-y-6">
+                        {!isSystemRoot ? (
+                            <div className="flex flex-col lg:flex-row items-center gap-6">
+                                <div className="p-4 bg-white rounded-[2rem] shadow-2xl border-4 border-white inline-block">
+                                    <img src={settings.logo_media || "/logo.png"} alt={settings.school_name || "School Logo"} className="h-20 w-auto object-contain" />
+                                </div>
+                                <div>
+                                    <h1 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter leading-none mb-2">{settings.school_name}</h1>
+                                    <p className="text-accent-400 text-[10px] font-black uppercase tracking-[0.3em]">Authorized Access Portal</p>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="inline-block cursor-pointer select-none active:scale-95 transition-transform" onClick={() => {
+                                const newCount = adminSecretCount + 1;
+                                setAdminSecretCount(newCount);
+                                if (newCount >= 5) { setShowSystemLogin(true); setAdminSecretCount(0); }
+                            }}>
+                                <img src="/footer-logo.png" alt="Registra" className="h-16 w-auto drop-shadow-md" />
+                            </div>
+                        )}
+
+                        <p className="text-white/60 text-sm md:text-lg font-medium max-w-xl">
+                            {!isSystemRoot
+                                ? (selectedRole === 'student' ? 'Enter your Student Number and Password to access your portal.' : 'Welcome back. Please select your specific portal to proceed to your dashboard.')
+                                : (showSystemLogin ? 'System Management Access Granted.' : 'Find your institution by entering its unique subdomain below.')
+                            }
+                        </p>
+                    </div>
+
+                    {!selectedRole && !isSystemRoot && (
+                        <RoleSelection roles={roleDefinitions} onSelectRole={setSelectedRole} />
+                    )}
+
+                    {isSystemRoot && !selectedRole && (
+                        <div className="max-w-md mx-auto lg:mx-0">
+                            <FindSchoolSection
+                                searchSlug={searchSlug}
+                                setSearchSlug={setSearchSlug}
+                                searchError={searchError}
+                                isSearching={isSearching}
+                                showSystemLogin={showSystemLogin}
+                                onFindSchool={handleFindSchool}
+                                onSelectSuperAdmin={() => setSelectedRole('super_admin')}
+                            />
+                        </div>
+                    )}
+
+                    {selectedRole && (
+                        <div className="max-w-md mx-auto lg:mx-0 p-8 bg-white/5 backdrop-blur-2xl rounded-[2.5rem] border border-white/10 shadow-2xl">
+                            {selectedRole === 'student' ? (
+                                <StudentLoginForm
+                                    studentNo={studentNo}
+                                    setStudentNo={setStudentNo}
+                                    password={password}
+                                    setPassword={setPassword}
+                                    showPassword={showPassword}
+                                    setShowPassword={setShowPassword}
+                                    loginError={loginError}
+                                    setLoginError={setLoginError}
+                                    isLoading={isLoading}
+                                    onSubmit={handleStudentLogin}
+                                    onBack={() => { setSelectedRole(null); resetForms(); }}
+                                    onForgotPassword={() => setShowForgotPassword(true)}
+                                    isDemo={isDemo}
+                                    onDirectLogin={handleDirectLogin}
+                                />
+                            ) : (
+                                <StaffLoginForm
+                                    selectedRole={selectedRole}
+                                    roles={roleDefinitions}
+                                    isDemo={isDemo}
+                                    email={email}
+                                    setEmail={setEmail}
+                                    password={password}
+                                    setPassword={setPassword}
+                                    showPassword={showPassword}
+                                    setShowPassword={setShowPassword}
+                                    loginError={loginError}
+                                    setLoginError={setLoginError}
+                                    isLoading={isLoading}
+                                    onLogin={handleLogin}
+                                    onDirectLogin={handleDirectLogin}
+                                    onBack={() => { setSelectedRole(null); resetForms(); }}
+                                />
+                            )}
+                        </div>
+                    )}
+
+                    <div className="pt-8 text-center lg:text-left">
+                        <p className="text-[10px] text-white/30 font-black uppercase tracking-[0.2em] flex items-center justify-center lg:justify-start gap-2">
+                            &copy; {new Date().getFullYear()} Bold Ideas Innovations Ltd <ShieldCheck size={10} className="text-accent-500" /> Secure Node
+                        </p>
+                    </div>
                 </div>
             </div>
 
