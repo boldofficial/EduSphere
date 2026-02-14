@@ -20,44 +20,48 @@ interface RoleSelectionProps {
 
 export const RoleSelection: React.FC<RoleSelectionProps> = ({ roles, onSelectRole }) => {
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 px-4 md:px-0 w-full max-w-7xl">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl mx-auto">
             {roles.map((role, idx) => (
                 <button
                     key={role.id}
                     onClick={() => onSelectRole(role.id)}
-                    className="group relative bg-white/5 backdrop-blur-xl rounded-[2.5rem] p-8 border transition-all duration-500 text-left hover:-translate-y-3 border-white/10 hover:bg-white/10 hover:border-accent-500/50 shadow-2xl overflow-hidden flex flex-col h-full"
+                    className="group relative bg-white/[0.03] backdrop-blur-2xl rounded-[3rem] p-10 border transition-all duration-500 text-left hover:-translate-y-2 border-white/10 hover:bg-white/[0.07] hover:border-accent-500/30 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col h-full min-h-[300px]"
                     style={{ animationDelay: `${idx * 100}ms` }}
                 >
                     <div
-                        className="absolute -top-24 -right-24 w-48 h-48 rounded-full opacity-0 group-hover:opacity-20 transition-opacity duration-700 blur-[80px]"
+                        className="absolute -top-32 -right-32 w-64 h-64 rounded-full opacity-0 group-hover:opacity-10 transition-opacity duration-700 blur-[100px]"
                         style={{ backgroundColor: role.themeColor }}
                     />
 
                     <div className="relative z-10">
                         <div
-                            className="w-16 h-16 rounded-2xl flex items-center justify-center mb-8 shadow-inner transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3"
-                            style={{ backgroundColor: `${role.themeColor}20`, border: `1px solid ${role.themeColor}40` }}
+                            className="w-20 h-20 rounded-[2rem] flex items-center justify-center mb-10 shadow-2xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-6"
+                            style={{
+                                backgroundColor: `${role.themeColor}15`,
+                                border: `1px solid ${role.themeColor}30`,
+                                boxShadow: `0 0 40px ${role.themeColor}20`
+                            }}
                         >
-                            <role.icon size={32} style={{ color: role.themeColor }} />
+                            <role.icon size={40} style={{ color: role.themeColor }} />
                         </div>
 
-                        <h3 className="text-2xl font-black text-white mb-3 tracking-tight group-hover:text-accent-400 transition-colors">
+                        <h3 className="text-3xl font-black text-white mb-4 tracking-tighter group-hover:text-accent-400 transition-colors uppercase italic">
                             {role.name}
                         </h3>
-                        <p className="text-gray-400 text-sm font-medium mb-10 leading-relaxed min-h-[3rem]">
+                        <p className="text-white/50 text-base font-medium mb-12 leading-relaxed max-w-[240px]">
                             {role.desc}
                         </p>
                     </div>
 
                     <div className="mt-auto relative z-10 flex items-center justify-between">
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 group-hover:text-white transition-colors">
-                            Access Portal
+                        <span className="text-[11px] font-black uppercase tracking-[0.4em] text-white/30 group-hover:text-white transition-colors">
+                            Enter Portal
                         </span>
-                        <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white group-hover:bg-accent-500 group-hover:text-brand-950 transition-all duration-300">
-                            <ArrowRight size={20} className="transition-transform group-hover:translate-x-1" />
+                        <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white group-hover:bg-accent-500 group-hover:text-brand-950 transition-all duration-300 shadow-xl">
+                            <ArrowRight size={24} className="transition-transform group-hover:translate-x-1" />
                         </div>
                     </div>
-                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-accent-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-gradient-to-r from-transparent via-accent-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 </button>
             ))}
         </div>

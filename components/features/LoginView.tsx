@@ -247,57 +247,61 @@ export const LoginView = () => {
     return (
         <div className="min-h-screen relative flex overflow-hidden bg-brand-950">
             {/* Desktop Left Side - Imagery (Hidden on mobile) */}
-            <div className="hidden lg:flex w-1/2 relative overflow-hidden">
+            <div className="hidden lg:flex w-[45%] relative overflow-hidden border-right border-white/5">
                 {backgroundImages.map((img, idx) => (
                     <div
                         key={img}
-                        className={`absolute inset-0 bg-cover bg-center transition-all duration-[2000ms] transform scale-105 ${currentBg === idx ? 'opacity-100 scale-100' : 'opacity-0 scale-110'}`}
+                        className={`absolute inset-0 bg-cover bg-center transition-all duration-[2000ms] transform  ${currentBg === idx ? 'opacity-100 scale-100 rotate-0' : 'opacity-0 scale-110 rotate-1'}`}
                         style={{ backgroundImage: `url('${img}')` }}
                     />
                 ))}
                 <div className="absolute inset-0 bg-gradient-to-tr from-brand-950 via-brand-900/40 to-transparent" />
 
                 {/* Branding Overlay */}
-                <div className="absolute top-12 left-12 z-20 flex items-center gap-3">
-                    <img src="/footer-logo.png" alt="Registra" className="h-10 w-auto" />
-                    <div className="h-6 w-px bg-white/20" />
-                    <span className="text-white/60 text-[10px] font-black uppercase tracking-[0.3em]">Premium Education Suite</span>
+                <div className="absolute top-16 left-16 z-20 flex items-center gap-4">
+                    <img src="/footer-logo.png" alt="Registra" className="h-12 w-auto" />
+                    <div className="h-8 w-px bg-white/20" />
+                    <span className="text-white/40 text-[11px] font-black uppercase tracking-[0.4em] italic">Enterprise Suite</span>
                 </div>
 
-                <div className="absolute bottom-20 left-12 z-20 max-w-lg">
-                    <h2 className="text-5xl font-black text-white leading-none mb-6 tracking-tighter uppercase italic">
-                        The Future of <br />
-                        <span className="text-accent-400 not-italic">Academy Management</span>
+                <div className="absolute bottom-24 left-16 z-20 max-w-md">
+                    <div className="h-1.5 w-20 bg-accent-500 mb-10 rounded-full" />
+                    <h2 className="text-6xl font-black text-white leading-[0.9] mb-8 tracking-tighter uppercase italic drop-shadow-2xl">
+                        The Edge of <br />
+                        <span className="text-accent-400 not-italic">Academy Tech</span>
                     </h2>
-                    <p className="text-white/60 text-lg font-medium tracking-tight">
-                        Experience a seamless, AI-driven administrative workflow designed for modern institutions.
+                    <p className="text-white/50 text-xl font-medium tracking-tight leading-relaxed">
+                        Precision tools for the modern educator. <br /> Seamless, secure, and AI-optimized.
                     </p>
                 </div>
             </div>
 
             {/* Right Side - Login Area */}
-            <div className={`flex-1 relative flex flex-col items-center justify-center p-6 md:p-12 z-10 transition-all duration-500 ${selectedRole ? 'lg:flex-none lg:w-1/2 overflow-y-auto' : ''}`}>
+            <div className={`flex-1 relative flex flex-col items-center justify-center p-8 md:p-24 z-10 transition-all duration-700 bg-brand-950 ${selectedRole ? 'lg:flex-none lg:w-[55%] overflow-y-auto' : ''}`}>
                 {/* Mobile Background Fallback */}
                 <div className="lg:hidden absolute inset-0 z-0 text-white">
                     <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url('${backgroundImages[0]}')` }} />
-                    <div className="absolute inset-0 bg-brand-950/90 backdrop-blur-sm" />
+                    <div className="absolute inset-0 bg-brand-950/95 backdrop-blur-md" />
                 </div>
 
-                <a href="/" className="absolute top-8 right-8 z-20 flex items-center gap-2 text-white/50 hover:text-white transition-all bg-white/5 hover:bg-white/10 px-5 py-2.5 rounded-full backdrop-blur-xl border border-white/10 group">
-                    <ArrowRight className="rotate-180 group-hover:-translate-x-1 transition-transform" size={16} />
-                    <span className="text-[10px] font-black uppercase tracking-widest">Exit to Home</span>
+                <a href="/" className="absolute top-12 right-12 z-20 flex items-center gap-3 text-white/40 hover:text-accent-400 transition-all bg-white/[0.03] hover:bg-white/[0.08] px-6 py-3 rounded-full backdrop-blur-2xl border border-white/5 group shadow-xl">
+                    <ArrowRight className="rotate-180 group-hover:-translate-x-1 transition-transform" size={18} />
+                    <span className="text-[11px] font-black uppercase tracking-[0.3em]">Exit to Home</span>
                 </a>
 
-                <div className="w-full max-w-4xl space-y-12 relative z-10 animate-in fade-in slide-in-from-bottom-5 duration-700">
-                    <div className="text-center lg:text-left space-y-6">
+                <div className="w-full max-w-5xl space-y-16 relative z-10 animate-in fade-in slide-in-from-bottom-10 duration-1000">
+                    <div className="text-center lg:text-left space-y-8">
                         {!isSystemRoot ? (
-                            <div className="flex flex-col lg:flex-row items-center gap-6">
-                                <div className="p-4 bg-white rounded-[2rem] shadow-2xl border-4 border-white inline-block">
-                                    <img src={settings.logo_media || "/logo.png"} alt={settings.school_name || "School Logo"} className="h-20 w-auto object-contain" />
+                            <div className="flex flex-col lg:flex-row items-center gap-8">
+                                <div className="p-5 bg-white rounded-[2.5rem] shadow-[0_32px_64px_rgba(0,0,0,0.5)] border-[6px] border-white/10 inline-block overflow-hidden transition-transform hover:scale-105 duration-500">
+                                    <img src={settings.logo_media || "/logo.png"} alt={settings.school_name || "School Logo"} className="h-24 w-auto object-contain" />
                                 </div>
                                 <div>
-                                    <h1 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter leading-none mb-2">{settings.school_name}</h1>
-                                    <p className="text-accent-400 text-[10px] font-black uppercase tracking-[0.3em]">Authorized Access Portal</p>
+                                    <h1 className="text-5xl md:text-7xl font-black text-white uppercase tracking-tighter leading-none mb-3 italic">{settings.school_name}</h1>
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-px w-8 bg-accent-500/50" />
+                                        <p className="text-accent-400 text-[11px] font-black uppercase tracking-[0.5em]">Digital Access Node</p>
+                                    </div>
                                 </div>
                             </div>
                         ) : (
@@ -306,14 +310,14 @@ export const LoginView = () => {
                                 setAdminSecretCount(newCount);
                                 if (newCount >= 5) { setShowSystemLogin(true); setAdminSecretCount(0); }
                             }}>
-                                <img src="/footer-logo.png" alt="Registra" className="h-16 w-auto drop-shadow-md" />
+                                <img src="/footer-logo.png" alt="Registra" className="h-20 w-auto drop-shadow-2xl" />
                             </div>
                         )}
 
-                        <p className="text-white/60 text-sm md:text-lg font-medium max-w-xl">
+                        <p className="text-white/40 text-lg md:text-2xl font-medium max-w-2xl leading-relaxed">
                             {!isSystemRoot
-                                ? (selectedRole === 'student' ? 'Enter your Student Number and Password to access your portal.' : 'Welcome back. Please select your specific portal to proceed to your dashboard.')
-                                : (showSystemLogin ? 'System Management Access Granted.' : 'Find your institution by entering its unique subdomain below.')
+                                ? (selectedRole === 'student' ? 'Authorized authentication required. Please enter your student credentials below.' : 'Welcome back to the Command Center. Select your hub to begin.')
+                                : (showSystemLogin ? 'System Override Access Level: Root.' : 'Enter your institution identity to bridge to your local node.')
                             }
                         </p>
                     </div>
