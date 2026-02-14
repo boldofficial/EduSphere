@@ -6,7 +6,7 @@ import {
     CalendarCheck, CreditCard, Database, Settings as SettingsIcon,
     LogOut, Menu, ClipboardList, BadgeCheck, UserCog,
     Megaphone, Calendar, BarChart3, FileCheck, Newspaper, Mail, ShieldCheck, Globe,
-    MessageSquare, Search
+    MessageSquare, Search, ChevronDown, ChevronRight, Activity, Heart, Wallet, ScrollText, Megaphone as AnnouncementIcon
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -133,30 +133,63 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
 
     const navigation = [
-        { id: 'dashboard', name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-        { id: 'students', name: 'Students', href: '/students', icon: GraduationCap },
-        { id: 'teachers', name: 'Teachers', href: '/teachers', icon: Users },
-        { id: 'staff', name: 'Non-Academic', icon: UserCog, href: '/staff' },
-        { id: 'classes', name: 'Classes', href: '/classes', icon: BookOpen },
-        { id: 'timetables', name: 'Timetable', href: '/timetable', icon: Calendar },
-        { id: 'learning', name: 'Learning Center', href: '/learning', icon: BookOpen }, // Using BookOpen for now, or find a better one
-        { id: 'grading', name: 'Grading', href: '/grading', icon: ClipboardList },
-        { id: 'attendance', name: 'Attendance', href: '/attendance', icon: CalendarCheck },
-        { id: 'bursary', name: 'Bursary', href: '/bursary', icon: CreditCard },
-        { id: 'admissions', name: 'Admissions', href: '/admissions', icon: FileCheck },
-        { id: 'announcements', name: 'Announcements', href: '/announcements', icon: Megaphone },
-        { id: 'messages', name: 'Messages', href: '/messages', icon: Mail },
-        { id: 'calendar', name: 'Calendar', href: '/calendar', icon: Calendar },
-        { id: 'conduct', name: 'Conduct & Log', href: '/conduct', icon: ShieldCheck },
-        { id: 'analytics', name: 'Analytics', href: '/analytics', icon: BarChart3 },
-        { id: 'id_cards', name: 'ID Cards', href: '/id_cards', icon: BadgeCheck },
-        { id: 'newsletter', name: 'Newsletter', href: '/newsletter', icon: Newspaper },
-        { id: 'broadsheet', name: 'Broadsheet', href: '/broadsheet', icon: LayoutDashboard },
-        { id: 'cms', name: 'Website CMS', href: '/cms', icon: Globe },
-        { id: 'data', name: 'System Data', href: '/data', icon: Database },
-        { id: 'support', name: 'Support & Tickets', href: '/support', icon: MessageSquare },
-        { id: 'settings', name: 'Settings', href: '/settings', icon: SettingsIcon },
+        { id: 'dashboard', name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, category: 'General' },
+
+        { id: 'students', name: 'Students', href: '/students', icon: GraduationCap, category: 'Administration' },
+        { id: 'teachers', name: 'Teachers', href: '/teachers', icon: Users, category: 'Administration' },
+        { id: 'staff', name: 'Non-Academic', icon: UserCog, href: '/staff', category: 'Administration' },
+        { id: 'admissions', name: 'Admissions', href: '/admissions', icon: FileCheck, category: 'Administration' },
+        { id: 'id_cards', name: 'ID Cards', href: '/id_cards', icon: BadgeCheck, category: 'Administration' },
+
+        { id: 'classes', name: 'Classes', href: '/classes', icon: BookOpen, category: 'Academics' },
+        { id: 'timetables', name: 'Timetable', href: '/timetable', icon: Calendar, category: 'Academics' },
+        { id: 'learning', name: 'Learning Center', href: '/learning', icon: GraduationCap, category: 'Academics' },
+        { id: 'grading', name: 'Grading', href: '/grading', icon: ClipboardList, category: 'Academics' },
+        { id: 'attendance', name: 'Attendance', href: '/attendance', icon: CalendarCheck, category: 'Academics' },
+        { id: 'broadsheet', name: 'Broadsheet', href: '/broadsheet', icon: ScrollText, category: 'Academics' },
+        { id: 'calendar', name: 'Calendar', href: '/calendar', icon: Calendar, category: 'Academics' },
+
+        { id: 'bursary', name: 'Bursary', href: '/bursary', icon: Wallet, category: 'Account' },
+
+        { id: 'conduct', name: 'Conduct & Log', href: '/conduct', icon: Activity, category: 'Health & Conduct' },
+
+        { id: 'messages', name: 'Messages', href: '/messages', icon: Mail, category: 'Messages' },
+        { id: 'announcements', name: 'Announcements', href: '/announcements', icon: AnnouncementIcon, category: 'Messages' },
+        { id: 'newsletter', name: 'Newsletter', href: '/newsletter', icon: Newspaper, category: 'Messages' },
+
+        { id: 'cms', name: 'Website CMS', href: '/cms', icon: Globe, category: 'Tools' },
+        { id: 'analytics', name: 'Analytics', href: '/analytics', icon: BarChart3, category: 'Tools' },
+        { id: 'data', name: 'System Data', href: '/data', icon: Database, category: 'Tools' },
+        { id: 'support', name: 'Support & Tickets', href: '/support', icon: MessageSquare, category: 'Tools' },
+        { id: 'settings', name: 'Settings', href: '/settings', icon: SettingsIcon, category: 'Tools' },
     ];
+
+    const categories = [
+        { name: 'General', icon: LayoutDashboard, color: 'text-white' },
+        { name: 'Administration', icon: Users, color: 'text-blue-400' },
+        { name: 'Academics', icon: BookOpen, color: 'text-emerald-400' },
+        { name: 'Account', icon: CreditCard, color: 'text-amber-400' },
+        { name: 'Health & Conduct', icon: Heart, color: 'text-rose-400' },
+        { name: 'Messages', icon: Mail, color: 'text-purple-400' },
+        { name: 'Tools', icon: SettingsIcon, color: 'text-slate-400' },
+    ];
+
+    const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({
+        General: true,
+        Administration: true,
+        Academics: true,
+        Account: true,
+        'Health & Conduct': true,
+        Messages: true,
+        Tools: true,
+    });
+
+    const toggleCategory = (categoryName: string) => {
+        setExpandedCategories(prev => ({
+            ...prev,
+            [categoryName]: !prev[categoryName]
+        }));
+    };
 
     // Get allowed navigation from role permissions
     // Fallback to INITIAL_SETTINGS if role is missing in fetched settings
@@ -240,21 +273,58 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     </button>
                 </div>
 
-                <nav className="flex-1 px-3 lg:px-4 py-4 lg:py-6 space-y-1 overflow-y-auto custom-scrollbar text-white">
-                    {filteredNavigation.map((item) => (
-                        <Link
-                            key={item.id}
-                            href={item.href}
-                            onClick={() => setIsSidebarOpen(false)}
-                            className={`w-full flex items-center px-3 lg:px-4 py-2.5 lg:py-3 text-sm font-medium rounded-lg transition-colors group ${pathname === item.href
-                                ? 'bg-white/10 text-white'
-                                : 'text-brand-100 hover:bg-white/5 hover:text-white'
-                                }`}
-                        >
-                            <item.icon className="h-5 w-5 shrink-0" />
-                            <span className="ml-3">{item.name}</span>
-                        </Link>
-                    ))}
+                <nav className="flex-1 px-3 lg:px-4 py-4 lg:py-6 space-y-4 overflow-y-auto custom-scrollbar text-white">
+                    {categories.map((category) => {
+                        const items = filteredNavigation.filter(n => n.category === category.name);
+                        if (items.length === 0) return null;
+
+                        const isExpanded = expandedCategories[category.name];
+
+                        return (
+                            <div key={category.name} className="space-y-1">
+                                {category.name !== 'General' ? (
+                                    <button
+                                        onClick={() => toggleCategory(category.name)}
+                                        className="w-full flex items-center justify-between px-2 py-1 text-[10px] font-black uppercase tracking-widest text-brand-300/50 hover:text-brand-200 transition-colors group"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <category.icon className={`h-3 w-3 ${category.color}`} />
+                                            <span>{category.name}</span>
+                                        </div>
+                                        {isExpanded ? (
+                                            <ChevronDown className="h-3 w-3" />
+                                        ) : (
+                                            <ChevronRight className="h-3 w-3" />
+                                        )}
+                                    </button>
+                                ) : null}
+
+                                {isExpanded && (
+                                    <div className="space-y-1">
+                                        {items.map((item) => (
+                                            <Link
+                                                key={item.id}
+                                                href={item.href}
+                                                onClick={() => {
+                                                    if (window.innerWidth < 1024) setIsSidebarOpen(false);
+                                                }}
+                                                className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 group ${pathname === item.href
+                                                    ? 'bg-white/10 text-white shadow-sm ring-1 ring-white/20'
+                                                    : 'text-brand-100 hover:bg-white/5 hover:text-white'
+                                                    }`}
+                                            >
+                                                <item.icon className={`h-4 w-4 shrink-0 transition-transform group-hover:scale-110 ${pathname === item.href ? 'text-white' : category.color}`} />
+                                                <span className="ml-3">{item.name}</span>
+                                                {pathname === item.href && (
+                                                    <div className="ml-auto w-1.5 h-1.5 bg-brand-400 rounded-full animate-pulse" />
+                                                )}
+                                            </Link>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
                 </nav>
 
                 <div className="p-3 lg:p-4 border-t border-white/10 shrink-0">
