@@ -5,7 +5,7 @@
  * plus attendance & remarks per student.
  */
 import React from 'react';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Sparkles, Loader2 } from 'lucide-react';
 import * as Types from '@/lib/types';
 import * as Utils from '@/lib/utils';
 import { Card } from '@/components/ui/card';
@@ -22,13 +22,24 @@ interface SkillsTabProps {
     settings: Types.Settings;
     handleTraitChange: (studentId: string, category: 'affective' | 'psychomotor', trait: string, value: number) => void;
     handleScoreFieldChange: (studentId: string, field: keyof Types.Score, value: any) => void;
+    onMagicRemark: (studentId: string) => Promise<void>;
 }
 
 export const SkillsTab: React.FC<SkillsTabProps> = ({
     classes, selectedClass, setSelectedClass, activeStudents,
     reportStudentId, setReportStudentId, scores, settings,
-    handleTraitChange, handleScoreFieldChange
+    handleTraitChange, handleScoreFieldChange, onMagicRemark
 }) => {
+    const [isGenerating, setIsGenerating] = React.useState(false);
+
+    const handleAIGenerate = async () => {
+        setIsGenerating(true);
+        try {
+            await onMagicRemark(reportStudentId);
+        } finally {
+            setIsGenerating(false);
+        }
+    };
     return (
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             <div className="lg:col-span-1 space-y-4">
@@ -119,7 +130,21 @@ export const SkillsTab: React.FC<SkillsTabProps> = ({
                                     </div>
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-xs font-bold text-gray-500 uppercase">{settings.class_teacher_label} Remark</label>
+                                    <div className="flex justify-between items-center">
+                                        <label className="text-xs font-bold text-gray-500 uppercase">{settings.class_teacher_label} Remark</label>
+                                        <button
+                                            onClick={handleAIGenerate}
+                                            disabled={isGenerating}
+                                            className="flex items-center gap-1.5 text-[10px] font-bold uppercase py-1 px-2 rounded-full bg-brand-50 text-brand-600 hover:bg-brand-100 transition-colors disabled:opacity-50"
+                                        >
+                                            {isGenerating ? (
+                                                <Loader2 className="h-3 w-3 animate-spin" />
+                                            ) : (
+                                                <Sparkles className="h-3 w-3" />
+                                            )}
+                                            Magic Remark
+                                        </button>
+                                    </div>
                                     <textarea
                                         value={scores.find(s => s.student_id === reportStudentId && s.session === settings.current_session && s.term === settings.current_term)?.teacher_remark || ''}
                                         onChange={e => handleScoreFieldChange(reportStudentId, 'teacher_remark', e.target.value)}

@@ -5,6 +5,7 @@ from rest_framework.exceptions import PermissionDenied
 from django.db import transaction, models
 from django.http import FileResponse
 from .utils import BroadsheetPDFGenerator, ReportCardPDFGenerator
+from .ai_utils import AcademicAI
 
 
 class IsAdminOrReadOnly(permissions.BasePermission):
@@ -313,20 +314,23 @@ class ReportCardViewSet(TenantViewSet):
         
         # Structure the data for the AI prompt
         performance_data = {
-            "excellent": excellent_count,
-            "average": average_count,
-            "poor": poor_count,
-            "subjects_count": scores.count(),
-            "student_name": report_card.student.names
+            "name": report_card.student.names,
+            "scores": [{"subject": s.subject.name, "score": s.total} for s in scores],
+            "conduct": list(ConductEntry.objects.filter(student=report_card.student, session=report_card.session, term=report_card.term).values('category', 'observations', 'points')),
+            "attendance": {
+                "present": AttendanceRecord.objects.filter(student=report_card.student, session=report_card.session, term=report_card.term, status='PRESENT').count(),
+                "absent": AttendanceRecord.objects.filter(student=report_card.student, session=report_card.session, term=report_card.term, status='ABSENT').count()
+            }
         }
         
-        # Placeholder for Gemini integration
-        gemini_api_key = os.environ.get('GEMINI_API_KEY')
-        if gemini_api_key:
-            # Here we would call the Gemini API
-            remark = f"AI Remark for {report_card.student.names} based on {scores.count()} subjects. (Gemini Integrated)"
-        else:
+        ai = AcademicAI()
+        remark = ai.generate_student_remark(performance_data)
+        
+        if not remark:
             # Fallback heuristic remark
+            excellent_count = scores.filter(total__gte=80).count()
+            poor_count = scores.filter(total__lt=50).count()
+            
             if excellent_count > (scores.count() / 2):
                 remark = f"{report_card.student.names} has shown exceptional performance this term. Keep up the excellent work!"
             elif poor_count > 0:
@@ -335,6 +339,130 @@ class ReportCardViewSet(TenantViewSet):
                 remark = f"A good performance overall by {report_card.student.names}. Consistent effort will lead to even better results."
                 
         return Response({"suggestion": remark, "data": performance_data})
+
+class AIInsightsView(APIView):
+    """
+    Term-wide insights for admins based on all student data.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        school = getattr(request.user, 'school', None) or getattr(request, 'tenant', None)
+        if not school:
+            return Response({"error": "No school context found"}, status=400)
+
+        session = request.query_params.get('session')
+        term = request.query_params.get('term')
+
+        if not session or not term:
+            return Response({"error": "Session and term required"}, status=400)
+
+        # Gather summary data
+        total_students = Student.objects.filter(school=school, status='active').count()
+        report_cards = ReportCard.objects.filter(school=school, session=session, term=term)
+        
+        at_risk_count = report_cards.filter(average__lt=50).count()
+        
+        # Simple attendance average
+        attendance_records = AttendanceRecord.objects.filter(school=school, session=session, term=term)
+        total_att = attendance_records.count()
+        present_att = attendance_records.filter(status='PRESENT').count()
+        avg_attendance = (present_att / total_att * 100) if total_att > 0 else 0
+
+        summary_data = {
+            "at_risk_count": at_risk_count,
+            "average_attendance": round(avg_attendance, 1),
+            "top_subjects": ["Mathematics", "English"], # Placeholder for actual trend analysis
+            "trends": {
+                "average_score": report_cards.aggregate(models.Avg('average'))['average__avg'] or 0
+            }
+        }
+
+        ai = AcademicAI()
+        insights = ai.generate_executive_insights(summary_data)
+
+        return Response({
+            "insights": insights,
+            "summary": summary_data,
+            "term_info": {"session": session, "term": term}
+        })
+
+class AITimetableGenerateView(APIView):
+    """
+    School-wide AI Timetable Generator.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        school = getattr(request.user, 'school', None) or getattr(request, 'tenant', None)
+        if not school:
+            return Response({"error": "No school context found"}, status=400)
+
+        # Gather Data
+        classes_qs = Class.objects.filter(school=school)
+        teachers_qs = Teacher.objects.filter(school=school, staff_type='ACADEMIC')
+        periods_qs = Period.objects.filter(school=school).order_by('start_time')
+        
+        school_data = {
+            "classes": [],
+            "teachers": [],
+            "periods": [],
+            "days": ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+        }
+
+        for c in classes_qs:
+            class_subjects = []
+            for s in c.subjects.all():
+                # Defaulting to 4 periods per week for now can be improved
+                class_subjects.append({"id": str(c.id) + "_" + str(s.id), "real_id": s.id, "name": s.name, "periods_per_week": 4})
+            school_data["classes"].append({"id": str(c.id), "name": c.name, "subjects": class_subjects})
+
+        for t in teachers_qs:
+            # Expertise is inferred from SubjectTeacher if available
+            expertise = list(SubjectTeacher.objects.filter(teacher=t).values_list('subject', flat=True).distinct())
+            school_data["teachers"].append({"id": str(t.id), "name": t.name, "expertise": expertise})
+
+        for p in periods_qs:
+            school_data["periods"].append({"id": str(p.id), "name": p.name, "category": p.category})
+
+        ai = AcademicAI()
+        entries = ai.generate_timetable(school_data)
+
+        if not entries:
+            return Response({"error": "AI failed to generate timetable"}, status=500)
+
+        # process and save entries
+        with transaction.atomic():
+            for entry_data in entries:
+                try:
+                    c = Class.objects.get(id=entry_data['class_id'], school=school)
+                    # Get or Create Timetable for class
+                    timetable, _ = Timetable.objects.get_or_create(
+                        student_class=c, 
+                        school=school,
+                        defaults={'title': f'{c.name} Weekly Schedule', 'is_active': True}
+                    )
+                    
+                    # Wipe existing entries for this slot to avoid UniqueConstraint errors if re-generating
+                    TimetableEntry.objects.filter(
+                        timetable=timetable,
+                        day_of_week=entry_data['day'],
+                        period_id=entry_data['period_id']
+                    ).delete()
+
+                    # Save new entry
+                    TimetableEntry.objects.create(
+                        school=school,
+                        timetable=timetable,
+                        day_of_week=entry_data['day'],
+                        period_id=entry_data['period_id'],
+                        subject_id=entry_data['subject_id'],
+                        teacher_id=entry_data['teacher_id']
+                    )
+                except Exception as e:
+                    continue # Skip invalid entries from AI
+
+        return Response({"status": "success", "message": f"Generated {len(entries)} timetable entries."})
 
 class StudentHistoryViewSet(TenantViewSet):
     queryset = StudentHistory.objects.all()

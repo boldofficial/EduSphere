@@ -13,6 +13,7 @@ import { SubjectTeacherManager } from './grading/SubjectTeacherManager';
 import { ScoreEntryTab } from './grading/ScoreEntryTab';
 import { SkillsTab } from './grading/SkillsTab';
 import { ReportPreviewTab } from './grading/ReportPreviewTab';
+import apiClient from '@/lib/api-client';
 import { PublishTab } from './grading/PublishTab';
 import { useSchoolStore } from '@/lib/store';
 import { useToast } from '@/components/providers/toast-provider';
@@ -137,6 +138,24 @@ export const GradingView: React.FC<GradingViewProps> = ({
         if (newScore[field] !== value) {
             (newScore as any)[field] = value;
             debouncedUpsert(newScore);
+        }
+    };
+
+    const handleMagicRemark = async (studentId: string) => {
+        const score = scores.find(s => s.student_id === studentId && s.session === settings.current_session && s.term === settings.current_term);
+        if (!score?.id) {
+            addToast('Please enter some scores or traits first before generating an AI remark', 'warning');
+            return;
+        }
+
+        try {
+            const res = await apiClient.post(`/reports/${score.id}/suggest-remark/`);
+            if (res.data?.suggestion) {
+                handleScoreFieldChange(studentId, 'teacher_remark', res.data.suggestion);
+                addToast('AI Remark generated successfully!', 'success');
+            }
+        } catch (e) {
+            addToast('Failed to generate AI remark. Please try again later.', 'error');
         }
     };
 
@@ -347,6 +366,7 @@ export const GradingView: React.FC<GradingViewProps> = ({
                     settings={settings}
                     handleTraitChange={handleTraitChange}
                     handleScoreFieldChange={handleScoreFieldChange}
+                    onMagicRemark={handleMagicRemark}
                 />
             )}
 

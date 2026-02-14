@@ -25,6 +25,7 @@ import { StudentPopulation } from './dashboard/StudentPopulation';
 import { RecentTransactions } from './dashboard/RecentTransactions';
 import { AdvancedAnalytics } from './dashboard/AdvancedAnalytics';
 import { AttendanceAnalytics } from './dashboard/AttendanceAnalytics';
+import { ExecutiveAcademicSummary } from './dashboard/ExecutiveAcademicSummary';
 
 // Dashboard tab components
 import { DashboardCmsTab } from './dashboard/DashboardCmsTab';
@@ -343,6 +344,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             {/* Overview Tab */}
             {activeTab === 'overview' && (
                 <div className="space-y-8">
+                    <ExecutiveAcademicSummary />
                     <DashboardStats
                         studentsCount={students.length}
                         staffCount={teachers.length + staff.length}

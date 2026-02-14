@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Search, User, Edit, Trash2, UserCheck, Zap } from 'lucide-react';
+import { Plus, Search, User, Edit, Trash2, UserCheck, Zap, AlertTriangle } from 'lucide-react';
 import * as Types from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -19,6 +19,7 @@ interface StudentsViewProps {
     onSearchChange?: (s: string) => void;
     onFilterClassChange?: (c: string) => void;
     isLoading?: boolean;
+    scores?: Types.Score[];
 }
 
 const getPassportUrl = (student: Types.Student | any): string | null => {
@@ -28,7 +29,7 @@ const getPassportUrl = (student: Types.Student | any): string | null => {
 };
 
 export const StudentsView: React.FC<StudentsViewProps> = ({
-    students, classes, onAdd, onUpdate, onDelete, onSearchChange, onFilterClassChange, isLoading = false
+    students, classes, onAdd, onUpdate, onDelete, onSearchChange, onFilterClassChange, isLoading = false, scores = []
 }) => {
     const [showModal, setShowModal] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -182,10 +183,23 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                 {filteredStudents.map(s => {
                     const cls = classes.find(c => c.id === s.class_id)?.name || 'Unknown';
                     const passportUrl = getPassportUrl(s);
+
+                    // Determine at-risk status
+                    const currentScore = scores.find(sc => sc.student_id === s.id && sc.session === settings?.current_session && sc.term === settings?.current_term);
+                    const isAtRisk = currentScore && (currentScore.average || 0) < (settings?.promotion_threshold || 50);
+                    const attendanceLow = currentScore && (currentScore.attendance_present || 0) < (currentScore.attendance_total || 0) * 0.7;
+
                     return (
-                        <Card key={s.id} className="hover:border-brand-300 transition-colors group relative overflow-hidden">
-                            <div className="flex flex-col items-center text-center p-2">
-                                <div className="h-20 w-20 rounded-full bg-gray-200 mb-4 flex items-center justify-center overflow-hidden border-4 border-white shadow-sm">
+                        <Card key={s.id} className={`hover:border-brand-300 transition-colors group relative overflow-hidden ${isAtRisk ? 'border-red-200' : ''}`}>
+                            {isAtRisk && (
+                                <div className="absolute top-2 right-2 z-10">
+                                    <div className="bg-red-600 text-white rounded-full p-1.5 shadow-lg animate-pulse" title="Academic At-Risk">
+                                        <AlertTriangle className="h-3 w-3" />
+                                    </div>
+                                </div>
+                            )}
+                            <div className="flex flex-col items-center text-center p-2 relative">
+                                <div className={`h-20 w-20 rounded-full mb-4 flex items-center justify-center overflow-hidden border-4 border-white shadow-sm ${isAtRisk ? 'ring-2 ring-red-100 ring-offset-2' : ''}`}>
                                     {passportUrl ? (
                                         <img src={passportUrl} alt={s.names} className="h-full w-full object-cover" />
                                     ) : (
@@ -193,7 +207,12 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                                     )}
                                 </div>
                                 <h3 className="font-bold text-gray-900 line-clamp-1">{s.names}</h3>
-                                <span className="text-xs font-mono text-gray-500 mb-2">{s.student_no}</span>
+                                <div className="flex items-center gap-1.5 mb-2">
+                                    <span className="text-xs font-mono text-gray-500">{s.student_no}</span>
+                                    {attendanceLow && (
+                                        <div className="h-1.5 w-1.5 rounded-full bg-amber-500" title="Low Attendance" />
+                                    )}
+                                </div>
                                 <span className="px-2 py-1 rounded-full bg-brand-50 text-brand-700 text-xs font-medium mb-4">{cls}</span>
                                 <div className="w-full border-t pt-3 flex justify-between items-center text-xs text-gray-500">
                                     <div className="flex flex-col items-start"><span className="font-medium text-gray-700">{s.gender}</span><span>{s.dob}</span></div>

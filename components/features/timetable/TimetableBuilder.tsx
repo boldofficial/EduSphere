@@ -5,8 +5,9 @@ import { useClasses, useTimetables, useCreateTimetableEntry, useSubjects, useTea
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '@/lib/api-client';
 import * as Types from '@/lib/types';
-import { Loader2, Plus, Calendar, User, BookOpen, AlertCircle } from 'lucide-react';
+import { Loader2, Plus, Calendar, User, BookOpen, AlertCircle, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/providers/toast-provider';
 
 // Fetch Periods Hook (Custom)
 function usePeriods() {
@@ -26,6 +27,8 @@ export const TimetableBuilder = () => {
     const { data: periods = [] } = usePeriods();
     const [selectedClassId, setSelectedClassId] = useState<string>('');
     const [isSettingUp, setIsSettingUp] = useState(false);
+    const [isGenerating, setIsGenerating] = useState(false);
+    const { addToast } = useToast();
 
     // Fetch Timetable for selected class
     const { data: timetables = [], isLoading: isLoadingTimetable } = useTimetables(selectedClassId);
@@ -66,6 +69,20 @@ export const TimetableBuilder = () => {
         });
 
         setEditingCell(null);
+    };
+
+    const handleAIGenerate = async () => {
+        setIsGenerating(true);
+        try {
+            const res = await apiClient.post('/timetables/magic-generate/');
+            addToast(res.data.message || 'Timetable generated successfully!', 'success');
+            window.location.reload();
+        } catch (error) {
+            console.error('AI Generation Failed:', error);
+            addToast('Failed to generate timetable. Please ensure periods and teachers are set up.', 'error');
+        } finally {
+            setIsGenerating(false);
+        }
     };
 
     if (!selectedClassId) {
@@ -158,6 +175,19 @@ export const TimetableBuilder = () => {
                 </div>
                 <div className="flex gap-2">
                     <Button variant="outline" size="sm" onClick={() => setSelectedClassId('')}>Change Class</Button>
+                    <Button
+                        size="sm"
+                        onClick={handleAIGenerate}
+                        disabled={isGenerating}
+                        className="bg-brand-900 hover:bg-black text-white gap-2 border-brand-800"
+                    >
+                        {isGenerating ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                            <Sparkles className="h-4 w-4 text-brand-300 fill-brand-300" />
+                        )}
+                        AI Magic Generate
+                    </Button>
                     <Button size="sm">Publish</Button>
                 </div>
             </div>

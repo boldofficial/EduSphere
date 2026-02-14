@@ -3,7 +3,8 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     SubjectViewSet, TeacherViewSet, ClassViewSet, StudentViewSet,
     ReportCardViewSet, SubjectScoreViewSet, AttendanceSessionViewSet, AttendanceRecordViewSet,
-    SchoolEventViewSet, HeaderEchoView, StudentHistoryViewSet, StudentAchievementViewSet
+    SchoolEventViewSet, HeaderEchoView, StudentHistoryViewSet, StudentAchievementViewSet,
+    AIInsightsView, AITimetableGenerateView
 )
 from . import views
 
@@ -35,6 +36,8 @@ router.register(r'broadsheet', views.BroadsheetView, basename='broadsheet')
 urlpatterns = [
     path('debug-headers/', HeaderEchoView.as_view(), name='debug-headers'),
     path('global-search/', views.GlobalSearchView.as_view(), name='global-search'),
+    path('ai-insights/', views.AIInsightsView.as_view(), name='ai-insights'),
+    path('timetables/magic-generate/', views.AITimetableGenerateView.as_view(), name='magic-generate'),
     path('', include(router.urls)),
 ]
 
