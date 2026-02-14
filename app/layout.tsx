@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next'
+import { headers } from 'next/headers'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { ToastProvider } from '@/components/providers/toast-provider'
@@ -7,82 +8,77 @@ import { PWAProvider } from '@/components/providers/pwa-provider'
 
 const inter = Inter({ subsets: ['latin'] })
 
-export const metadata: Metadata = {
-    title: {
-        default: 'Registra | The operating system for modern schools',
-        template: '%s | Registra',
-    },
-    description: 'The operating system for modern schools. Unified management for students, staff, and academics.',
-    keywords: [
-        'Registra', 'school management system', 'LMS', 'school ERP', 'admissions sync',
-        'academic management', 'fee collection', 'Registra.net', 'premium school software'
-    ],
-    authors: [{ name: 'Registra Team' }],
-    creator: 'Bold Ideas Innovations Ltd',
-    publisher: 'Registra',
-    metadataBase: new URL('https://myregistra.net'),
-    alternates: {
-        canonical: '/',
-    },
-    category: 'Education',
-    classification: 'School Management and SaaS',
-    openGraph: {
-        type: 'website',
-        locale: 'en_NG',
-        url: 'https://myregistra.net',
-        siteName: 'Registra',
-        title: 'Registra - All-in-One School Management Platform',
-        description: 'The operating system for modern schools. Unified management for students, staff, and academics.',
-        images: [
-            {
-                url: '/opengraph-image.png',
-                width: 1200,
-                height: 630,
-                alt: 'Registra Platform',
-                type: 'image/png',
-            },
-        ],
-    },
+const DJANGO_API_URL = (process.env.DJANGO_API_URL || 'http://127.0.0.1:8000').replace(/\/$/, '');
 
-    twitter: {
-        card: 'summary_large_image',
-        site: '@registra',
-        creator: '@registra',
-        title: 'Registra - Efficient School Management',
-        description: 'The operating system for modern schools. Unified management for students, staff, and academics.',
-        images: {
-            url: '/opengraph-image.png',
-            alt: 'Registra Logo',
+export async function generateMetadata(): Promise<Metadata> {
+    const headersList = await headers();
+    const host = headersList.get('host') || '';
+    const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'myregistra.net';
+
+    // Derived tenant logic
+    const cleanHost = host.replace(/^www\./, '').split(':')[0];
+    const cleanRoot = rootDomain.replace(/^www\./, '').split(':')[0];
+    const isRoot = cleanHost === cleanRoot;
+
+    let tenantId = 'demo';
+    if (!isRoot && cleanHost.endsWith(`.${cleanRoot}`)) {
+        tenantId = cleanHost.replace(`.${cleanRoot}`, '');
+    } else if (!isRoot && host !== 'localhost' && !host.includes('127.0.0.1')) {
+        tenantId = cleanHost;
+    }
+
+    let schoolName = 'Registra';
+    let schoolTagline = 'The operating system for modern schools';
+
+    try {
+        const res = await fetch(`${DJANGO_API_URL}/api/settings/`, {
+            headers: { 'X-Tenant-ID': tenantId },
+            next: { revalidate: 3600 }
+        });
+        if (res.ok) {
+            const data = await res.json();
+            schoolName = data.school_name || 'Registra';
+            schoolTagline = data.school_tagline || 'The operating system for modern schools';
+        }
+    } catch (e) {
+        // Fallback to defaults
+    }
+
+    const title = isRoot ? 'Registra | The operating system for modern schools' : `${schoolName} | Powered by Registra`;
+    const description = isRoot ? 'The operating system for modern schools. Unified management for students, staff, and academics.' : `${schoolName} - ${schoolTagline}. Manage academics, admissions, and school operations efficiently.`;
+
+    return {
+        title: {
+            default: title,
+            template: `%s | ${schoolName}`,
         },
-    },
-    robots: {
-        index: true,
-        follow: true,
-        googleBot: {
-            index: true,
-            follow: true,
-            'max-video-preview': -1,
-            'max-image-preview': 'large',
-            'max-snippet': -1,
+        description,
+        metadataBase: new URL('https://myregistra.net'),
+        openGraph: {
+            type: 'website',
+            locale: 'en_NG',
+            url: `https://${host}`,
+            siteName: schoolName,
+            title: title,
+            description: description,
         },
-    },
-    manifest: '/manifest.json',
-    icons: {
-        icon: [
-            { url: '/favicon.png', sizes: '32x32', type: 'image/png' },
-            { url: '/favicon.png', sizes: '16x16', type: 'image/png' },
-        ],
-        apple: [
-            { url: '/favicon.png', sizes: '180x180', type: 'image/png' },
-        ],
-        shortcut: '/favicon.png',
-    },
-    other: {
-        'mobile-web-app-capable': 'yes',
-        'apple-mobile-web-app-capable': 'yes',
-        'apple-mobile-web-app-status-bar-style': 'black-translucent',
-        'format-detection': 'telephone=yes',
-    },
+        twitter: {
+            card: 'summary_large_image',
+            title: title,
+            description: description,
+        },
+        manifest: '/manifest.json',
+        icons: {
+            icon: [
+                { url: '/favicon.png', sizes: '32x32', type: 'image/png' },
+                { url: '/favicon.png', sizes: '16x16', type: 'image/png' },
+            ],
+            apple: [
+                { url: '/favicon.png', sizes: '180x180', type: 'image/png' },
+            ],
+            shortcut: '/favicon.png',
+        },
+    };
 }
 
 export const viewport: Viewport = {
