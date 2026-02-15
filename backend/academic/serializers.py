@@ -9,7 +9,8 @@ from .models import (
     ReportCard, SubjectScore, AttendanceSession, AttendanceRecord,
     SchoolEvent, Lesson, ConductEntry,
     Period, Timetable, TimetableEntry, GradingScheme, GradeRange,
-    SubjectTeacher, StudentHistory, StudentAchievement
+    SubjectTeacher, StudentHistory, StudentAchievement,
+    AdmissionIntake, Admission
 )
 
 class Base64ImageField(serializers.CharField):
@@ -505,3 +506,17 @@ class SubjectTeacherSerializer(serializers.ModelSerializer):
         model = SubjectTeacher
         fields = '__all__'
         read_only_fields = ('school',)
+
+class AdmissionIntakeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AdmissionIntake
+        fields = '__all__'
+        read_only_fields = ('school',)
+
+class AdmissionSerializer(serializers.ModelSerializer):
+    intake_name = serializers.CharField(source='intake.name', read_only=True)
+    
+    class Meta:
+        model = Admission
+        fields = '__all__'
+        read_only_fields = ('school', 'reviewed_at', 'reviewed_by')

@@ -2,10 +2,10 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
-from .models import FeeCategory, FeeItem, StudentFee, Payment, Expense, Scholarship
+from .models import FeeCategory, FeeItem, StudentFee, Payment, Expense, Scholarship, AdmissionPackage
 from .serializers import (
     FeeCategorySerializer, FeeItemSerializer, StudentFeeSerializer, PaymentSerializer, 
-    ExpenseSerializer, ScholarshipSerializer
+    ExpenseSerializer, ScholarshipSerializer, AdmissionPackageSerializer
 )
 from academic.models import Student, Class
 from core.pagination import StandardPagination, LargePagination
@@ -368,4 +368,8 @@ class DashboardViewSet(viewsets.ViewSet):
         # Store in cache
         cache.set(cache_key, result, 900) # 15 minutes
         
-        return Response(result)
+
+class AdmissionPackageViewSet(TenantViewSet):
+    queryset = AdmissionPackage.objects.select_related('intake', 'school').prefetch_related('fees').all()
+    serializer_class = AdmissionPackageSerializer
+    pagination_class = StandardPagination

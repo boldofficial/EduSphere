@@ -4,7 +4,10 @@ from .views import (
     SubjectViewSet, TeacherViewSet, ClassViewSet, StudentViewSet,
     ReportCardViewSet, SubjectScoreViewSet, AttendanceSessionViewSet, AttendanceRecordViewSet,
     SchoolEventViewSet, HeaderEchoView, StudentHistoryViewSet, StudentAchievementViewSet,
-    AIInsightsView, AITimetableGenerateView
+    AIInsightsView, AITimetableGenerateView,
+    AdmissionIntakeViewSet, AdmissionViewSet, LessonViewSet, ConductEntryViewSet,
+    PeriodViewSet, TimetableViewSet, TimetableEntryViewSet, GradingSchemeViewSet,
+    GradeRangeViewSet, SubjectTeacherViewSet, BroadsheetView, GlobalSearchView
 )
 from . import views
 
@@ -27,7 +30,9 @@ router.register(r'conduct-entries', views.ConductEntryViewSet)
 # Timetable & Grading Module Endpoints
 router.register(r'periods', views.PeriodViewSet, basename='periods')
 router.register(r'timetables', views.TimetableViewSet, basename='timetables')
-router.register(r'timetable-entries', views.TimetableEntryViewSet, basename='timetable-entries')
+router.register(r'timetable-entries', TimetableEntryViewSet, basename='timetable-entries')
+router.register(r'admission-intakes', AdmissionIntakeViewSet, basename='admission-intakes')
+router.register(r'admissions', AdmissionViewSet, basename='admissions')
 router.register(r'grading-schemes', views.GradingSchemeViewSet, basename='grading-schemes')
 router.register(r'grade-ranges', views.GradeRangeViewSet, basename='grade-ranges')
 router.register(r'subject_teachers', views.SubjectTeacherViewSet, basename='subject_teachers')

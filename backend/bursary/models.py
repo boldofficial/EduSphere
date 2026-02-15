@@ -138,3 +138,13 @@ class Expense(TenantModel):
 
     def __str__(self):
         return f"{self.title} - {self.amount}"
+
+class AdmissionPackage(TenantModel):
+    """
+    Bundles specific fees for an admission intake.
+    """
+    intake = models.OneToOneField('academic.AdmissionIntake', on_delete=models.CASCADE, related_name='package')
+    fees = models.ManyToManyField(FeeItem, related_name='admission_packages')
+
+    def __str__(self):
+        return f"Package for {self.intake.name}"

@@ -6,16 +6,21 @@ import * as Types from '@/lib/types';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/providers/toast-provider';
+import * as DataService from '@/lib/data-service';
 
 interface AdmissionsViewProps {
     admissions: Types.Admission[];
+    intakes: any[];
+    classes: any[];
     onUpdate: (admission: Types.Admission) => void;
 }
 
-export const AdmissionsView: React.FC<AdmissionsViewProps> = ({ admissions, onUpdate }) => {
+export const AdmissionsView: React.FC<AdmissionsViewProps> = ({ admissions, intakes, classes, onUpdate }) => {
     const [selectedAdmission, setSelectedAdmission] = useState<Types.Admission | null>(null);
     const [filterStatus, setFilterStatus] = useState<string>('all');
     const [searchQuery, setSearchQuery] = useState('');
+    const [isConverting, setIsConverting] = useState(false);
+    const [conversionData, setConversionData] = useState({ student_no: '', class_id: '', password: 'merit_student_2025' });
     const { addToast } = useToast();
 
     const filteredAdmissions = admissions.filter(a => {
@@ -26,14 +31,36 @@ export const AdmissionsView: React.FC<AdmissionsViewProps> = ({ admissions, onUp
         return matchesStatus && matchesSearch;
     });
 
-    const updateStatus = (id: string, status: Types.Admission['status']) => {
+    const updateStatus = (id: string | number, status: Types.Admission['status']) => {
         const admission = admissions.find(a => a.id === id);
         if (!admission) return;
 
         const updated = { ...admission, status, reviewed_at: Date.now(), updated_at: Date.now() };
         onUpdate(updated);
         addToast(`Application ${status === 'accepted' ? 'accepted' : status === 'rejected' ? 'rejected' : 'updated'}`, status === 'accepted' ? 'success' : status === 'rejected' ? 'error' : 'info');
-        setSelectedAdmission(null);
+        if (status !== 'accepted') setSelectedAdmission(null);
+    };
+
+    const handleConvertToStudent = async () => {
+        if (!selectedAdmission) return;
+        if (!conversionData.student_no || !conversionData.class_id) {
+            addToast('Student Number and Class are required', 'error');
+            return;
+        }
+
+        try {
+            await DataService.convertAdmissionToStudent(selectedAdmission.id, conversionData);
+            addToast('Successfully converted to student with automated fee assignment!', 'success');
+
+            // Refresh local state
+            const updated = { ...selectedAdmission, status: 'accepted' as const, reviewed_at: Date.now() };
+            onUpdate(updated);
+
+            setIsConverting(false);
+            setSelectedAdmission(null);
+        } catch (err: any) {
+            addToast(err.message || 'Conversion failed', 'error');
+        }
     };
 
     const getStatusBadge = (status: Types.Admission['status']) => {
@@ -209,29 +236,89 @@ export const AdmissionsView: React.FC<AdmissionsViewProps> = ({ admissions, onUp
                         {/* Actions */}
                         <div className="p-6 border-t border-gray-100 bg-gray-50 flex flex-wrap gap-3 justify-end rounded-b-2xl">
                             <Button variant="secondary" onClick={() => setSelectedAdmission(null)}>Close</Button>
-                            {selectedAdmission.status === 'pending' && (
+
+                            {selectedAdmission.status === 'accepted' ? (
+                                <div className="flex-1 flex justify-center py-2 text-green-600 font-medium bg-green-50 rounded-xl">
+                                    <CheckCircle size={20} className="mr-2" /> Application Accepted & Student Created
+                                </div>
+                            ) : (
                                 <>
-                                    <Button variant="secondary" onClick={() => updateStatus(selectedAdmission.id, 'reviewed')}>
-                                        <Eye size={16} className="mr-1" /> Mark Reviewed
-                                    </Button>
+                                    {selectedAdmission.status === 'pending' && (
+                                        <Button variant="secondary" onClick={() => updateStatus(selectedAdmission.id, 'reviewed')}>
+                                            <Eye size={16} className="mr-1" /> Mark Reviewed
+                                        </Button>
+                                    )}
+
                                     <Button className="bg-red-500 hover:bg-red-600 text-white" onClick={() => updateStatus(selectedAdmission.id, 'rejected')}>
                                         <XCircle size={16} className="mr-1" /> Reject
                                     </Button>
-                                    <Button className="bg-green-500 hover:bg-green-600 text-white" onClick={() => updateStatus(selectedAdmission.id, 'accepted')}>
-                                        <CheckCircle size={16} className="mr-1" /> Accept
+
+                                    <Button
+                                        className="bg-green-600 hover:bg-green-700 text-white"
+                                        onClick={() => setIsConverting(true)}
+                                    >
+                                        <GraduationCap size={16} className="mr-1" /> Accept & Enroll
                                     </Button>
                                 </>
                             )}
-                            {selectedAdmission.status === 'reviewed' && (
-                                <>
-                                    <Button className="bg-red-500 hover:bg-red-600 text-white" onClick={() => updateStatus(selectedAdmission.id, 'rejected')}>
-                                        <XCircle size={16} className="mr-1" /> Reject
-                                    </Button>
-                                    <Button className="bg-green-500 hover:bg-green-600 text-white" onClick={() => updateStatus(selectedAdmission.id, 'accepted')}>
-                                        <CheckCircle size={16} className="mr-1" /> Accept
-                                    </Button>
-                                </>
-                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* Conversion Modal */}
+            {isConverting && selectedAdmission && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+                        <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                            <GraduationCap className="text-brand-600" /> Complete Enrollment
+                        </h2>
+                        <p className="text-sm text-gray-500 mb-6">
+                            Convert <strong>{selectedAdmission.child_name}</strong> to an active student.
+                            This will automatically assign bundled fees for the current intake.
+                        </p>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Student Number</label>
+                                <input
+                                    type="text"
+                                    placeholder="e.g. STU2025001"
+                                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-500"
+                                    value={conversionData.student_no}
+                                    onChange={e => setConversionData({ ...conversionData, student_no: e.target.value })}
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Assign Class</label>
+                                <select
+                                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-500"
+                                    value={conversionData.class_id}
+                                    onChange={e => setConversionData({ ...conversionData, class_id: e.target.value })}
+                                >
+                                    <option value="">Select a class...</option>
+                                    {classes.map(c => (
+                                        <option key={c.id} value={c.id}>{c.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="pt-2">
+                                <label className="flex items-center gap-2 text-xs text-gray-500">
+                                    <CheckCircle size={14} className="text-green-500" />
+                                    Fee package will be automatically assigned.
+                                </label>
+                            </div>
+                        </div>
+
+                        <div className="mt-8 flex gap-3">
+                            <Button variant="secondary" className="flex-1" onClick={() => setIsConverting(false)}>Cancel</Button>
+                            <Button
+                                className="flex-1 bg-brand-600 hover:bg-brand-700 text-white font-bold"
+                                onClick={handleConvertToStudent}
+                            >
+                                Enroll Student
+                            </Button>
                         </div>
                     </div>
                 </div>

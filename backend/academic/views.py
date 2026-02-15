@@ -25,14 +25,16 @@ from .models import (
     ReportCard, SubjectScore, AttendanceSession, AttendanceRecord,
     SchoolEvent, Lesson, ConductEntry,
     Period, Timetable, TimetableEntry, GradingScheme, GradeRange,
-    SubjectTeacher, StudentHistory, StudentAchievement
+    SubjectTeacher, StudentHistory, StudentAchievement,
+    AdmissionIntake, Admission
 )
 from .serializers import (
     SubjectSerializer, TeacherSerializer, ClassSerializer, StudentSerializer,
     ReportCardSerializer, SubjectScoreSerializer, AttendanceSessionSerializer, AttendanceRecordSerializer,
     SchoolEventSerializer, LessonSerializer, ConductEntrySerializer,
     PeriodSerializer, TimetableSerializer, TimetableEntrySerializer, GradingSchemeSerializer, GradeRangeSerializer,
-    SubjectTeacherSerializer, StudentHistorySerializer, StudentAchievementSerializer
+    SubjectTeacherSerializer, StudentHistorySerializer, StudentAchievementSerializer,
+    AdmissionIntakeSerializer, AdmissionSerializer
 )
 from rest_framework.views import APIView
 
@@ -462,7 +464,104 @@ class AITimetableGenerateView(APIView):
                 except Exception as e:
                     continue # Skip invalid entries from AI
 
-        return Response({"status": "success", "message": f"Generated {len(entries)} timetable entries."})
+
+class AdmissionIntakeViewSet(TenantViewSet):
+    queryset = AdmissionIntake.objects.all()
+    serializer_class = AdmissionIntakeSerializer
+    pagination_class = StandardPagination
+
+class AdmissionViewSet(TenantViewSet):
+    queryset = Admission.objects.select_related('intake', 'school').all()
+    serializer_class = AdmissionSerializer
+    pagination_class = StandardPagination
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        status = self.request.query_params.get('status')
+        intake_id = self.request.query_params.get('intake')
+        if status:
+            qs = qs.filter(status=status)
+        if intake_id:
+            qs = qs.filter(intake_id=intake_id)
+        return qs
+
+    @action(detail=True, methods=['post'], url_path='convert-to-student')
+    def convert_to_student(self, request, pk=None):
+        from django.utils import timezone
+        admission = self.get_object()
+        student_no = request.data.get('student_no')
+        class_id = request.data.get('class_id')
+        password = request.data.get('password', 'merit_student_2025')
+
+        if not student_no or not class_id:
+            return Response({"error": "student_no and class_id are required"}, status=400)
+
+        with transaction.atomic():
+            # 1. Update Admission status
+            admission.status = 'accepted'
+            admission.reviewed_at = timezone.now()
+            admission.reviewed_by = request.user
+            admission.save()
+
+            # 2. Create Student
+            from .models import Student, Class
+            try:
+                target_class = Class.objects.get(pk=class_id)
+            except Class.DoesNotExist:
+                return Response({"error": "Class not found"}, status=404)
+            
+            student = Student.objects.create(
+                school=admission.school,
+                student_no=student_no,
+                names=admission.child_name,
+                gender=admission.child_gender,
+                dob=admission.child_dob,
+                current_class=target_class,
+                parent_name=admission.parent_name,
+                parent_email=admission.parent_email,
+                parent_phone=admission.parent_phone,
+                address=admission.parent_address,
+                status='active'
+            )
+
+            # 3. Create User for portal access
+            from users.models import User
+            from django.contrib.auth.hashers import make_password
+            school_suffix = student.school.domain if student.school and student.school.domain else 'school'
+            username = f"{student.student_no}@{school_suffix}"
+            
+            if not User.objects.filter(username=username).exists():
+                user = User.objects.create(
+                    username=username,
+                    email=student.parent_email or f"{username}.com",
+                    password=make_password(password),
+                    role='STUDENT',
+                    school=student.school,
+                    is_active=True
+                )
+                student.user = user
+                student.save()
+
+            # 4. Handle Fees from AdmissionPackage (Fee Bundling)
+            if admission.intake:
+                try:
+                    from bursary.models import AdmissionPackage, StudentFee
+                    package = AdmissionPackage.objects.get(intake=admission.intake)
+                    for fee in package.fees.all():
+                        StudentFee.objects.get_or_create(
+                            student=student,
+                            fee_item=fee,
+                            school=student.school
+                        )
+                except (ImportError, AdmissionPackage.DoesNotExist):
+                    # bursary app might not be installed or package not found
+                    pass
+
+            return Response({
+                "success": True, 
+                "message": "Admission successfully converted to student with automated fee assignment.",
+                "student_id": student.id
+            })
 
 class StudentHistoryViewSet(TenantViewSet):
     queryset = StudentHistory.objects.all()

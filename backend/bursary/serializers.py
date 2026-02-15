@@ -1,5 +1,8 @@
 from rest_framework import serializers
-from .models import FeeCategory, FeeItem, StudentFee, Payment, Expense, Scholarship, PaymentLineItem
+from .models import (
+    FeeCategory, FeeItem, StudentFee, Payment, 
+    Expense, Scholarship, PaymentLineItem, AdmissionPackage
+)
 from academic.models import Student, Class
 
 class FeeCategorySerializer(serializers.ModelSerializer):
@@ -138,3 +141,9 @@ class ExpenseSerializer(serializers.ModelSerializer):
         model = Expense
         fields = ['id', 'title', 'amount', 'category', 'date', 'description', 'recorded_by', 'session', 'term']
         read_only_fields = ['recorded_by']
+
+class AdmissionPackageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AdmissionPackage
+        fields = '__all__'
+        read_only_fields = ('school',)

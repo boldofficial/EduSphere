@@ -50,6 +50,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Start closed on mobile
     const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({
+        General: true,
+        Administration: true,
+        Academics: true,
+        Account: true,
+        'Health & Conduct': true,
+        Messages: true,
+        Tools: true,
+    });
     const pathname = usePathname();
 
     // Get current staff member's profile with assigned_modules
@@ -173,16 +182,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         { name: 'Messages', icon: Mail, color: 'text-purple-400' },
         { name: 'Tools', icon: SettingsIcon, color: 'text-slate-400' },
     ];
-
-    const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({
-        General: true,
-        Administration: true,
-        Academics: true,
-        Account: true,
-        'Health & Conduct': true,
-        Messages: true,
-        Tools: true,
-    });
 
     const toggleCategory = (categoryName: string) => {
         setExpandedCategories(prev => ({

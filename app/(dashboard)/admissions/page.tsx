@@ -7,12 +7,20 @@ import { AdmissionsView } from '@/components/features/AdmissionsView';
 
 export default function AdmissionsPage() {
     const [admissions, setAdmissions] = useState<Types.Admission[]>([]);
+    const [intakes, setIntakes] = useState<any[]>([]);
+    const [classes, setClasses] = useState<any[]>([]);
     const [isLoaded, setIsLoaded] = useState(false);
 
     useEffect(() => {
         const load = async () => {
-            const data = await DataService.fetchAll<Types.Admission>('admissions');
-            setAdmissions(data);
+            const [admData, intakeData, classData] = await Promise.all([
+                DataService.fetchAll<Types.Admission>('admissions'),
+                DataService.fetchAll<any>('admission-intakes'),
+                DataService.fetchAll<any>('classes')
+            ]);
+            setAdmissions(admData);
+            setIntakes(intakeData);
+            setClasses(classData);
             setIsLoaded(true);
         };
         load();
@@ -34,5 +42,12 @@ export default function AdmissionsPage() {
         );
     }
 
-    return <AdmissionsView admissions={admissions} onUpdate={handleUpdate} />;
+    return (
+        <AdmissionsView
+            admissions={admissions}
+            intakes={intakes}
+            classes={classes}
+            onUpdate={handleUpdate}
+        />
+    );
 }

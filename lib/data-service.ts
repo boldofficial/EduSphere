@@ -65,11 +65,11 @@ export async function updateSettings(settings: Types.Settings): Promise<Types.Se
 // GENERIC CRUD
 // =============================================
 
-export async function fetchAll<T>(table: string): Promise<T[]> {
+export async function fetchAll<T>(table: string, params?: any): Promise<T[]> {
     try {
-        devLog(`[DataService] Fetching all from ${table} (Placeholder)`);
-        // Eventually: return apiRequest(`/${table}/`);
-        return [];
+        const response = await apiClient.get(`${table}/`, { params });
+        // Handle DRF pagination results
+        return response.data.results || response.data;
     } catch (err) {
         console.error(`[DataService] Unexpected error fetching ${table}:`, err);
         return [];
@@ -77,20 +77,45 @@ export async function fetchAll<T>(table: string): Promise<T[]> {
 }
 
 export async function createItem<T>(table: string, item: any): Promise<T> {
-    devLog(`[DataService] Creating item in ${table} (Placeholder)`);
-    // Eventually: return apiRequest(`/${table}/`, { method: 'POST', body: JSON.stringify(item) });
-    return item as T;
+    try {
+        const response = await apiClient.post(`${table}/`, item);
+        return response.data;
+    } catch (err) {
+        console.error(`[DataService] Unexpected error creating item in ${table}:`, err);
+        throw err;
+    }
 }
 
-export async function updateItem<T>(table: string, id: string, updates: any): Promise<T> {
-    devLog(`[DataService] Updating item ${id} in ${table} (Placeholder)`);
-    // Eventually: return apiRequest(`/${table}/${id}/`, { method: 'PATCH', body: JSON.stringify(updates) });
-    return { id, ...updates } as any as T;
+export async function updateItem<T>(table: string, id: string | number, updates: any): Promise<T> {
+    try {
+        const response = await apiClient.patch(`${table}/${id}/`, updates);
+        return response.data;
+    } catch (err) {
+        console.error(`[DataService] Unexpected error updating item ${id} in ${table}:`, err);
+        throw err;
+    }
 }
 
-export async function deleteItem(table: string, id: string): Promise<void> {
-    devLog(`[DataService] Deleting item ${id} from ${table} (Placeholder)`);
-    // Eventually: await apiRequest(`/${table}/${id}/`, { method: 'DELETE' });
+export async function deleteItem(table: string, id: string | number): Promise<void> {
+    try {
+        await apiClient.delete(`${table}/${id}/`);
+    } catch (err) {
+        console.error(`[DataService] Unexpected error deleting item ${id} from ${table}:`, err);
+        throw err;
+    }
+}
+
+/**
+ * Specialized action to convert an admission to a student
+ */
+export async function convertAdmissionToStudent(admissionId: string | number, data: any) {
+    try {
+        const response = await apiClient.post(`admissions/${admissionId}/convert-to-student/`, data);
+        return response.data;
+    } catch (err) {
+        console.error(`[DataService] Failed to convert admission ${admissionId}:`, err);
+        throw err;
+    }
 }
 
 // =============================================

@@ -14,6 +14,7 @@ const AdmissionPage = () => {
     const [isLoaded, setIsLoaded] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [intakes, setIntakes] = useState<any[]>([]);
 
     const [formData, setFormData] = useState({
         child_name: '',
@@ -27,19 +28,27 @@ const AdmissionPage = () => {
         parent_phone: '',
         parent_address: '',
         relationship: 'Father' as 'Father' | 'Mother' | 'Guardian',
+        intake: '',
     });
 
     useEffect(() => {
-        const loadSettings = async () => {
-            const dbSettings = await DataService.fetchSettings();
-            if (dbSettings) {
-                setSettings(dbSettings);
-            } else {
-                setSettings(Utils.INITIAL_SETTINGS);
+        const loadInitialData = async () => {
+            const [dbSettings, activeIntakes] = await Promise.all([
+                DataService.fetchSettings(),
+                DataService.fetchAll<any>('admission-intakes', { is_active: true })
+            ]);
+
+            if (dbSettings) setSettings(dbSettings);
+            setIntakes(activeIntakes);
+
+            // Auto-select first active intake if available
+            if (activeIntakes.length > 0) {
+                setFormData(prev => ({ ...prev, intake: activeIntakes[0].id }));
             }
+
             setIsLoaded(true);
         };
-        loadSettings();
+        loadInitialData();
     }, []);
 
     const handleChange = (field: string, value: string) => {
@@ -51,19 +60,9 @@ const AdmissionPage = () => {
         setIsSubmitting(true);
 
         try {
-            // Create admission record
-            const admission: Types.Admission = {
-                id: Utils.generateId(),
-                created_at: Date.now(),
-                updated_at: Date.now(),
-                ...formData,
-                status: 'pending',
-                reviewed_at: undefined,
-                reviewed_by: undefined
-            };
-
-            // Save to Supabase
-            await DataService.createItem('admissions', admission);
+            // Save to Django Backend
+            // We omit id for backend to auto-generate
+            await DataService.createItem('admissions', formData);
 
             setIsSubmitting(false);
             setIsSubmitted(true);
@@ -162,8 +161,25 @@ const AdmissionPage = () => {
 
                         {/* Program Selection */}
                         <div>
-                            <h2 className="text-lg font-bold text-gray-900 mb-4 pb-2 border-b">Program Selection</h2>
+                            <h2 className="text-lg font-bold text-gray-900 mb-4 pb-2 border-b">Program & Intake</h2>
                             <div className="grid md:grid-cols-2 gap-4">
+                                <div className="md:col-span-2">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Admission Intake *</label>
+                                    <select
+                                        required
+                                        value={formData.intake}
+                                        onChange={e => handleChange('intake', e.target.value)}
+                                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white"
+                                    >
+                                        <option value="">Select an active intake period</option>
+                                        {intakes.map(i => (
+                                            <option key={i.id} value={i.id}>{i.name} ({new Date(i.start_date).getFullYear()})</option>
+                                        ))}
+                                    </select>
+                                    {intakes.length === 0 && (
+                                        <p className="text-xs text-red-500 mt-1">No active admission intakes at this time. Please contact the school.</p>
+                                    )}
+                                </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Program *</label>
                                     <select required value={formData.program} onChange={e => { handleChange('program', e.target.value); handleChange('class_applied', ''); }} className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white">
