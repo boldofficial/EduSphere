@@ -244,90 +244,36 @@ export const LoginView = () => {
         }
     };
 
+    const newsItems = [
+        { id: 1, title: 'Annual Sports Meet 2026', date: 'March 15, 2026', excerpt: 'Get ready for the most awaited event of the year! Preparations are in full swing...' },
+        { id: 2, title: 'New Science Lab Inauguration', date: 'Feb 28, 2026', excerpt: 'We are proud to announce the opening of our state-of-the-art STEM facility...' },
+        { id: 3, title: 'Parent-Teacher Conference', date: 'Feb 20, 2026', excerpt: 'Discussion on academic progress and upcoming curriculum updates for the spring term.' },
+    ];
+
     return (
-        <div className="min-h-screen relative flex overflow-hidden bg-brand-950">
-            {/* Desktop Left Side - Imagery (Hidden on mobile) */}
-            <div className="hidden lg:flex w-[45%] relative overflow-hidden border-right border-white/5">
-                {backgroundImages.map((img, idx) => (
-                    <div
-                        key={img}
-                        className={`absolute inset-0 bg-cover bg-center transition-all duration-[2000ms] transform  ${currentBg === idx ? 'opacity-100 scale-100 rotate-0' : 'opacity-0 scale-110 rotate-1'}`}
-                        style={{ backgroundImage: `url('${img}')` }}
-                    />
-                ))}
-                <div className="absolute inset-0 bg-gradient-to-tr from-brand-950 via-brand-900/40 to-transparent" />
-
-                {/* Branding Overlay */}
-                <div className="absolute top-16 left-16 z-20 flex items-center gap-4">
-                    <img src="/footer-logo.png" alt="Registra" className="h-12 w-auto" />
-                    <div className="h-8 w-px bg-white/20" />
-                    <span className="text-white/40 text-[11px] font-black uppercase tracking-[0.4em] italic">Enterprise Suite</span>
-                </div>
-
-                <div className="absolute bottom-24 left-16 z-20 max-w-md">
-                    <div className="h-1.5 w-20 bg-accent-500 mb-10 rounded-full" />
-                    <h2 className="text-6xl font-black text-white leading-[0.9] mb-8 tracking-tighter uppercase italic drop-shadow-2xl">
-                        The Edge of <br />
-                        <span className="text-accent-400 not-italic">Academy Tech</span>
-                    </h2>
-                    <p className="text-white/50 text-xl font-medium tracking-tight leading-relaxed">
-                        Precision tools for the modern educator. <br /> Seamless, secure, and AI-optimized.
-                    </p>
-                </div>
-            </div>
-
-            {/* Right Side - Login Area */}
-            <div className={`flex-1 relative flex flex-col items-center justify-center p-8 md:p-24 z-10 transition-all duration-700 bg-brand-950 ${selectedRole ? 'lg:flex-none lg:w-[55%] overflow-y-auto' : ''}`}>
-                {/* Mobile Background Fallback */}
-                <div className="lg:hidden absolute inset-0 z-0 text-white">
-                    <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url('${backgroundImages[0]}')` }} />
-                    <div className="absolute inset-0 bg-brand-950/95 backdrop-blur-md" />
-                </div>
-
-                <a href="/" className="absolute top-12 right-12 z-20 flex items-center gap-3 text-white/40 hover:text-accent-400 transition-all bg-white/[0.03] hover:bg-white/[0.08] px-6 py-3 rounded-full backdrop-blur-2xl border border-white/5 group shadow-xl">
-                    <ArrowRight className="rotate-180 group-hover:-translate-x-1 transition-transform" size={18} />
-                    <span className="text-[11px] font-black uppercase tracking-[0.3em]">Exit to Home</span>
-                </a>
-
-                <div className="w-full max-w-5xl space-y-16 relative z-10 animate-in fade-in slide-in-from-bottom-10 duration-1000">
-                    <div className="text-center lg:text-left space-y-8">
+        <div className="min-h-screen relative flex flex-col lg:flex-row overflow-hidden bg-white">
+            {/* Left Side - Login Hub (Clean & Functional) */}
+            <div className="w-full lg:w-[40%] flex flex-col items-center justify-center p-8 md:p-16 z-20 relative bg-white shadow-2xl">
+                <div className="w-full max-w-md space-y-12 animate-in fade-in slide-in-from-left-10 duration-1000">
+                    {/* Brand & Identity */}
+                    <div className="text-center lg:text-left space-y-6">
                         {!isSystemRoot ? (
-                            <div className="flex flex-col lg:flex-row items-center gap-8">
-                                <div className="p-5 bg-white rounded-[2.5rem] shadow-[0_32px_64px_rgba(0,0,0,0.5)] border-[6px] border-white/10 inline-block overflow-hidden transition-transform hover:scale-105 duration-500">
-                                    <img src={settings.logo_media || "/logo.png"} alt={settings.school_name || "School Logo"} className="h-24 w-auto object-contain" />
-                                </div>
-                                <div>
-                                    <h1 className="text-5xl md:text-7xl font-black text-white uppercase tracking-tighter leading-none mb-3 italic">{settings.school_name}</h1>
-                                    <div className="flex items-center gap-3">
-                                        <div className="h-px w-8 bg-accent-500/50" />
-                                        <p className="text-accent-400 text-[11px] font-black uppercase tracking-[0.5em]">Digital Access Node</p>
-                                    </div>
+                            <div className="flex flex-col items-center lg:items-start gap-6">
+                                <img src={settings.logo_media || "/logo.png"} alt={settings.school_name} className="h-16 w-auto object-contain" />
+                                <div className="space-y-1">
+                                    <h1 className="text-3xl font-black text-brand-950 uppercase tracking-tight">{settings.school_name}</h1>
+                                    <p className="text-brand-600/60 text-[10px] font-bold uppercase tracking-[0.3em]">Authorized Access Portal</p>
                                 </div>
                             </div>
                         ) : (
-                            <div className="inline-block cursor-pointer select-none active:scale-95 transition-transform" onClick={() => {
-                                const newCount = adminSecretCount + 1;
-                                setAdminSecretCount(newCount);
-                                if (newCount >= 5) { setShowSystemLogin(true); setAdminSecretCount(0); }
-                            }}>
-                                <img src="/footer-logo.png" alt="Registra" className="h-20 w-auto drop-shadow-2xl" />
-                            </div>
+                            <img src="/logo.png" alt="Registra" className="h-12 w-auto" />
                         )}
-
-                        <p className="text-white/40 text-lg md:text-2xl font-medium max-w-2xl leading-relaxed">
-                            {!isSystemRoot
-                                ? (selectedRole === 'student' ? 'Authorized authentication required. Please enter your student credentials below.' : 'Welcome back to the Command Center. Select your hub to begin.')
-                                : (showSystemLogin ? 'System Override Access Level: Root.' : 'Enter your institution identity to bridge to your local node.')
-                            }
-                        </p>
+                        <h2 className="text-4xl font-black text-brand-950 tracking-tight italic">User Login</h2>
                     </div>
 
-                    {!selectedRole && !isSystemRoot && (
-                        <RoleSelection roles={roleDefinitions} onSelectRole={setSelectedRole} />
-                    )}
-
-                    {isSystemRoot && !selectedRole && (
-                        <div className="max-w-md mx-auto lg:mx-0">
+                    {/* Authentication Area */}
+                    <div className="space-y-8">
+                        {isSystemRoot && !selectedRole && (
                             <FindSchoolSection
                                 searchSlug={searchSlug}
                                 setSearchSlug={setSearchSlug}
@@ -337,55 +283,139 @@ export const LoginView = () => {
                                 onFindSchool={handleFindSchool}
                                 onSelectSuperAdmin={() => setSelectedRole('super_admin')}
                             />
-                        </div>
-                    )}
+                        )}
 
-                    {selectedRole && (
-                        <div className="max-w-md mx-auto lg:mx-0 p-8 bg-white/5 backdrop-blur-2xl rounded-[2.5rem] border border-white/10 shadow-2xl">
-                            {selectedRole === 'student' ? (
-                                <StudentLoginForm
-                                    studentNo={studentNo}
-                                    setStudentNo={setStudentNo}
-                                    password={password}
-                                    setPassword={setPassword}
-                                    showPassword={showPassword}
-                                    setShowPassword={setShowPassword}
-                                    loginError={loginError}
-                                    setLoginError={setLoginError}
-                                    isLoading={isLoading}
-                                    onSubmit={handleStudentLogin}
-                                    onBack={() => { setSelectedRole(null); resetForms(); }}
-                                    onForgotPassword={() => setShowForgotPassword(true)}
-                                    isDemo={isDemo}
-                                    onDirectLogin={handleDirectLogin}
-                                />
-                            ) : (
-                                <StaffLoginForm
-                                    selectedRole={selectedRole}
-                                    roles={roleDefinitions}
-                                    isDemo={isDemo}
-                                    email={email}
-                                    setEmail={setEmail}
-                                    password={password}
-                                    setPassword={setPassword}
-                                    showPassword={showPassword}
-                                    setShowPassword={setShowPassword}
-                                    loginError={loginError}
-                                    setLoginError={setLoginError}
-                                    isLoading={isLoading}
-                                    onLogin={handleLogin}
-                                    onDirectLogin={handleDirectLogin}
-                                    onBack={() => { setSelectedRole(null); resetForms(); }}
-                                />
-                            )}
-                        </div>
-                    )}
+                        {!selectedRole && !isSystemRoot && (
+                            <div className="grid grid-cols-2 gap-4">
+                                {roleDefinitions.filter(r => r.id !== 'admin').map((role) => (
+                                    <button
+                                        key={role.id}
+                                        onClick={() => setSelectedRole(role.id)}
+                                        className="flex items-center gap-3 p-4 rounded-2xl border border-brand-100 hover:border-brand-500 hover:bg-brand-50 transition-all group"
+                                    >
+                                        <div className={`p-2 rounded-xl ${role.color} text-white group-hover:scale-110 transition-transform`}>
+                                            <role.icon size={20} />
+                                        </div>
+                                        <span className="font-bold text-brand-950">{role.name}</span>
+                                    </button>
+                                ))}
+                                <button
+                                    onClick={() => setSelectedRole('admin')}
+                                    className="col-span-2 flex items-center justify-center gap-3 p-4 rounded-2xl border border-brand-950 bg-brand-950 text-white hover:bg-brand-900 transition-all"
+                                >
+                                    <ShieldCheck size={20} />
+                                    <span className="font-bold">Staff / Admin Login</span>
+                                </button>
+                            </div>
+                        )}
 
-                    <div className="pt-8 text-center lg:text-left">
-                        <p className="text-[10px] text-white/30 font-black uppercase tracking-[0.2em] flex items-center justify-center lg:justify-start gap-2">
-                            &copy; {new Date().getFullYear()} Bold Ideas Innovations Ltd <ShieldCheck size={10} className="text-accent-500" /> Secure Node
+                        {selectedRole && (
+                            <div className="animate-in fade-in zoom-in-95 duration-500">
+                                {selectedRole === 'student' ? (
+                                    <StudentLoginForm
+                                        studentNo={studentNo}
+                                        setStudentNo={setStudentNo}
+                                        password={password}
+                                        setPassword={setPassword}
+                                        showPassword={showPassword}
+                                        setShowPassword={setShowPassword}
+                                        loginError={loginError}
+                                        setLoginError={setLoginError}
+                                        isLoading={isLoading}
+                                        onSubmit={handleStudentLogin}
+                                        onBack={() => { setSelectedRole(null); resetForms(); }}
+                                        onForgotPassword={() => setShowForgotPassword(true)}
+                                        isDemo={isDemo}
+                                        onDirectLogin={handleDirectLogin}
+                                    />
+                                ) : (
+                                    <StaffLoginForm
+                                        selectedRole={selectedRole}
+                                        roles={roleDefinitions}
+                                        isDemo={isDemo}
+                                        email={email}
+                                        setEmail={setEmail}
+                                        password={password}
+                                        setPassword={setPassword}
+                                        showPassword={showPassword}
+                                        setShowPassword={setShowPassword}
+                                        loginError={loginError}
+                                        setLoginError={setLoginError}
+                                        isLoading={isLoading}
+                                        onLogin={handleLogin}
+                                        onDirectLogin={handleDirectLogin}
+                                        onBack={() => { setSelectedRole(null); resetForms(); }}
+                                    />
+                                )}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Footer Links */}
+                    <div className="pt-8 border-t border-brand-50 flex flex-wrap gap-6 justify-center lg:justify-start">
+                        <a href="/" className="text-[10px] font-black uppercase text-brand-400 hover:text-brand-950 transition-colors tracking-widest flex items-center gap-2">
+                            <ArrowRight size={12} className="rotate-180" /> Front Site
+                        </a>
+                        <button onClick={() => setShowForgotPassword(true)} className="text-[10px] font-black uppercase text-brand-400 hover:text-brand-950 transition-colors tracking-widest">
+                            Forgot Password?
+                        </button>
+                        <p className="text-[10px] font-medium text-brand-200 uppercase tracking-widest ml-auto">
+                            &copy; Registra v4.0
                         </p>
                     </div>
+                </div>
+            </div>
+
+            {/* Right Side - Informational Feed & Imagery */}
+            <div className="hidden lg:flex w-[60%] relative overflow-hidden bg-brand-950">
+                {backgroundImages.map((img, idx) => (
+                    <div
+                        key={img}
+                        className={`absolute inset-0 bg-cover bg-center transition-opacity duration-[3000ms] ${currentBg === idx ? 'opacity-30' : 'opacity-0'}`}
+                        style={{ backgroundImage: `url('${img}')` }}
+                    />
+                ))}
+
+                <div className="absolute inset-0 bg-brand-950/40 z-10" />
+
+                <div className="relative z-20 flex flex-col p-16 w-full h-full justify-center">
+                    <div className="max-w-xl space-y-12">
+                        <div className="space-y-4">
+                            <h3 className="text-4xl font-black text-white italic tracking-tighter uppercase leading-none">
+                                What's New In <br />
+                                <span className="text-accent-400 not-italic">{settings.school_name || 'Mount Carmel'}</span>
+                            </h3>
+                            <div className="h-1 w-20 bg-accent-500 rounded-full" />
+                        </div>
+
+                        <div className="space-y-6">
+                            {newsItems.map((news, idx) => (
+                                <div
+                                    key={news.id}
+                                    className="group p-8 rounded-[2.5rem] bg-white/[0.03] backdrop-blur-xl border border-white/5 hover:bg-white/[0.08] transition-all duration-500 animate-in fade-in slide-in-from-right-10"
+                                    style={{ animationDelay: `${idx * 200}ms` }}
+                                >
+                                    <div className="flex justify-between items-start mb-4">
+                                        <h4 className="text-xl font-bold text-white group-hover:text-accent-400 transition-colors">{news.title}</h4>
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-white/30">{news.date}</span>
+                                    </div>
+                                    <p className="text-white/50 text-sm leading-relaxed mb-6">
+                                        {news.excerpt}
+                                    </p>
+                                    <button className="flex items-center gap-2 text-accent-400 text-[10px] font-black uppercase tracking-[0.3em] group/btn">
+                                        Read More <ArrowRight size={12} className="group-hover/btn:translate-x-1 transition-transform" />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Bottom Branding */}
+                <div className="absolute bottom-10 right-10 z-20 flex items-center gap-4">
+                    <img src="/footer-logo.png" alt="Registra" className="h-10 w-auto opacity-50" />
+                    <div className="h-6 w-px bg-white/10" />
+                    <span className="text-white/20 text-[10px] font-black uppercase tracking-[0.4em]">Enterprise Hub v4</span>
                 </div>
             </div>
 
