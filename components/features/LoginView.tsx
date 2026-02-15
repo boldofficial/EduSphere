@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSchoolStore } from '@/lib/store';
 import { useSettings } from '@/lib/hooks/use-data';
@@ -10,15 +10,13 @@ import {
     Users,
     GraduationCap,
     Briefcase,
-    ArrowRight
+    ArrowRight,
+    Lock
 } from 'lucide-react';
 import * as Utils from '@/lib/utils';
-
-// Extracted Components
-import { RoleSelection } from './login/RoleSelection';
-import { FindSchoolSection } from './login/FindSchoolSection';
-import { StudentLoginForm } from './login/StudentLoginForm';
 import { StaffLoginForm } from './login/StaffLoginForm';
+import { StudentLoginForm } from './login/StudentLoginForm';
+import { FindSchoolSection } from './login/FindSchoolSection';
 import { ForgotPasswordModal } from './login/ForgotPasswordModal';
 
 export const LoginView = () => {
@@ -27,12 +25,14 @@ export const LoginView = () => {
     const { login } = useSchoolStore();
 
     const [isDemo, setIsDemo] = useState(false);
-    const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
+    // Default to 'teacher' or 'admin' to show a form immediately, or null if we want to force selection
+    // The reference image shows a form, so we'll default to 'admin' or 'teacher' or 'student'
+    const [selectedRole, setSelectedRole] = useState<UserRole>('teacher');
 
     // Form states
-    const [studentNo, setStudentNo] = useState('');
-    const [password, setPassword] = useState('');
     const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [studentNo, setStudentNo] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [loginError, setLoginError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -42,7 +42,6 @@ export const LoginView = () => {
     const [searchSlug, setSearchSlug] = useState('');
     const [searchError, setSearchError] = useState('');
     const [isSearching, setIsSearching] = useState(false);
-    const [adminSecretCount, setAdminSecretCount] = useState(0);
     const [showSystemLogin, setShowSystemLogin] = useState(false);
 
     // Forgot password state
@@ -53,23 +52,7 @@ export const LoginView = () => {
     const [forgotSuccess, setForgotSuccess] = useState(false);
     const [newPassword, setNewPassword] = useState('');
 
-    const backgroundImages = [
-        '/login-bg-classroom.png',
-        'https://images.unsplash.com/photo-1523050853064-8504f2f40fd5?auto=format&fit=crop&q=80&w=2000',
-        'https://images.unsplash.com/photo-1541339907198-e08756ebafe3?auto=format&fit=crop&q=80&w=2000',
-        'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&q=80&w=2000'
-    ];
-
-    const [currentBg, setCurrentBg] = useState(0);
-
-    React.useEffect(() => {
-        const interval = setInterval(() => {
-            setCurrentBg((prev) => (prev + 1) % backgroundImages.length);
-        }, 8000);
-        return () => clearInterval(interval);
-    }, []);
-
-    React.useEffect(() => {
+    useEffect(() => {
         if (typeof window !== 'undefined') {
             const host = window.location.host.split(':')[0].replace(/^www\./, '');
             const rootDomain = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'myregistra.net').split(':')[0].replace(/^www\./, '');
@@ -85,10 +68,10 @@ export const LoginView = () => {
     }, []);
 
     const roleDefinitions = [
-        { id: 'admin' as UserRole, name: 'Admin', icon: ShieldCheck, themeColor: '#3B82F6', color: 'bg-blue-600', desc: 'System Administration' },
-        { id: 'teacher' as UserRole, name: 'Teacher', icon: Users, themeColor: '#10B981', color: 'bg-emerald-600', desc: 'Class & Grade Management' },
-        { id: 'student' as UserRole, name: 'Student / Parent', icon: GraduationCap, themeColor: '#8B5CF6', color: 'bg-violet-600', desc: 'Academic Portal' },
-        { id: 'staff' as UserRole, name: 'Non Teaching', icon: Briefcase, themeColor: '#F59E0B', color: 'bg-amber-600', desc: 'Operations Dashboard' },
+        { id: 'admin' as UserRole, name: 'Admin', icon: ShieldCheck, color: 'text-purple-600' },
+        { id: 'teacher' as UserRole, name: 'Teacher', icon: Users, color: 'text-green-600' },
+        { id: 'student' as UserRole, name: 'Student', icon: GraduationCap, color: 'text-blue-600' },
+        { id: 'staff' as UserRole, name: 'Staff', icon: Briefcase, color: 'text-orange-600' },
     ];
 
     const resetForms = () => {
@@ -99,21 +82,9 @@ export const LoginView = () => {
         setShowPassword(false);
     };
 
-    const handleFindSchool = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setSearchError('');
-        setIsSearching(true);
-        try {
-            const res = await fetch(`/api/proxy/schools/verify-slug/${searchSlug.trim().toLowerCase()}/`);
-            if (!res.ok) throw new Error('School not found. Please check the spelling.');
-            const data = await res.json();
-            const rootDomain = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'myregistra.net').split(':')[0];
-            const targetDomain = data.custom_domain || `${data.slug}.${rootDomain}`;
-            window.location.href = `${window.location.protocol}//${targetDomain}/login`;
-        } catch (err: any) {
-            setSearchError(err.message);
-            setIsSearching(false);
-        }
+    const handleRoleChange = (role: UserRole) => {
+        setSelectedRole(role);
+        resetForms();
     };
 
     const handleLogin = async (e: React.FormEvent) => {
@@ -193,32 +164,6 @@ export const LoginView = () => {
         }
     };
 
-    const handleForgotPassword = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setForgotError('');
-        setIsLoading(true);
-        try {
-            const res = await fetch('/api/proxy/students/forgot-password/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ student_no: forgotStudentNo.trim(), email: forgotEmail.trim() })
-            });
-
-            if (!res.ok) {
-                const data = await res.json();
-                throw new Error(data.detail || 'Could not find a student with these details.');
-            }
-
-            const data = await res.json();
-            if (data.temp_password) setNewPassword(data.temp_password);
-            setForgotSuccess(true);
-        } catch (err: any) {
-            setForgotError(err.message);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
     const handleDirectLogin = async (role: UserRole) => {
         setLoginError('');
         setIsLoading(true);
@@ -244,179 +189,157 @@ export const LoginView = () => {
         }
     };
 
-    const newsItems = [
-        { id: 1, title: 'Annual Sports Meet 2026', date: 'March 15, 2026', excerpt: 'Get ready for the most awaited event of the year! Preparations are in full swing...' },
-        { id: 2, title: 'New Science Lab Inauguration', date: 'Feb 28, 2026', excerpt: 'We are proud to announce the opening of our state-of-the-art STEM facility...' },
-        { id: 3, title: 'Parent-Teacher Conference', date: 'Feb 20, 2026', excerpt: 'Discussion on academic progress and upcoming curriculum updates for the spring term.' },
-    ];
+    const handleFindSchool = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSearchError('');
+        setIsSearching(true);
+        try {
+            const res = await fetch(`/api/proxy/schools/verify-slug/${searchSlug.trim().toLowerCase()}/`);
+            if (!res.ok) throw new Error('School not found. Please check the spelling.');
+            const data = await res.json();
+            const rootDomain = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'myregistra.net').split(':')[0];
+            const targetDomain = data.custom_domain || `${data.slug}.${rootDomain}`;
+            window.location.href = `${window.location.protocol}//${targetDomain}/login`;
+        } catch (err: any) {
+            setSearchError(err.message);
+            setIsSearching(false);
+        }
+    };
+
+    const handleForgotPassword = async (e: React.FormEvent) => {
+        // ... (Keep existing implementation)
+        e.preventDefault();
+        setForgotError('');
+        setIsLoading(true);
+        try {
+            const res = await fetch('/api/proxy/students/forgot-password/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ student_no: forgotStudentNo.trim(), email: forgotEmail.trim() })
+            });
+
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.detail || 'Could not find a student with these details.');
+            }
+
+            const data = await res.json();
+            if (data.temp_password) setNewPassword(data.temp_password);
+            setForgotSuccess(true);
+        } catch (err: any) {
+            setForgotError(err.message);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     return (
-        <div className="min-h-screen relative flex flex-col lg:flex-row overflow-hidden bg-white">
-            {/* Left Side - Login Hub (Clean & Functional) */}
-            <div className="w-full lg:w-[40%] flex flex-col items-center justify-center p-8 md:p-16 z-20 relative bg-white shadow-2xl">
-                <div className="w-full max-w-md space-y-12 animate-in fade-in slide-in-from-left-10 duration-1000">
-                    {/* Brand & Identity */}
-                    <div className="text-center lg:text-left space-y-6">
-                        {!isSystemRoot ? (
-                            <div className="flex flex-col items-center lg:items-start gap-6">
-                                <img src={settings.logo_media || "/logo.png"} alt={settings.school_name} className="h-16 w-auto object-contain" />
-                                <div className="space-y-1">
-                                    <h1 className="text-3xl font-black text-brand-950 uppercase tracking-tight">{settings.school_name}</h1>
-                                    <p className="text-brand-600/60 text-[10px] font-bold uppercase tracking-[0.3em]">Authorized Access Portal</p>
-                                </div>
-                            </div>
-                        ) : (
-                            <img src="/logo.png" alt="Registra" className="h-12 w-auto" />
-                        )}
-                        <h2 className="text-4xl font-black text-brand-950 tracking-tight italic">User Login</h2>
-                    </div>
-
-                    {/* Authentication Area */}
-                    <div className="space-y-8">
-                        {isSystemRoot && !selectedRole && (
-                            <FindSchoolSection
-                                searchSlug={searchSlug}
-                                setSearchSlug={setSearchSlug}
-                                searchError={searchError}
-                                isSearching={isSearching}
-                                showSystemLogin={showSystemLogin}
-                                onFindSchool={handleFindSchool}
-                                onSelectSuperAdmin={() => setSelectedRole('super_admin')}
-                            />
-                        )}
-
-                        {!selectedRole && !isSystemRoot && (
-                            <div className="grid grid-cols-2 gap-4">
-                                {roleDefinitions.filter(r => r.id !== 'admin').map((role) => (
-                                    <button
-                                        key={role.id}
-                                        onClick={() => setSelectedRole(role.id)}
-                                        className="flex items-center gap-3 p-4 rounded-2xl border border-brand-100 hover:border-brand-500 hover:bg-brand-50 transition-all group"
-                                    >
-                                        <div className={`p-2 rounded-xl ${role.color} text-white group-hover:scale-110 transition-transform`}>
-                                            <role.icon size={20} />
-                                        </div>
-                                        <span className="font-bold text-brand-950">{role.name}</span>
-                                    </button>
-                                ))}
-                                <button
-                                    onClick={() => setSelectedRole('admin')}
-                                    className="col-span-2 flex items-center justify-center gap-3 p-4 rounded-2xl border border-brand-950 bg-brand-950 text-white hover:bg-brand-900 transition-all"
-                                >
-                                    <ShieldCheck size={20} />
-                                    <span className="font-bold">Staff / Admin Login</span>
-                                </button>
-                            </div>
-                        )}
-
-                        {selectedRole && (
-                            <div className="animate-in fade-in zoom-in-95 duration-500">
-                                {selectedRole === 'student' ? (
-                                    <StudentLoginForm
-                                        studentNo={studentNo}
-                                        setStudentNo={setStudentNo}
-                                        password={password}
-                                        setPassword={setPassword}
-                                        showPassword={showPassword}
-                                        setShowPassword={setShowPassword}
-                                        loginError={loginError}
-                                        setLoginError={setLoginError}
-                                        isLoading={isLoading}
-                                        onSubmit={handleStudentLogin}
-                                        onBack={() => { setSelectedRole(null); resetForms(); }}
-                                        onForgotPassword={() => setShowForgotPassword(true)}
-                                        isDemo={isDemo}
-                                        onDirectLogin={handleDirectLogin}
-                                    />
-                                ) : (
-                                    <StaffLoginForm
-                                        selectedRole={selectedRole}
-                                        roles={roleDefinitions}
-                                        isDemo={isDemo}
-                                        email={email}
-                                        setEmail={setEmail}
-                                        password={password}
-                                        setPassword={setPassword}
-                                        showPassword={showPassword}
-                                        setShowPassword={setShowPassword}
-                                        loginError={loginError}
-                                        setLoginError={setLoginError}
-                                        isLoading={isLoading}
-                                        onLogin={handleLogin}
-                                        onDirectLogin={handleDirectLogin}
-                                        onBack={() => { setSelectedRole(null); resetForms(); }}
-                                    />
-                                )}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Footer Links */}
-                    <div className="pt-8 border-t border-brand-50 flex flex-wrap gap-6 justify-center lg:justify-start">
-                        <a href="/" className="text-[10px] font-black uppercase text-brand-400 hover:text-brand-950 transition-colors tracking-widest flex items-center gap-2">
-                            <ArrowRight size={12} className="rotate-180" /> Front Site
-                        </a>
-                        <button onClick={() => setShowForgotPassword(true)} className="text-[10px] font-black uppercase text-brand-400 hover:text-brand-950 transition-colors tracking-widest">
-                            Forgot Password?
-                        </button>
-                        <p className="text-[10px] font-medium text-brand-200 uppercase tracking-widest ml-auto">
-                            &copy; Registra v4.0
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            {/* Right Side - Informational Feed & Imagery */}
-            <div className="hidden lg:flex w-[60%] relative overflow-hidden bg-brand-950">
-                {backgroundImages.map((img, idx) => (
-                    <div
-                        key={img}
-                        className={`absolute inset-0 bg-cover bg-center transition-opacity duration-[3000ms] ${currentBg === idx ? 'opacity-30' : 'opacity-0'}`}
-                        style={{ backgroundImage: `url('${img}')` }}
-                    />
-                ))}
-
-                <div className="absolute inset-0 bg-brand-950/40 z-10" />
-
-                <div className="relative z-20 flex flex-col p-16 w-full h-full justify-center">
-                    <div className="max-w-xl space-y-12">
-                        <div className="space-y-4">
-                            <h3 className="text-4xl font-black text-white italic tracking-tighter uppercase leading-none">
-                                What's New In <br />
-                                <span className="text-accent-400 not-italic">{settings.school_name || 'Mount Carmel'}</span>
-                            </h3>
-                            <div className="h-1 w-20 bg-accent-500 rounded-full" />
+        <div className="flex h-screen bg-white overflow-hidden">
+            {/* Left Side: Form */}
+            <div className="w-full lg:w-1/2 flex flex-col justify-center px-8 md:px-24 xl:px-32 relative z-10 bg-white">
+                <div className="mb-12">
+                    {!isSystemRoot ? (
+                        <div className="flex items-center gap-3">
+                            <img src={settings.logo_media || "/logo.png"} alt={settings.school_name} className="h-12 w-auto object-contain" />
+                            <span className="text-2xl font-bold text-gray-900">{settings.school_name}</span>
                         </div>
+                    ) : (
+                        <img src="/logo.png" alt="Registra" className="h-10 w-auto" />
+                    )}
+                </div>
 
-                        <div className="space-y-6">
-                            {newsItems.map((news, idx) => (
-                                <div
-                                    key={news.id}
-                                    className="group p-8 rounded-[2.5rem] bg-white/[0.03] backdrop-blur-xl border border-white/5 hover:bg-white/[0.08] transition-all duration-500 animate-in fade-in slide-in-from-right-10"
-                                    style={{ animationDelay: `${idx * 200}ms` }}
+                <div className="mb-8">
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Sign in</h1>
+                    <p className="text-gray-500">Enter your {selectedRole === 'student' ? 'student number' : 'email'} and password to access account.</p>
+                </div>
+
+                {/* Form Area */}
+                <div className="mb-8 min-h-[300px]">
+                    {isSystemRoot && !searchSlug ? (
+                        <FindSchoolSection
+                            searchSlug={searchSlug}
+                            setSearchSlug={setSearchSlug}
+                            searchError={searchError}
+                            isSearching={isSearching}
+                            showSystemLogin={showSystemLogin}
+                            onFindSchool={handleFindSchool}
+                            onSelectSuperAdmin={() => setSelectedRole('super_admin')}
+                        />
+                    ) : (
+                        <>
+                            {selectedRole === 'student' ? (
+                                <StudentLoginForm
+                                    studentNo={studentNo}
+                                    setStudentNo={setStudentNo}
+                                    password={password}
+                                    setPassword={setPassword}
+                                    showPassword={showPassword}
+                                    setShowPassword={setShowPassword}
+                                    loginError={loginError}
+                                    setLoginError={setLoginError}
+                                    isLoading={isLoading}
+                                    onSubmit={handleStudentLogin}
+                                    onBack={() => { }} // No back button in this layout
+                                    onForgotPassword={() => setShowForgotPassword(true)}
+                                    isDemo={isDemo}
+                                    onDirectLogin={handleDirectLogin}
+                                />
+                            ) : (
+                                <StaffLoginForm
+                                    selectedRole={selectedRole}
+                                    roles={roleDefinitions.map(r => ({ ...r, themeColor: r.color, desc: '' }))}
+                                    isDemo={isDemo}
+                                    email={email}
+                                    setEmail={setEmail}
+                                    password={password}
+                                    setPassword={setPassword}
+                                    showPassword={showPassword}
+                                    setShowPassword={setShowPassword}
+                                    loginError={loginError}
+                                    setLoginError={setLoginError}
+                                    isLoading={isLoading}
+                                    onLogin={handleLogin}
+                                    onDirectLogin={handleDirectLogin}
+                                    onBack={() => { }} // No back button
+                                />
+                            )}
+                        </>
+                    )}
+                </div>
+
+                {/* Login As Section */}
+                {!isSystemRoot && (
+                    <div className="mt-4">
+                        <div className="flex items-center gap-2 mb-4 text-sm text-gray-400 font-medium">
+                            <span>Login As</span>
+                            <ArrowRight size={14} className="rotate-90" />
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                            {roleDefinitions.map((role) => (
+                                <button
+                                    key={role.id}
+                                    onClick={() => handleRoleChange(role.id)}
+                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 border ${selectedRole === role.id
+                                            ? 'bg-brand-50 border-brand-200 text-brand-700 shadow-sm ring-1 ring-brand-200'
+                                            : 'bg-white border-gray-200 text-gray-600 hover:border-brand-200 hover:text-brand-600'
+                                        }`}
                                 >
-                                    <div className="flex justify-between items-start mb-4">
-                                        <h4 className="text-xl font-bold text-white group-hover:text-accent-400 transition-colors">{news.title}</h4>
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-white/30">{news.date}</span>
-                                    </div>
-                                    <p className="text-white/50 text-sm leading-relaxed mb-6">
-                                        {news.excerpt}
-                                    </p>
-                                    <button className="flex items-center gap-2 text-accent-400 text-[10px] font-black uppercase tracking-[0.3em] group/btn">
-                                        Read More <ArrowRight size={12} className="group-hover/btn:translate-x-1 transition-transform" />
-                                    </button>
-                                </div>
+                                    {role.name}
+                                </button>
                             ))}
                         </div>
                     </div>
-                </div>
+                )}
+            </div>
 
-                {/* Bottom Branding */}
-                <div className="absolute bottom-10 right-10 z-20 flex items-center gap-4">
-                    <img src="/footer-logo.png" alt="Registra" className="h-10 w-auto opacity-50" />
-                    <div className="h-6 w-px bg-white/10" />
-                    <span className="text-white/20 text-[10px] font-black uppercase tracking-[0.4em]">Enterprise Hub v4</span>
-                </div>
+            {/* Right Side: Image */}
+            <div className="hidden lg:block lg:w-1/2 relative bg-gray-100">
+                <img
+                    src="/login-bg-classroom.png"
+                    alt="African Classroom"
+                    className="absolute inset-0 w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
             </div>
 
             <ForgotPasswordModal
