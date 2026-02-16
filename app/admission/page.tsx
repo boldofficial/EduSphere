@@ -78,7 +78,6 @@ const AdmissionPage = () => {
                             initialTotal += Number(f.amount);
                         }
                     });
-                    setSelectedFees.current = mandatory; // Hack for immediate update if needed, but setState is async
                     setSelectedFees(mandatory);
                     setTotalPackageAmount(initialTotal);
                 } else {

@@ -2,10 +2,11 @@
 
 import React, { useState } from 'react';
 import { Download, Upload, FileSpreadsheet, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
-import * as DataService from '@/lib/data-service';
-import { toast } from 'sonner';
+import apiClient from '@/lib/api-client';
+import { useToast } from '@/components/providers/toast-provider';
 
 export const DataMigrationTab = () => {
+    const { addToast } = useToast();
     const [file, setFile] = useState<File | null>(null);
     const [isUploading, setIsUploading] = useState(false);
     const [results, setResults] = useState<any>(null);
@@ -16,7 +17,7 @@ export const DataMigrationTab = () => {
             // Using API route
             window.location.href = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/academic/data-migration/student-template/`;
         } catch (error) {
-            toast.error("Failed to download template");
+            addToast("Failed to download template", 'error');
         }
     };
 
@@ -35,16 +36,18 @@ export const DataMigrationTab = () => {
         formData.append('file', file);
 
         try {
-            const response = await DataService.uploadFile('academic/data-migration/import-students', formData);
-            setResults(response);
-            if (response.error_count === 0) {
-                toast.success(`Successfully imported ${response.success_count} students!`);
+            const response = await apiClient.post('academic/data-migration/import-students/', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            setResults(response.data);
+            if (response.data.error_count === 0) {
+                addToast(`Successfully imported ${response.data.success_count} students!`, 'success');
             } else {
-                toast.warning(`Import completed with ${response.error_count} errors.`);
+                addToast(`Import completed with ${response.data.error_count} errors.`, 'warning');
             }
         } catch (error) {
             console.error("Upload failed", error);
-            toast.error("Failed to upload file. Please check the format.");
+            addToast("Failed to upload file. Please check the format.", 'error');
         } finally {
             setIsUploading(false);
         }
