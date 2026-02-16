@@ -475,6 +475,14 @@ class AdmissionViewSet(TenantViewSet):
     serializer_class = AdmissionSerializer
     pagination_class = StandardPagination
 
+    def get_permissions(self):
+        """
+        Allow public access for submitting applications (create).
+        """
+        if self.action == 'create':
+            return [permissions.AllowAny()]
+        return super().get_permissions()
+
     def get_queryset(self):
         qs = super().get_queryset()
         status = self.request.query_params.get('status')

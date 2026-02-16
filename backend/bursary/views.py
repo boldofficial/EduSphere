@@ -370,6 +370,28 @@ class DashboardViewSet(viewsets.ViewSet):
         
 
 class AdmissionPackageViewSet(TenantViewSet):
-    queryset = AdmissionPackage.objects.select_related('intake', 'school').prefetch_related('fees').all()
+    queryset = AdmissionPackage.objects.select_related('intake', 'school').prefetch_related('fees__category').all()
     serializer_class = AdmissionPackageSerializer
     pagination_class = StandardPagination
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [permissions.AllowAny()]
+        return super().get_permissions()
+
+    def get_queryset(self):
+        # Allow public to see packages specific to their school/tenant context
+        if self.action in ['list', 'retrieve']:
+            school = getattr(self.request, 'tenant', None)
+            if not school and self.request.user.is_authenticated:
+                school = getattr(self.request.user, 'school', None)
+            
+            if school:
+                qs = self.queryset.filter(school=school)
+                intake_id = self.request.query_params.get('intake')
+                if intake_id:
+                    qs = qs.filter(intake_id=intake_id)
+                return qs
+            return self.queryset.none()
+            
+        return super().get_queryset()

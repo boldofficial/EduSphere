@@ -9,6 +9,7 @@ from .views import (
     PeriodViewSet, TimetableViewSet, TimetableEntryViewSet, GradingSchemeViewSet,
     GradeRangeViewSet, SubjectTeacherViewSet, BroadsheetView, GlobalSearchView
 )
+from .views_migration import AcademicDataMigrationViewSet
 from . import views
 
 router = DefaultRouter()
@@ -37,6 +38,7 @@ router.register(r'grading-schemes', views.GradingSchemeViewSet, basename='gradin
 router.register(r'grade-ranges', views.GradeRangeViewSet, basename='grade-ranges')
 router.register(r'subject_teachers', views.SubjectTeacherViewSet, basename='subject_teachers')
 router.register(r'broadsheet', views.BroadsheetView, basename='broadsheet')
+router.register(r'data-migration', AcademicDataMigrationViewSet, basename='data-migration')
 
 urlpatterns = [
     path('debug-headers/', HeaderEchoView.as_view(), name='debug-headers'),

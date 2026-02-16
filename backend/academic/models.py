@@ -475,6 +475,9 @@ class Admission(TenantModel):
     admin_notes = models.TextField(blank=True)
     reviewed_at = models.DateTimeField(null=True, blank=True)
     reviewed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    
+    # Store IDs of selected FeeItems (e.g. [1, 4, 10]) from the AdmissionPackage
+    selected_package_items = models.JSONField(default=list, blank=True)
 
     def __str__(self):
         return f"{self.child_name} - {self.intake.name if self.intake else 'No Intake'}"

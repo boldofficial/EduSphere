@@ -15,6 +15,9 @@ const AdmissionPage = () => {
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [intakes, setIntakes] = useState<any[]>([]);
+    const [packageFees, setPackageFees] = useState<any[]>([]);
+    const [selectedFees, setSelectedFees] = useState<Set<number>>(new Set());
+    const [totalPackageAmount, setTotalPackageAmount] = useState(0);
 
     const [formData, setFormData] = useState({
         child_name: '',
@@ -51,6 +54,58 @@ const AdmissionPage = () => {
         loadInitialData();
     }, []);
 
+    // NEW: Fetch packages when intake changes
+    useEffect(() => {
+        const loadPackage = async () => {
+            if (!formData.intake) {
+                setPackageFees([]);
+                return;
+            }
+
+            try {
+                // Fetch packages filtered by intake
+                const packages = await DataService.fetchAll<any>('bursary/admission-packages', { intake: formData.intake });
+                if (packages && packages.length > 0) {
+                    const fees = packages[0].fees || [];
+                    setPackageFees(fees);
+
+                    // Auto-select mandatory fees
+                    const mandatory = new Set<number>();
+                    let initialTotal = 0;
+                    fees.forEach((f: any) => {
+                        if (!f.is_optional) {
+                            mandatory.add(f.id);
+                            initialTotal += Number(f.amount);
+                        }
+                    });
+                    setSelectedFees.current = mandatory; // Hack for immediate update if needed, but setState is async
+                    setSelectedFees(mandatory);
+                    setTotalPackageAmount(initialTotal);
+                } else {
+                    setPackageFees([]);
+                    setTotalPackageAmount(0);
+                }
+            } catch (e) {
+                console.error("Failed to load admission package", e);
+            }
+        };
+        loadPackage();
+    }, [formData.intake]);
+
+    const handleFeeToggle = (fee: any) => {
+        if (!fee.is_optional) return; // Cannot toggle mandatory
+
+        const newSelected = new Set(selectedFees);
+        if (newSelected.has(fee.id)) {
+            newSelected.delete(fee.id);
+            setTotalPackageAmount(prev => prev - Number(fee.amount));
+        } else {
+            newSelected.add(fee.id);
+            setTotalPackageAmount(prev => prev + Number(fee.amount));
+        }
+        setSelectedFees(newSelected);
+    };
+
     const handleChange = (field: string, value: string) => {
         setFormData(prev => ({ ...prev, [field]: value }));
     };
@@ -62,7 +117,11 @@ const AdmissionPage = () => {
         try {
             // Save to Django Backend
             // We omit id for backend to auto-generate
-            await DataService.createItem('admissions', formData);
+            const payload = {
+                ...formData,
+                selected_package_items: Array.from(selectedFees)
+            };
+            await DataService.createItem('admissions', payload);
 
             setIsSubmitting(false);
             setIsSubmitted(true);
@@ -200,6 +259,41 @@ const AdmissionPage = () => {
                             </div>
                         </div>
 
+                        {/* Package Options */}
+                        {packageFees.length > 0 && (
+                            <div>
+                                <h2 className="text-lg font-bold text-gray-900 mb-4 pb-2 border-b flex items-center justify-between">
+                                    <span>Intake Package Options</span>
+                                    <span className="text-sm font-normal text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                                        Total: ₦{totalPackageAmount.toLocaleString()}
+                                    </span>
+                                </h2>
+                                <p className="text-sm text-gray-500 mb-4">Select the items you wish to purchase with this admission.</p>
+                                <div className="space-y-3">
+                                    {packageFees.map((fee: any) => (
+                                        <label key={fee.id} className={`flex items-start p-4 border rounded-xl cursor-pointer transition-all ${selectedFees.has(fee.id) ? 'border-brand-500 bg-brand-50' : 'border-gray-200 hover:border-brand-200'}`}>
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedFees.has(fee.id)}
+                                                onChange={() => handleFeeToggle(fee)}
+                                                disabled={!fee.is_optional}
+                                                className="mt-1 h-5 w-5 text-brand-600 border-gray-300 rounded focus:ring-brand-500"
+                                            />
+                                            <div className="ml-3 flex-1">
+                                                <div className="flex justify-between">
+                                                    <span className={`font-medium ${selectedFees.has(fee.id) ? 'text-brand-900' : 'text-gray-700'}`}>
+                                                        {fee.category_name} {!fee.is_optional && <span className="text-xs text-brand-600 bg-brand-100 px-2 py-0.5 rounded ml-2">Mandatory</span>}
+                                                    </span>
+                                                    <span className="font-bold text-gray-900">₦{Number(fee.amount).toLocaleString()}</span>
+                                                </div>
+                                                <p className="text-sm text-gray-500 mt-1">{fee.name !== fee.category_name ? fee.name : 'Standard Fee'}</p>
+                                            </div>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
                         {/* Parent/Guardian Information */}
                         <div>
                             <h2 className="text-lg font-bold text-gray-900 mb-4 pb-2 border-b">Parent/Guardian Information</h2>
@@ -232,7 +326,15 @@ const AdmissionPage = () => {
                         </div>
 
                         {/* Submit Button */}
-                        <div className="pt-4">
+                        <div className="pt-4 border-t mt-8">
+                            <div className="flex items-center justify-between mb-6 bg-yellow-50 p-4 rounded-xl border border-yellow-100">
+                                <div>
+                                    <p className="text-sm text-yellow-800 font-medium">Estimated Total Due</p>
+                                    <p className="text-xs text-yellow-600">Payable after acceptance</p>
+                                </div>
+                                <p className="text-2xl font-bold text-yellow-900">₦{totalPackageAmount.toLocaleString()}</p>
+                            </div>
+
                             <button type="submit" disabled={isSubmitting} className="w-full py-4 bg-accent-500 hover:bg-accent-600 text-brand-950 text-lg font-bold rounded-xl transition-all shadow-lg hover:shadow-accent-500/30 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                                 {isSubmitting ? (
                                     <>
