@@ -234,27 +234,27 @@ export const LoginView = () => {
     };
 
     return (
-        <div className="flex h-screen bg-white overflow-hidden">
+        <div className="flex min-h-screen bg-white">
             {/* Left Side: Form */}
-            <div className="w-full lg:w-1/2 flex flex-col justify-center px-8 md:px-24 xl:px-32 relative z-10 bg-white">
-                <div className="mb-12">
+            <div className="w-full lg:w-1/2 flex flex-col justify-center px-6 md:px-16 xl:px-24 py-12 relative z-10 bg-white">
+                <div className="mb-8">
                     {!isSystemRoot ? (
                         <div className="flex items-center gap-3">
-                            <img src={settings.logo_media || "/logo.png"} alt={settings.school_name} className="h-12 w-auto object-contain" />
-                            <span className="text-2xl font-bold text-gray-900">{settings.school_name}</span>
+                            <img src={settings.logo_media || "/logo.png"} alt={settings.school_name} className="h-10 w-auto object-contain" />
+                            <span className="text-xl font-bold text-gray-900">{settings.school_name}</span>
                         </div>
                     ) : (
-                        <img src="/logo.png" alt="Registra" className="h-10 w-auto" />
+                        <img src="/logo.png" alt="Registra" className="h-8 w-auto" />
                     )}
                 </div>
 
-                <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Sign in</h1>
-                    <p className="text-gray-500">Enter your {selectedRole === 'student' ? 'student number' : 'email'} and password to access account.</p>
+                <div className="mb-6">
+                    <h1 className="text-2xl font-bold text-gray-900 mb-1">Sign in</h1>
+                    <p className="text-sm text-gray-500">Enter your {selectedRole === 'student' ? 'student number' : 'email'} and password to access account.</p>
                 </div>
 
                 {/* Form Area */}
-                <div className="mb-8 min-h-[300px]">
+                <div className="mb-6">
                     {isSystemRoot && !searchSlug ? (
                         <FindSchoolSection
                             searchSlug={searchSlug}
@@ -309,19 +309,19 @@ export const LoginView = () => {
 
                 {/* Login As Section */}
                 {!isSystemRoot && (
-                    <div className="mt-4">
-                        <div className="flex items-center gap-2 mb-4 text-sm text-gray-400 font-medium">
+                    <div className="mt-2">
+                        <div className="flex items-center gap-2 mb-3 text-xs text-gray-400 font-medium uppercase tracking-wider">
                             <span>Login As</span>
-                            <ArrowRight size={14} className="rotate-90" />
+                            <ArrowRight size={12} className="rotate-90" />
                         </div>
                         <div className="flex flex-wrap gap-2">
                             {roleDefinitions.map((role) => (
                                 <button
                                     key={role.id}
                                     onClick={() => handleRoleChange(role.id)}
-                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 border ${selectedRole === role.id
-                                            ? 'bg-brand-50 border-brand-200 text-brand-700 shadow-sm ring-1 ring-brand-200'
-                                            : 'bg-white border-gray-200 text-gray-600 hover:border-brand-200 hover:text-brand-600'
+                                    className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-200 border ${selectedRole === role.id
+                                        ? 'bg-brand-50 border-brand-200 text-brand-700 shadow-sm ring-1 ring-brand-200'
+                                        : 'bg-white border-gray-200 text-gray-600 hover:border-brand-200 hover:text-brand-600'
                                         }`}
                                 >
                                     {role.name}
@@ -333,9 +333,9 @@ export const LoginView = () => {
             </div>
 
             {/* Right Side: Image */}
-            <div className="hidden lg:block lg:w-1/2 relative bg-gray-100">
+            <div className="hidden lg:block lg:w-1/2 relative bg-gray-100 sticky top-0 h-screen">
                 <img
-                    src="/login-bg-classroom.png"
+                    src="/login-bg-african.png"
                     alt="African Classroom"
                     className="absolute inset-0 w-full h-full object-cover"
                 />
