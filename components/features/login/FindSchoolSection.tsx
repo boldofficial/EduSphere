@@ -25,8 +25,8 @@ export const FindSchoolSection: React.FC<FindSchoolSectionProps> = ({
     onSelectSuperAdmin
 }) => {
     return (
-        <div className={`w-full max-w-4xl grid grid-cols-1 ${showSystemLogin ? 'md:grid-cols-2' : 'max-w-md'} gap-8 px-4`}>
-            <div className="bg-white rounded-3xl shadow-2xl p-8 flex flex-col justify-center">
+        <div className={`w-full max-w-4xl grid grid-cols-1 ${showSystemLogin ? 'md:grid-cols-2' : 'max-w-md'} gap-8 px-4 relative z-20`}>
+            <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl p-8 flex flex-col justify-center border border-white/20">
                 <h2 className="text-3xl font-black text-gray-900 mb-2">Find your School</h2>
                 <p className="text-gray-500 mb-8 font-medium">Enter your school's unique ID or subdomain to access your portal.</p>
 
@@ -39,7 +39,7 @@ export const FindSchoolSection: React.FC<FindSchoolSectionProps> = ({
                                 value={searchSlug}
                                 onChange={e => setSearchSlug(e.target.value)}
                                 placeholder="e.g. vine-heritage"
-                                className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 font-bold"
+                                className="w-full pl-12 pr-4 py-4 bg-white/50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 font-bold placeholder:text-gray-400"
                                 required
                             />
                         </div>

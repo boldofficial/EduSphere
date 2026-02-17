@@ -20,7 +20,8 @@ const schema = z.object({
     address: z.string().optional().or(z.literal('')),
     contact_person: z.string().optional().or(z.literal('')),
     payment_method: z.enum(['paystack', 'bank_transfer']),
-    payment_proof: z.string().optional().or(z.literal(''))
+    payment_proof: z.string().optional().or(z.literal('')),
+    pilot_agreement: z.boolean().refine(val => val === true, "You must agree to the pilot terms")
 });
 
 type FormData = z.infer<typeof schema>;
@@ -49,7 +50,8 @@ export default function OnboardingPage() {
             address: '',
             contact_person: '',
             payment_method: 'bank_transfer', // Dummy value for free phase
-            payment_proof: ''
+            payment_proof: '',
+            pilot_agreement: false
         }
     });
 
@@ -244,9 +246,10 @@ export default function OnboardingPage() {
                                             <li><strong>Requirement:</strong> You agree to provide a written review and participate in a brief feedback session.</li>
                                         </ul>
                                         <div className="pt-4 flex items-start gap-3">
-                                            <input type="checkbox" required className="mt-1 w-4 h-4 text-brand-600 rounded bg-white border-brand-200" />
+                                            <input {...register('pilot_agreement')} type="checkbox" className="mt-1 w-4 h-4 text-brand-600 rounded bg-white border-brand-200" />
                                             <span className="font-medium">I understand this is a pilot program and agree to provide feedback.</span>
                                         </div>
+                                        {errors.pilot_agreement && <p className="text-red-500 text-xs mt-1">{errors.pilot_agreement.message}</p>}
                                     </div>
                                 </div>
 
@@ -255,7 +258,13 @@ export default function OnboardingPage() {
                                     <button
                                         type="button"
                                         onClick={() => setStep(4)}
-                                        disabled={(watch('payment_method') === 'bank_transfer' && !watch('payment_proof')) || (watch('payment_method') === 'paystack' && !isPaid)}
+                                        disabled={
+                                            !watch('pilot_agreement') ||
+                                            (selectedPlanSlug !== 'enterprise' && (
+                                                (watch('payment_method') === 'bank_transfer' && !watch('payment_proof')) ||
+                                                (watch('payment_method') === 'paystack' && !isPaid)
+                                            ))
+                                        }
                                         className="px-6 py-3 bg-brand-600 text-white font-bold rounded-xl hover:bg-brand-700 disabled:opacity-30"
                                     >
                                         Next Step

@@ -51,6 +51,17 @@ export const LoginView = () => {
     const [forgotError, setForgotError] = useState('');
     const [forgotSuccess, setForgotSuccess] = useState(false);
     const [newPassword, setNewPassword] = useState('');
+    const [logoClickCount, setLogoClickCount] = useState(0);
+
+    const handleLogoClick = () => {
+        if (!isSystemRoot) return;
+        const newCount = logoClickCount + 1;
+        setLogoClickCount(newCount);
+        if (newCount === 5) {
+            setShowSystemLogin(true);
+            setLogoClickCount(0);
+        }
+    };
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -234,28 +245,49 @@ export const LoginView = () => {
     };
 
     return (
-        <div className="flex min-h-screen bg-white">
+        <div className={`flex min-h-screen ${isSystemRoot ? 'bg-gray-900' : 'bg-white'}`}>
+            {/* Background for System Root */}
+            {isSystemRoot && (
+                <div className="fixed inset-0 z-0">
+                    <img
+                        src="/login-bg-african.png"
+                        alt="Background"
+                        className="w-full h-full object-cover opacity-40"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-br from-brand-900/80 via-black/60 to-purple-900/80 backdrop-blur-[2px]" />
+                </div>
+            )}
+
             {/* Left Side: Form */}
-            <div className="w-full lg:w-1/2 flex flex-col justify-center px-6 md:px-16 xl:px-24 py-12 relative z-10 bg-white">
-                <div className="mb-8">
-                    {!isSystemRoot ? (
-                        <div className="flex items-center gap-3">
-                            <img src={settings.logo_media || "/logo.png"} alt={settings.school_name} className="h-10 w-auto object-contain" />
-                            <span className="text-xl font-bold text-gray-900">{settings.school_name}</span>
-                        </div>
-                    ) : (
-                        <img src="/logo.png" alt="Registra" className="h-8 w-auto" />
-                    )}
+            <div className={`flex-1 flex flex-col justify-center px-6 md:px-16 xl:px-24 py-12 relative z-10 ${isSystemRoot ? 'items-center' : 'lg:w-1/2 bg-white'}`}>
+                <div className={`mb-8 ${isSystemRoot ? 'text-center' : ''}`}>
+                    <div
+                        className={`inline-block cursor-pointer transition-transform active:scale-95 ${isSystemRoot ? 'bg-white/10 p-4 rounded-2xl backdrop-blur-md border border-white/20' : ''}`}
+                        onClick={handleLogoClick}
+                    >
+                        {!isSystemRoot ? (
+                            <div className="flex items-center gap-3">
+                                <img src={settings.logo_media || "/logo.png"} alt={settings.school_name} className="h-10 w-auto object-contain" />
+                                <span className="text-xl font-bold text-gray-900">{settings.school_name}</span>
+                            </div>
+                        ) : (
+                            <img src="/logo.png" alt="Registra" className="h-12 w-auto invert brightness-0" />
+                        )}
+                    </div>
                 </div>
 
-                <div className="mb-6">
-                    <h1 className="text-2xl font-bold text-gray-900 mb-1">Sign in</h1>
-                    <p className="text-sm text-gray-500">Enter your {selectedRole === 'student' ? 'student number' : 'email'} and password to access account.</p>
-                </div>
+                {!selectedRole && isSystemRoot && !searchSlug ? null : (
+                    <div className={`mb-6 ${isSystemRoot ? 'text-center' : ''}`}>
+                        <h1 className={`text-2xl font-bold mb-1 ${isSystemRoot ? 'text-white' : 'text-gray-900'}`}>Sign in</h1>
+                        <p className={`text-sm ${isSystemRoot ? 'text-brand-100/70' : 'text-gray-500'}`}>
+                            Enter your {selectedRole === 'student' ? 'student number' : 'email'} and password to access account.
+                        </p>
+                    </div>
+                )}
 
                 {/* Form Area */}
-                <div className="mb-6">
-                    {isSystemRoot && !searchSlug ? (
+                <div className="mb-6 w-full flex justify-center">
+                    {isSystemRoot && !searchSlug && selectedRole !== 'super_admin' ? (
                         <FindSchoolSection
                             searchSlug={searchSlug}
                             setSearchSlug={setSearchSlug}
@@ -266,7 +298,7 @@ export const LoginView = () => {
                             onSelectSuperAdmin={() => setSelectedRole('super_admin')}
                         />
                     ) : (
-                        <>
+                        <div className={isSystemRoot ? 'w-full max-w-md bg-white p-8 rounded-3xl shadow-2xl' : 'w-full'}>
                             {selectedRole === 'student' ? (
                                 <StudentLoginForm
                                     studentNo={studentNo}
@@ -300,10 +332,10 @@ export const LoginView = () => {
                                     isLoading={isLoading}
                                     onLogin={handleLogin}
                                     onDirectLogin={handleDirectLogin}
-                                    onBack={() => { }} // No back button
+                                    onBack={() => { if (isSystemRoot) setSelectedRole(null as any) }}
                                 />
                             )}
-                        </>
+                        </div>
                     )}
                 </div>
 
@@ -332,15 +364,17 @@ export const LoginView = () => {
                 )}
             </div>
 
-            {/* Right Side: Image */}
-            <div className="hidden lg:block lg:w-1/2 relative bg-gray-100 sticky top-0 h-screen">
-                <img
-                    src="/login-bg-african.png"
-                    alt="African Classroom"
-                    className="absolute inset-0 w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-            </div>
+            {/* Right Side: Image - Hidden on root domain because we use it as background */}
+            {!isSystemRoot && (
+                <div className="hidden lg:block lg:w-1/2 relative bg-gray-100 sticky top-0 h-screen">
+                    <img
+                        src="/login-bg-african.png"
+                        alt="African Classroom"
+                        className="absolute inset-0 w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                </div>
+            )}
 
             <ForgotPasswordModal
                 isOpen={showForgotPassword}
