@@ -287,7 +287,7 @@ export const LoginView = () => {
 
                 {/* Form Area */}
                 <div className="mb-6 w-full flex justify-center">
-                    {isSystemRoot && !searchSlug && selectedRole !== 'super_admin' ? (
+                    {isSystemRoot && selectedRole !== 'super_admin' ? (
                         <FindSchoolSection
                             searchSlug={searchSlug}
                             setSearchSlug={setSearchSlug}
