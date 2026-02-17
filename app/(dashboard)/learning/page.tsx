@@ -4,7 +4,7 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { BookOpen, MonitorPlay, FileText } from 'lucide-react';
+import { BookOpen, MonitorPlay, FileText, Sparkles, Target } from 'lucide-react';
 
 export default function LearningCenterPage() {
     const router = useRouter();
@@ -46,7 +46,37 @@ export default function LearningCenterPage() {
                     </Card>
                 </div>
 
-                {/* Library Placeholder */}
+                {/* AI Lesson Planner */}
+                <div onClick={() => router.push('/learning/lesson-planner')} className="cursor-pointer h-full">
+                    <Card title="AI Lesson Planner" className="hover:shadow-lg transition-all group h-full border-amber-200">
+                        <div className="flex flex-col gap-4">
+                            <div className="flex items-center gap-3">
+                                <div className="p-3 rounded-lg bg-gradient-to-br from-amber-100 to-orange-100 text-amber-600 group-hover:from-amber-500 group-hover:to-orange-500 group-hover:text-white transition-all">
+                                    <Sparkles className="w-6 h-6" />
+                                </div>
+                                <p className="text-sm text-gray-500">Generate structured lesson plans with AI assistance.</p>
+                            </div>
+                            <Button variant="outline" className="w-full mt-2 border-amber-300 text-amber-700 hover:bg-amber-50">Open Planner</Button>
+                        </div>
+                    </Card>
+                </div>
+
+                {/* Predictive Insights */}
+                <div onClick={() => router.push('/analytics/predictive')} className="cursor-pointer h-full">
+                    <Card title="Predictive Insights" className="hover:shadow-lg transition-all group h-full border-violet-200">
+                        <div className="flex flex-col gap-4">
+                            <div className="flex items-center gap-3">
+                                <div className="p-3 rounded-lg bg-gradient-to-br from-violet-100 to-purple-100 text-violet-600 group-hover:from-violet-500 group-hover:to-purple-500 group-hover:text-white transition-all">
+                                    <Target className="w-6 h-6" />
+                                </div>
+                                <p className="text-sm text-gray-500">AI-powered early warning for at-risk students.</p>
+                            </div>
+                            <Button variant="outline" className="w-full mt-2 border-violet-300 text-violet-700 hover:bg-violet-50">View Insights</Button>
+                        </div>
+                    </Card>
+                </div>
+
+                {/* Digital Library Placeholder */}
                 <div className="cursor-not-allowed opacity-60 h-full">
                     <Card title="Digital Library" className="h-full">
                         <div className="flex flex-col gap-4">

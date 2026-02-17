@@ -866,3 +866,156 @@ class GlobalSearchView(APIView):
             "classes": [{"id": c.id, "name": c.name} for c in classes]
         })
 
+
+class AIPredictiveInsightsView(APIView):
+    """
+    AI-powered predictive analytics for student performance.
+    GET /academic/predictive-insights/?class_id=X&session=Y&term=Z
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        school = getattr(request.user, 'school', None) or getattr(request, 'tenant', None)
+        if not school:
+            return Response({"error": "No school context found"}, status=400)
+
+        class_id = request.query_params.get('class_id')
+        session = request.query_params.get('session', '')
+        term = request.query_params.get('term', '')
+
+        if not class_id:
+            return Response({"error": "class_id is required"}, status=400)
+
+        try:
+            student_class = Class.objects.get(id=class_id, school=school)
+        except Class.DoesNotExist:
+            return Response({"error": "Class not found"}, status=404)
+
+        students = Student.objects.filter(school=school, current_class=student_class, status='active')
+        
+        ai = AcademicAI()
+        predictions = []
+
+        for student in students:
+            # 1. Get current term report card and scores
+            report = ReportCard.objects.filter(
+                student=student, session=session, term=term, school=school
+            ).prefetch_related('scores__subject').first()
+            
+            scores_data = []
+            current_avg = 0
+            if report:
+                current_avg = report.average
+                for score in report.scores.all():
+                    scores_data.append({
+                        "subject": score.subject.name,
+                        "ca1": score.ca1, "ca2": score.ca2,
+                        "exam": score.exam, "total": score.total,
+                        "grade": score.grade,
+                    })
+
+            # 2. Get attendance rate
+            total_sessions = AttendanceSession.objects.filter(
+                student_class=student_class, school=school, session=session, term=term
+            ).count()
+            present_count = AttendanceRecord.objects.filter(
+                attendance_session__student_class=student_class,
+                attendance_session__school=school,
+                attendance_session__session=session,
+                attendance_session__term=term,
+                student=student,
+                status='present'
+            ).count()
+            attendance_rate = (present_count / total_sessions * 100) if total_sessions > 0 else 100
+
+            # 3. Get conduct scores
+            conduct_entries = ConductEntry.objects.filter(student=student, school=school).order_by('-date')[:10]
+            conduct_data = [{"trait": c.trait, "score": c.score} for c in conduct_entries]
+
+            # 4. Get historical averages (past terms for this student)
+            past_reports = ReportCard.objects.filter(
+                student=student, school=school
+            ).exclude(
+                session=session, term=term
+            ).order_by('session', 'term').values_list('average', flat=True)[:6]
+            historical_avgs = list(past_reports)
+
+            # 5. Call AI prediction
+            student_payload = {
+                "name": student.names,
+                "class_name": student_class.name,
+                "scores": scores_data,
+                "average": current_avg,
+                "attendance_rate": round(attendance_rate, 1),
+                "conduct_scores": conduct_data,
+                "historical_averages": historical_avgs,
+            }
+
+            prediction = ai.predict_student_performance(student_payload)
+
+            predictions.append({
+                "student_id": student.id,
+                "student_name": student.names,
+                "student_no": student.student_no,
+                "current_average": current_avg,
+                "attendance_rate": round(attendance_rate, 1),
+                "prediction": prediction or {
+                    "risk_level": "medium" if current_avg < 50 else "low",
+                    "predicted_average": current_avg,
+                    "confidence": 0.5,
+                    "key_concerns": [],
+                    "strengths": [],
+                    "recommendations": ["Insufficient data for detailed prediction."],
+                }
+            })
+
+        # Summary counts
+        high_risk = sum(1 for p in predictions if p['prediction'].get('risk_level') == 'high')
+        medium_risk = sum(1 for p in predictions if p['prediction'].get('risk_level') == 'medium')
+        low_risk = sum(1 for p in predictions if p['prediction'].get('risk_level') == 'low')
+
+        return Response({
+            "class_name": student_class.name,
+            "session": session,
+            "term": term,
+            "summary": {
+                "total_students": len(predictions),
+                "high_risk": high_risk,
+                "medium_risk": medium_risk,
+                "low_risk": low_risk,
+            },
+            "predictions": predictions,
+        })
+
+
+class AILessonPlanView(APIView):
+    """
+    AI-powered lesson plan generation.
+    POST /academic/ai-lesson-plan/
+    Body: { subject, class_name, topic, duration_minutes, objectives?, notes? }
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        subject = request.data.get('subject')
+        class_name = request.data.get('class_name')
+        topic = request.data.get('topic')
+        duration = request.data.get('duration_minutes', 45)
+
+        if not all([subject, class_name, topic]):
+            return Response({"error": "subject, class_name, and topic are required."}, status=400)
+
+        ai = AcademicAI()
+        plan = ai.generate_lesson_plan({
+            "subject": subject,
+            "class_name": class_name,
+            "topic": topic,
+            "duration_minutes": duration,
+            "objectives": request.data.get('objectives', ''),
+            "notes": request.data.get('notes', ''),
+        })
+
+        if plan:
+            return Response({"plan": plan, "message": "Lesson plan generated successfully."})
+        else:
+            return Response({"error": "AI lesson plan generation failed. Check your API key."}, status=500)

@@ -4,7 +4,7 @@ from .views import (
     SubjectViewSet, TeacherViewSet, ClassViewSet, StudentViewSet,
     ReportCardViewSet, SubjectScoreViewSet, AttendanceSessionViewSet, AttendanceRecordViewSet,
     SchoolEventViewSet, HeaderEchoView, StudentHistoryViewSet, StudentAchievementViewSet,
-    AIInsightsView, AITimetableGenerateView,
+    AIInsightsView, AITimetableGenerateView, AIPredictiveInsightsView, AILessonPlanView,
     AdmissionIntakeViewSet, AdmissionViewSet, LessonViewSet, ConductEntryViewSet,
     PeriodViewSet, TimetableViewSet, TimetableEntryViewSet, GradingSchemeViewSet,
     GradeRangeViewSet, SubjectTeacherViewSet, BroadsheetView, GlobalSearchView
@@ -45,6 +45,8 @@ urlpatterns = [
     path('global-search/', views.GlobalSearchView.as_view(), name='global-search'),
     path('ai-insights/', views.AIInsightsView.as_view(), name='ai-insights'),
     path('timetables/magic-generate/', views.AITimetableGenerateView.as_view(), name='magic-generate'),
+    path('predictive-insights/', views.AIPredictiveInsightsView.as_view(), name='predictive-insights'),
+    path('ai-lesson-plan/', views.AILessonPlanView.as_view(), name='ai-lesson-plan'),
     path('', include(router.urls)),
 ]
 

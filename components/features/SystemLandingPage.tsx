@@ -12,6 +12,7 @@ import { LandingNav } from './landing/LandingNav';
 import { LandingHero } from './landing/LandingHero';
 import { FeaturesSection, HowItWorksSection, TestimonialsSection, FAQSection } from './landing/LandingSections';
 import { EcosystemSection } from './landing/EcosystemSection';
+import { AIShowcaseSection } from './landing/AIShowcaseSection';
 import { ContactSection, LandingFooter } from './landing/LandingContactFooter';
 import { DemoRequestModal } from './landing/DemoRequestModal';
 
@@ -25,6 +26,7 @@ export const SystemLandingPage = () => {
             <LandingHero onOpenDemoModal={() => setIsDemoModalOpen(true)} />
             <FeaturesSection />
             <EcosystemSection />
+            <AIShowcaseSection />
             <HowItWorksSection />
             <TestimonialsSection />
             <PricingSection />

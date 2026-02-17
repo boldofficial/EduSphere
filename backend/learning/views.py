@@ -3,6 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
+from django.db import transaction
 from .models import Assignment, Submission, Quiz, Question, Option, Attempt, StudentAnswer
 from .serializers import (
     AssignmentSerializer, SubmissionSerializer, QuizSerializer, 
@@ -38,9 +39,38 @@ class AssignmentViewSet(LearningTenantViewSet):
     serializer_class = AssignmentSerializer
 
 
+from academic.ai_utils import AcademicAI
+
 class SubmissionViewSet(LearningTenantViewSet):
     queryset = Submission.objects.select_related('assignment', 'student', 'school').all()
     serializer_class = SubmissionSerializer
+
+    @action(detail=True, methods=['post'], url_path='ai-evaluate')
+    def ai_evaluate(self, request, pk=None):
+        """AI-powered grading for theory assignments."""
+        submission = self.get_object()
+        assignment = submission.assignment
+        
+        if not submission.submission_text:
+            return Response({'detail': 'No text found in submission to evaluate'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        ai_data = {
+            "question": f"{assignment.title}: {assignment.description}",
+            "answer": submission.submission_text,
+            "max_points": assignment.points,
+            "rubric": "" # Could be expanded later if rubric field exists
+        }
+        
+        ai = AcademicAI()
+        evaluation = ai.evaluate_submission(ai_data)
+        
+        if not evaluation:
+            return Response({'detail': 'AI evaluation failed'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+        return Response({
+            "suggestion": evaluation,
+            "context": ai_data
+        })
 
 
 class QuizViewSet(LearningTenantViewSet):
@@ -133,6 +163,50 @@ class QuestionViewSet(LearningTenantViewSet):
 
 
 class AttemptViewSet(LearningTenantViewSet):
-    queryset = Attempt.objects.select_related('quiz', 'student', 'school').prefetch_related('answers').all()
+    queryset = Attempt.objects.select_related('quiz', 'student', 'school').prefetch_related('answers__question').all()
     serializer_class = AttemptSerializer
+
+    @action(detail=True, methods=['post'], url_path='ai-grade-theory')
+    def ai_grade_theory(self, request, pk=None):
+        """Grades all theory questions in an attempt using AI"""
+        attempt = self.get_object()
+        theory_answers = attempt.answers.filter(question__question_type='theory')
+        
+        if not theory_answers.exists():
+            return Response({'detail': 'No theory questions found in this attempt'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        ai = AcademicAI()
+        results = []
+        
+        with transaction.atomic():
+            for ans in theory_answers:
+                ai_data = {
+                    "question": ans.question.text,
+                    "answer": ans.text_answer,
+                    "max_points": ans.question.points,
+                    "rubric": ""
+                }
+                
+                evaluation = ai.evaluate_submission(ai_data)
+                if evaluation:
+                    ans.score = evaluation.get('score', 0.0)
+                    # We might want to store AI feedback somewhere, for now we can append to a theoretical feedback field if it existed
+                    # but StudentAnswer doesn't have feedback. We could add it or just return it.
+                    ans.save()
+                    results.append({
+                        "question_id": ans.question.id,
+                        "question_text": ans.question.text,
+                        "suggested_score": evaluation.get('score'),
+                        "feedback": evaluation.get('feedback')
+                    })
+            
+            # Recalculate total score for attempt
+            attempt.total_score = sum(a.score for a in attempt.answers.all())
+            attempt.save()
+            
+        return Response({
+            "success": True,
+            "evaluations": results,
+            "new_total_score": attempt.total_score
+        })
 

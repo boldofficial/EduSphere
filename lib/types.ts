@@ -446,6 +446,78 @@ export interface GradeRange extends Entity {
   gpa_point: number;
 }
 
+// =============================================
+// LEARNING MODULE
+// =============================================
+
+export interface Assignment extends Entity {
+  title: string;
+  description: string;
+  student_class: string;
+  subject: string;
+  due_date: string;
+  points: number;
+  attachment_url?: string;
+  teacher_name?: string;
+  subject_name?: string;
+}
+
+export interface Submission extends Entity {
+  assignment: string;
+  student: string;
+  student_name?: string;
+  submission_text?: string;
+  file_url?: string;
+  submitted_at: string;
+  score?: number;
+  teacher_feedback?: string;
+  is_graded: boolean;
+}
+
+export interface Quiz extends Entity {
+  title: string;
+  description: string;
+  student_class: string;
+  subject: string;
+  start_time: string;
+  end_time: string;
+  duration_minutes: number;
+  is_published: boolean;
+}
+
+export interface Question extends Entity {
+  quiz: string;
+  text: string;
+  question_type: 'mcq' | 'theory';
+  points: number;
+  options?: QuestionOption[];
+}
+
+export interface QuestionOption extends Entity {
+  text: string;
+  is_correct: boolean;
+}
+
+export interface Attempt extends Entity {
+  quiz: string;
+  student: string;
+  start_time: string;
+  end_time?: string;
+  total_score: number;
+  is_completed: boolean;
+  answers: StudentAnswer[];
+  student_name?: string;
+}
+
+export interface StudentAnswer extends Entity {
+  attempt: string;
+  question: string;
+  selected_option?: string;
+  text_answer?: string;
+  score: number;
+  is_graded: boolean;
+}
+
 
 export interface TicketResponse extends Omit<Entity, 'created_at' | 'updated_at'> {
   username: string;
