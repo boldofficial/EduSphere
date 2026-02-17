@@ -25,9 +25,8 @@ export const LoginView = () => {
     const { login } = useSchoolStore();
 
     const [isDemo, setIsDemo] = useState(false);
-    // Default to 'teacher' or 'admin' to show a form immediately, or null if we want to force selection
-    // The reference image shows a form, so we'll default to 'admin' or 'teacher' or 'student'
-    const [selectedRole, setSelectedRole] = useState<UserRole>('teacher');
+    // Default to 'teacher' only on subdomains; on root we want to force school search or super admin secret
+    const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
 
     // Form states
     const [email, setEmail] = useState('');
@@ -75,6 +74,11 @@ export const LoginView = () => {
 
             setIsSystemRoot(isRoot);
             setIsDemo(host.startsWith('demo.'));
+
+            // Set default role if not on root domain
+            if (!isRoot) {
+                setSelectedRole('teacher');
+            }
         }
     }, []);
 
@@ -276,7 +280,7 @@ export const LoginView = () => {
                     </div>
                 </div>
 
-                {!selectedRole && isSystemRoot && !searchSlug ? null : (
+                {(isSystemRoot && selectedRole !== 'super_admin') ? null : (
                     <div className={`mb-6 ${isSystemRoot ? 'text-center' : ''}`}>
                         <h1 className={`text-2xl font-bold mb-1 ${isSystemRoot ? 'text-white' : 'text-gray-900'}`}>Sign in</h1>
                         <p className={`text-sm ${isSystemRoot ? 'text-brand-100/70' : 'text-gray-500'}`}>
