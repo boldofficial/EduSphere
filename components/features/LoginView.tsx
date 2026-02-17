@@ -322,7 +322,7 @@ export const LoginView = () => {
                                 />
                             ) : (
                                 <StaffLoginForm
-                                    selectedRole={selectedRole}
+                                    selectedRole={selectedRole as UserRole}
                                     roles={roleDefinitions.map(r => ({ ...r, themeColor: r.color, desc: '' }))}
                                     isDemo={isDemo}
                                     email={email}
