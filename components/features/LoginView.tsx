@@ -264,20 +264,18 @@ export const LoginView = () => {
 
             {/* Left Side: Form */}
             <div className={`flex-1 flex flex-col justify-center px-6 md:px-16 xl:px-24 py-12 relative z-10 ${isSystemRoot ? 'items-center' : 'lg:w-1/2 bg-white'}`}>
-                <div className={`mb-8 ${isSystemRoot ? 'text-center' : ''}`}>
-                    <div
-                        className={`inline-block cursor-pointer transition-transform active:scale-95 ${isSystemRoot ? 'bg-white/10 p-4 rounded-2xl backdrop-blur-md border border-white/20' : ''}`}
-                        onClick={handleLogoClick}
-                    >
-                        {!isSystemRoot ? (
-                            <div className="flex items-center gap-3">
-                                <img src={settings.logo_media || "/logo.png"} alt={settings.school_name} className="h-10 w-auto object-contain" />
-                                <span className="text-xl font-bold text-gray-900">{settings.school_name}</span>
-                            </div>
-                        ) : (
-                            <img src="/logo.png" alt="Registra" className="h-12 w-auto invert brightness-0" />
-                        )}
-                    </div>
+                <div
+                    className={`inline-block cursor-pointer transition-transform active:scale-95 ${isSystemRoot ? 'bg-white p-6 rounded-3xl shadow-xl' : ''}`}
+                    onClick={handleLogoClick}
+                >
+                    {!isSystemRoot ? (
+                        <div className="flex items-center gap-3">
+                            <img src={settings.logo_media || "/logo.png"} alt={settings.school_name} className="h-10 w-auto object-contain" />
+                            <span className="text-xl font-bold text-gray-900">{settings.school_name}</span>
+                        </div>
+                    ) : (
+                        <img src="/logo.png" alt="Registra" className="h-12 w-auto object-contain" />
+                    )}
                 </div>
 
                 {(isSystemRoot && selectedRole !== 'super_admin') ? null : (
