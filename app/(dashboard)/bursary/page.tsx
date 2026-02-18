@@ -17,9 +17,12 @@ export default function BursaryPage() {
 
     const { data: classes = [] } = useClasses();
     const [studentPage, setStudentPage] = useState(1);
-    const [selectedClassId, setSelectedClassId] = useState('all');
+    const [selectedClassId, setSelectedClassId] = useState('');
 
-    const { data: studentResponse } = usePaginatedStudents(studentPage, 50, '', selectedClassId === 'all' ? '' : selectedClassId);
+    // Effective class: use selectedClassId if set, otherwise fall back to first class
+    const effectiveClassId = selectedClassId || (classes.length > 0 ? String(classes[0].id) : '');
+
+    const { data: studentResponse } = usePaginatedStudents(studentPage, 50, '', effectiveClassId);
     const students = studentResponse?.results || [];
     const studentTotalPages = studentResponse ? Math.ceil(studentResponse.count / 50) : 0;
 
@@ -91,7 +94,7 @@ export default function BursaryPage() {
             paymentPage={paymentPage}
             paymentTotalPages={paymentTotalPages}
             onPaymentPageChange={setPaymentPage}
-            selectedClass={selectedClassId}
+            selectedClass={effectiveClassId}
             onClassChange={(c) => {
                 setSelectedClassId(c);
                 setStudentPage(1);
