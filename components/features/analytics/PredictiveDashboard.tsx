@@ -69,7 +69,7 @@ export default function PredictiveDashboard() {
         }
         setLoading(true);
         try {
-            const res = await apiClient.get(`academic/predictive-insights/`, {
+            const res = await apiClient.get(`predictive-insights/`, {
                 params: { class_id: selectedClass, session, term }
             });
             setData(res.data);

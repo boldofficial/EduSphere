@@ -54,7 +54,7 @@ export default function LessonPlanGenerator() {
         setLoading(true);
         setPlan(null);
         try {
-            const res = await apiClient.post('academic/ai-lesson-plan/', {
+            const res = await apiClient.post('ai-lesson-plan/', {
                 subject, class_name: className, topic,
                 duration_minutes: parseInt(duration),
                 objectives,
