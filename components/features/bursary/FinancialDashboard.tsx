@@ -81,66 +81,71 @@ export const FinancialDashboard: React.FC<FinancialDashboardProps> = ({
         <div className="space-y-6">
             {/* Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card className="bg-white border-none shadow-sm p-5 border-l-4 border-green-500">
-                    <div className="flex items-center justify-between">
+                <Card className="relative overflow-hidden border-none shadow-md bg-gradient-to-br from-emerald-500 to-teal-700 text-white p-6">
+                    <div className="absolute top-[-10%] right-[-10%] h-24 w-24 bg-white/10 rounded-full blur-2xl" />
+                    <div className="flex items-center justify-between relative z-10">
                         <div>
-                            <p className="text-gray-500 text-sm font-medium">Total Income</p>
-                            <p className="text-2xl font-bold text-gray-900 mt-1">{Utils.formatCurrency(totalIncome)}</p>
-                            <div className="flex items-center mt-2 text-green-600 text-xs font-medium">
-                                <TrendingUp size={14} className="mr-1" />
+                            <p className="text-emerald-50/80 text-xs font-bold uppercase tracking-wider">Total Income</p>
+                            <p className="text-3xl font-black mt-1 leading-none">{Utils.formatCurrency(totalIncome)}</p>
+                            <div className="flex items-center mt-3 bg-white/20 w-fit px-2 py-0.5 rounded-full text-[10px] font-bold backdrop-blur-sm">
+                                <TrendingUp size={12} className="mr-1" />
                                 <span>{currentPayments.length} transactions</span>
                             </div>
                         </div>
-                        <div className="h-12 w-12 bg-green-50 text-green-600 rounded-xl flex items-center justify-center">
+                        <div className="h-12 w-12 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/30">
                             <DollarSign size={24} />
                         </div>
                     </div>
                 </Card>
 
-                <Card className="bg-white border-none shadow-sm p-5 border-l-4 border-red-500">
-                    <div className="flex items-center justify-between">
+                <Card className="relative overflow-hidden border-none shadow-md bg-gradient-to-br from-rose-500 to-red-700 text-white p-6">
+                    <div className="absolute top-[-10%] right-[-10%] h-24 w-24 bg-white/10 rounded-full blur-2xl" />
+                    <div className="flex items-center justify-between relative z-10">
                         <div>
-                            <p className="text-gray-500 text-sm font-medium">Total Expenses</p>
-                            <p className="text-2xl font-bold text-gray-900 mt-1">{Utils.formatCurrency(totalExpenses)}</p>
-                            <div className="flex items-center mt-2 text-red-600 text-xs font-medium">
-                                <TrendingDown size={14} className="mr-1" />
+                            <p className="text-rose-50/80 text-xs font-bold uppercase tracking-wider">Total Expenses</p>
+                            <p className="text-3xl font-black mt-1 leading-none">{Utils.formatCurrency(totalExpenses)}</p>
+                            <div className="flex items-center mt-3 bg-white/20 w-fit px-2 py-0.5 rounded-full text-[10px] font-bold backdrop-blur-sm">
+                                <TrendingDown size={12} className="mr-1" />
                                 <span>{currentExpenses.length} records</span>
                             </div>
                         </div>
-                        <div className="h-12 w-12 bg-red-50 text-red-600 rounded-xl flex items-center justify-center">
+                        <div className="h-12 w-12 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/30">
                             <TrendingDown size={24} />
                         </div>
                     </div>
                 </Card>
 
-                <Card className="bg-white border-none shadow-sm p-5 border-l-4 border-brand-500">
-                    <div className="flex items-center justify-between">
+                <Card className="relative overflow-hidden border-none shadow-md bg-gradient-to-br from-brand-600 to-indigo-800 text-white p-6">
+                    <div className="absolute top-[-10%] right-[-10%] h-24 w-24 bg-white/10 rounded-full blur-2xl" />
+                    <div className="flex items-center justify-between relative z-10">
                         <div>
-                            <p className="text-gray-500 text-sm font-medium">Net Balance</p>
-                            <p className={`text-2xl font-bold mt-1 ${netBalance >= 0 ? 'text-brand-700' : 'text-orange-600'}`}>
+                            <p className="text-brand-50/80 text-xs font-bold uppercase tracking-wider">Net Balance</p>
+                            <p className="text-3xl font-black mt-1 leading-none">
                                 {Utils.formatCurrency(netBalance)}
                             </p>
-                            <p className="text-gray-400 text-xs mt-2 uppercase tracking-wider font-semibold">
-                                {netBalance >= 0 ? 'Surplus' : 'Deficit'}
-                            </p>
+                            <div className="flex items-center mt-3 bg-white/20 w-fit px-2 py-0.5 rounded-full text-[10px] font-bold backdrop-blur-sm">
+                                <PieChartIcon size={12} className="mr-1" />
+                                <span>{netBalance >= 0 ? 'SURPLUS' : 'DEFICIT'}</span>
+                            </div>
                         </div>
-                        <div className="h-12 w-12 bg-brand-50 text-brand-600 rounded-xl flex items-center justify-center">
+                        <div className="h-12 w-12 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/30">
                             <PieChartIcon size={24} />
                         </div>
                     </div>
                 </Card>
 
-                <Card className="bg-white border-none shadow-sm p-5 border-l-4 border-amber-500">
-                    <div className="flex items-center justify-between">
+                <Card className="relative overflow-hidden border-none shadow-md bg-gradient-to-br from-amber-400 to-orange-600 text-white p-6">
+                    <div className="absolute top-[-10%] right-[-10%] h-24 w-24 bg-white/10 rounded-full blur-2xl" />
+                    <div className="flex items-center justify-between relative z-10">
                         <div>
-                            <p className="text-gray-500 text-sm font-medium">Outstanding Fees</p>
-                            <p className="text-2xl font-bold text-gray-900 mt-1">{Utils.formatCurrency(totalOutstanding)}</p>
-                            <div className="flex items-center mt-2 text-amber-600 text-xs font-medium">
-                                <AlertTriangle size={14} className="mr-1" />
+                            <p className="text-amber-50/80 text-xs font-bold uppercase tracking-wider">Outstanding Fees</p>
+                            <p className="text-3xl font-black mt-1 leading-none">{Utils.formatCurrency(totalOutstanding)}</p>
+                            <div className="flex items-center mt-3 bg-white/20 w-fit px-2 py-0.5 rounded-full text-[10px] font-bold backdrop-blur-sm">
+                                <AlertTriangle size={12} className="mr-1" />
                                 <span>{debtors.length} students owing</span>
                             </div>
                         </div>
-                        <div className="h-12 w-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center">
+                        <div className="h-12 w-12 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/30">
                             <Users size={24} />
                         </div>
                     </div>

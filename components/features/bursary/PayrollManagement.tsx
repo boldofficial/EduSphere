@@ -6,13 +6,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Users, CreditCard, Banknote, Calendar, CheckCircle, FileText, Settings, PlayCircle } from 'lucide-react';
+import { Users, CreditCard, Banknote, Calendar, CheckCircle, FileText, Settings, PlayCircle, Trash2 } from 'lucide-react';
 
 import * as Utils from '@/lib/utils';
 import * as Types from '@/lib/types';
 import {
     usePayrolls, useGeneratePayroll, useApprovePayroll, useMarkPayrollPaid,
-    useStaff, useUpdateTeacher
+    useStaff, useUpdateTeacher, useAllStaff, useDeletePayroll
 } from '@/lib/hooks/use-data';
 import { SalaryStructureModal } from './SalaryStructureModal';
 import { PayslipView } from './PayslipView';
@@ -25,12 +25,13 @@ export const PayrollManagement: React.FC = () => {
     };
     const [activeTab, setActiveTab] = useState('dashboard');
     const { data: payrolls = [], isLoading: isLoadingPayrolls } = usePayrolls();
-    const { data: staffList = [], isLoading: isLoadingStaff } = useStaff();
+    const { data: staffList = [], isLoading: isLoadingStaff } = useAllStaff();
 
     // Mutations
     const { mutate: generatePayroll, isPending: isGenerating } = useGeneratePayroll();
     const { mutate: approvePayroll, isPending: isApproving } = useApprovePayroll();
     const { mutate: markPaid, isPending: isMarking } = useMarkPayrollPaid();
+    const { mutate: deletePayroll } = useDeletePayroll();
     const { mutate: updateStaff } = useUpdateTeacher();
 
     // State for Modals
@@ -70,6 +71,13 @@ export const PayrollManagement: React.FC = () => {
     const handleMarkPaid = (id: string | number) => {
         markPaid({ id, createExpense: true }, {
             onSuccess: () => toast({ title: 'Paid', description: 'Payroll marked as paid and expense recorded.' })
+        });
+    };
+
+    const handleDelete = (id: string | number) => {
+        if (!confirm('Are you sure you want to delete this payroll run? This cannot be undone.')) return;
+        deletePayroll(id, {
+            onSuccess: () => addToast('Payroll run deleted successfully', 'success')
         });
     };
 
@@ -113,7 +121,7 @@ export const PayrollManagement: React.FC = () => {
                     {/* Active Payrolls */}
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                         {payrolls.map(payroll => (
-                            <Card key={payroll.id}>
+                            <Card key={payroll.id} className="relative group">
                                 <CardHeader className="pb-2">
                                     <div className="flex justify-between items-start">
                                         <CardTitle>{new Date(payroll.month).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</CardTitle>
@@ -127,6 +135,16 @@ export const PayrollManagement: React.FC = () => {
                                     <CardDescription>
                                         {payroll.total_staff} Staff Processed
                                     </CardDescription>
+                                    {payroll.status !== 'paid' && (
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-destructive"
+                                            onClick={() => handleDelete(payroll.id)}
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    )}
                                 </CardHeader>
                                 <CardContent>
                                     <div className="text-2xl font-bold mb-4">{Utils.formatCurrency(payroll.total_wage_bill)}</div>

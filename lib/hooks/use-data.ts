@@ -93,7 +93,7 @@ export {
     useLessons, useCreateLesson,
     useConductEntries, useCreateConductEntry,
     useTeachers, useCreateTeacher, useUpdateTeacher, useDeleteTeacher,
-    useStaff, useCreateStaff, useUpdateStaff, useDeleteStaff,
+    useStaff, useAllStaff, useCreateStaff, useUpdateStaff, useDeleteStaff,
     useSubjects, useCreateSubject,
     useSubjectTeachers, useCreateSubjectTeacher, useDeleteSubjectTeacher,
 } from './use-academic';
@@ -127,5 +127,5 @@ export {
     useSalaryAllowances, useCreateAllowance,
     useSalaryDeductions, useCreateDeduction,
     useStaffSalaryStructure, useUpdateSalaryStructure,
-    usePayrolls, useGeneratePayroll, useApprovePayroll, useMarkPayrollPaid,
+    usePayrolls, useGeneratePayroll, useApprovePayroll, useMarkPayrollPaid, useDeletePayroll
 } from './use-payroll';

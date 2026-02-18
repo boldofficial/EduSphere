@@ -117,7 +117,10 @@ class TeacherViewSet(TenantViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset()
-        # Filter based on endpoint
+        # Filter based on endpoint, unless 'all' is requested
+        if self.request.query_params.get('all') == 'true':
+            return qs
+            
         if 'staff' in self.request.path:
             return qs.filter(staff_type='NON_ACADEMIC')
         return qs.filter(staff_type='ACADEMIC')

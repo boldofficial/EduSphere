@@ -22,7 +22,11 @@ export const StaffView: React.FC<StaffViewProps> = ({ staff, onAdd, onUpdate, on
     const [showPassword, setShowPassword] = useState(false);
     const [isCreatingLogin, setIsCreatingLogin] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
-    const [formData, setFormData] = useState({ name: '', role: '', tasks: '', email: '', phone: '', address: '', assigned_modules: [] as string[], passport_url: null as string | null });
+    const [formData, setFormData] = useState({
+        name: '', role: '', tasks: '', email: '', phone: '', address: '', assigned_modules: [] as string[],
+        passport_url: null as string | null, basic_salary: 0, bank_name: '',
+        account_number: '', account_name: '', pfa_name: '', pfa_number: '', tax_id: ''
+    });
     const { addToast } = useToast();
 
     const availableModules = [
@@ -68,7 +72,12 @@ export const StaffView: React.FC<StaffViewProps> = ({ staff, onAdd, onUpdate, on
         const resetForm = () => {
             setShowModal(false);
             setEditingId(null);
-            setFormData({ name: '', role: '', tasks: '', email: '', phone: '', address: '', assigned_modules: [], passport_url: null });
+            setFormData({
+                name: '', role: '', tasks: '', email: '', phone: '', address: '',
+                assigned_modules: [], passport_url: null, basic_salary: 0,
+                bank_name: '', account_number: '', account_name: '',
+                pfa_name: '', pfa_number: '', tax_id: ''
+            });
             setIsSaving(false);
         };
 
@@ -115,14 +124,26 @@ export const StaffView: React.FC<StaffViewProps> = ({ staff, onAdd, onUpdate, on
             phone: staffMember.phone,
             address: staffMember.address,
             assigned_modules: staffMember.assigned_modules || [],
-            passport_url: staffMember.passport_url || null
+            passport_url: staffMember.passport_url || null,
+            basic_salary: staffMember.basic_salary || 0,
+            bank_name: staffMember.bank_name || '',
+            account_number: staffMember.account_number || '',
+            account_name: staffMember.account_name || '',
+            pfa_name: staffMember.pfa_name || '',
+            pfa_number: staffMember.pfa_number || '',
+            tax_id: staffMember.tax_id || ''
         });
         setEditingId(staffMember.id);
         setShowModal(true);
     };
 
     const handleCreate = () => {
-        setFormData({ name: '', role: '', tasks: '', email: '', phone: '', address: '', assigned_modules: [], passport_url: null });
+        setFormData({
+            name: '', role: '', tasks: '', email: '', phone: '', address: '',
+            assigned_modules: [], passport_url: null, basic_salary: 0,
+            bank_name: '', account_number: '', account_name: '',
+            pfa_name: '', pfa_number: '', tax_id: ''
+        });
         setEditingId(null);
         setShowModal(true);
     };
@@ -265,6 +286,57 @@ export const StaffView: React.FC<StaffViewProps> = ({ staff, onAdd, onUpdate, on
                     <Input label="Assigned Tasks" value={formData.tasks} onChange={e => setFormData({ ...formData, tasks: e.target.value })} />
                     <div className="grid grid-cols-2 gap-4"><Input label="Phone" required value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} /><Input label="Email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} /></div>
                     <Input label="Address" value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} />
+
+                    {/* Financial Information */}
+                    <div className="border-t pt-4 mt-4">
+                        <h4 className="text-sm font-bold text-brand-700 mb-3 uppercase tracking-wider">Payroll & Banking Information</h4>
+                        <div className="grid grid-cols-2 gap-4">
+                            <Input
+                                label="Basic Salary (Monthly)"
+                                type="number"
+                                required
+                                value={formData.basic_salary}
+                                onChange={e => setFormData({ ...formData, basic_salary: e.target.value })}
+                            />
+                            <Input
+                                label="Bank Name"
+                                value={formData.bank_name}
+                                onChange={e => setFormData({ ...formData, bank_name: e.target.value })}
+                            />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4 mt-4">
+                            <Input
+                                label="Account Number"
+                                value={formData.account_number}
+                                onChange={e => setFormData({ ...formData, account_number: e.target.value })}
+                            />
+                            <Input
+                                label="Account Name"
+                                value={formData.account_name}
+                                onChange={e => setFormData({ ...formData, account_name: e.target.value })}
+                            />
+                        </div>
+                        <div className="grid grid-cols-3 gap-2 mt-4">
+                            <Input
+                                label="PFA Name"
+                                value={formData.pfa_name}
+                                onChange={e => setFormData({ ...formData, pfa_name: e.target.value })}
+                                className="text-xs"
+                            />
+                            <Input
+                                label="PFA Number"
+                                value={formData.pfa_number}
+                                onChange={e => setFormData({ ...formData, pfa_number: e.target.value })}
+                                className="text-xs"
+                            />
+                            <Input
+                                label="Tax ID"
+                                value={formData.tax_id}
+                                onChange={e => setFormData({ ...formData, tax_id: e.target.value })}
+                                className="text-xs"
+                            />
+                        </div>
+                    </div>
                     <Button type="submit" className="w-full" disabled={isSaving}>
                         {isSaving ? 'Saving...' : (editingId ? 'Update Staff Member' : 'Save Staff Member')}
                     </Button>

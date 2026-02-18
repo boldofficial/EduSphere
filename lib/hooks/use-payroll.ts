@@ -113,3 +113,11 @@ export function useMarkPayrollPaid() {
         }
     });
 }
+
+export function useDeletePayroll() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (id: string | number) => apiClient.delete(`payrolls/${id}/`),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: payrollKeys.payrolls() })
+    });
+}

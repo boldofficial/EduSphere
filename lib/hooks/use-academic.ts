@@ -261,6 +261,13 @@ export function useStaff() {
     });
 }
 
+export function useAllStaff() {
+    return useQuery({
+        queryKey: ['all_staff'],
+        queryFn: () => fetchAll<Types.Teacher | Types.Staff>('teachers/?all=true'),
+    });
+}
+
 export function useCreateStaff() {
     const queryClient = useQueryClient();
     return useMutation({

@@ -26,7 +26,9 @@ export const TeachersView: React.FC<TeachersViewProps> = ({ teachers, onAdd, onU
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [editingId, setEditingId] = useState<string | number | null>(null);
     const [formData, setFormData] = useState<Partial<Types.Teacher>>({
-        name: '', email: '', phone: '', address: '', passport_url: null
+        name: '', email: '', phone: '', address: '', passport_url: null,
+        basic_salary: 0, bank_name: '', account_number: '', account_name: '',
+        pfa_name: '', pfa_number: '', tax_id: ''
     });
     const { addToast } = useToast();
 
@@ -37,7 +39,11 @@ export const TeachersView: React.FC<TeachersViewProps> = ({ teachers, onAdd, onU
     };
 
     const handleCreate = () => {
-        setFormData({ name: '', email: '', phone: '', address: '', passport_url: null });
+        setFormData({
+            name: '', email: '', phone: '', address: '', passport_url: null,
+            basic_salary: 0, bank_name: '', account_number: '', account_name: '',
+            pfa_name: '', pfa_number: '', tax_id: ''
+        });
         setEditingId(null);
         setShowModal(true);
     };
@@ -96,7 +102,11 @@ export const TeachersView: React.FC<TeachersViewProps> = ({ teachers, onAdd, onU
             addToast(editingId ? 'Teacher updated successfully' : 'Teacher added successfully', 'success');
             setIsSubmitting(false);
             setShowModal(false);
-            setFormData({ name: '', email: '', phone: '', address: '', passport_url: null });
+            setFormData({
+                name: '', email: '', phone: '', address: '', passport_url: null,
+                basic_salary: 0, bank_name: '', account_number: '', account_name: '',
+                pfa_name: '', pfa_number: '', tax_id: ''
+            });
             setEditingId(null);
         };
 
@@ -213,6 +223,57 @@ export const TeachersView: React.FC<TeachersViewProps> = ({ teachers, onAdd, onU
                         value={formData.address}
                         onChange={e => setFormData({ ...formData, address: e.target.value })}
                     />
+
+                    {/* Financial Information */}
+                    <div className="border-t pt-4 mt-4">
+                        <h4 className="text-sm font-bold text-brand-700 mb-3 uppercase tracking-wider">Payroll & Banking Information</h4>
+                        <div className="grid grid-cols-2 gap-4">
+                            <Input
+                                label="Basic Salary (Monthly)"
+                                type="number"
+                                required
+                                value={formData.basic_salary}
+                                onChange={e => setFormData({ ...formData, basic_salary: e.target.value })}
+                            />
+                            <Input
+                                label="Bank Name"
+                                value={formData.bank_name}
+                                onChange={e => setFormData({ ...formData, bank_name: e.target.value })}
+                            />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4 mt-4">
+                            <Input
+                                label="Account Number"
+                                value={formData.account_number}
+                                onChange={e => setFormData({ ...formData, account_number: e.target.value })}
+                            />
+                            <Input
+                                label="Account Name"
+                                value={formData.account_name}
+                                onChange={e => setFormData({ ...formData, account_name: e.target.value })}
+                            />
+                        </div>
+                        <div className="grid grid-cols-3 gap-2 mt-4">
+                            <Input
+                                label="PFA Name"
+                                value={formData.pfa_name}
+                                onChange={e => setFormData({ ...formData, pfa_name: e.target.value })}
+                                className="text-xs"
+                            />
+                            <Input
+                                label="PFA Number"
+                                value={formData.pfa_number}
+                                onChange={e => setFormData({ ...formData, pfa_number: e.target.value })}
+                                className="text-xs"
+                            />
+                            <Input
+                                label="Tax ID"
+                                value={formData.tax_id}
+                                onChange={e => setFormData({ ...formData, tax_id: e.target.value })}
+                                className="text-xs"
+                            />
+                        </div>
+                    </div>
                     <Button type="submit" className="w-full" disabled={isSubmitting}>
                         {isSubmitting ? 'Processing...' : (editingId ? 'Update Teacher' : 'Save Teacher')}
                     </Button>
