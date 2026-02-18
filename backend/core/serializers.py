@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import SchoolMessage, GlobalActivityLog, PlatformAnnouncement, Notification
+from .models import SchoolMessage, GlobalActivityLog, PlatformAnnouncement, Notification, SchoolAnnouncement, Newsletter
 
 class SchoolMessageSerializer(serializers.ModelSerializer):
     sender_name = serializers.CharField(source='sender.username', read_only=True)
@@ -34,3 +34,17 @@ class NotificationSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'message', 'category', 'link', 'is_read', 'created_at']
         read_only_fields = ['created_at']
 
+
+class SchoolAnnouncementSerializer(serializers.ModelSerializer):
+    author_name = serializers.CharField(source='author.username', read_only=True)
+
+    class Meta:
+        model = SchoolAnnouncement
+        fields = '__all__'
+        read_only_fields = ['school', 'author', 'created_at', 'updated_at']
+
+class NewsletterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Newsletter
+        fields = '__all__'
+        read_only_fields = ['school', 'created_at', 'updated_at']

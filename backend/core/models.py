@@ -114,3 +114,73 @@ class Notification(models.Model):
     def __str__(self):
         return f"[{self.category}] {self.title} → {self.user.username}"
 
+
+class SchoolAnnouncement(models.Model):
+    """School-specific announcements"""
+    PRIORITY_CHOICES = (
+        ('low', 'Low'),
+        ('normal', 'Normal'),
+        ('important', 'Important'),
+        ('urgent', 'Urgent'),
+    )
+    TARGET_CHOICES = (
+        ('all', 'Everyone'),
+        ('class', 'Specific Class'),
+        ('parents', 'Parents Only'),
+        ('teachers', 'Teachers Only'),
+        ('staff', 'Staff Only'),
+    )
+
+    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='school_announcements')
+    title = models.CharField(max_length=255)
+    content = models.TextField()
+    priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='normal')
+    target = models.CharField(max_length=20, choices=TARGET_CHOICES, default='all')
+    class_id = models.CharField(max_length=100, blank=True, null=True, help_text="Specific class ID if target is 'class'")
+    
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='authored_announcements')
+    author_role = models.CharField(max_length=50, blank=True)
+    
+    is_pinned = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-is_pinned', '-created_at']
+        indexes = [
+            models.Index(fields=['school', 'is_active']),
+            models.Index(fields=['target', 'class_id']),
+        ]
+
+    def __str__(self):
+        return f"[{self.school.name}] {self.title}"
+
+class Newsletter(models.Model):
+    """School newsletters (PDF uploads)"""
+    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='newsletters')
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    file_data = models.TextField(help_text="Base64 encoded PDF or URL")
+    file_name = models.CharField(max_length=255, default='newsletter.pdf')
+    
+    session = models.CharField(max_length=50)
+    term = models.CharField(max_length=50)
+    
+    published_by = models.CharField(max_length=100, blank=True)
+    is_published = models.BooleanField(default=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['school', 'is_published']),
+            models.Index(fields=['session', 'term']),
+        ]
+
+    def __str__(self):
+        return f"[{self.school.name}] {self.title} - {self.term} {self.session}"

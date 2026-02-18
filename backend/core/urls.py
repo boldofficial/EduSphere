@@ -1,10 +1,15 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import FileUploadView, SettingsView, PublicStatsView, SchoolMessageViewSet, NotificationViewSet
+from .views import (
+    FileUploadView, SettingsView, PublicStatsView, SchoolMessageViewSet, 
+    NotificationViewSet, SchoolAnnouncementViewSet, NewsletterViewSet
+)
 
 router = DefaultRouter()
 router.register(r'messages', SchoolMessageViewSet, basename='message')
 router.register(r'notifications', NotificationViewSet, basename='notification')
+router.register(r'announcements', SchoolAnnouncementViewSet, basename='announcement')
+router.register(r'newsletters', NewsletterViewSet, basename='newsletter')
 
 urlpatterns = [
     path('settings/', SettingsView.as_view(), name='settings'),

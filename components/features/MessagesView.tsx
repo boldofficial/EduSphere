@@ -182,8 +182,9 @@ export const MessagesView: React.FC = () => {
             return;
         }
 
-        const recipient = allRecipients.find(r => r.id === selectedRecipient);
-        if (!recipient) {
+        const selectedRec = allRecipients.find(r => String(r.id) === String(selectedRecipient));
+        if (!selectedRec) {
+            console.error('Recipient not found:', selectedRecipient, 'in', allRecipients);
             addToast('Invalid recipient', 'error');
             return;
         }

@@ -13,11 +13,11 @@ from django.utils import timezone
 from django.db.models import Q
 import uuid
 import os
-from .models import GlobalActivityLog, SchoolMessage, PlatformAnnouncement, Notification
+from .models import GlobalActivityLog, SchoolMessage, PlatformAnnouncement, Notification, SchoolAnnouncement, Newsletter
 # from emails.models import EmailTemplate
 from .serializers import (
     GlobalActivityLogSerializer, SchoolMessageSerializer, PlatformAnnouncementSerializer,
-    NotificationSerializer
+    NotificationSerializer, SchoolAnnouncementSerializer, NewsletterSerializer
 )
 from emails.utils import send_template_email
 from .pagination import StandardPagination
@@ -411,3 +411,48 @@ class NotificationViewSet(viewsets.ModelViewSet):
         count = Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
         return Response({"marked_read": count})
 
+
+class SchoolAnnouncementViewSet(CachingMixin, viewsets.ModelViewSet):
+    """School-specific announcements"""
+    permission_classes = [IsAuthenticated]
+    serializer_class = SchoolAnnouncementSerializer
+    pagination_class = StandardPagination
+    cache_timeout = 300 # 5 minutes
+
+    def get_queryset(self):
+        user = self.request.user
+        if not user.is_authenticated or not hasattr(user, 'school'):
+            return SchoolAnnouncement.objects.none()
+        
+        return SchoolAnnouncement.objects.filter(
+            school=user.school,
+            is_active=True
+        ).select_related('author', 'school')
+
+    def perform_create(self, serializer):
+        if hasattr(self.request.user, 'school') and self.request.user.school:
+            serializer.save(
+                author=self.request.user, 
+                school=self.request.user.school,
+                author_role=self.request.user.role
+            )
+
+class NewsletterViewSet(CachingMixin, viewsets.ModelViewSet):
+    """School newsletters"""
+    permission_classes = [IsAuthenticated]
+    serializer_class = NewsletterSerializer
+    pagination_class = StandardPagination
+    
+    def get_queryset(self):
+        user = self.request.user
+        if not user.is_authenticated or not hasattr(user, 'school'):
+            return Newsletter.objects.none()
+            
+        return Newsletter.objects.filter(
+            school=user.school,
+            is_published=True
+        ).select_related('school')
+
+    def perform_create(self, serializer):
+        if hasattr(self.request.user, 'school') and self.request.user.school:
+            serializer.save(school=self.request.user.school)
