@@ -214,6 +214,84 @@ export const DashboardPlatformSettingsTab: React.FC<PlatformSettingsTabProps> = 
                     </div>
                 </div>
 
+                <div className="p-6 bg-gradient-to-br from-purple-900 to-indigo-900 text-white rounded-2xl space-y-4">
+                    <h4 className="font-bold border-b border-white/10 pb-2 flex items-center gap-2">
+                        <span className="text-lg">✨</span> AI Provider Configuration
+                    </h4>
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-[10px] uppercase opacity-60 font-black mb-1">AI Provider</label>
+                            <select
+                                value={editedPlatformSettings?.ai_provider || 'gemini'}
+                                onChange={(e) => setEditedPlatformSettings({ ...editedPlatformSettings, ai_provider: e.target.value })}
+                                className="w-full bg-white/10 border-0 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-white text-white"
+                            >
+                                <option value="gemini" className="text-gray-900">Google Gemini</option>
+                                <option value="openrouter" className="text-gray-900">OpenRouter (Multi-Model)</option>
+                            </select>
+                        </div>
+
+                        {(editedPlatformSettings?.ai_provider || 'gemini') === 'gemini' && (
+                            <div>
+                                <label className="block text-[10px] uppercase opacity-60 font-black mb-1">Gemini API Key</label>
+                                <input
+                                    type="password"
+                                    value={editedPlatformSettings?.gemini_api_key || ''}
+                                    onChange={(e) => setEditedPlatformSettings({ ...editedPlatformSettings, gemini_api_key: e.target.value })}
+                                    className="w-full bg-white/10 border-0 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-white font-mono"
+                                    placeholder="AIzaSy..."
+                                />
+                                <p className="text-[10px] mt-1 opacity-40">Get from: console.cloud.google.com → API Keys</p>
+                            </div>
+                        )}
+
+                        {editedPlatformSettings?.ai_provider === 'openrouter' && (
+                            <>
+                                <div>
+                                    <label className="block text-[10px] uppercase opacity-60 font-black mb-1">OpenRouter API Key</label>
+                                    <input
+                                        type="password"
+                                        value={editedPlatformSettings?.openrouter_api_key || ''}
+                                        onChange={(e) => setEditedPlatformSettings({ ...editedPlatformSettings, openrouter_api_key: e.target.value })}
+                                        className="w-full bg-white/10 border-0 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-white font-mono"
+                                        placeholder="sk-or-..."
+                                    />
+                                    <p className="text-[10px] mt-1 opacity-40">Get from: openrouter.ai/keys</p>
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] uppercase opacity-60 font-black mb-1">Model</label>
+                                    <select
+                                        value={editedPlatformSettings?.openrouter_model || 'google/gemini-2.0-flash-001'}
+                                        onChange={(e) => setEditedPlatformSettings({ ...editedPlatformSettings, openrouter_model: e.target.value })}
+                                        className="w-full bg-white/10 border-0 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-white text-white"
+                                    >
+                                        <option value="google/gemini-2.0-flash-001" className="text-gray-900">Gemini 2.0 Flash (Free)</option>
+                                        <option value="google/gemini-2.5-pro-preview" className="text-gray-900">Gemini 2.5 Pro (Paid)</option>
+                                        <option value="anthropic/claude-3.5-sonnet" className="text-gray-900">Claude 3.5 Sonnet (Paid)</option>
+                                        <option value="openai/gpt-4o" className="text-gray-900">GPT-4o (Paid)</option>
+                                        <option value="openai/gpt-4o-mini" className="text-gray-900">GPT-4o Mini (Budget)</option>
+                                        <option value="meta-llama/llama-3.1-70b-instruct" className="text-gray-900">Llama 3.1 70B (Free)</option>
+                                        <option value="mistralai/mistral-large" className="text-gray-900">Mistral Large (Paid)</option>
+                                        <option value="deepseek/deepseek-chat-v3-0324" className="text-gray-900">DeepSeek V3 (Budget)</option>
+                                    </select>
+                                </div>
+                            </>
+                        )}
+
+                        <div className="flex items-center gap-2 pt-2 border-t border-white/10">
+                            <span className={`h-2 w-2 rounded-full ${(editedPlatformSettings?.ai_provider === 'openrouter' && editedPlatformSettings?.openrouter_api_key) ||
+                                    (editedPlatformSettings?.ai_provider !== 'openrouter' && editedPlatformSettings?.gemini_api_key)
+                                    ? 'bg-green-400 animate-pulse' : 'bg-red-400'
+                                }`} />
+                            <span className="text-xs opacity-60">
+                                {(editedPlatformSettings?.ai_provider === 'openrouter' && editedPlatformSettings?.openrouter_api_key) ||
+                                    (editedPlatformSettings?.ai_provider !== 'openrouter' && editedPlatformSettings?.gemini_api_key)
+                                    ? 'API key configured' : 'No API key set — AI features disabled'}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
                 <div className="pt-4 flex justify-end">
                     <Button onClick={handleSavePlatformSettings} className="gap-2">
                         <Save size={18} /> Save Global Settings

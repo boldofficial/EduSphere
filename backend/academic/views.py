@@ -345,6 +345,30 @@ class ReportCardViewSet(TenantViewSet):
                 
         return Response({"suggestion": remark, "data": performance_data})
 
+    @action(detail=False, methods=['post'], url_path='recalculate-positions')
+    def recalculate_positions(self, request):
+        """
+        Recalculate class positions for all students in a given class/session/term.
+        Body: { "class_id": "...", "session": "...", "term": "..." }
+        """
+        class_id = request.data.get('class_id')
+        session = request.data.get('session')
+        term = request.data.get('term')
+        school = getattr(request.user, 'school', None) or getattr(request, 'tenant', None)
+
+        if not all([class_id, session, term, school]):
+            return Response({"error": "class_id, session, and term are required"}, status=400)
+
+        try:
+            student_class = Class.objects.get(id=class_id, school=school)
+        except Class.DoesNotExist:
+            return Response({"error": "Class not found"}, status=404)
+
+        ReportCard.calculate_positions(school, student_class, session, term)
+        count = ReportCard.objects.filter(school=school, student_class=student_class, session=session, term=term).count()
+        return Response({"success": True, "message": f"Positions recalculated for {count} students"})
+
+
 class AIInsightsView(APIView):
     """
     Term-wide insights for admins based on all student data.

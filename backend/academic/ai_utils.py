@@ -1,17 +1,78 @@
 import google.generativeai as genai
 import os
 import logging
+import json
+import requests
 
 logger = logging.getLogger(__name__)
 
+
+def _get_ai_config():
+    """Read AI provider config from PlatformSettings, with env fallback."""
+    try:
+        from schools.models import PlatformSettings
+        settings = PlatformSettings.objects.filter(id=1).first()
+        if settings:
+            return {
+                'provider': settings.ai_provider or 'gemini',
+                'gemini_key': settings.gemini_api_key or os.environ.get('GEMINI_API_KEY', ''),
+                'openrouter_key': settings.openrouter_api_key or '',
+                'openrouter_model': settings.openrouter_model or 'google/gemini-2.0-flash-001',
+            }
+    except Exception:
+        pass
+    # Fallback to env
+    return {
+        'provider': 'gemini',
+        'gemini_key': os.environ.get('GEMINI_API_KEY', ''),
+        'openrouter_key': '',
+        'openrouter_model': 'google/gemini-2.0-flash-001',
+    }
+
+
 class AcademicAI:
     def __init__(self):
-        self.api_key = os.environ.get('GEMINI_API_KEY')
-        if self.api_key:
-            genai.configure(api_key=self.api_key)
+        config = _get_ai_config()
+        self.provider = config['provider']
+        self.model = None
+
+        if self.provider == 'openrouter' and config['openrouter_key']:
+            self.openrouter_key = config['openrouter_key']
+            self.openrouter_model = config['openrouter_model']
+            self.model = 'openrouter'  # Sentinel to indicate a valid provider is configured
+        elif config['gemini_key']:
+            genai.configure(api_key=config['gemini_key'])
             self.model = genai.GenerativeModel('gemini-1.5-flash')
+            self.provider = 'gemini'
         else:
             self.model = None
+
+    def _generate(self, prompt):
+        """Unified generation method — routes to Gemini SDK or OpenRouter HTTP."""
+        if self.provider == 'openrouter':
+            return self._openrouter_generate(prompt)
+        elif self.model and self.provider == 'gemini':
+            response = self.model.generate_content(prompt)
+            return response.text.strip()
+        return None
+
+    def _openrouter_generate(self, prompt):
+        """Call OpenRouter API (OpenAI-compatible)."""
+        headers = {
+            'Authorization': f'Bearer {self.openrouter_key}',
+            'Content-Type': 'application/json',
+            'HTTP-Referer': 'https://myregistra.net',
+            'X-Title': 'EduSphere AI',
+        }
+        payload = {
+            'model': self.openrouter_model,
+            'messages': [{'role': 'user', 'content': prompt}],
+            'max_tokens': 4096,
+        }
+        resp = requests.post('https://openrouter.ai/api/v1/chat/completions', headers=headers, json=payload, timeout=60)
+        resp.raise_for_status()
+        data = resp.json()
+        return data['choices'][0]['message']['content'].strip()
 
     def generate_student_remark(self, student_data):
         """
@@ -46,10 +107,9 @@ class AcademicAI:
         """
         
         try:
-            response = self.model.generate_content(prompt)
-            return response.text.strip()
+            return self._generate(prompt)
         except Exception as e:
-            logger.error(f"Gemini Remark Generation Error: {str(e)}")
+            logger.error(f"AI Remark Generation Error: {str(e)}")
             return None
 
     def generate_executive_insights(self, school_summary):
@@ -85,10 +145,9 @@ class AcademicAI:
         """
         
         try:
-            response = self.model.generate_content(prompt)
-            return response.text.strip()
+            return self._generate(prompt)
         except Exception as e:
-            logger.error(f"Gemini Executive Insights Error: {str(e)}")
+            logger.error(f"AI Executive Insights Error: {str(e)}")
             return None
 
     def evaluate_submission(self, data):
@@ -128,12 +187,13 @@ class AcademicAI:
         """
         
         try:
-            response = self.model.generate_content(prompt)
-            text = response.text.replace('```json', '').replace('```', '').strip()
-            import json
+            text = self._generate(prompt)
+            if not text:
+                return None
+            text = text.replace('```json', '').replace('```', '').strip()
             return json.loads(text)
         except Exception as e:
-            logger.error(f"Gemini Evaluation Error: {str(e)}")
+            logger.error(f"AI Evaluation Error: {str(e)}")
             return None
 
     def predict_student_performance(self, student_data):
@@ -185,12 +245,13 @@ class AcademicAI:
         """
         
         try:
-            response = self.model.generate_content(prompt)
-            text = response.text.replace('```json', '').replace('```', '').strip()
-            import json
+            text = self._generate(prompt)
+            if not text:
+                return None
+            text = text.replace('```json', '').replace('```', '').strip()
             return json.loads(text)
         except Exception as e:
-            logger.error(f"Gemini Prediction Error: {str(e)}")
+            logger.error(f"AI Prediction Error: {str(e)}")
             return None
 
     def generate_lesson_plan(self, plan_data):
@@ -255,12 +316,13 @@ class AcademicAI:
         """
         
         try:
-            response = self.model.generate_content(prompt)
-            text = response.text.replace('```json', '').replace('```', '').strip()
-            import json
+            text = self._generate(prompt)
+            if not text:
+                return None
+            text = text.replace('```json', '').replace('```', '').strip()
             return json.loads(text)
         except Exception as e:
-            logger.error(f"Gemini Lesson Plan Error: {str(e)}")
+            logger.error(f"AI Lesson Plan Error: {str(e)}")
             return None
 
     def generate_timetable(self, school_data):
@@ -308,11 +370,118 @@ class AcademicAI:
         """
         
         try:
-            response = self.model.generate_content(prompt)
-            # Remove markdown code blocks if any
-            text = response.text.replace('```json', '').replace('```', '').strip()
-            import json
+            text = self._generate(prompt)
+            if not text:
+                return None
+            text = text.replace('```json', '').replace('```', '').strip()
             return json.loads(text)
         except Exception as e:
-            logger.error(f"Gemini Timetable Generation Error: {str(e)}")
+            logger.error(f"AI Timetable Generation Error: {str(e)}")
             return None
+
+    def generate_quiz_from_content(self, content_text, subject_name, num_questions=5, difficulty='medium'):
+        """
+        Generates MCQ quiz questions from lesson content.
+        Returns a list of question dicts with options.
+        """
+        if not self.model:
+            return None
+
+        prompt = f"""
+        You are an expert quiz creator for a school.
+        Generate {num_questions} Multiple Choice Questions from the following lesson content.
+        Subject: {subject_name}
+        Difficulty: {difficulty}
+
+        LESSON CONTENT:
+        {content_text[:3000]}
+
+        OUTPUT FORMAT: Return ONLY a JSON list:
+        [
+          {{
+            "text": "Question text here?",
+            "options": [
+              {{"text": "Option A", "is_correct": true}},
+              {{"text": "Option B", "is_correct": false}},
+              {{"text": "Option C", "is_correct": false}},
+              {{"text": "Option D", "is_correct": false}}
+            ],
+            "points": 1
+          }}
+        ]
+        Ensure exactly one correct answer per question. Make options plausible.
+        """
+
+        try:
+            text = self._generate(prompt)
+            if not text:
+                return None
+            text = text.replace('```json', '').replace('```', '').strip()
+            return json.loads(text)
+        except Exception as e:
+            logger.error(f"AI Quiz Generation Error: {str(e)}")
+            return None
+
+    def draft_professional_message(self, context, tone='formal', topic='general'):
+        """
+        Drafts a professional school message/announcement.
+        context: { "school_name": str, "recipient_type": str, "topic": str, "key_points": str }
+        """
+        if not self.model:
+            return None
+
+        prompt = f"""
+        You are a professional school communications officer.
+        Draft a {tone} message for a school.
+
+        School: {context.get('school_name', 'Our School')}
+        Recipient: {context.get('recipient_type', 'Parents')}
+        Topic: {context.get('topic', topic)}
+        Key Points: {context.get('key_points', 'N/A')}
+
+        Write a clear, professional message. Include a greeting and sign-off.
+        Return ONLY the message body text (no JSON wrapper).
+        """
+
+        try:
+            return self._generate(prompt)
+        except Exception as e:
+            logger.error(f"AI Message Draft Error: {str(e)}")
+            return None
+
+    def synthesize_newsletter(self, school_data):
+        """
+        Generates a newsletter summary from school activity data.
+        school_data: { "school_name": str, "period": str, "events": list, "achievements": list, "stats": dict }
+        """
+        if not self.model:
+            return None
+
+        school_name = school_data.get('school_name', 'Our School')
+        period = school_data.get('period', 'This Month')
+        events = school_data.get('events', [])
+        achievements = school_data.get('achievements', [])
+        stats = school_data.get('stats', {})
+
+        prompt = f"""
+        You are a school newsletter editor.
+        Create a professional newsletter summary for:
+
+        School: {school_name}
+        Period: {period}
+        
+        Recent Events: {events}
+        Student Achievements: {achievements}
+        Key Statistics: {stats}
+
+        Write an engaging 3-4 paragraph newsletter.
+        Include sections: Highlights, Academic Update, Upcoming Events.
+        Return ONLY the newsletter text (no JSON wrapper).
+        """
+
+        try:
+            return self._generate(prompt)
+        except Exception as e:
+            logger.error(f"AI Newsletter Error: {str(e)}")
+            raise
+

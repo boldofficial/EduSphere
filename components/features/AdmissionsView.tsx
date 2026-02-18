@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { FileText, CheckCircle, XCircle, Clock, Eye, User, Mail, Phone, MapPin, Calendar, GraduationCap, Search, Filter } from 'lucide-react';
+import { FileText, CheckCircle, XCircle, Clock, Eye, User, Mail, Phone, MapPin, Calendar, GraduationCap, Search, Filter, LayoutGrid, List } from 'lucide-react';
 import * as Types from '@/lib/types';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,6 +22,7 @@ export const AdmissionsView: React.FC<AdmissionsViewProps> = ({ admissions, inta
     const [isConverting, setIsConverting] = useState(false);
     const [conversionData, setConversionData] = useState({ student_no: '', class_id: '', password: 'merit_student_2025' });
     const { addToast } = useToast();
+    const [viewMode, setViewMode] = useState<'list' | 'kanban'>('kanban');
 
     const filteredAdmissions = admissions.filter(a => {
         const matchesStatus = filterStatus === 'all' || a.status === filterStatus;
@@ -98,25 +99,39 @@ export const AdmissionsView: React.FC<AdmissionsViewProps> = ({ admissions, inta
                     <h1 className="text-2xl font-bold text-gray-900">Admissions</h1>
                     <p className="text-gray-500">Review and process admission applications</p>
                 </div>
+                <div className="flex items-center gap-2">
+                    <div className="flex bg-gray-100 p-1 rounded-lg">
+                        <button onClick={() => setViewMode('kanban')} className={`px-3 py-1.5 text-xs font-medium rounded-md flex items-center gap-1.5 transition-colors ${viewMode === 'kanban' ? 'bg-white shadow text-brand-700' : 'text-gray-500'}`}>
+                            <LayoutGrid className="h-3.5 w-3.5" /> Pipeline
+                        </button>
+                        <button onClick={() => setViewMode('list')} className={`px-3 py-1.5 text-xs font-medium rounded-md flex items-center gap-1.5 transition-colors ${viewMode === 'list' ? 'bg-white shadow text-brand-700' : 'text-gray-500'}`}>
+                            <List className="h-3.5 w-3.5" /> List
+                        </button>
+                    </div>
+                </div>
             </div>
 
             {/* Stats Row */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-                    <p className="text-xs text-gray-500 font-medium uppercase">Total</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+                <div className="relative overflow-hidden bg-gradient-to-br from-brand-500 to-brand-700 p-4 rounded-xl shadow-lg text-white">
+                    <div className="absolute -top-4 -right-4 h-16 w-16 bg-white/10 rounded-full" />
+                    <p className="text-xs font-medium uppercase opacity-80">Total</p>
+                    <p className="text-3xl font-bold mt-1">{stats.total}</p>
                 </div>
-                <div className="bg-yellow-50 p-4 rounded-xl border border-yellow-100">
-                    <p className="text-xs text-yellow-600 font-medium uppercase">Pending</p>
-                    <p className="text-2xl font-bold text-yellow-700">{stats.pending}</p>
+                <div className="relative overflow-hidden bg-gradient-to-br from-amber-400 to-yellow-600 p-4 rounded-xl shadow-lg text-white">
+                    <div className="absolute -top-4 -right-4 h-16 w-16 bg-white/10 rounded-full" />
+                    <p className="text-xs font-medium uppercase opacity-80">Pending</p>
+                    <p className="text-3xl font-bold mt-1">{stats.pending}</p>
                 </div>
-                <div className="bg-green-50 p-4 rounded-xl border border-green-100">
-                    <p className="text-xs text-green-600 font-medium uppercase">Accepted</p>
-                    <p className="text-2xl font-bold text-green-700">{stats.accepted}</p>
+                <div className="relative overflow-hidden bg-gradient-to-br from-emerald-400 to-green-600 p-4 rounded-xl shadow-lg text-white">
+                    <div className="absolute -top-4 -right-4 h-16 w-16 bg-white/10 rounded-full" />
+                    <p className="text-xs font-medium uppercase opacity-80">Accepted</p>
+                    <p className="text-3xl font-bold mt-1">{stats.accepted}</p>
                 </div>
-                <div className="bg-red-50 p-4 rounded-xl border border-red-100">
-                    <p className="text-xs text-red-600 font-medium uppercase">Rejected</p>
-                    <p className="text-2xl font-bold text-red-700">{stats.rejected}</p>
+                <div className="relative overflow-hidden bg-gradient-to-br from-rose-400 to-red-600 p-4 rounded-xl shadow-lg text-white">
+                    <div className="absolute -top-4 -right-4 h-16 w-16 bg-white/10 rounded-full" />
+                    <p className="text-xs font-medium uppercase opacity-80">Rejected</p>
+                    <p className="text-3xl font-bold mt-1">{stats.rejected}</p>
                 </div>
             </div>
 
@@ -144,8 +159,54 @@ export const AdmissionsView: React.FC<AdmissionsViewProps> = ({ admissions, inta
                 </div>
             </div>
 
+            {/* Kanban Board */}
+            {viewMode === 'kanban' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {(['pending', 'reviewed', 'accepted', 'rejected'] as const).map(status => {
+                        const columnItems = admissions.filter(a => a.status === status);
+                        const columnColors = {
+                            pending: { bg: 'bg-yellow-50', border: 'border-yellow-200', header: 'text-yellow-700', dot: 'bg-yellow-400' },
+                            reviewed: { bg: 'bg-blue-50', border: 'border-blue-200', header: 'text-blue-700', dot: 'bg-blue-400' },
+                            accepted: { bg: 'bg-green-50', border: 'border-green-200', header: 'text-green-700', dot: 'bg-green-400' },
+                            rejected: { bg: 'bg-red-50', border: 'border-red-200', header: 'text-red-700', dot: 'bg-red-400' },
+                        };
+                        const colors = columnColors[status];
+                        return (
+                            <div key={status} className={`${colors.bg} rounded-xl border ${colors.border} p-3 min-h-[300px]`}>
+                                <div className="flex items-center justify-between mb-3">
+                                    <div className="flex items-center gap-2">
+                                        <span className={`h-2.5 w-2.5 rounded-full ${colors.dot}`} />
+                                        <h3 className={`font-bold text-sm uppercase tracking-wide ${colors.header}`}>{status}</h3>
+                                    </div>
+                                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${colors.bg} ${colors.header}`}>{columnItems.length}</span>
+                                </div>
+                                <div className="space-y-2">
+                                    {columnItems.map(a => (
+                                        <div
+                                            key={a.id}
+                                            onClick={() => setSelectedAdmission(a)}
+                                            className="bg-white rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-gray-100"
+                                        >
+                                            <p className="font-semibold text-gray-900 text-sm truncate">{a.child_name}</p>
+                                            <p className="text-xs text-gray-500 mt-0.5">{a.parent_name}</p>
+                                            <div className="flex items-center justify-between mt-2">
+                                                {getProgramBadge(a.program)}
+                                                <span className="text-[10px] text-gray-400">{new Date(a.created_at).toLocaleDateString()}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {columnItems.length === 0 && (
+                                        <p className="text-xs text-gray-400 italic text-center py-4">No applications</p>
+                                    )}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
+
             {/* Applications List */}
-            {filteredAdmissions.length === 0 ? (
+            {viewMode === 'list' && filteredAdmissions.length === 0 ? (
                 <Card>
                     <div className="text-center py-12">
                         <FileText size={48} className="text-gray-300 mx-auto mb-4" />
@@ -153,7 +214,7 @@ export const AdmissionsView: React.FC<AdmissionsViewProps> = ({ admissions, inta
                         <p className="text-gray-400 text-sm">Applications submitted through the website will appear here.</p>
                     </div>
                 </Card>
-            ) : (
+            ) : viewMode === 'list' ? (
                 <div className="grid gap-4">
                     {filteredAdmissions.map(admission => (
                         <Card key={admission.id} className="hover:shadow-md transition-shadow cursor-pointer">
@@ -182,7 +243,7 @@ export const AdmissionsView: React.FC<AdmissionsViewProps> = ({ admissions, inta
                         </Card>
                     ))}
                 </div>
-            )}
+            ) : null}
 
             {/* Detail Modal */}
             {selectedAdmission && (

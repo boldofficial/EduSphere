@@ -77,6 +77,79 @@ class QuizViewSet(LearningTenantViewSet):
     queryset = Quiz.objects.select_related('student_class', 'subject', 'teacher', 'school').all()
     serializer_class = QuizSerializer
 
+    @action(detail=False, methods=['post'], url_path='generate-from-lesson')
+    def generate_from_lesson(self, request):
+        """
+        AI-powered quiz generation from lesson content.
+        Body: { "lesson_id": "...", "num_questions": 5, "difficulty": "medium" }
+        """
+        from academic.models import Lesson
+        lesson_id = request.data.get('lesson_id')
+        num_questions = request.data.get('num_questions', 5)
+        difficulty = request.data.get('difficulty', 'medium')
+
+        if not lesson_id:
+            return Response({"error": "lesson_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            lesson = Lesson.objects.select_related('subject', 'student_class').get(id=lesson_id)
+        except Lesson.DoesNotExist:
+            return Response({"error": "Lesson not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if not lesson.content:
+            return Response({"error": "Lesson has no text content to generate quiz from"}, status=status.HTTP_400_BAD_REQUEST)
+
+        ai = AcademicAI()
+        questions_data = ai.generate_quiz_from_content(
+            content_text=lesson.content,
+            subject_name=lesson.subject.name if lesson.subject else 'General',
+            num_questions=num_questions,
+            difficulty=difficulty
+        )
+
+        if not questions_data:
+            return Response({"error": "AI quiz generation failed. Please try again."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        school = getattr(request.user, 'school', None) or getattr(request, 'tenant', None)
+        teacher = getattr(request.user, 'teacher_profile', None)
+
+        with transaction.atomic():
+            quiz = Quiz.objects.create(
+                school=school,
+                title=f"Quiz: {lesson.title}",
+                description=f"Auto-generated from lesson: {lesson.title}",
+                student_class=lesson.student_class,
+                subject=lesson.subject,
+                teacher=teacher,
+                duration_minutes=30,
+                start_time=timezone.now(),
+                end_time=timezone.now() + timezone.timedelta(days=7),
+                is_published=False
+            )
+
+            for q_data in questions_data:
+                question = Question.objects.create(
+                    school=school,
+                    quiz=quiz,
+                    text=q_data.get('text', ''),
+                    question_type='mcq',
+                    points=q_data.get('points', 1)
+                )
+                for opt_data in q_data.get('options', []):
+                    Option.objects.create(
+                        school=school,
+                        question=question,
+                        text=opt_data.get('text', ''),
+                        is_correct=opt_data.get('is_correct', False)
+                    )
+
+        serializer = self.get_serializer(quiz)
+        return Response({
+            "success": True,
+            "message": f"Quiz created with {len(questions_data)} questions",
+            "quiz": serializer.data
+        }, status=status.HTTP_201_CREATED)
+
     @action(detail=True, methods=['post'])
     def submit(self, request, pk=None):
         """Submit an attempt for a quiz"""

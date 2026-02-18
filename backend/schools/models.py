@@ -214,6 +214,16 @@ class PlatformSettings(models.Model):
     support_email = models.EmailField(null=True, blank=True)
     support_phone = models.CharField(max_length=20, null=True, blank=True)
     
+    # AI Provider Configuration
+    AI_PROVIDERS = (
+        ('gemini', 'Google Gemini'),
+        ('openrouter', 'OpenRouter (Multi-Model)'),
+    )
+    ai_provider = models.CharField(max_length=20, choices=AI_PROVIDERS, default='gemini')
+    gemini_api_key = models.CharField(max_length=255, null=True, blank=True)
+    openrouter_api_key = models.CharField(max_length=255, null=True, blank=True)
+    openrouter_model = models.CharField(max_length=100, null=True, blank=True, default='google/gemini-2.0-flash-001')
+    
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):

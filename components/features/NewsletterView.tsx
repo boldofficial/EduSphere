@@ -154,10 +154,34 @@ export const NewsletterView: React.FC = () => {
                     </p>
                 </div>
                 {!isReadOnlyRole && (
-                    <Button onClick={() => handleOpenModal()}>
-                        <Plus className="h-4 w-4 mr-2" />
-                        Upload Newsletter
-                    </Button>
+                    <div className="flex gap-2">
+                        <Button
+                            variant="secondary"
+                            onClick={async () => {
+                                try {
+                                    const apiClient = (await import('@/lib/api-client')).default;
+                                    addToast('Generating newsletter with AI...', 'info');
+                                    const res = await apiClient.post('/newsletters/ai-generate/', { period: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) });
+                                    if (res.data?.content) {
+                                        setTitle(res.data.title || 'AI Newsletter');
+                                        setDescription(res.data.content);
+                                        setIsModalOpen(true);
+                                        addToast('AI newsletter generated! Review and upload.', 'success');
+                                    }
+                                } catch (err: any) {
+                                    const msg = err?.response?.data?.error || 'AI newsletter generation failed';
+                                    addToast(msg, 'error');
+                                }
+                            }}
+                        >
+                            <span className="mr-2">✨</span>
+                            AI Generate
+                        </Button>
+                        <Button onClick={() => handleOpenModal()}>
+                            <Plus className="h-4 w-4 mr-2" />
+                            Upload Newsletter
+                        </Button>
+                    </div>
                 )}
             </div>
 

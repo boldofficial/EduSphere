@@ -97,8 +97,11 @@ export const ScoreEntryTab: React.FC<ScoreEntryTabProps> = ({
                     <tbody className="divide-y divide-gray-200">
                         {activeStudents.map(s => {
                             const row = getRow(s.id);
+                            const totalBg = row.total >= 70 ? 'bg-emerald-50' : row.total >= 50 ? 'bg-blue-50' : row.total >= 40 ? 'bg-yellow-50' : row.total > 0 ? 'bg-red-50' : '';
+                            const totalText = row.total >= 70 ? 'text-emerald-700' : row.total >= 50 ? 'text-blue-700' : row.total >= 40 ? 'text-yellow-700' : row.total > 0 ? 'text-red-600' : 'text-gray-400';
+                            const gradeBg = row.grade === 'A' ? 'bg-emerald-100 text-emerald-800' : row.grade === 'B' ? 'bg-blue-100 text-blue-800' : row.grade === 'C' ? 'bg-yellow-100 text-yellow-800' : row.grade === 'D' ? 'bg-orange-100 text-orange-800' : row.grade === 'F' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-600';
                             return (
-                                <tr key={s.id} className="hover:bg-gray-50">
+                                <tr key={s.id} className="hover:bg-gray-50 transition-colors">
                                     <td className="px-2 lg:px-4 py-2 font-medium text-gray-900 sticky left-0 bg-white">
                                         <span className="block truncate max-w-[100px] lg:max-w-none">{s.names}</span>
                                         <span className="text-[10px] lg:text-xs text-gray-500 font-normal">{s.student_no}</span>
@@ -106,8 +109,8 @@ export const ScoreEntryTab: React.FC<ScoreEntryTabProps> = ({
                                     <td className="px-2 lg:px-4 py-2 text-center"><ScoreInput value={row.ca1} max={20} onChange={(v) => handleScoreChange(s.id, 'ca1', v)} className="!w-12 lg:!w-16" /></td>
                                     <td className="px-2 lg:px-4 py-2 text-center"><ScoreInput value={row.ca2} max={20} onChange={(v) => handleScoreChange(s.id, 'ca2', v)} className="!w-12 lg:!w-16" /></td>
                                     <td className="px-2 lg:px-4 py-2 text-center"><ScoreInput value={row.exam} max={60} onChange={(v) => handleScoreChange(s.id, 'exam', v)} className="!w-12 lg:!w-16" /></td>
-                                    <td className="px-2 lg:px-4 py-2 text-center font-bold"><span className={row.total < 40 ? 'text-red-600' : 'text-gray-900'}>{row.total}</span></td>
-                                    <td className="px-2 lg:px-4 py-2 text-center"><span className={`px-1.5 lg:px-2 py-0.5 lg:py-1 rounded text-[10px] lg:text-xs font-bold ${row.grade === 'A' ? 'bg-green-100 text-green-800' : row.grade === 'F' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'}`}>{row.grade}</span></td>
+                                    <td className={`px-2 lg:px-4 py-2 text-center font-bold ${totalBg} ${totalText}`}>{row.total}</td>
+                                    <td className="px-2 lg:px-4 py-2 text-center"><span className={`px-1.5 lg:px-2 py-0.5 lg:py-1 rounded text-[10px] lg:text-xs font-bold ${gradeBg}`}>{row.grade}</span></td>
                                     <td className="px-2 lg:px-4 py-2 text-xs text-gray-500 hidden sm:table-cell">{row.comment}</td>
                                 </tr>
                             );

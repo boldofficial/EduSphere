@@ -387,6 +387,32 @@ class SchoolMessageViewSet(CachingMixin, viewsets.ModelViewSet):
         else:
             serializer.save()
 
+    @action(detail=False, methods=['post'], url_path='ai-draft')
+    def ai_draft(self, request):
+        """
+        AI-powered professional message drafting.
+        Body: { "topic": str, "recipient_type": str, "key_points": str, "tone": "formal" }
+        """
+        from academic.ai_utils import AcademicAI
+        school = getattr(request.user, 'school', None)
+        school_name = school.name if school else 'Our School'
+
+        context = {
+            'school_name': school_name,
+            'recipient_type': request.data.get('recipient_type', 'Parents'),
+            'topic': request.data.get('topic', 'General Update'),
+            'key_points': request.data.get('key_points', '')
+        }
+        tone = request.data.get('tone', 'formal')
+
+        ai = AcademicAI()
+        draft = ai.draft_professional_message(context, tone=tone)
+
+        if not draft:
+            return Response({"error": "AI drafting failed. Please try again."}, status=500)
+
+        return Response({"draft": draft})
+
 class NotificationViewSet(viewsets.ModelViewSet):
     """Per-user in-app notifications"""
     permission_classes = [IsAuthenticated]
@@ -462,3 +488,50 @@ class NewsletterViewSet(CachingMixin, viewsets.ModelViewSet):
     def perform_create(self, serializer):
         if hasattr(self.request.user, 'school') and self.request.user.school:
             serializer.save(school=self.request.user.school)
+
+    @action(detail=False, methods=['post'], url_path='ai-generate')
+    def ai_generate(self, request):
+        """
+        AI-powered newsletter content generation.
+        Body: { "period": "February 2026" }
+        """
+        from academic.ai_utils import AcademicAI
+        from academic.models import SchoolEvent, StudentAchievement, Student, Teacher
+
+        try:
+            school = getattr(request.user, 'school', None)
+            if not school:
+                return Response({"error": "School not found"}, status=400)
+
+            period = request.data.get('period', 'This Month')
+
+            # Gather school data for the AI
+            events = list(SchoolEvent.objects.filter(school=school).order_by('-start_date')[:10].values('title', 'event_type', 'start_date'))
+            achievements = list(StudentAchievement.objects.filter(school=school).order_by('-date_achieved')[:5].values('title', 'category'))
+            stats = {
+                'total_students': Student.objects.filter(school=school, status='active').count(),
+                'total_teachers': Teacher.objects.filter(school=school).count(),
+            }
+
+            school_data = {
+                'school_name': school.name,
+                'period': period,
+                'events': [{'title': e['title'], 'type': e['event_type']} for e in events],
+                'achievements': [{'title': a['title'], 'category': a['category']} for a in achievements],
+                'stats': stats
+            }
+
+            ai = AcademicAI()
+            if not ai.model:
+                return Response({"error": "AI service is not configured. Please set the GEMINI_API_KEY in the server environment."}, status=503)
+
+            content = ai.synthesize_newsletter(school_data)
+
+            if not content:
+                return Response({"error": "AI newsletter generation failed. The AI service may be temporarily unavailable."}, status=503)
+
+            return Response({"content": content, "title": f"{school.name} Newsletter - {period}"})
+        except Exception as e:
+            logger.error(f"Newsletter AI Generate Error: {str(e)}", exc_info=True)
+            return Response({"error": f"An error occurred: {str(e)}"}, status=500)
+

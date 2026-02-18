@@ -151,6 +151,31 @@ export const LearningCenterView: React.FC = () => {
                                             Text Only
                                         </Button>
                                     )}
+                                    {canUpload && lesson.content && (
+                                        <button
+                                            onClick={async (e) => {
+                                                e.stopPropagation();
+                                                try {
+                                                    const apiClient = (await import('@/lib/api-client')).default;
+                                                    addToast('Generating quiz from lesson notes...', 'info');
+                                                    const res = await apiClient.post('/quizzes/generate-from-lesson/', {
+                                                        lesson_id: lesson.id,
+                                                        num_questions: 5,
+                                                        difficulty: 'medium'
+                                                    });
+                                                    if (res.data?.success) {
+                                                        addToast(`Quiz created with ${res.data.message}!`, 'success');
+                                                    }
+                                                } catch {
+                                                    addToast('Quiz generation failed', 'error');
+                                                }
+                                            }}
+                                            className="px-3 py-1.5 text-xs font-medium text-purple-700 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors flex items-center gap-1"
+                                            title="Auto-generate quiz from this lesson"
+                                        >
+                                            <span className="text-sm">✨</span> Quiz
+                                        </button>
+                                    )}
                                     <Button variant="secondary" className="px-3" title="View Details">
                                         <ExternalLink className="h-3 w-3" />
                                     </Button>

@@ -261,61 +261,31 @@ export const MessagesView: React.FC = () => {
 
             {/* Stats */}
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                <Card className="p-4">
-                    <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 bg-brand-100 rounded-lg flex items-center justify-center">
-                            <Send className="h-5 w-5 text-brand-600" />
-                        </div>
-                        <div>
-                            <p className="text-2xl font-bold text-gray-900">{stats.totalSent}</p>
-                            <p className="text-xs text-gray-500">Total Sent</p>
-                        </div>
-                    </div>
-                </Card>
-                <Card className="p-4">
-                    <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <UserCog className="h-5 w-5 text-blue-600" />
-                        </div>
-                        <div>
-                            <p className="text-2xl font-bold text-gray-900">{stats.toTeachers}</p>
-                            <p className="text-xs text-gray-500">To Teachers</p>
-                        </div>
-                    </div>
-                </Card>
-                <Card className="p-4">
-                    <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 bg-green-100 rounded-lg flex items-center justify-center">
-                            <Users className="h-5 w-5 text-green-600" />
-                        </div>
-                        <div>
-                            <p className="text-2xl font-bold text-gray-900">{stats.toParents}</p>
-                            <p className="text-xs text-gray-500">To Parents</p>
-                        </div>
-                    </div>
-                </Card>
-                <Card className="p-4">
-                    <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                            <User className="h-5 w-5 text-purple-600" />
-                        </div>
-                        <div>
-                            <p className="text-2xl font-bold text-gray-900">{stats.toStaff}</p>
-                            <p className="text-xs text-gray-500">To Staff</p>
-                        </div>
-                    </div>
-                </Card>
-                <Card className="p-4">
-                    <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 bg-red-100 rounded-lg flex items-center justify-center">
-                            <Mail className="h-5 w-5 text-red-600" />
-                        </div>
-                        <div>
-                            <p className="text-2xl font-bold text-gray-900">{stats.unread}</p>
-                            <p className="text-xs text-gray-500">Unread</p>
-                        </div>
-                    </div>
-                </Card>
+                <div className="relative overflow-hidden bg-gradient-to-br from-brand-500 to-brand-700 p-4 rounded-xl shadow-lg text-white">
+                    <div className="absolute -top-4 -right-4 h-16 w-16 bg-white/10 rounded-full" />
+                    <p className="text-2xl font-bold">{stats.totalSent}</p>
+                    <p className="text-xs opacity-80 mt-1">Total Sent</p>
+                </div>
+                <div className="relative overflow-hidden bg-gradient-to-br from-blue-400 to-blue-600 p-4 rounded-xl shadow-lg text-white">
+                    <div className="absolute -top-4 -right-4 h-16 w-16 bg-white/10 rounded-full" />
+                    <p className="text-2xl font-bold">{stats.toTeachers}</p>
+                    <p className="text-xs opacity-80 mt-1">To Teachers</p>
+                </div>
+                <div className="relative overflow-hidden bg-gradient-to-br from-emerald-400 to-green-600 p-4 rounded-xl shadow-lg text-white">
+                    <div className="absolute -top-4 -right-4 h-16 w-16 bg-white/10 rounded-full" />
+                    <p className="text-2xl font-bold">{stats.toParents}</p>
+                    <p className="text-xs opacity-80 mt-1">To Parents</p>
+                </div>
+                <div className="relative overflow-hidden bg-gradient-to-br from-purple-400 to-purple-600 p-4 rounded-xl shadow-lg text-white">
+                    <div className="absolute -top-4 -right-4 h-16 w-16 bg-white/10 rounded-full" />
+                    <p className="text-2xl font-bold">{stats.toStaff}</p>
+                    <p className="text-xs opacity-80 mt-1">To Staff</p>
+                </div>
+                <div className="relative overflow-hidden bg-gradient-to-br from-rose-400 to-red-600 p-4 rounded-xl shadow-lg text-white">
+                    <div className="absolute -top-4 -right-4 h-16 w-16 bg-white/10 rounded-full" />
+                    <p className="text-2xl font-bold">{stats.unread}</p>
+                    <p className="text-xs opacity-80 mt-1">Unread</p>
+                </div>
             </div>
 
             {/* Filters */}
@@ -479,7 +449,35 @@ export const MessagesView: React.FC = () => {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                        <div className="flex items-center justify-between mb-1">
+                            <label className="block text-sm font-medium text-gray-700">Message</label>
+                            <button
+                                type="button"
+                                onClick={async () => {
+                                    if (!subject.trim()) {
+                                        addToast('Please enter a subject/topic first', 'warning');
+                                        return;
+                                    }
+                                    try {
+                                        const res = await (await import('@/lib/api-client')).default.post('/messages/ai-draft/', {
+                                            topic: subject.trim(),
+                                            recipient_type: recipientType === 'student' ? 'Parents' : recipientType,
+                                            key_points: body.trim() || subject.trim(),
+                                            tone: 'formal'
+                                        });
+                                        if (res.data?.draft) {
+                                            setBody(res.data.draft);
+                                            addToast('AI draft generated!', 'success');
+                                        }
+                                    } catch {
+                                        addToast('AI drafting failed, please try again', 'error');
+                                    }
+                                }}
+                                className="flex items-center gap-1.5 px-3 py-1 text-xs font-medium text-purple-700 bg-purple-50 hover:bg-purple-100 rounded-full transition-colors"
+                            >
+                                <span className="text-sm">✨</span> AI Draft
+                            </button>
+                        </div>
                         <textarea
                             value={body}
                             onChange={(e) => setBody(e.target.value)}
