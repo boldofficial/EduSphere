@@ -5,18 +5,26 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 django.setup()
 
 from users.models import User
-from schools.models import School
+from schools.models import School, Subscription, SubscriptionPlan, PlatformModule, SchoolSettings
+from django.utils import timezone
+from datetime import timedelta
 
 def setup_demo():
-    print("🚀 Setting up All Demo Portal Logins...")
+    print("🚀 Setting up All Demo Portal Logins & Environment...")
+    
+    # 0. Sync Modules
+    print("📦 Syncing Platform Modules...")
+    PlatformModule.sync_from_registry()
+    # FORCE ACTIVATE ALL MODULES for demo environment
+    PlatformModule.objects.all().update(is_active=True)
+    print(f"✅ Activated {PlatformModule.objects.count()} platform modules.")
     
     # 1. Ensure Demo School exists (Domain must be 'demo' for magic login logic)
     school, created = School.objects.get_or_create(
         domain='demo',
         defaults={
             'name': 'Bold Ideas Innovations School',
-            'email': 'admin@boldideas.edu',
-            'status': 'active'
+            'email': 'admin@boldideas.edu'
         }
     )
     if created:
@@ -121,6 +129,67 @@ def setup_demo():
         print(f"   - Status: Active")
 
     print(f"\n✨ All 4 Demo Portals are now ready with password: {password}")
+
+    # 4. Initialize Subscription and SchoolSettings
+    print("\n🛠️  Initializing Subscription and SchoolSettings...")
+    
+    # Ensure Plan exists
+    plan = SubscriptionPlan.objects.filter(slug='enterprise').first()
+    if not plan:
+        print("⚠️ Enterprise plan not found. Seeding plans first...")
+        import subprocess
+        subprocess.run(['python', 'seed_plans.py'])
+        plan = SubscriptionPlan.objects.filter(slug='enterprise').first()
+
+    if plan:
+        sub, created = Subscription.objects.update_or_create(
+            school=school,
+            defaults={
+                'plan': plan,
+                'status': 'active',
+                'end_date': timezone.now() + timedelta(days=730)
+            }
+        )
+        print(f"✅ Subscription: {sub.plan.name} ({sub.status})")
+
+    # Initialize Settings with Role Permissions
+    role_perms = {
+        "super_admin": {
+            "navigation": ["dashboard", "students", "teachers", "staff", "classes", "timetables", "grading", "attendance", "bursary", "learning", "announcements", "calendar", "analytics", "id_cards", "broadsheet", "admissions", "newsletter", "messages", "conduct", "cms", "data", "settings", "support"],
+            "dashboardWidgets": ["stats", "finance_chart", "student_population", "quick_actions", "recent_transactions"]
+        },
+        "admin": {
+            "navigation": ["dashboard", "students", "teachers", "staff", "classes", "timetables", "grading", "attendance", "bursary", "learning", "announcements", "calendar", "analytics", "id_cards", "broadsheet", "admissions", "newsletter", "messages", "conduct", "cms", "data", "settings", "support"],
+            "dashboardWidgets": ["stats", "finance_chart", "student_population", "quick_actions", "recent_transactions"]
+        },
+        "teacher": {
+            "navigation": ["dashboard", "timetables", "grading", "attendance", "learning", "announcements", "calendar", "messages", "conduct"],
+            "dashboardWidgets": ["stats", "quick_actions", "my_classes"]
+        },
+        "student": {
+            "navigation": ["dashboard", "timetables", "grading", "attendance", "learning", "announcements", "bursary", "calendar", "id_cards", "newsletter", "messages", "conduct"],
+            "dashboardWidgets": ["my_scores", "my_attendance", "my_fees", "class_info"]
+        },
+        "parent": {
+            "navigation": ["dashboard", "grading", "attendance", "learning", "announcements", "bursary", "calendar", "id_cards", "newsletter", "messages", "conduct"],
+            "dashboardWidgets": ["my_scores", "my_attendance", "my_fees", "class_info"]
+        },
+        "staff": {
+            "navigation": ["dashboard", "calendar"],
+            "dashboardWidgets": ["quick_actions", "my_tasks"]
+        }
+    }
+
+    settings_obj, created = SchoolSettings.objects.update_or_create(
+        school=school,
+        defaults={
+            'role_permissions': role_perms,
+            'current_session': '2025/2026',
+            'current_term': 'First Term'
+        }
+    )
+    print(f"✅ SchoolSettings: Initialized with {len(role_perms)} role configurations")
+    print("\n🚀 Setup Complete!")
 
 if __name__ == '__main__':
     setup_demo()

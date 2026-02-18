@@ -424,10 +424,13 @@ class SchoolAnnouncementViewSet(CachingMixin, viewsets.ModelViewSet):
         if not user.is_authenticated or not hasattr(user, 'school'):
             return SchoolAnnouncement.objects.none()
         
-        return SchoolAnnouncement.objects.filter(
-            school=user.school,
-            is_active=True
-        ).select_related('author', 'school')
+        qs = SchoolAnnouncement.objects.filter(school=user.school)
+        
+        # Staff/Admins see all (including inactive), others only see active
+        if user.role not in ('SUPER_ADMIN', 'SCHOOL_ADMIN', 'STAFF', 'TEACHER'):
+            qs = qs.filter(is_active=True)
+            
+        return qs.select_related('author', 'school')
 
     def perform_create(self, serializer):
         if hasattr(self.request.user, 'school') and self.request.user.school:
@@ -448,10 +451,13 @@ class NewsletterViewSet(CachingMixin, viewsets.ModelViewSet):
         if not user.is_authenticated or not hasattr(user, 'school'):
             return Newsletter.objects.none()
             
-        return Newsletter.objects.filter(
-            school=user.school,
-            is_published=True
-        ).select_related('school')
+        qs = Newsletter.objects.filter(school=user.school)
+        
+        # Staff/Admins see all (including unpublished), others only see published
+        if user.role not in ('SUPER_ADMIN', 'SCHOOL_ADMIN', 'STAFF', 'TEACHER'):
+            qs = qs.filter(is_published=True)
+            
+        return qs.select_related('school')
 
     def perform_create(self, serializer):
         if hasattr(self.request.user, 'school') and self.request.user.school:

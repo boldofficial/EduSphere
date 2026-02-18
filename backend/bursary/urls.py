@@ -8,6 +8,7 @@ from .views import (
 router = DefaultRouter()
 router.register(r'fee-categories', FeeCategoryViewSet)
 router.register(r'scholarships', ScholarshipViewSet)
+router.register(r'fees', FeeItemViewSet, basename='fees')
 router.register(r'fee-items', FeeItemViewSet)
 router.register(r'student-fees', StudentFeeViewSet)
 router.register(r'payments', PaymentViewSet)

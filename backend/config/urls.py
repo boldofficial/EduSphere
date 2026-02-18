@@ -25,9 +25,10 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, Sp
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    # Prioritize schools for landing page/public access
+    path('api/schools/', include('schools.urls')),
     path('api/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('api/schools/', include('schools.urls')),
     path('api/users/', include('users.urls')),
     path('api/', include('academic.urls')),
     path('api/', include('bursary.urls')),

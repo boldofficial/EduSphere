@@ -36,34 +36,37 @@ export const MessageInboxWidget: React.FC<MessageInboxWidgetProps> = ({
     const myAuthId = currentUser?.id;
 
     // Get messages for this user (both received and sent)
-    // Check both profile_id AND auth user id since messages may use either
     const myMessages = React.useMemo(() => {
         return messages
             .filter((m: Types.Message) =>
-                m.to_id === myProfileId ||
-                m.from_id === myProfileId ||
-                m.to_id === myAuthId ||
-                m.from_id === myAuthId
+                String(m.recipient) === String(myProfileId) ||
+                String(m.sender) === String(myProfileId) ||
+                String(m.recipient) === String(myAuthId) ||
+                String(m.sender) === String(myAuthId)
             )
-            .sort((a: Types.Message, b: Types.Message) => b.created_at - a.created_at)
+            .sort((a: Types.Message, b: Types.Message) => {
+                const aTime = new Date(a.created_at).getTime();
+                const bTime = new Date(b.created_at).getTime();
+                return bTime - aTime;
+            })
             .slice(0, maxMessages);
     }, [messages, myProfileId, myAuthId, maxMessages]);
 
     // Get unread count (only for received messages)
     const unreadCount = React.useMemo(() => {
         return messages.filter((m: Types.Message) =>
-            (m.to_id === myProfileId || m.to_id === myAuthId) && !m.is_read
+            (String(m.recipient) === String(myProfileId) || String(m.recipient) === String(myAuthId)) && !m.is_read
         ).length;
     }, [messages, myProfileId, myAuthId]);
 
     // Check if this message was sent to me
     const isMessageToMe = (message: Types.Message) => {
-        return message.to_id === myProfileId || message.to_id === myAuthId;
+        return String(message.recipient) === String(myProfileId) || String(message.recipient) === String(myAuthId);
     };
 
     // Check if this message was sent by me
     const isMessageFromMe = (message: Types.Message) => {
-        return message.from_id === myProfileId || message.from_id === myAuthId;
+        return String(message.sender) === String(myProfileId) || String(message.sender) === String(myAuthId);
     };
 
     const handleViewMessage = (message: Types.Message) => {
@@ -82,21 +85,19 @@ export const MessageInboxWidget: React.FC<MessageInboxWidgetProps> = ({
             return;
         }
 
-        const replyMessage: Types.Message = {
-            id: Utils.generateId(),
-            from_id: myProfileId || myAuthId || '',
-            from_role: currentRole,
-            to_id: viewingMessage.from_id,
-            to_role: viewingMessage.from_role,
-            parent_message_id: viewingMessage.id,
+        if (!viewingMessage.sender) {
+            addToast('Cannot determine who sent this message.', 'error');
+            return;
+        }
+
+        // Send payload matching backend SchoolMessageSerializer
+        const payload = {
+            recipient: viewingMessage.sender,
             subject: `Re: ${viewingMessage.subject}`,
             body: replyBody.trim(),
-            is_read: false,
-            created_at: Date.now(),
-            updated_at: Date.now()
-        };
+        } as any;
 
-        createMessage(replyMessage, {
+        createMessage(payload, {
             onSuccess: () => {
                 addToast('Reply sent successfully!', 'success');
                 setViewingMessage(null);
@@ -117,14 +118,13 @@ export const MessageInboxWidget: React.FC<MessageInboxWidgetProps> = ({
 
     // Check if message is from admin (can reply)
     const canReply = (message: Types.Message) => {
-        return isMessageToMe(message) && message.from_role === 'admin';
+        return isMessageToMe(message) && (message.sender_role === 'ADMIN' || message.sender_role === 'SUPER_ADMIN' || message.sender_role === 'admin');
     };
 
     // Get display name for sender
     const getSenderName = (message: Types.Message) => {
         if (isMessageFromMe(message)) return 'You';
-        if (message.from_role === 'admin') return 'School Admin';
-        return message.from_role.charAt(0).toUpperCase() + message.from_role.slice(1);
+        return message.sender_name || message.sender_role || 'Unknown';
     };
 
     if (myMessages.length === 0) {
@@ -160,7 +160,7 @@ export const MessageInboxWidget: React.FC<MessageInboxWidgetProps> = ({
                 </div>
                 <div className="divide-y divide-gray-50 max-h-[400px] overflow-y-auto">
                     {myMessages.map((message: Types.Message) => {
-                        const isReceived = message.to_id === currentUser?.id;
+                        const isReceived = String(message.recipient) === String(currentUser?.id);
                         const isUnread = isReceived && !message.is_read;
 
                         return (
@@ -301,7 +301,7 @@ export const MessageInboxWidget: React.FC<MessageInboxWidgetProps> = ({
                         )}
 
                         {/* Info for sent messages */}
-                        {viewingMessage.from_id === currentUser?.id && (
+                        {String(viewingMessage.sender) === String(currentUser?.id) && (
                             <div className="text-center text-sm text-gray-500 py-2 bg-gray-50 rounded-lg">
                                 This is a message you sent
                             </div>

@@ -366,9 +366,13 @@ class AIInsightsView(APIView):
         at_risk_count = report_cards.filter(average__lt=50).count()
         
         # Simple attendance average
-        attendance_records = AttendanceRecord.objects.filter(school=school, session=session, term=term)
+        attendance_records = AttendanceRecord.objects.filter(
+            school=school, 
+            attendance_session__session=session, 
+            attendance_session__term=term
+        )
         total_att = attendance_records.count()
-        present_att = attendance_records.filter(status='PRESENT').count()
+        present_att = attendance_records.filter(status__iexact='present').count()
         avg_attendance = (present_att / total_att * 100) if total_att > 0 else 0
 
         summary_data = {

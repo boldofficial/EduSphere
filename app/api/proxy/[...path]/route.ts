@@ -41,7 +41,7 @@ async function handleProxy(request: NextRequest, params: Promise<{ path: string[
     const queryString = request.nextUrl.search;
     const fullUrl = url + queryString;
 
-    const headers: HeadersInit = isMedia ? {} : {
+    const headers: Record<string, string> = isMedia ? {} : {
         'Content-Type': 'application/json',
     };
 
@@ -51,20 +51,16 @@ async function handleProxy(request: NextRequest, params: Promise<{ path: string[
 
     // Forward Tenant ID if present (set by Middleware)
     const tenantId = request.headers.get('x-tenant-id');
-    if (tenantId) {
+    if (tenantId && tenantId !== 'null' && tenantId !== 'undefined') {
         headers['X-Tenant-ID'] = tenantId;
     }
 
     try {
         const bodyText = request.method !== 'GET' && request.method !== 'HEAD' ? await request.text() : undefined;
-        console.log(`[PROXY_DEBUG] ${request.method} ${fullUrl}`);
-        console.log(`[PROXY_DEBUG] Access Token: ${accessToken ? 'PRESENT' : 'MISSING'}`);
-        console.log(`[PROXY_DEBUG] Tenant ID: ${tenantId}`);
-        console.log(`[PROXY_DEBUG] Forwarded Headers:`, JSON.stringify(headers));
 
         const response = await fetch(fullUrl, {
             method: request.method,
-            headers: headers,
+            headers: headers as any,
             body: bodyText,
             cache: 'no-store',
             // @ts-ignore
@@ -91,18 +87,22 @@ async function handleProxy(request: NextRequest, params: Promise<{ path: string[
         try {
             data = JSON.parse(responseText || '{}');
         } catch (e) {
-            console.error(`[PROXY] JSON Parse Error for ${fullUrl}. Body: ${responseText.slice(0, 200)}`);
-            data = { error: 'Invalid JSON from backend', raw: responseText.slice(0, 200) };
+            console.warn(`[PROXY_WARN] JSON Parse Failed for ${fullUrl}. Body length: ${responseText.length}`);
+            data = {
+                error: 'Invalid response format from backend',
+                status: response.status,
+                raw_preview: responseText.slice(0, 500)
+            };
         }
 
         if (!response.ok) {
-            console.warn(`[PROXY] Backend Error ${response.status} for ${fullUrl}:`, data);
+            console.error(`[PROXY_ERROR] Backend returned ${response.status} for ${fullUrl}`);
         }
 
         return NextResponse.json(data, { status: response.status });
 
     } catch (error) {
-        console.error(`[PROXY] System Error [${request.method} ${path}]:`, error);
-        return NextResponse.json({ error: 'Proxy Request Failed', details: (error as Error).message }, { status: 502 });
+        console.error(`[PROXY_CRITICAL] System Error [${request.method} ${path}]:`, error);
+        return NextResponse.json({ error: 'Internal Proxy Error', details: (error as Error).message }, { status: 502 });
     }
 }

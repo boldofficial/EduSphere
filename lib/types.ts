@@ -131,6 +131,7 @@ export interface Class extends Entity {
 }
 
 export interface Teacher extends Entity {
+  user?: number | null; // FK to User
   name: string;
   address: string;
   email: string;
@@ -143,6 +144,7 @@ export interface Teacher extends Entity {
 }
 
 export interface Staff extends Entity {
+  user?: number | null; // FK to User
   name: string;
   role: string; // Job Title (e.g. Bursar)
   tasks: string; // Assigned tasks
@@ -155,6 +157,7 @@ export interface Staff extends Entity {
 }
 
 export interface Student extends Entity {
+  user?: number | null; // FK to User
   student_no: string;
   names: string;
   gender: 'Male' | 'Female';
@@ -324,15 +327,17 @@ export interface Announcement extends Entity {
 
 // Phase 3: Messaging
 export interface Message extends Entity {
-  from_id: string;
-  from_role: UserRole;
-  to_id: string;
-  to_role: UserRole;
-  student_id?: string;
-  parent_message_id?: string; // For replies
+  sender?: number;
+  sender_name?: string;
+  sender_role?: string;
+  recipient: number;
+  recipient_name?: string;
+  recipient_role?: string;
   subject: string;
   body: string;
+  attachment_url?: string;
   is_read: boolean;
+  read_at?: string | null;
 }
 
 // Phase 3: Calendar Events

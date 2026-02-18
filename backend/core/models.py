@@ -163,7 +163,7 @@ class Newsletter(models.Model):
     school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='newsletters')
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
-    file_data = models.TextField(help_text="Base64 encoded PDF or URL")
+    file_data = models.TextField(default='', help_text="Base64 encoded PDF or URL")
     file_name = models.CharField(max_length=255, default='newsletter.pdf')
     
     session = models.CharField(max_length=50)

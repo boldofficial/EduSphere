@@ -24,6 +24,7 @@ type RecipientType = 'teacher' | 'student' | 'staff' | 'parent';
 
 interface Recipient {
     id: string;
+    userId?: number | null; // The linked User FK for messaging
     name: string;
     email?: string;
     type: RecipientType;
@@ -75,6 +76,7 @@ export const MessagesView: React.FC = () => {
         teachers.forEach((t: Types.Teacher) => {
             recipients.push({
                 id: t.id,
+                userId: t.user,
                 name: t.name,
                 email: t.email,
                 type: 'teacher'
@@ -85,6 +87,7 @@ export const MessagesView: React.FC = () => {
         staff.forEach((s: Types.Staff) => {
             recipients.push({
                 id: s.id,
+                userId: s.user,
                 name: s.name,
                 email: s.email,
                 type: 'staff'
@@ -95,6 +98,7 @@ export const MessagesView: React.FC = () => {
         students.forEach((s: Types.Student) => {
             recipients.push({
                 id: s.id,
+                userId: s.user,
                 name: s.names,
                 email: s.parent_email,
                 type: 'student',
@@ -110,61 +114,54 @@ export const MessagesView: React.FC = () => {
         return allRecipients.filter(r => r.type === recipientType);
     }, [allRecipients, recipientType]);
 
-    // Get recipient name by ID
-    const getRecipientName = (toId: string, toRole: Types.UserRole) => {
-        if (toRole === 'teacher') {
-            const teacher = teachers.find((t: Types.Teacher) => t.id === toId);
-            return teacher?.name || 'Unknown Teacher';
+    // Get recipient name from message (backend now provides sender_name/recipient_name)
+    const getDisplayName = (message: Types.Message, mode: 'sent' | 'inbox') => {
+        if (mode === 'sent') {
+            return message.recipient_name || 'Unknown';
         }
-        if (toRole === 'staff') {
-            const staffMember = staff.find((s: Types.Staff) => s.id === toId);
-            return staffMember?.name || 'Unknown Staff';
-        }
-        if (toRole === 'student' || toRole === 'parent') {
-            const student = students.find((s: Types.Student) => s.id === toId);
-            return toRole === 'parent'
-                ? `${student?.parent_name || 'Unknown'} (Parent of ${student?.names})`
-                : student?.names || 'Unknown Student';
-        }
-        return 'Unknown';
+        return message.sender_name || 'Unknown';
     };
 
     // Filter messages
     const filteredMessages = useMemo(() => {
         return messages
             .filter((m: Types.Message) => {
-                // For sent view, show messages sent by admin
-                if (viewMode === 'sent' && m.from_id !== currentUser?.id) return false;
+                // For sent view, show messages sent by current user
+                if (viewMode === 'sent' && String(m.sender) !== String(currentUser?.id)) return false;
                 // For inbox view, show messages received
-                if (viewMode === 'inbox' && m.to_id !== currentUser?.id) return false;
+                if (viewMode === 'inbox' && String(m.recipient) !== String(currentUser?.id)) return false;
 
                 // Apply recipient filter
-                if (recipientFilter !== 'all' && m.to_role !== recipientFilter) return false;
+                if (recipientFilter !== 'all' && m.recipient_role !== recipientFilter) return false;
 
                 // Apply search
                 if (searchTerm) {
                     const search = searchTerm.toLowerCase();
-                    const recipientName = getRecipientName(m.to_id, m.to_role).toLowerCase();
+                    const name = (m.recipient_name || m.sender_name || '').toLowerCase();
                     return (
                         m.subject.toLowerCase().includes(search) ||
                         m.body.toLowerCase().includes(search) ||
-                        recipientName.includes(search)
+                        name.includes(search)
                     );
                 }
                 return true;
             })
-            .sort((a: Types.Message, b: Types.Message) => b.created_at - a.created_at);
+            .sort((a: Types.Message, b: Types.Message) => {
+                const aTime = new Date(a.created_at).getTime();
+                const bTime = new Date(b.created_at).getTime();
+                return bTime - aTime;
+            });
     }, [messages, viewMode, recipientFilter, searchTerm, currentUser?.id]);
 
     // Stats
     const stats = useMemo(() => {
-        const sent = messages.filter((m: Types.Message) => m.from_id === currentUser?.id);
-        const unread = messages.filter((m: Types.Message) => m.to_id === currentUser?.id && !m.is_read);
+        const sent = messages.filter((m: Types.Message) => String(m.sender) === String(currentUser?.id));
+        const unread = messages.filter((m: Types.Message) => String(m.recipient) === String(currentUser?.id) && !m.is_read);
         return {
             totalSent: sent.length,
-            toTeachers: sent.filter((m: Types.Message) => m.to_role === 'teacher').length,
-            toParents: sent.filter((m: Types.Message) => m.to_role === 'parent').length,
-            toStaff: sent.filter((m: Types.Message) => m.to_role === 'staff').length,
+            toTeachers: sent.filter((m: Types.Message) => m.recipient_role === 'TEACHER').length,
+            toParents: sent.filter((m: Types.Message) => m.recipient_role === 'PARENT' || m.recipient_role === 'STUDENT').length,
+            toStaff: sent.filter((m: Types.Message) => m.recipient_role === 'STAFF').length,
             unread: unread.length
         };
     }, [messages, currentUser?.id]);
@@ -189,21 +186,19 @@ export const MessagesView: React.FC = () => {
             return;
         }
 
-        const message: Types.Message = {
-            id: Utils.generateId(),
-            from_id: currentUser?.id || '',
-            from_role: 'admin',
-            to_id: selectedRecipient,
-            to_role: recipientType === 'student' ? 'parent' : recipientType,
-            student_id: recipientType === 'student' ? selectedRecipient : undefined,
+        if (!selectedRec.userId) {
+            addToast('This recipient does not have a linked user account yet. They need a login account first.', 'error');
+            return;
+        }
+
+        // Send payload matching backend SchoolMessageSerializer
+        const payload = {
+            recipient: selectedRec.userId,
             subject: subject.trim(),
             body: body.trim(),
-            is_read: false,
-            created_at: Date.now(),
-            updated_at: Date.now()
-        };
+        } as any;
 
-        createMessage(message, {
+        createMessage(payload, {
             onSuccess: () => {
                 addToast('Message sent successfully!', 'success');
                 setIsComposeOpen(false);
@@ -394,19 +389,19 @@ export const MessagesView: React.FC = () => {
                                 }`}
                         >
                             <div className="flex items-start gap-4">
-                                <div className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${getRoleColor(message.to_role)}`}>
-                                    {getRoleIcon(message.to_role)}
+                                <div className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${getRoleColor((message.recipient_role || 'admin') as Types.UserRole)}`}>
+                                    {getRoleIcon((message.recipient_role || 'admin') as Types.UserRole)}
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 mb-1">
                                         <span className="font-medium text-gray-900 truncate">
                                             {viewMode === 'sent'
-                                                ? getRecipientName(message.to_id, message.to_role)
-                                                : 'Admin'
+                                                ? (message.recipient_name || 'Unknown')
+                                                : (message.sender_name || 'Admin')
                                             }
                                         </span>
-                                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${getRoleColor(message.to_role)}`}>
-                                            {message.to_role}
+                                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${getRoleColor((message.recipient_role || 'admin') as Types.UserRole)}`}>
+                                            {message.recipient_role || 'admin'}
                                         </span>
                                         {!message.is_read && viewMode === 'inbox' && (
                                             <Circle className="h-2 w-2 fill-brand-500 text-brand-500" />
@@ -524,12 +519,12 @@ export const MessagesView: React.FC = () => {
                 {viewingMessage && (
                     <div className="space-y-4">
                         <div className="flex items-center gap-4 pb-4 border-b">
-                            <div className={`h-12 w-12 rounded-full flex items-center justify-center ${getRoleColor(viewingMessage.to_role)}`}>
-                                {getRoleIcon(viewingMessage.to_role)}
+                            <div className={`h-12 w-12 rounded-full flex items-center justify-center ${getRoleColor((viewingMessage.recipient_role || 'admin') as Types.UserRole)}`}>
+                                {getRoleIcon((viewingMessage.recipient_role || 'admin') as Types.UserRole)}
                             </div>
                             <div className="flex-1">
                                 <p className="font-medium text-gray-900">
-                                    To: {getRecipientName(viewingMessage.to_id, viewingMessage.to_role)}
+                                    To: {viewingMessage.recipient_name || 'Unknown'}
                                 </p>
                                 <p className="text-sm text-gray-500">
                                     {new Date(viewingMessage.created_at).toLocaleString('en-NG')}
