@@ -158,6 +158,60 @@ export function PlatformSettingsTab({ settings }: { settings: any }) {
                     </div>
                 </div>
 
+                {/* AI Configuration */}
+                <div className="bg-slate-900 rounded-3xl p-8 text-white shadow-2xl shadow-slate-900/20 border border-white/5 relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity"><Zap size={120} /></div>
+                    <div className="relative z-10">
+                        <h3 className="text-xl font-bold mb-6 flex items-center gap-3">
+                            <span className="w-8 h-8 bg-brand-500 rounded-lg flex items-center justify-center text-white">✨</span>
+                            AI Provider Configuration
+                        </h3>
+                        <div className="space-y-6">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">AI Provider</label>
+                                <div className="flex gap-4">
+                                    {['gemini', 'openrouter'].map((p) => (
+                                        <button key={p} type="button" onClick={() => setEditedSettings({ ...editedSettings, ai_provider: p })}
+                                            className={`flex-1 py-3 px-4 rounded-xl border-2 transition-all flex items-center justify-center gap-2 font-bold uppercase text-xs tracking-wider ${editedSettings.ai_provider === p ? 'border-brand-600 bg-brand-500/20 text-brand-400' : 'border-white/5 bg-white/5 text-slate-400 hover:border-white/10'}`}>
+                                            {p === 'gemini' ? 'Google Gemini' : 'OpenRouter'}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {editedSettings.ai_provider === 'gemini' ? (
+                                    <div className="space-y-2 md:col-span-2">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Gemini API Key</label>
+                                        <input type="password" value={editedSettings.gemini_api_key || ''} onChange={(e) => setEditedSettings({ ...editedSettings, gemini_api_key: e.target.value })}
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-mono focus:ring-2 focus:ring-brand-500 transition-all outline-none" placeholder="AIzaSy..." />
+                                        <p className="text-[10px] text-slate-500 italic">Get from Gemini API Console.</p>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">OpenRouter API Key</label>
+                                            <input type="password" value={editedSettings.openrouter_api_key || ''} onChange={(e) => setEditedSettings({ ...editedSettings, openrouter_api_key: e.target.value })}
+                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-mono focus:ring-2 focus:ring-brand-500 transition-all outline-none" placeholder="sk-or-..." />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Select Model</label>
+                                            <select value={editedSettings.openrouter_model || 'google/gemini-2.0-flash-001'} onChange={(e) => setEditedSettings({ ...editedSettings, openrouter_model: e.target.value })}
+                                                className="w-full bg-slate-800 border-white/10 border rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-brand-500 transition-all outline-none text-white appearance-none">
+                                                <option value="google/gemini-2.0-flash-001">Gemini 2.0 Flash (Free)</option>
+                                                <option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet</option>
+                                                <option value="openai/gpt-4o">GPT-4o</option>
+                                                <option value="meta-llama/llama-3.1-70b-instruct">Llama 3.1 70B</option>
+                                                <option value="deepseek/deepseek-chat">DeepSeek Chat</option>
+                                            </select>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div className="flex justify-end pt-4">
                     <button type="submit" disabled={isSaving}
                         className="px-8 py-4 bg-brand-600 text-white rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-brand-600/20 hover:bg-brand-700 hover:-translate-y-1 transition-all disabled:opacity-50 disabled:translate-y-0">
