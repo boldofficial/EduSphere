@@ -85,6 +85,20 @@ export const TimetableBuilder = () => {
         }
     };
 
+    const handlePublish = async () => {
+        if (!activeTimetable) return;
+        setIsGenerating(true); // Reuse loading state
+        try {
+            await apiClient.patch(`/timetables/${activeTimetable.id}/`, { is_active: true });
+            addToast('Timetable published and set as active!', 'success');
+        } catch (error) {
+            console.error('Publishing Failed:', error);
+            addToast('Failed to publish timetable.', 'error');
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+
     if (!selectedClassId) {
         // Show Period Setup if no periods exist
         if (periods.length === 0) {
@@ -188,7 +202,13 @@ export const TimetableBuilder = () => {
                         )}
                         AI Magic Generate
                     </Button>
-                    <Button size="sm">Publish</Button>
+                    <Button
+                        size="sm"
+                        onClick={handlePublish}
+                        disabled={isGenerating || !activeTimetable}
+                    >
+                        Publish
+                    </Button>
                 </div>
             </div>
 

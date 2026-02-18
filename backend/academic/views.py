@@ -422,8 +422,13 @@ class AITimetableGenerateView(APIView):
         for c in classes_qs:
             class_subjects = []
             for s in c.subjects.all():
-                # Defaulting to 4 periods per week for now can be improved
-                class_subjects.append({"id": str(c.id) + "_" + str(s.id), "real_id": s.id, "name": s.name, "periods_per_week": 4})
+                # Defaulting to 4 periods per week
+                # We send the real Subject ID as the identifier to simplify saving
+                class_subjects.append({
+                    "id": str(s.id), 
+                    "name": s.name, 
+                    "periods_per_week": 4
+                })
             school_data["classes"].append({"id": str(c.id), "name": c.name, "subjects": class_subjects})
 
         for t in teachers_qs:
@@ -444,7 +449,9 @@ class AITimetableGenerateView(APIView):
         with transaction.atomic():
             for entry_data in entries:
                 try:
+                    # Validate class and school context
                     c = Class.objects.get(id=entry_data['class_id'], school=school)
+                    
                     # Get or Create Timetable for class
                     timetable, _ = Timetable.objects.get_or_create(
                         student_class=c, 
@@ -452,7 +459,7 @@ class AITimetableGenerateView(APIView):
                         defaults={'title': f'{c.name} Weekly Schedule', 'is_active': True}
                     )
                     
-                    # Wipe existing entries for this slot to avoid UniqueConstraint errors if re-generating
+                    # Wipe existing entries for this slot to avoid UniqueConstraint errors
                     TimetableEntry.objects.filter(
                         timetable=timetable,
                         day_of_week=entry_data['day'],
@@ -469,7 +476,8 @@ class AITimetableGenerateView(APIView):
                         teacher_id=entry_data['teacher_id']
                     )
                 except Exception as e:
-                    continue # Skip invalid entries from AI
+                    logger.error(f"Error saving AI Timetable Entry: {str(e)}")
+                    continue 
 
 
 class AdmissionIntakeViewSet(TenantViewSet):

@@ -296,7 +296,9 @@ class AcademicAI:
         2. NO CLASS CLASHES: A class cannot have two subjects at the same time.
         3. SUBJECT LOAD: Respect 'periods_per_week' for each subject in each class.
         4. BREAKS: No subjects during 'Break' or 'Assembly' periods.
-        5. OUTPUT FORMAT: Return ONLY a JSON list of entries:
+        5. PEDAGOGICAL OPTIMIZATION: Prioritize challenging/core subjects (e.g., Mathematics, English, Sciences) for earlier periods of the day when students are most focused.
+        6. REPETITION: Avoid having the same subject twice in a row for the same class unless necessary for double periods.
+        7. OUTPUT FORMAT: Return ONLY a JSON list of entries:
            [
              {{"class_id": "...", "day": "...", "period_id": "...", "subject_id": "...", "teacher_id": "..."}},
              ...
