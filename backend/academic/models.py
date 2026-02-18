@@ -26,6 +26,13 @@ class Teacher(TenantModel):
         ('ACADEMIC', 'Academic Staff'),
         ('NON_ACADEMIC', 'Non-Academic Staff'),
     ]
+    
+    EMPLOYMENT_TYPES = [
+        ('FULL_TIME', 'Full Time'),
+        ('PART_TIME', 'Part Time'),
+        ('CONTRACT', 'Contract'),
+    ]
+
     user = models.OneToOneField(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='teacher_profile')
     name = models.CharField(max_length=255)
     address = models.TextField(blank=True)
@@ -33,6 +40,16 @@ class Teacher(TenantModel):
     email = models.EmailField(blank=True)
     passport_url = models.CharField(max_length=512, blank=True, null=True)
     staff_type = models.CharField(max_length=20, choices=STAFF_TYPES, default='ACADEMIC')
+    employment_type = models.CharField(max_length=20, choices=EMPLOYMENT_TYPES, default='FULL_TIME')
+    
+    # Financial Data
+    basic_salary = models.DecimalField(max_digits=12, decimal_places=2, default=0.00, help_text="Monthly Basic Salary")
+    bank_name = models.CharField(max_length=100, blank=True, help_text="Bank Name (e.g. GTBank)")
+    account_number = models.CharField(max_length=20, blank=True, help_text="Account Number")
+    account_name = models.CharField(max_length=255, blank=True, help_text="Account Name as per Bank")
+    pfa_name = models.CharField(max_length=100, blank=True, help_text="Pension Fund Administrator")
+    pfa_number = models.CharField(max_length=50, blank=True, help_text="RSA Number")
+    tax_id = models.CharField(max_length=50, blank=True, help_text="Tax Identification Number (TIN)")
     
     # Non-Academic Staff fields
     role = models.CharField(max_length=255, blank=True, null=True, help_text="Job Title (e.g. Bursar)")

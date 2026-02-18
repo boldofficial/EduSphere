@@ -1,397 +1,245 @@
-from rest_framework import viewsets, permissions, status
+from rest_framework import viewsets, permissions, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.exceptions import PermissionDenied
-from .models import FeeCategory, FeeItem, StudentFee, Payment, Expense, Scholarship, AdmissionPackage
-from .serializers import (
-    FeeCategorySerializer, FeeItemSerializer, StudentFeeSerializer, PaymentSerializer, 
-    ExpenseSerializer, ScholarshipSerializer, AdmissionPackageSerializer
-)
-from academic.models import Student, Class
-from core.pagination import StandardPagination, LargePagination
-from core.cache_utils import CachingMixin
 from django.utils import timezone
-from django.db.models import Sum, Q, Count
-import uuid
+from users.models import User
+from academic.models import Teacher
+from .models import (
+    FeeCategory, Scholarship, FeeItem, StudentFee, Payment, PaymentLineItem, 
+    Expense, AdmissionPackage,
+    SalaryAllowance, SalaryDeduction, StaffSalaryStructure, Payroll, PayrollEntry
+)
+from .serializers import (
+    FeeCategorySerializer, ScholarshipSerializer, FeeItemSerializer, StudentFeeSerializer,
+    PaymentSerializer, ExpenseSerializer, AdmissionPackageSerializer,
+    SalaryAllowanceSerializer, SalaryDeductionSerializer, 
+    StaffSalaryStructureSerializer, PayrollSerializer, PayrollEntrySerializer
+)
 
-
-class IsAdminOrBursar(permissions.BasePermission):
-    """
-    Write operations restricted to SCHOOL_ADMIN, SUPER_ADMIN, TEACHER (bursar), or superusers.
-    STUDENT and other roles are read-only.
-    """
-    def has_permission(self, request, view):
-        if request.method in permissions.SAFE_METHODS:
-            return True
-        if not request.user or not request.user.is_authenticated:
-            return False
-        return request.user.role in ('SCHOOL_ADMIN', 'SUPER_ADMIN', 'TEACHER') or request.user.is_superuser
-
-class TenantViewSet(CachingMixin, viewsets.ModelViewSet):
-    """Base ViewSet for multi-tenant models - filters by school"""
-    permission_classes = [permissions.IsAuthenticated, IsAdminOrBursar]
-
+class TenantViewSet(viewsets.ModelViewSet):
+    """Base ViewSet ensuring data isolation by School."""
+    permission_classes = [permissions.IsAuthenticated]
+    
     def get_queryset(self):
         user = self.request.user
-        if not user.is_authenticated:
+        school = getattr(user, 'school', None)
+        if hasattr(self.request, 'tenant'):
+             school = self.request.tenant
+        
+        if not school:
             return self.queryset.none()
-        
-        if user.is_superuser:
-            return self.queryset.all()
-        
-        if hasattr(user, 'school') and user.school:
-            return self.queryset.filter(school=user.school)
-        
-        return self.queryset.none()
+            
+        return self.queryset.filter(school=school)
 
     def perform_create(self, serializer):
-        save_kwargs = {}
-        if hasattr(self.request.user, 'school') and self.request.user.school:
-            save_kwargs['school'] = self.request.user.school
-        
-        serializer.save(**save_kwargs)
-
-    def perform_update(self, serializer):
-        instance = serializer.instance
         user = self.request.user
-        if not user.is_superuser and hasattr(instance, 'school'):
-            user_school = getattr(user, 'school', None)
-            if user_school and instance.school != user_school:
-                raise PermissionDenied('You cannot modify records belonging to another school.')
-        super().perform_update(serializer)
-
-    def perform_destroy(self, instance):
-        user = self.request.user
-        if not user.is_superuser and hasattr(instance, 'school'):
-            user_school = getattr(user, 'school', None)
-            if user_school and instance.school != user_school:
-                raise PermissionDenied('You cannot delete records belonging to another school.')
-        super().perform_destroy(instance)
-
-class ScholarshipViewSet(TenantViewSet):
-    queryset = Scholarship.objects.select_related('school').all()
-    serializer_class = ScholarshipSerializer
-    pagination_class = StandardPagination
+        school = getattr(user, 'school', None) or getattr(self.request, 'tenant', None)
+        serializer.save(school=school)
 
 class FeeCategoryViewSet(TenantViewSet):
-    queryset = FeeCategory.objects.select_related('school').all()
+    queryset = FeeCategory.objects.all()
     serializer_class = FeeCategorySerializer
-    pagination_class = StandardPagination
+
+class ScholarshipViewSet(TenantViewSet):
+    queryset = Scholarship.objects.all()
+    serializer_class = ScholarshipSerializer
 
 class FeeItemViewSet(TenantViewSet):
-    queryset = FeeItem.objects.select_related('category', 'target_class', 'school').all()
+    queryset = FeeItem.objects.all()
     serializer_class = FeeItemSerializer
-    pagination_class = StandardPagination
 
 class StudentFeeViewSet(TenantViewSet):
-    queryset = StudentFee.objects.select_related('student', 'fee_item', 'school').all()
+    queryset = StudentFee.objects.all()
     serializer_class = StudentFeeSerializer
-    pagination_class = StandardPagination
-
-    @action(detail=False, methods=['post'], url_path='send-reminders')
-    def send_reminders(self, request):
-        """
-        Send fee reminders to debtors via email.
-        Body: { "student_ids": [...], "message": "Custom message text" }
-        """
-        from emails.tasks import send_email_task
-        
-        student_ids = request.data.get('student_ids', [])
-        message_template = request.data.get('message', 'Friendly reminder of your outstanding balance.')
-        
-        # Get unpaid fees for the specified students (or all if none specified)
-        fees_qs = StudentFee.objects.filter(school=request.user.school).select_related('student', 'fee_item')
-        if student_ids:
-            fees_qs = fees_qs.filter(student_id__in=student_ids)
-        
-        # Group by student and send one email per student
-        sent_count = 0
-        student_fees = {}
-        for fee in fees_qs:
-            if fee.student_id not in student_fees:
-                student_fees[fee.student_id] = {
-                    'student': fee.student,
-                    'total_balance': 0,
-                    'items': []
-                }
-            student_fees[fee.student_id]['total_balance'] += float(fee.fee_item.amount) - float(fee.amount_paid or 0)
-            student_fees[fee.student_id]['items'].append(fee.fee_item.name if hasattr(fee.fee_item, 'name') else str(fee.fee_item))
-        
-        for student_id, data in student_fees.items():
-            student = data['student']
-            # Try parent email first, then student user email
-            recipient_email = getattr(student, 'parent_email', None) or getattr(student, 'email', None)
-            if not recipient_email and hasattr(student, 'user') and student.user:
-                recipient_email = student.user.email
-            
-            if recipient_email and data['total_balance'] > 0:
-                try:
-                    send_email_task.delay(
-                        'fee_reminder',
-                        recipient_email,
-                        {
-                            'student_name': student.names if hasattr(student, 'names') else str(student),
-                            'balance': f"{data['total_balance']:,.2f}",
-                            'message': message_template,
-                            'school_name': request.user.school.name,
-                        }
-                    )
-                    sent_count += 1
-                except Exception:
-                    pass  # Silently skip failed queues; email task handles logging
-        
-        return Response({
-            "status": "success",
-            "message": f"Reminders queued for {sent_count} students/parents.",
-            "total_students_processed": len(student_fees),
-        })
 
 class PaymentViewSet(TenantViewSet):
-    queryset = Payment.objects.select_related('student', 'category', 'school').all()
+    queryset = Payment.objects.all()
     serializer_class = PaymentSerializer
-    pagination_class = LargePagination
-
-    def get_queryset(self):
-        qs = super().get_queryset()
-        student_id = self.request.query_params.get('student')
-        if student_id:
-            qs = qs.filter(student_id=student_id)
-        return qs
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            
-        return super().create(request, *args, **kwargs)
-
-    def perform_create(self, serializer):
-        # Generate a reference if not provided
-        reference = serializer.validated_data.get('reference') or f"PAY-{uuid.uuid4().hex[:8].upper()}"
-        
-        save_kwargs = {'reference': reference, 'recorded_by': self.request.user.username}
-        if hasattr(self.request.user, 'school') and self.request.user.school:
-            save_kwargs['school'] = self.request.user.school
-
-        serializer.save(**save_kwargs)
-
-    @action(detail=False, methods=['post'], url_path='verify-online')
-    def verify_online(self, request):
-        """
-        Endpoint for online payment verification (Paystack/Flutterwave simulation)
-        """
-        reference = request.data.get('reference')
-        student_id = request.data.get('student_id')
-        amount = request.data.get('amount')
-
-        if not all([reference, student_id, amount]):
-            return Response({"error": "Missing required fields"}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            student = Student.objects.get(id=student_id, school=request.user.school)
-        except Student.DoesNotExist:
-            return Response({"error": "Student not found in your school"}, status=status.HTTP_404_NOT_FOUND)
-
-        # Simulation: 100% success for now to ensure persistence is reliable during setup
-        is_success = True
-
-        try:
-            # Get session/term from request data
-            session = request.data.get('session')
-            term = request.data.get('term')
-            
-            # Create the payment record with uniqueness protection
-            payment, created = Payment.objects.get_or_create(
-                reference=reference,
-                defaults={
-                    'school': request.user.school,
-                    'student': student,
-                    'amount': amount,
-                    'method': 'online',
-                    'status': 'completed',
-                    'gateway_reference': f"GTW-{uuid.uuid4().hex[:12].upper()}",
-                    'recorded_by': "System (Online)",
-                    'session': session or "2025/2026",
-                    'term': term or "First Term"
-                }
-            )
-            
-            if not created:
-                # Reference already exists, return existing or error
-                # Usually we return success if it's already completed to be idempotent
-                if payment.status == 'completed':
-                    return Response(PaymentSerializer(payment).data)
-                return Response({"error": "Payment reference already exists"}, status=status.HTTP_400_BAD_REQUEST)
-
-            return Response(PaymentSerializer(payment).data)
-        except Exception as e:
-            # Log the error for the developer
-            print(f"Online Verification Error: {e}")
-            return Response({"error": f"Internal error during verification: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
 class ExpenseViewSet(TenantViewSet):
-    queryset = Expense.objects.select_related('school').all()
+    queryset = Expense.objects.all()
     serializer_class = ExpenseSerializer
-    pagination_class = StandardPagination
-
-    def perform_create(self, serializer):
-        # Auto-set recorded_by to current user
-        save_kwargs = {'recorded_by': self.request.user.username}
-        if hasattr(self.request.user, 'school') and self.request.user.school:
-            save_kwargs['school'] = self.request.user.school
-            
-        serializer.save(**save_kwargs)
-
-
-class DashboardViewSet(viewsets.ViewSet):
-    """
-    ViewSet for dashboard-specific statistics and aggregations.
-    This offloads heavy client-side calculations to optimized DB queries.
-    """
-    permission_classes = [permissions.IsAuthenticated]
-
-    @action(detail=False, methods=['get'], url_path='financial-stats')
-    def financial_stats(self, request):
-        school = request.user.school
-        session = request.query_params.get('session')
-        term = request.query_params.get('term')
-
-        if not all([session, term]):
-            return Response({"error": "Session and term are required"}, status=400)
-
-        # Caching logic
-        from django.core.cache import cache
-        cache_key = f"api:bursary:dashboard:{school.id}:{session}:{term}"
-        cached_data = cache.get(cache_key)
-        if cached_data:
-            return Response(cached_data)
-
-        # 1. Income & Expenses
-        income_data = Payment.objects.filter(
-            school=school, session=session, term=term, status='completed'
-        ).aggregate(total=Sum('amount'), count=Count('id'))
-        
-        expense_data = Expense.objects.filter(
-            school=school, session=session, term=term
-        ).aggregate(total=Sum('amount'), count=Count('id'))
-
-        total_income = income_data['total'] or 0
-        total_expenses = expense_data['total'] or 0
-        
-        # 2. Expected Income (Aggregated calculation)
-        # This is an approximation of the client-side logic for high performance
-        # Mandatory Class Fees
-        mandatory_fees = FeeItem.objects.filter(
-            school=school, session=session, term=term, 
-            category__is_optional=False
-        ).select_related('target_class')
-        
-        # Count students per class
-        class_student_counts = Student.objects.filter(school=school).values('current_class').annotate(count=Count('id'))
-        student_count_map = {item['current_class']: item['count'] for item in class_student_counts}
-        
-        expected_mandatory = 0
-        for fee in mandatory_fees:
-            if fee.target_class_id is None:
-                # Flat fee for all students
-                total_students = sum(student_count_map.values())
-                expected_mandatory += fee.amount * total_students
-            else:
-                count = student_count_map.get(fee.target_class_id, 0)
-                expected_mandatory += fee.amount * count
-
-        # Optional Fees Assigned (only if not already captured in mandatory)
-        # We look at StudentFee which explicitly links students to fees
-        expected_optional = StudentFee.objects.filter(
-            school=school, fee_item__session=session, fee_item__term=term,
-            fee_item__category__is_optional=True
-        ).aggregate(total=Sum('fee_item__amount'))['total'] or 0
-
-        # Adjust for discounts (approximated from StudentFee records)
-        discounts = StudentFee.objects.filter(
-            school=school, fee_item__session=session, fee_item__term=term
-        ).aggregate(total=Sum('discount_amount'))['total'] or 0
-
-        total_expected = expected_mandatory + expected_optional - discounts
-        
-        # 3. Method Breakdown
-        payments_by_method = Payment.objects.filter(
-            school=school, session=session, term=term, status='completed'
-        ).values('method').annotate(total=Sum('amount'))
-
-        # 4. Expense Breakdown
-        expenses_by_category = Expense.objects.filter(
-            school=school, session=session, term=term
-        ).values('category').annotate(total=Sum('amount'))
-
-        # 5. Monthly Trend (Income vs Expense)
-        # We group by month (Trunc Month)
-        from django.db.models.functions import TruncMonth
-        income_trend = Payment.objects.filter(
-            school=school, session=session, term=term, status='completed'
-        ).annotate(month=TruncMonth('date')).values('month').annotate(total=Sum('amount')).order_by('month')
-        
-        expense_trend = Expense.objects.filter(
-            school=school, session=session, term=term
-        ).annotate(month=TruncMonth('date')).values('month').annotate(total=Sum('amount')).order_by('month')
-
-        # Merge trends
-        trend_map = {}
-        for item in income_trend:
-            m = item['month'].strftime('%b')
-            trend_map[m] = {"month": m, "income": float(item['total']), "expense": 0}
-        
-        for item in expense_trend:
-            m = item['month'].strftime('%b')
-            if m not in trend_map:
-                trend_map[m] = {"month": m, "income": 0, "expense": float(item['total'])}
-            else:
-                trend_map[m]["expense"] = float(item['total'])
-
-        result = {
-            "summary": {
-                "total_income": total_income,
-                "total_expenses": total_expenses,
-                "net_balance": total_income - total_expenses,
-                "total_expected": float(total_expected),
-                "income_count": income_data['count'],
-                "expense_count": expense_data['count'],
-            },
-            "breakdown": {
-                "methods": {item['method']: item['total'] for item in payments_by_method},
-                "expense_categories": {item['category']: item['total'] for item in expenses_by_category},
-                "monthly_trend": list(trend_map.values())
-            }
-        }
-        
-        # Store in cache
-        cache.set(cache_key, result, 900) # 15 minutes
-        
 
 class AdmissionPackageViewSet(TenantViewSet):
-    queryset = AdmissionPackage.objects.select_related('intake', 'school').prefetch_related('fees__category').all()
+    queryset = AdmissionPackage.objects.all()
     serializer_class = AdmissionPackageSerializer
-    pagination_class = StandardPagination
 
-    def get_permissions(self):
-        if self.action in ['list', 'retrieve']:
-            return [permissions.AllowAny()]
-        return super().get_permissions()
+# ==========================================
+# PAYROLL VIEWSETS
+# ==========================================
 
-    def get_queryset(self):
-        # Allow public to see packages specific to their school/tenant context
-        if self.action in ['list', 'retrieve']:
-            school = getattr(self.request, 'tenant', None)
-            if not school and self.request.user.is_authenticated:
-                school = getattr(self.request.user, 'school', None)
+class SalaryAllowanceViewSet(TenantViewSet):
+    queryset = SalaryAllowance.objects.all()
+    serializer_class = SalaryAllowanceSerializer
+
+class SalaryDeductionViewSet(TenantViewSet):
+    queryset = SalaryDeduction.objects.all()
+    serializer_class = SalaryDeductionSerializer
+
+class StaffSalaryStructureViewSet(TenantViewSet):
+    queryset = StaffSalaryStructure.objects.select_related('staff').all()
+    serializer_class = StaffSalaryStructureSerializer
+    
+    @action(detail=False, methods=['get'])
+    def by_staff(self, request):
+        staff_id = request.query_params.get('staff_id')
+        if not staff_id:
+            return Response({"error": "Staff ID required"}, status=400)
             
-            if school:
-                qs = self.queryset.filter(school=school)
-                intake_id = self.request.query_params.get('intake')
-                if intake_id:
-                    qs = qs.filter(intake_id=intake_id)
-                return qs
-            return self.queryset.none()
+        structure, created = StaffSalaryStructure.objects.get_or_create(
+            staff_id=staff_id,
+            school=request.user.school
+        )
+        # Recalculate just in case basic salary changed
+        structure.calculate_totals()
+        return Response(self.get_serializer(structure).data)
+
+class PayrollViewSet(TenantViewSet):
+    queryset = Payroll.objects.prefetch_related('entries', 'entries__staff').all()
+    serializer_class = PayrollSerializer
+    
+    @action(detail=False, methods=['post'])
+    def generate(self, request):
+        """
+        Generate Draft Payroll for a given month.
+        Requires: month (YYYY-MM-DD)
+        """
+        month_str = request.data.get('month')
+        if not month_str:
+            return Response({"error": "Month is required"}, status=400)
             
-        return super().get_queryset()
+        # Parse month to first day
+        from datetime import datetime
+        try:
+            date_obj = datetime.strptime(month_str, '%Y-%m-%d').date()
+            month_start = date_obj.replace(day=1)
+        except ValueError:
+            return Response({"error": "Invalid date format. Use YYYY-MM-DD"}, status=400)
+            
+        school = request.user.school
+        
+        # Check if exists
+        if Payroll.objects.filter(school=school, month=month_start).exists():
+            return Response({"error": f"Payroll for {month_start.strftime('%B %Y')} already exists."}, status=400)
+            
+        payroll = Payroll.objects.create(
+            school=school,
+            month=month_start,
+            status='draft'
+        )
+        
+        # Fetch active staff
+        # Assuming staff_type != 'contract' or similar logic if needed
+        active_staff = Teacher.objects.filter(school=school) # Add active check if needed
+        
+        total_bill = 0
+        count = 0
+        
+        for staff in active_staff:
+            # Get or create structure
+            structure, _ = StaffSalaryStructure.objects.get_or_create(staff=staff, school=school)
+            structure.calculate_totals()
+            
+            basic = float(staff.basic_salary) if staff.basic_salary else 0
+            allowances = float(structure.total_allowances)
+            deductions = float(structure.total_deductions)
+            net = basic + allowances - deductions
+            
+            # Create Entry
+            PayrollEntry.objects.create(
+                school=school,
+                payroll=payroll,
+                staff=staff,
+                basic_salary=basic,
+                total_allowances=allowances,
+                total_deductions=deductions,
+                net_pay=net,
+                breakdown=structure.structure_data or {}
+            )
+            
+            total_bill += net
+            count += 1
+            
+        payroll.total_wage_bill = total_bill
+        payroll.total_staff = count
+        payroll.save()
+        
+        return Response(self.get_serializer(payroll).data, status=201)
+
+    @action(detail=True, methods=['post'])
+    def approve(self, request, pk=None):
+        payroll = self.get_object()
+        if payroll.status != 'draft':
+            return Response({"error": "Only draft payrolls can be approved"}, status=400)
+            
+        payroll.status = 'approved'
+        payroll.approved_by = request.user
+        payroll.approved_at = timezone.now()
+        payroll.save()
+        
+        return Response(self.get_serializer(payroll).data)
+
+    @action(detail=True, methods=['post'])
+    def mark_paid(self, request, pk=None):
+        payroll = self.get_object()
+        if payroll.status != 'approved':
+            return Response({"error": "Payroll must be approved before payment"}, status=400)
+            
+        payroll.status = 'paid'
+        payroll.paid_at = timezone.now()
+        payroll.save()
+        
+        # Auto-create Expense Check
+        create_expense = request.data.get('create_expense', False)
+        if create_expense:
+            Expense.objects.create(
+                school=payroll.school,
+                title=f"Staff Payroll - {payroll.month.strftime('%B %Y')}",
+                amount=payroll.total_wage_bill,
+                category='salary',
+                date=timezone.now().date(),
+                session=request.user.school.current_session, # Assuming property exists or similar
+                term=request.user.school.current_term,
+                recorded_by=request.user.username,
+                description=f"Automated payroll entry for {payroll.total_staff} staff."
+            )
+        
+        return Response(self.get_serializer(payroll).data)
+
+class DashboardViewSet(viewsets.ViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def list(self, request):
+        school = request.user.school
+        
+        # Simple aggregated stats
+        from django.db.models import Sum
+        
+        expected_fees = StudentFee.objects.filter(school=school).aggregate(Sum('amount'))['amount__sum'] or 0
+        total_collected = Payment.objects.filter(school=school).aggregate(Sum('amount'))['amount__sum'] or 0
+        total_expenses = Expense.objects.filter(school=school).aggregate(Sum('amount'))['amount__sum'] or 0
+        
+        # Payroll stats
+        total_payroll = Payroll.objects.filter(
+            school=school, status='paid'
+        ).aggregate(Sum('total_wage_bill'))['total_wage_bill'] or 0
+        
+        # Outstanding
+        outstanding = expected_fees - total_collected
+        
+        # Recent activity
+        recent_payments = Payment.objects.filter(school=school).order_by('-date')[:5]
+        recent_expenses = Expense.objects.filter(school=school).order_by('-date')[:5]
+        
+        data = {
+            "expected_revenue": expected_fees,
+            "total_collected": total_collected,
+            "total_outstanding": outstanding,
+            "total_expenses": total_expenses,
+            "total_payroll": total_payroll,
+            "net_balance": total_collected - total_expenses - total_payroll,
+            "recent_payments": PaymentSerializer(recent_payments, many=True).data,
+            "recent_expenses": ExpenseSerializer(recent_expenses, many=True).data
+        }
+        
+        return Response(data)

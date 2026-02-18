@@ -163,7 +163,7 @@ export const ClassesView: React.FC<ClassesViewProps> = ({ classes, teachers, onU
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {classes.map(c => {
-                        const teacher = teachers.find(t => t.id === c.class_teacher_id);
+                        const teacher = teachers.find(t => String(t.id) === String(c.class_teacher_id));
                         const subjectCount = (c.subjects ?? Utils.getSubjectsForClass(c)).length;
                         return (
                             <Card key={c.id} className="hover:border-brand-400 transition-all cursor-pointer group" >

@@ -56,10 +56,10 @@ export const SubjectTeacherManager: React.FC = () => {
 
         addSubjectTeacher({
             id: Utils.generateId(),
-            teacher_id: selectedTeacher,
-            class_id: selectedClass,
-            subject: selectedSubject,
-            session: settings.current_session,
+            teacher_id: String(selectedTeacher),
+            class_id: String(selectedClass),
+            subject: String(selectedSubject),
+            session: String(settings.current_session),
             created_at: Date.now(),
             updated_at: Date.now()
         });
@@ -70,12 +70,12 @@ export const SubjectTeacherManager: React.FC = () => {
     };
 
     const getTeacherName = (teacherId: string) => {
-        return teachers.find(t => t.id === teacherId)?.name || 'Unknown';
+        return teachers.find(t => String(t.id) === String(teacherId))?.name || 'Unknown';
     };
 
     // Get subjects that are not yet assigned
     const unassignedSubjects = classSubjects.filter(
-        subj => !classAssignments.some(a => a.subject === subj)
+        subj => !classAssignments.some(a => String(a.subject) === String(subj))
     );
 
     return (
@@ -173,7 +173,7 @@ export const SubjectTeacherManager: React.FC = () => {
                                         </div>
                                         <button
                                             onClick={() => {
-                                                removeSubjectTeacher(assignment.id);
+                                                removeSubjectTeacher(String(assignment.id));
                                                 addToast('Assignment removed', 'info');
                                             }}
                                             className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
@@ -195,7 +195,7 @@ export const SubjectTeacherManager: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
                         {classes.map(cls => {
                             const assignments = subjectTeachers.filter(
-                                st => st.class_id === cls.id && st.session === settings.current_session
+                                st => String(st.class_id) === String(cls.id) && String(st.session) === String(settings.current_session)
                             );
                             const subjects = Utils.getSubjectsForClass(cls);
                             const coverage = subjects.length > 0

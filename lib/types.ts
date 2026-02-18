@@ -130,17 +130,32 @@ export interface Class extends Entity {
   subjects: string[] | null;
 }
 
-export interface Teacher extends Entity {
-  user?: number | null; // FK to User
+export interface Teacher {
+  id: number;
+  user?: number | null;
   name: string;
-  address: string;
   email: string;
   phone: string;
-  passport_url?: string | null; // Base64 image or URL
+  address: string;
+  school: number;
   staff_type: 'ACADEMIC' | 'NON_ACADEMIC';
+  employment_type?: 'FULL_TIME' | 'PART_TIME' | 'CONTRACT';
   role?: string;
+  passport_url?: string | null;
   tasks?: string;
-  assigned_modules?: string[];
+  assigned_modules?: string[]; // IDs
+
+  // Financial Data
+  basic_salary?: number | string;
+  bank_name?: string;
+  account_number?: string;
+  account_name?: string;
+  pfa_name?: string;
+  pfa_number?: string;
+  tax_id?: string;
+
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Staff extends Entity {
@@ -154,6 +169,18 @@ export interface Staff extends Entity {
   phone: string;
   address: string;
   staff_type: 'ACADEMIC' | 'NON_ACADEMIC';
+  employment_type?: 'FULL_TIME' | 'PART_TIME' | 'CONTRACT';
+  school?: number;
+
+  // Financial Data (shared with Teacher for payroll purposes)
+
+  basic_salary?: number | string;
+  bank_name?: string;
+  account_number?: string;
+  account_name?: string;
+  pfa_name?: string;
+  pfa_number?: string;
+  tax_id?: string;
 }
 
 export interface Student extends Entity {
@@ -547,3 +574,57 @@ export interface SupportTicket extends Omit<Entity, 'created_at' | 'updated_at'>
 
 // Restoring UserRole at the end
 export type UserRole = 'super_admin' | 'admin' | 'teacher' | 'student' | 'parent' | 'staff';
+
+// =============================================
+// PHASE 6: Payroll & Salary
+// =============================================
+
+export interface SalaryAllowance extends Entity {
+  name: string;
+  description?: string;
+  is_taxable: boolean;
+}
+
+export interface SalaryDeduction extends Entity {
+  name: string;
+  description?: string;
+  is_statutory: boolean;
+}
+
+export interface StaffSalaryStructure extends Entity {
+  teacher: number;
+  basic_salary: number;
+  structure_data: {
+    allowances: { name: string; amount: number }[];
+    deductions: { name: string; amount: number }[];
+  };
+}
+
+export interface Payroll extends Entity {
+  month: string;
+  total_wage_bill: number;
+  total_staff: number;
+  status: 'draft' | 'approved' | 'paid';
+  entries: PayrollEntry[];
+  generated_by?: string;
+  approved_by?: string;
+  paid_at?: string;
+}
+
+export interface PayrollEntry extends Entity {
+  payroll: number;
+  staff_id: number;
+  staff_name: string;
+  staff_role: string;
+  bank_name?: string;
+  account_number?: string;
+  basic_salary: number;
+  total_allowances: number;
+  total_deductions: number;
+  net_pay: number;
+  breakdown: {
+    allowances: { name: string; amount: number }[];
+    deductions: { name: string; amount: number }[];
+  };
+  is_paid: boolean;
+}

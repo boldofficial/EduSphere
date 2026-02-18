@@ -83,7 +83,13 @@ class TeacherSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Teacher
-        fields = ['id', 'user', 'school', 'name', 'address', 'phone', 'email', 'passport_url', 'staff_type', 'role', 'tasks', 'assigned_modules', 'created_at', 'updated_at']
+        fields = [
+            'id', 'user', 'school', 'name', 'address', 'phone', 'email', 'passport_url', 
+            'staff_type', 'employment_type', 'role', 'tasks', 'assigned_modules',
+            'basic_salary', 'bank_name', 'account_number', 'account_name',
+            'pfa_name', 'pfa_number', 'tax_id',
+            'created_at', 'updated_at'
+        ]
         read_only_fields = ('school',)
 
     def to_representation(self, instance):

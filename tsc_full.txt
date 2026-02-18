@@ -1,0 +1,22 @@
+﻿components/features/bursary/PayrollManagement.tsx(135,101): error TS2345: Argument of type 'string' is not assignable to parameter of type 'number'.
+components/features/bursary/PayrollManagement.tsx(140,122): error TS2345: Argument of type 'string' is not assignable to parameter of type 'number'.
+components/features/bursary/PayrollManagement.tsx(212,106): error TS2345: Argument of type 'Staff' is not assignable to parameter of type 'Teacher'.
+  Property 'school' is missing in type 'Staff' but required in type 'Teacher'.
+components/features/ClassesView.tsx(166,60): error TS2367: This comparison appears to be unintentional because the types 'number' and 'string | null' have no overlap.
+components/features/grading/SubjectTeacherManager.tsx(73,35): error TS2367: This comparison appears to be unintentional because the types 'number' and 'string' have no overlap.
+components/features/MessagesView.tsx(78,17): error TS2322: Type 'number' is not assignable to type 'string'.
+components/features/StudentDashboardView.tsx(69,62): error TS2367: This comparison appears to be unintentional because the types 'number' and 'string | null | undefined' have no overlap.
+components/features/TeacherDashboardView.tsx(161,38): error TS2367: This comparison appears to be unintentional because the types 'string' and 'number' have no overlap.
+components/features/TeacherDashboardView.tsx(167,57): error TS2367: This comparison appears to be unintentional because the types 'string | null' and 'number' have no overlap.
+components/features/TeacherDashboardView.tsx(179,29): error TS2367: This comparison appears to be unintentional because the types 'string | null' and 'number' have no overlap.
+components/features/TeacherDashboardView.tsx(252,64): error TS2367: This comparison appears to be unintentional because the types 'string | null' and 'number' have no overlap.
+components/features/TeacherDashboardView.tsx(290,47): error TS2322: Type 'number' is not assignable to type 'string'.
+components/features/TeachersView.tsx(29,54): error TS2322: Type 'null' is not assignable to type 'string | undefined'.
+components/features/TeachersView.tsx(35,22): error TS2345: Argument of type 'number' is not assignable to parameter of type 'SetStateAction<string | null>'.
+components/features/TeachersView.tsx(40,68): error TS2322: Type 'null' is not assignable to type 'string | undefined'.
+components/features/TeachersView.tsx(99,72): error TS2322: Type 'null' is not assignable to type 'string | undefined'.
+components/features/TeachersView.tsx(161,65): error TS2345: Argument of type 'number' is not assignable to parameter of type 'string'.
+components/features/TeachersView.tsx(186,75): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+components/features/timetable/TimetableBuilder.tsx(252,81): error TS2367: This comparison appears to be unintentional because the types 'number' and 'string | null' have no overlap.
+components/ui/alert.tsx(2,40): error TS2307: Cannot find module 'class-variance-authority' or its corresponding type declarations.

@@ -34,7 +34,7 @@ const MySubjectsModule = ({ subjects, classes }: { subjects: any[], classes: any
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {subjects.map(sub => {
-                const cls = classes.find(c => c.id === sub.class_id);
+                const cls = classes.find(c => String(c.id) === String(sub.class_id));
                 return (
                     <Card key={sub.id} className="hover:shadow-md transition-shadow cursor-pointer">
                         <div className="p-6">
@@ -79,7 +79,7 @@ const MyStudentsModule = ({ students, classes }: { students: any[], classes: any
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                         {students.map(student => {
-                            const cls = classes.find(c => c.id === student.class_id);
+                            const cls = classes.find(c => String(c.id) === String(student.class_id));
                             return (
                                 <tr key={student.id} className="hover:bg-gray-50 transition-colors">
                                     <td className="px-6 py-3 font-medium text-gray-900">{student.names}</td>
@@ -158,13 +158,13 @@ export const TeacherDashboardView = () => {
     const myTeacherProfile = teachers.find(t => t.email === currentUser?.email) || teachers[0] || { id: 'teacher_1', name: 'Demo Teacher' };
 
     const myAssignments = useMemo(() =>
-        subjectTeachers.filter(st => st.teacher_id === myTeacherProfile.id && st.session === settings.current_session),
+        subjectTeachers.filter(st => String(st.teacher_id) === String(myTeacherProfile.id) && st.session === settings.current_session),
         [subjectTeachers, myTeacherProfile.id, settings.current_session]
     );
 
     const myClassIds = useMemo(() => {
         const idsFromSubjects = myAssignments.map(a => a.class_id);
-        const idsFromClassTeacher = classes.filter(c => c.class_teacher_id === myTeacherProfile.id).map(c => c.id);
+        const idsFromClassTeacher = classes.filter(c => String(c.class_teacher_id) === String(myTeacherProfile.id)).map(c => c.id);
         return Array.from(new Set([...idsFromSubjects, ...idsFromClassTeacher]));
     }, [myAssignments, classes, myTeacherProfile.id]);
 
@@ -176,14 +176,14 @@ export const TeacherDashboardView = () => {
     );
 
     const classesAsClassTeacher = useMemo(() =>
-        classes.filter(c => c.class_teacher_id === myTeacherProfile.id),
+        classes.filter(c => String(c.class_teacher_id) === String(myTeacherProfile.id)),
         [classes, myTeacherProfile.id]
     );
 
     // Initial selected class for attendance
     useEffect(() => {
         if (!selectedClassAtt && myClasses.length > 0) {
-            setSelectedClassAtt(myClasses[0].id);
+            setSelectedClassAtt(String(myClasses[0].id));
         }
     }, [myClasses, selectedClassAtt]);
 
@@ -249,9 +249,9 @@ export const TeacherDashboardView = () => {
                             {myClasses.length > 0 ? (
                                 <div className="space-y-3">
                                     {myClasses.map(cls => {
-                                        const isClassTeacher = cls.class_teacher_id === myTeacherProfile.id;
-                                        const studentsInClass = students.filter((s: Types.Student) => s.class_id === cls.id).length;
-                                        const subjectsInClass = myAssignments.filter(a => a.class_id === cls.id);
+                                        const isClassTeacher = String(cls.class_teacher_id) === String(myTeacherProfile.id);
+                                        const studentsInClass = students.filter((s: Types.Student) => String(s.class_id) === String(cls.id)).length;
+                                        const subjectsInClass = myAssignments.filter(a => String(a.class_id) === String(cls.id));
                                         return (
                                             <div key={cls.id} className="p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:bg-gray-100 transition-colors">
                                                 <div className="flex items-center justify-between mb-2">
@@ -287,7 +287,7 @@ export const TeacherDashboardView = () => {
                         </div>
 
                         <div className="space-y-8">
-                            <NextLessonWidget teacherId={myTeacherProfile.id} />
+                            <NextLessonWidget teacherId={String(myTeacherProfile.id)} />
 
                             <ConductLogWidget students={myStudents} />
 
@@ -324,7 +324,7 @@ export const TeacherDashboardView = () => {
                 myClasses.length > 0 ? (
                     <AttendanceView
                         classes={myClasses}
-                        students={myStudents.filter(s => s.class_id === selectedClassAtt)}
+                        students={myStudents.filter(s => String(s.class_id) === String(selectedClassAtt))}
                         attendance={attendance}
                         settings={settings}
                         onSave={handleUpsertAttendance}

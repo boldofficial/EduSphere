@@ -66,7 +66,7 @@ export const StudentDashboardView = () => {
 
     const currentClass = classes.find((c: Types.Class) => c.id === student.class_id);
     const classSubjects = Utils.getSubjectsForClass(currentClass);
-    const classTeacher = teachers.find((t: Types.Teacher) => t.id === currentClass?.class_teacher_id);
+    const classTeacher = teachers.find((t: Types.Teacher) => String(t.id) === String(currentClass?.class_teacher_id));
     const classmates = students.filter((s: Types.Student) => s.class_id === student.class_id);
 
     // Calculations

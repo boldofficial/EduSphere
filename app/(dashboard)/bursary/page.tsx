@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { useSchoolStore } from '@/lib/store';
 import { BursaryView } from '@/components/features/BursaryView';
 import { StudentInvoiceView } from '@/components/features/bursary/StudentInvoiceView';
+import { PayrollManagement } from '@/components/features/bursary/PayrollManagement';
 import {
     useStudents, useClasses, useFees, usePayments, useExpenses, useSettings,
     useCreatePayment, useCreateFee, useCreateExpense,

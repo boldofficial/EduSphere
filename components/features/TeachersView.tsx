@@ -24,7 +24,7 @@ export const TeachersView: React.FC<TeachersViewProps> = ({ teachers, onAdd, onU
     const [showPassword, setShowPassword] = useState(false);
     const [isCreatingLogin, setIsCreatingLogin] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [editingId, setEditingId] = useState<string | null>(null);
+    const [editingId, setEditingId] = useState<string | number | null>(null);
     const [formData, setFormData] = useState<Partial<Types.Teacher>>({
         name: '', email: '', phone: '', address: '', passport_url: null
     });
@@ -107,7 +107,7 @@ export const TeachersView: React.FC<TeachersViewProps> = ({ teachers, onAdd, onU
 
         if (editingId) {
             onUpdate(
-                { id: editingId, updates: formData },
+                { id: String(editingId), updates: formData },
                 { onSuccess, onError }
             );
         } else {
@@ -158,7 +158,7 @@ export const TeachersView: React.FC<TeachersViewProps> = ({ teachers, onAdd, onU
                                 <button onClick={() => handleEdit(t)} className="text-gray-400 hover:text-brand-600 transition-colors p-1">
                                     <Edit className="h-4 w-4" />
                                 </button>
-                                <button onClick={() => onDelete(t.id)} className="text-gray-400 hover:text-red-600 transition-colors p-1">
+                                <button onClick={() => onDelete(t.id as any)} className="text-gray-400 hover:text-red-600 transition-colors p-1">
                                     <Trash2 className="h-4 w-4" />
                                 </button>
                             </div>

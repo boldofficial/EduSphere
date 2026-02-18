@@ -122,3 +122,10 @@ export {
 export {
     useAssignments, useQuizzes, useQuestions, useSubmissions,
 } from './use-learning';
+
+export {
+    useSalaryAllowances, useCreateAllowance,
+    useSalaryDeductions, useCreateDeduction,
+    useStaffSalaryStructure, useUpdateSalaryStructure,
+    usePayrolls, useGeneratePayroll, useApprovePayroll, useMarkPayrollPaid,
+} from './use-payroll';

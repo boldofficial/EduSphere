@@ -75,7 +75,7 @@ export const MessagesView: React.FC = () => {
         // Teachers
         teachers.forEach((t: Types.Teacher) => {
             recipients.push({
-                id: t.id,
+                id: String(t.id),
                 userId: t.user,
                 name: t.name,
                 email: t.email,
@@ -86,7 +86,7 @@ export const MessagesView: React.FC = () => {
         // Staff
         staff.forEach((s: Types.Staff) => {
             recipients.push({
-                id: s.id,
+                id: String(s.id),
                 userId: s.user,
                 name: s.name,
                 email: s.email,
@@ -97,7 +97,7 @@ export const MessagesView: React.FC = () => {
         // Students (for messaging their parents)
         students.forEach((s: Types.Student) => {
             recipients.push({
-                id: s.id,
+                id: String(s.id),
                 userId: s.user,
                 name: s.names,
                 email: s.parent_email,

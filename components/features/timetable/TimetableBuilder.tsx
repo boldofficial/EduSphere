@@ -249,7 +249,7 @@ export const TimetableBuilder = () => {
                                                     <div className="flex items-center gap-1 mt-1">
                                                         <User size={12} className="text-gray-400 shrink-0" />
                                                         <span className="text-xs text-gray-600 truncate">
-                                                            {teachers.find(t => t.id === entry.teacher)?.name || entry.teacher_name || 'No Teacher'}
+                                                            {teachers.find(t => String(t.id) === String(entry.teacher))?.name || entry.teacher_name || 'No Teacher'}
                                                         </span>
                                                     </div>
                                                 </div>
