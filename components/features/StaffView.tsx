@@ -125,7 +125,7 @@ export const StaffView: React.FC<StaffViewProps> = ({ staff, onAdd, onUpdate, on
             address: staffMember.address,
             assigned_modules: staffMember.assigned_modules || [],
             passport_url: staffMember.passport_url || null,
-            basic_salary: staffMember.basic_salary || 0,
+            basic_salary: Number(staffMember.basic_salary) || 0,
             bank_name: staffMember.bank_name || '',
             account_number: staffMember.account_number || '',
             account_name: staffMember.account_name || '',
@@ -296,7 +296,7 @@ export const StaffView: React.FC<StaffViewProps> = ({ staff, onAdd, onUpdate, on
                                 type="number"
                                 required
                                 value={formData.basic_salary}
-                                onChange={e => setFormData({ ...formData, basic_salary: e.target.value })}
+                                onChange={e => setFormData({ ...formData, basic_salary: parseFloat(e.target.value) || 0 })}
                             />
                             <Input
                                 label="Bank Name"
