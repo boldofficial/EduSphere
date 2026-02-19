@@ -13,11 +13,16 @@ from django.utils import timezone
 from django.db.models import Q
 import uuid
 import os
-from .models import GlobalActivityLog, SchoolMessage, PlatformAnnouncement, Notification, SchoolAnnouncement, Newsletter
+from .models import (
+    GlobalActivityLog, SchoolMessage, Conversation, ConversationParticipant,
+    PlatformAnnouncement, Notification, SchoolAnnouncement, Newsletter
+)
 # from emails.models import EmailTemplate
 from .serializers import (
-    GlobalActivityLogSerializer, SchoolMessageSerializer, PlatformAnnouncementSerializer,
-    NotificationSerializer, SchoolAnnouncementSerializer, NewsletterSerializer
+    GlobalActivityLogSerializer, SchoolMessageSerializer, 
+    ConversationSerializer, ConversationParticipantSerializer,
+    PlatformAnnouncementSerializer, NotificationSerializer, 
+    SchoolAnnouncementSerializer, NewsletterSerializer
 )
 from emails.utils import send_template_email
 from .pagination import StandardPagination
@@ -365,35 +370,81 @@ class FileUploadView(APIView):
             return Response({'error': str(e)}, status=500)
 
 
-class SchoolMessageViewSet(CachingMixin, viewsets.ModelViewSet):
-    """Messaging between users within a school"""
+class ConversationViewSet(CachingMixin, viewsets.ModelViewSet):
+    """
+    Groups of participants and their messages.
+    """
     permission_classes = [IsAuthenticated]
-    serializer_class = SchoolMessageSerializer
+    serializer_class = ConversationSerializer
     pagination_class = StandardPagination
-    cache_timeout = 60  # Messages cached for 1 minute
 
     def get_queryset(self):
         user = self.request.user
         if not user.is_authenticated or not hasattr(user, 'school'):
-            return SchoolMessage.objects.none()
+            return Conversation.objects.none()
         
-        # Return messages where user is sender or recipient
-        return SchoolMessage.objects.filter(
-            school=user.school
-        ).filter(
-            Q(sender=user) | Q(recipient=user)
-        ).select_related('sender', 'recipient', 'school')
+        return Conversation.objects.filter(
+            school=user.school,
+            participants__user=user
+        ).prefetch_related('participants__user').order_by('-created_at').distinct()
 
     def perform_create(self, serializer):
-        if hasattr(self.request.user, 'school') and self.request.user.school:
-            serializer.save(sender=self.request.user, school=self.request.user.school)
+        conv = serializer.save(school=self.request.user.school)
+        # Add creator as participant
+        ConversationParticipant.objects.create(user=self.request.user, conversation=conv)
+        
+        # Add other participants if specified in initial request (simplified for now)
+        participants = self.request.data.get('participant_ids', [])
+        for pid in participants:
+            if pid != self.request.user.id:
+                ConversationParticipant.objects.get_or_create(user_id=pid, conversation=conv)
 
-    def perform_update(self, serializer):
-        # Handle marking message as read
-        if 'is_read' in self.request.data and self.request.data['is_read'] and not serializer.instance.is_read:
-            serializer.save(is_read=True, read_at=timezone.now())
-        else:
-            serializer.save()
+    @action(detail=True, methods=['post'], url_path='mark-read')
+    def mark_read(self, request, pk=None):
+        conv = self.get_object()
+        participant = conv.participants.filter(user=request.user).first()
+        if participant:
+            participant.last_read_at = timezone.now()
+            participant.save()
+            return Response({"status": "read"})
+        return Response({"error": "not a participant"}, status=403)
+
+class SchoolMessageViewSet(CachingMixin, viewsets.ModelViewSet):
+    """Messaging within a conversation thread"""
+    permission_classes = [IsAuthenticated]
+    serializer_class = SchoolMessageSerializer
+    pagination_class = StandardPagination
+    cache_timeout = 30  # Low cache for active messaging
+
+    def get_queryset(self):
+        user = self.request.user
+        conversation_id = self.request.query_params.get('conversation')
+        
+        if not conversation_id:
+            # Fallback for compatibility or global view (though grouped is better)
+            return SchoolMessage.objects.filter(conversation__participants__user=user).select_related('sender', 'conversation')
+            
+        # High security: must be a participant
+        if not ConversationParticipant.objects.filter(user=user, conversation_id=conversation_id).exists():
+            return SchoolMessage.objects.none()
+            
+        return SchoolMessage.objects.filter(conversation_id=conversation_id).select_related('sender')
+
+    def perform_create(self, serializer):
+        conversation = serializer.validated_data.get('conversation')
+        
+        # Ensure participant or broadcast sender
+        if not ConversationParticipant.objects.filter(user=self.request.user, conversation=conversation).exists():
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Not a participant in this conversation")
+            
+        serializer.save(sender=self.request.user)
+        
+        # Update last_read_at for this participant
+        participant = ConversationParticipant.objects.filter(user=self.request.user, conversation=conversation).first()
+        if participant:
+            participant.last_read_at = timezone.now()
+            participant.save()
 
     @action(detail=False, methods=['post'], url_path='ai-draft')
     def ai_draft(self, request):

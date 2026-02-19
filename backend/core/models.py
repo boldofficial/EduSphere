@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from schools.models import School
+import uuid
 
 class GlobalActivityLog(models.Model):
     ACTION_CHOICES = (
@@ -60,29 +61,56 @@ class PlatformAnnouncement(models.Model):
     def __str__(self):
         return self.title
 
+class Conversation(models.Model):
+    TYPE_CHOICES = (
+        ('DIRECT', 'Direct Message'),
+        ('GROUP', 'Group Chat'),
+        ('BROADCAST', 'Broadcast'),
+    )
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='conversations')
+    type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='DIRECT')
+    created_at = models.DateTimeField(auto_now_add=True)
+    metadata = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.type} Conversation ({self.id})"
+
+class ConversationParticipant(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='conversations')
+    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name='participants')
+    last_read_at = models.DateTimeField(null=True, blank=True)
+    is_archived = models.BooleanField(default=False)
+    is_muted = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ('user', 'conversation')
+
+    def __str__(self):
+        return f"{self.user.username} in {self.conversation}"
+
 class SchoolMessage(models.Model):
-    """Direct messaging between users within a school"""
-    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='messages')
+    """Messages within a conversation"""
+    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name='messages')
     sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='sent_messages')
-    recipient = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='received_messages')
-    subject = models.CharField(max_length=255, blank=True)
     body = models.TextField()
-    attachment_url = models.CharField(max_length=500, blank=True, default='', help_text="URL to an attached file (uploaded via FileUploadView)")
-    is_read = models.BooleanField(default=False)
-    read_at = models.DateTimeField(null=True, blank=True)
+    attachment_url = models.CharField(max_length=500, blank=True, default='', help_text="URL to an attached file")
+    is_system_generated = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ['-created_at']
+        ordering = ['created_at']
         indexes = [
-            models.Index(fields=['school', 'recipient', 'is_read']),
-            models.Index(fields=['school', 'sender']),
-            models.Index(fields=['created_at']),
+            models.Index(fields=['conversation', 'created_at']),
         ]
 
     def __str__(self):
-        return f"Message from {self.sender.username} to {self.recipient.username}"
+        return f"Message from {self.sender.username} in {self.conversation.id}"
 
 
 class Notification(models.Model):

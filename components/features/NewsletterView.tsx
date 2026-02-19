@@ -142,7 +142,7 @@ export const NewsletterView: React.FC = () => {
         : newsletters;
 
     // Sort by date (newest first)
-    const sortedNewsletters = [...visibleNewsletters].sort((a, b) => b.created_at - a.created_at);
+    const sortedNewsletters = [...visibleNewsletters].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
     return (
         <div className="space-y-6">

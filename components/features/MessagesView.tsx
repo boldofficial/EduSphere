@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
     Mail, Plus, Trash2, Send, Inbox, CheckCircle, Circle,
     User, Users, GraduationCap, UserCog, Search, X, Clock,
@@ -16,8 +16,9 @@ import { useToast } from '@/components/providers/toast-provider';
 import * as Utils from '@/lib/utils';
 import * as Types from '@/lib/types';
 import {
-    useStudents, useTeachers, useStaff, useMessages,
-    useCreateMessage, useUpdateMessage, useDeleteMessage
+    useStudents, useStaff, useMessages,
+    useCreateMessage, useUpdateMessage, useDeleteMessage,
+    useConversations, useCreateConversation, useMarkConversationRead
 } from '@/lib/hooks/use-data';
 
 type RecipientType = 'teacher' | 'student' | 'staff' | 'parent' | 'admin';
@@ -37,604 +38,383 @@ export const MessagesView: React.FC = () => {
 
     // Data Hooks
     const { data: students = [] } = useStudents();
-    const { data: teachers = [] } = useTeachers();
     const { data: staff = [] } = useStaff();
-    const { data: messages = [] } = useMessages();
-
-    // Mutations
-    const { mutate: createMessage, isPending: isSending } = useCreateMessage();
-    const { mutate: updateMessage } = useUpdateMessage();
-    const { mutate: deleteMessage } = useDeleteMessage();
+    const { data: conversations = [], isLoading: isLoadingConversations } = useConversations();
 
     // State
+    const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+    const { data: messages = [], isLoading: isLoadingMessages } = useMessages(activeConversationId || '');
+
     const [isComposeOpen, setIsComposeOpen] = useState(false);
-    const [viewingMessage, setViewingMessage] = useState<Types.Message | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
-    const [recipientFilter, setRecipientFilter] = useState<'all' | RecipientType>('all');
-    const [viewMode, setViewMode] = useState<'sent' | 'inbox'>('sent');
+    const [messageBody, setMessageBody] = useState('');
 
     // Compose form state
     const [recipientType, setRecipientType] = useState<RecipientType>(
-        currentRole === 'admin' ? 'teacher' : 'admin'
+        currentRole === 'admin' ? 'staff' : 'admin'
     );
-    const [selectedRecipient, setSelectedRecipient] = useState('');
-    const [subject, setSubject] = useState('');
-    const [body, setBody] = useState('');
+    const [selectedRecipient, setSelectedRecipient] = useState<number | ''>('');
+    const [newConvSubject, setNewConvSubject] = useState('');
 
-    // Check permissions - Expand to student and parent
-    if (!['admin', 'teacher', 'staff', 'student', 'parent'].includes(currentRole || '')) {
-        return (
-            <div className="flex items-center justify-center h-64">
-                <p className="text-gray-500">You don't have permission to access this page.</p>
-            </div>
-        );
-    }
+    // Mutations
+    const { mutate: createConversation, isPending: isCreatingConv } = useCreateConversation();
+    const { mutate: sendMessage, isPending: isSending } = useCreateMessage();
+    const { mutate: markRead } = useMarkConversationRead();
 
-    // Build recipients list
+    // Selected conversation
+    const activeConversation = useMemo(() =>
+        conversations.find(c => c.id === activeConversationId),
+        [conversations, activeConversationId]);
+
+    // Role-based recipient filtering (same as before)
     const allRecipients: Recipient[] = useMemo(() => {
         const recipients: Recipient[] = [];
-
-        // 1. Teachers
-        teachers.forEach((t: Types.Teacher) => {
-            if (t.user) { // Only show those with login accounts
-                recipients.push({
-                    id: String(t.id),
-                    userId: t.user,
-                    name: t.name,
-                    email: t.email,
-                    type: 'teacher'
-                });
-            }
-        });
-
-        // 2. Staff
+        // Staff/Teachers
         staff.forEach((s: Types.Staff) => {
             if (s.user) {
-                const rec = {
-                    id: String(s.id),
-                    userId: s.user,
-                    name: s.name,
-                    email: s.email,
-                    type: 'staff' as any
-                };
+                const rec = { id: String(s.id), userId: s.user, name: s.name, type: 'staff' as any };
                 recipients.push(rec);
-
-                // If staff role indicates they are an admin, also add as admin target
-                const roleLower = s.role.toLowerCase();
-                const isAdminRole = roleLower.includes('admin') ||
-                    roleLower.includes('principal') ||
-                    roleLower.includes('director') ||
-                    roleLower.includes('proprietor') ||
-                    roleLower.includes('head') ||
-                    roleLower.includes('secretary');
-
-                if (isAdminRole) {
-                    recipients.push({
-                        ...rec,
-                        type: 'admin'
-                    });
+                // Broaden admin detection: principal, admin, head, director, management
+                const role = s.role.toLowerCase();
+                const isAdmin = ['principal', 'admin', 'head', 'director', 'manage', 'secretary', 'proprietor'].some(r => role.includes(r));
+                if (isAdmin) {
+                    recipients.push({ ...rec, type: 'admin' });
                 }
             }
         });
-
-        // 3. Students & Parents (Admins/Teachers can message parents, or students can message teachers)
+        // Students/Parents
         students.forEach((s: Types.Student) => {
             if (s.user) {
-                recipients.push({
-                    id: String(s.id),
-                    userId: s.user,
-                    name: s.names,
-                    email: s.parent_email,
-                    type: 'student',
-                    parentName: s.parent_name
-                });
+                recipients.push({ id: String(s.id), userId: s.user, name: s.names, type: 'student', parentName: s.parent_name });
             }
         });
-
         return recipients;
-    }, [teachers, staff, students]);
+    }, [staff, students]);
 
-    // Filtered recipients for compose dropdown
-    const filteredRecipients = useMemo(() => {
-        return allRecipients.filter(r => r.type === recipientType);
-    }, [allRecipients, recipientType]);
+    const filteredRecipients = useMemo(() =>
+        allRecipients.filter(r => r.type === recipientType),
+        [allRecipients, recipientType]);
 
-    // Get recipient name from message (backend now provides sender_name/recipient_name)
-    const getDisplayName = (message: Types.Message, mode: 'sent' | 'inbox') => {
-        if (mode === 'sent') {
-            return message.recipient_name || 'Unknown';
+    // Selection Side Effects
+    useEffect(() => {
+        if (activeConversationId) {
+            markRead(activeConversationId);
         }
-        return message.sender_name || 'Unknown';
-    };
+    }, [activeConversationId]);
 
-    // Filter messages
-    const filteredMessages = useMemo(() => {
-        return messages
-            .filter((m: Types.Message) => {
-                // Robust ID comparison
-                const currentUserId = currentUser?.id ? String(currentUser.id) : null;
-                if (!currentUserId) return false;
-
-                // For sent view, show messages sent by current user
-                if (viewMode === 'sent') {
-                    const senderId = typeof m.sender === 'object' ? String((m.sender as any).id || (m.sender as any).pk) : String(m.sender);
-                    if (senderId !== currentUserId) return false;
+    // Auto-select recipient for non-admin users
+    useEffect(() => {
+        if (isComposeOpen && currentRole !== 'admin') {
+            const adminRec = allRecipients.find(r => r.type === 'admin');
+            if (adminRec && adminRec.userId) {
+                setSelectedRecipient(adminRec.userId);
+            } else {
+                // Fallback: search for any staff member if no explicit admin found
+                const staffRec = allRecipients.find(r => r.type === 'staff');
+                if (staffRec && staffRec.userId) {
+                    setSelectedRecipient(staffRec.userId);
                 }
+            }
+        }
+    }, [isComposeOpen, currentRole, allRecipients]);
 
-                // For inbox view, show messages received
-                if (viewMode === 'inbox') {
-                    const recipientId = typeof m.recipient === 'object' ? String((m.recipient as any).id || (m.recipient as any).pk) : String(m.recipient);
-                    if (recipientId !== currentUserId) return false;
-                }
-
-                // Apply recipient filter
-                if (recipientFilter !== 'all' && m.recipient_role !== recipientFilter) return false;
-
-                // Apply search
-                if (searchTerm) {
-                    const search = searchTerm.toLowerCase();
-                    const name = (m.recipient_name || m.sender_name || '').toLowerCase();
-                    return (
-                        m.subject.toLowerCase().includes(search) ||
-                        m.body.toLowerCase().includes(search) ||
-                        name.includes(search)
-                    );
-                }
-                return true;
-            })
-            .sort((a: Types.Message, b: Types.Message) => {
-                const aTime = new Date(a.created_at).getTime();
-                const bTime = new Date(b.created_at).getTime();
-                return bTime - aTime;
-            });
-    }, [messages, viewMode, recipientFilter, searchTerm, currentUser?.id]);
-
-    // Stats
-    const stats = useMemo(() => {
-        const sent = messages.filter((m: Types.Message) => String(m.sender) === String(currentUser?.id));
-        const unread = messages.filter((m: Types.Message) => String(m.recipient) === String(currentUser?.id) && !m.is_read);
-        return {
-            totalSent: sent.length,
-            toTeachers: sent.filter((m: Types.Message) => m.recipient_role === 'TEACHER').length,
-            toParents: sent.filter((m: Types.Message) => m.recipient_role === 'PARENT' || m.recipient_role === 'STUDENT').length,
-            toStaff: sent.filter((m: Types.Message) => m.recipient_role === 'STAFF').length,
-            unread: unread.length
-        };
-    }, [messages, currentUser?.id]);
-
-    const resetCompose = () => {
-        setRecipientType(currentRole === 'admin' ? 'teacher' : 'admin');
-        setSelectedRecipient('');
-        setSubject('');
-        setBody('');
-    };
-
-    const handleSend = () => {
-        if (!selectedRecipient || !subject.trim() || !body.trim()) {
+    const handleStartConversation = () => {
+        if (!selectedRecipient || !newConvSubject.trim() || !messageBody.trim()) {
             addToast('Please fill in all fields', 'warning');
             return;
         }
 
-        const selectedRec = allRecipients.find(r => String(r.id) === String(selectedRecipient));
-        if (!selectedRec) {
-            console.error('Recipient not found:', selectedRecipient, 'in', allRecipients);
-            addToast('Invalid recipient', 'error');
-            return;
-        }
-
-        if (!selectedRec.userId) {
-            addToast('This recipient does not have a linked user account yet. They need a login account first.', 'error');
-            return;
-        }
-
-        // Send payload matching backend SchoolMessageSerializer
-        const payload = {
-            recipient: selectedRec.userId,
-            subject: subject.trim(),
-            body: body.trim(),
-        } as any;
-
-        createMessage(payload, {
-            onSuccess: () => {
-                addToast('Message sent successfully!', 'success');
-                setIsComposeOpen(false);
-                resetCompose();
-            },
-            onError: () => {
-                addToast('Failed to send message', 'error');
+        createConversation({
+            type: 'DIRECT',
+            participant_ids: [Number(selectedRecipient)],
+            metadata: { subject: newConvSubject }
+        }, {
+            onSuccess: (newConv: Types.Conversation) => {
+                // Now send the first message
+                sendMessage({
+                    conversation: newConv.id,
+                    body: messageBody,
+                } as any, {
+                    onSuccess: () => {
+                        addToast('Conversation started!', 'success');
+                        setIsComposeOpen(false);
+                        setActiveConversationId(newConv.id);
+                        resetCompose();
+                    }
+                });
             }
         });
     };
 
-    const handleDelete = (id: string) => {
-        if (confirm('Are you sure you want to delete this message?')) {
-            deleteMessage(id);
-            setViewingMessage(null);
-            addToast('Message deleted', 'info');
-        }
+    const handleSendMessage = () => {
+        if (!activeConversationId || !messageBody.trim()) return;
+
+        sendMessage({
+            conversation: activeConversationId,
+            body: messageBody,
+        } as any, {
+            onSuccess: () => {
+                setMessageBody('');
+                // Scroll to bottom logic could go here
+            }
+        });
     };
 
-    const handleMarkAsRead = (message: Types.Message) => {
-        if (!message.is_read) {
-            updateMessage({ id: message.id, updates: { is_read: true } });
-        }
-        setViewingMessage(message);
+    const resetCompose = () => {
+        setSelectedRecipient('');
+        setNewConvSubject('');
+        setMessageBody('');
     };
 
-    const getRoleIcon = (role: Types.UserRole) => {
-        switch (role) {
-            case 'teacher': return <UserCog className="h-4 w-4" />;
-            case 'staff': return <Users className="h-4 w-4" />;
-            case 'parent': return <User className="h-4 w-4" />;
-            case 'student': return <GraduationCap className="h-4 w-4" />;
-            default: return <User className="h-4 w-4" />;
-        }
-    };
-
-    const getRoleColor = (role: Types.UserRole) => {
-        switch (role) {
-            case 'teacher': return 'bg-blue-100 text-blue-700';
-            case 'staff': return 'bg-purple-100 text-purple-700';
-            case 'parent': return 'bg-green-100 text-green-700';
-            case 'student': return 'bg-orange-100 text-orange-700';
-            default: return 'bg-gray-100 text-gray-700';
-        }
+    const getOtherParticipant = (conv: Types.Conversation) => {
+        if (!currentUser?.id) return null;
+        return conv.participants.find(p => String(p.user) !== String(currentUser.id));
     };
 
     return (
-        <div className="space-y-6">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Messages</h1>
-                    <p className="text-sm text-gray-500 mt-1">Send and manage messages to teachers, parents, and staff</p>
-                </div>
-                <Button onClick={() => setIsComposeOpen(true)}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Compose Message
-                </Button>
-            </div>
-
-            {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                <div className="relative overflow-hidden bg-gradient-to-br from-brand-500 to-brand-700 p-4 rounded-xl shadow-lg text-white">
-                    <div className="absolute -top-4 -right-4 h-16 w-16 bg-white/10 rounded-full" />
-                    <p className="text-2xl font-bold">{stats.totalSent}</p>
-                    <p className="text-xs opacity-80 mt-1">Total Sent</p>
-                </div>
-                <div className="relative overflow-hidden bg-gradient-to-br from-blue-400 to-blue-600 p-4 rounded-xl shadow-lg text-white">
-                    <div className="absolute -top-4 -right-4 h-16 w-16 bg-white/10 rounded-full" />
-                    <p className="text-2xl font-bold">{stats.toTeachers}</p>
-                    <p className="text-xs opacity-80 mt-1">To Teachers</p>
-                </div>
-                <div className="relative overflow-hidden bg-gradient-to-br from-emerald-400 to-green-600 p-4 rounded-xl shadow-lg text-white">
-                    <div className="absolute -top-4 -right-4 h-16 w-16 bg-white/10 rounded-full" />
-                    <p className="text-2xl font-bold">{stats.toParents}</p>
-                    <p className="text-xs opacity-80 mt-1">To Parents</p>
-                </div>
-                <div className="relative overflow-hidden bg-gradient-to-br from-purple-400 to-purple-600 p-4 rounded-xl shadow-lg text-white">
-                    <div className="absolute -top-4 -right-4 h-16 w-16 bg-white/10 rounded-full" />
-                    <p className="text-2xl font-bold">{stats.toStaff}</p>
-                    <p className="text-xs opacity-80 mt-1">To Staff</p>
-                </div>
-                <div className="relative overflow-hidden bg-gradient-to-br from-rose-400 to-red-600 p-4 rounded-xl shadow-lg text-white">
-                    <div className="absolute -top-4 -right-4 h-16 w-16 bg-white/10 rounded-full" />
-                    <p className="text-2xl font-bold">{stats.unread}</p>
-                    <p className="text-xs opacity-80 mt-1">Unread</p>
-                </div>
-            </div>
-
-            {/* Filters */}
-            <Card className="p-4">
-                <div className="flex flex-col sm:flex-row gap-4">
-                    <div className="flex gap-2">
-                        <Button
-                            variant={viewMode === 'sent' ? 'primary' : 'secondary'}
-                            onClick={() => setViewMode('sent')}
-                            className="flex items-center gap-2"
-                        >
-                            <Send className="h-4 w-4" />
-                            Sent
-                        </Button>
-                        <Button
-                            variant={viewMode === 'inbox' ? 'primary' : 'secondary'}
-                            onClick={() => setViewMode('inbox')}
-                            className="flex items-center gap-2"
-                        >
-                            <Inbox className="h-4 w-4" />
-                            Inbox
-                            {stats.unread > 0 && (
-                                <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                                    {stats.unread}
-                                </span>
-                            )}
+        <div className="flex h-[calc(100vh-12rem)] bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            {/* Sidebar: Conversation List */}
+            <div className="w-80 border-r border-gray-100 flex flex-col">
+                <div className="p-4 border-b border-gray-100 space-y-4">
+                    <div className="flex items-center justify-between">
+                        <h2 className="text-lg font-bold text-gray-900">Inbox</h2>
+                        <Button variant="ghost" size="sm" onClick={() => setIsComposeOpen(true)} className="text-brand-600 hover:text-brand-700 hover:bg-brand-50">
+                            <Plus className="h-5 w-5" />
                         </Button>
                     </div>
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <Input
+                            placeholder="Search chats..."
+                            className="pl-9 h-9"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                </div>
 
-                    <div className="flex-1 flex gap-4">
-                        <div className="relative flex-1">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                            <input
-                                type="text"
-                                placeholder="Search messages..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-                            />
+                <div className="flex-1 overflow-y-auto divide-y divide-gray-50">
+                    {conversations.length === 0 ? (
+                        <div className="p-8 text-center text-gray-400 italic text-sm">
+                            No conversations yet
                         </div>
-                        <Select
-                            value={recipientFilter}
-                            onChange={(e) => setRecipientFilter(e.target.value as any)}
-                            className="w-40"
-                        >
-                            <option value="all">All Recipients</option>
-                            <option value="teacher">Teachers</option>
-                            <option value="parent">Parents</option>
-                            <option value="staff">Staff</option>
-                        </Select>
-                    </div>
-                </div>
-            </Card>
-
-            {/* Messages List */}
-            <Card className="divide-y divide-gray-100">
-                {filteredMessages.length === 0 ? (
-                    <div className="p-12 text-center">
-                        <Mail className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                        <p className="text-gray-500">No messages found</p>
-                        <Button onClick={() => setIsComposeOpen(true)} className="mt-4">
-                            Send your first message
-                        </Button>
-                    </div>
-                ) : (
-                    filteredMessages.map((message: Types.Message) => (
-                        <div
-                            key={message.id}
-                            onClick={() => handleMarkAsRead(message)}
-                            className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors ${!message.is_read && viewMode === 'inbox' ? 'bg-brand-50' : ''
-                                }`}
-                        >
-                            <div className="flex items-start gap-4">
-                                <div className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${getRoleColor((message.recipient_role || 'admin') as Types.UserRole)}`}>
-                                    {getRoleIcon((message.recipient_role || 'admin') as Types.UserRole)}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <span className="font-medium text-gray-900 truncate">
-                                            {viewMode === 'sent'
-                                                ? (message.recipient_name || 'Unknown')
-                                                : (message.sender_name || 'Admin')
-                                            }
-                                        </span>
-                                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${getRoleColor((message.recipient_role || 'admin') as Types.UserRole)}`}>
-                                            {message.recipient_role || 'admin'}
-                                        </span>
-                                        {!message.is_read && viewMode === 'inbox' && (
-                                            <Circle className="h-2 w-2 fill-brand-500 text-brand-500" />
-                                        )}
+                    ) : (
+                        conversations.map(conv => {
+                            const other = getOtherParticipant(conv);
+                            const isActive = activeConversationId === conv.id;
+                            return (
+                                <button
+                                    key={conv.id}
+                                    onClick={() => setActiveConversationId(conv.id)}
+                                    className={`w-full p-4 text-left transition-colors flex gap-3 ${isActive ? 'bg-brand-50 border-l-4 border-brand-500' : 'hover:bg-gray-50'
+                                        }`}
+                                >
+                                    <div className="h-10 w-10 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center shrink-0">
+                                        <User className="h-5 w-5" />
                                     </div>
-                                    <p className="font-medium text-gray-800 truncate">{message.subject}</p>
-                                    <p className="text-sm text-gray-500 truncate">{message.body}</p>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center justify-between">
+                                            <span className="font-semibold text-gray-900 truncate">
+                                                {other?.user_name || 'System'}
+                                            </span>
+                                            <span className="text-[10px] text-gray-400">
+                                                {conv.last_message ? Utils.formatDate(conv.last_message.created_at) : ''}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center justify-between mt-1">
+                                            <p className="text-xs text-gray-500 truncate pr-4">
+                                                {conv.metadata?.subject || conv.last_message?.body || 'New Chat'}
+                                            </p>
+                                            {conv.unread_count > 0 && (
+                                                <span className="bg-brand-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                                                    {conv.unread_count}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </button>
+                            );
+                        })
+                    )}
+                </div>
+            </div>
+
+            {/* Main: Message Thread */}
+            <div className="flex-1 flex flex-col bg-gray-50/30">
+                {activeConversation ? (
+                    <>
+                        {/* Thread Header */}
+                        <div className="p-4 bg-white border-b border-gray-100 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="h-10 w-10 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center">
+                                    <User className="h-5 w-5" />
                                 </div>
-                                <div className="text-right shrink-0">
-                                    <p className="text-xs text-gray-400">
-                                        {new Date(message.created_at).toLocaleDateString('en-NG', {
-                                            month: 'short',
-                                            day: 'numeric',
-                                            hour: '2-digit',
-                                            minute: '2-digit'
-                                        })}
+                                <div>
+                                    <h3 className="font-bold text-gray-900 leading-none">
+                                        {getOtherParticipant(activeConversation)?.user_name || 'System'}
+                                    </h3>
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        {activeConversation.metadata?.subject || 'Direct Messaging'}
                                     </p>
-                                    <ChevronRight className="h-4 w-4 text-gray-300 mt-2 ml-auto" />
                                 </div>
                             </div>
+                            <Button variant="ghost" size="sm" className="text-gray-400 hover:text-red-500">
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
                         </div>
-                    ))
+
+                        {/* Message Explorer */}
+                        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                            {messages.map(msg => {
+                                const isMe = String(msg.sender) === String(currentUser?.id);
+                                return (
+                                    <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                                        <div className={`max-w-[70%] group relative`}>
+                                            <div className={`px-4 py-2 rounded-2xl text-sm ${isMe ? 'bg-brand-600 text-white rounded-tr-none' : 'bg-white border border-gray-100 text-gray-800 rounded-tl-none shadow-sm'
+                                                }`}>
+                                                <p className="whitespace-pre-wrap leading-relaxed">{msg.body}</p>
+                                            </div>
+                                            <p className={`text-[10px] mt-1 text-gray-400 ${isMe ? 'text-right' : 'text-left'}`}>
+                                                {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            </p>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        {/* Reply Box */}
+                        <div className="p-4 bg-white border-t border-gray-100">
+                            <div className="flex items-end gap-2">
+                                <textarea
+                                    value={messageBody}
+                                    onChange={(e) => setMessageBody(e.target.value)}
+                                    placeholder="Type a message..."
+                                    className="flex-1 min-h-[44px] max-h-32 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-1 focus:ring-brand-500 transition-all text-sm resize-none"
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' && !e.shiftKey) {
+                                            e.preventDefault();
+                                            handleSendMessage();
+                                        }
+                                    }}
+                                />
+                                <Button
+                                    onClick={handleSendMessage}
+                                    disabled={isSending || !messageBody.trim()}
+                                    className="h-11 w-11 rounded-full p-0 flex items-center justify-center shrink-0"
+                                >
+                                    <Send className="h-5 w-5" />
+                                </Button>
+                            </div>
+                        </div>
+                    </>
+                ) : (
+                    <div className="flex-1 flex flex-col items-center justify-center text-gray-400">
+                        <div className="h-20 w-20 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                            <Mail className="h-10 w-10 text-gray-200" />
+                        </div>
+                        <p className="text-lg font-medium">Select a conversation to read</p>
+                        <p className="text-sm">Or start a new one to communicate with {currentRole === 'admin' ? 'Staff/Parents' : 'School Admin'}</p>
+                    </div>
                 )}
-            </Card>
+            </div>
 
             {/* Compose Modal */}
             <Modal
                 isOpen={isComposeOpen}
                 onClose={() => { setIsComposeOpen(false); resetCompose(); }}
-                title="Compose Message"
+                title="Start New Conversation"
             >
                 <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Recipient Type</label>
-                            <Select
-                                value={recipientType}
-                                onChange={(e) => {
-                                    setRecipientType(e.target.value as RecipientType);
-                                    setSelectedRecipient('');
-                                }}
-                            >
-                                {currentRole === 'admin' ? (
-                                    <>
-                                        <option value="teacher">Teacher</option>
-                                        <option value="student">Student/Parent</option>
-                                        <option value="staff">Staff</option>
-                                        <option value="admin">Administration</option>
-                                    </>
-                                ) : (
-                                    <option value="admin">Administration</option>
-                                )}
-                            </Select>
+                    {currentRole === 'admin' ? (
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1 text-xs uppercase tracking-wider">Target</label>
+                                <Select
+                                    value={recipientType}
+                                    onChange={(e) => {
+                                        setRecipientType(e.target.value as RecipientType);
+                                        setSelectedRecipient('');
+                                    }}
+                                >
+                                    <option value="staff">Staff Members</option>
+                                    <option value="student">Students/Parents</option>
+                                </Select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1 text-xs uppercase tracking-wider italic">Recipient</label>
+                                <Select
+                                    value={selectedRecipient}
+                                    onChange={(e) => setSelectedRecipient(Number(e.target.value))}
+                                >
+                                    <option value="">Select...</option>
+                                    {filteredRecipients.map(r => (
+                                        <option key={r.id} value={r.userId ?? ''}>
+                                            {r.type === 'student' ? `${r.name} (${r.parentName || 'Parent'})` : r.name}
+                                        </option>
+                                    ))}
+                                </Select>
+                            </div>
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                {recipientType === 'student' ? 'Select Student (Parent will receive)' :
-                                    recipientType === 'admin' ? 'Select Admin' : 'Select Recipient'}
-                            </label>
-                            <Select
-                                value={selectedRecipient}
-                                onChange={(e) => setSelectedRecipient(e.target.value)}
-                            >
-                                <option value="">Select...</option>
-                                {filteredRecipients.map(r => (
-                                    <option key={r.id} value={r.id}>
-                                        {r.type === 'student'
-                                            ? `${r.name} → ${r.parentName || 'Parent'}`
-                                            : r.name}
-                                    </option>
-                                ))}
-                                {recipientType === 'admin' && filteredRecipients.length === 0 && (
-                                    <option value="" disabled>No admins found. Please choose a Staff member.</option>
-                                )}
-                            </Select>
+                    ) : (
+                        <div className="bg-brand-50 p-4 rounded-xl flex items-center gap-3 border border-brand-100">
+                            <div className="h-10 w-10 bg-brand-100 rounded-full flex items-center justify-center">
+                                <UserCog className="h-5 w-5 text-brand-600" />
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-brand-900 text-sm">School Administration</h4>
+                                <p className="text-xs text-brand-600">Secure direct channel to school management</p>
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1 text-xs uppercase tracking-wider">Subject / Topic</label>
                         <Input
-                            value={subject}
-                            onChange={(e) => setSubject(e.target.value)}
-                            placeholder="Enter message subject..."
+                            value={newConvSubject}
+                            onChange={(e) => setNewConvSubject(e.target.value)}
+                            placeholder="e.g. Enquiry about fees, Leave request..."
                         />
                     </div>
 
                     <div>
                         <div className="flex items-center justify-between mb-1">
-                            <label className="block text-sm font-medium text-gray-700">Message</label>
+                            <label className="block text-sm font-medium text-gray-700 text-xs uppercase tracking-wider">Message Content</label>
                             <button
                                 type="button"
                                 onClick={async () => {
-                                    if (!subject.trim()) {
-                                        addToast('Please enter a subject/topic first', 'warning');
-                                        return;
-                                    }
+                                    if (!newConvSubject.trim()) return addToast('Please enter a subject', 'info');
+                                    addToast('Generating AI Draft...', 'info');
                                     try {
                                         const res = await (await import('@/lib/api-client')).default.post('/messages/ai-draft/', {
-                                            topic: subject.trim(),
+                                            topic: newConvSubject.trim(),
                                             recipient_type: recipientType === 'student' ? 'Parents' : recipientType,
-                                            key_points: body.trim() || subject.trim(),
                                             tone: 'formal'
                                         });
-                                        if (res.data?.draft) {
-                                            setBody(res.data.draft);
-                                            addToast('AI draft generated!', 'success');
-                                        }
-                                    } catch {
-                                        addToast('AI drafting failed, please try again', 'error');
-                                    }
+                                        if (res.data?.draft) setMessageBody(res.data.draft);
+                                    } catch { addToast('AI failed', 'error'); }
                                 }}
-                                className="flex items-center gap-1.5 px-3 py-1 text-xs font-medium text-purple-700 bg-purple-50 hover:bg-purple-100 rounded-full transition-colors"
+                                className="flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold text-brand-700 bg-brand-50 hover:bg-brand-100 rounded-full uppercase tracking-tighter transition-all"
                             >
-                                <span className="text-sm">✨</span> AI Draft
+                                ✨ Magic Draft
                             </button>
                         </div>
                         <textarea
-                            value={body}
-                            onChange={(e) => setBody(e.target.value)}
-                            placeholder="Type your message here..."
-                            rows={6}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none"
+                            value={messageBody}
+                            onChange={(e) => setMessageBody(e.target.value)}
+                            rows={5}
+                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-brand-500 text-sm resize-none"
+                            placeholder="Describe your enquiry here..."
                         />
                     </div>
 
-                    <div className="flex justify-end gap-3 pt-4 border-t">
-                        <Button variant="secondary" onClick={() => { setIsComposeOpen(false); resetCompose(); }}>
-                            Cancel
-                        </Button>
-                        <Button onClick={handleSend} disabled={isSending}>
-                            {isSending ? (
-                                <>
-                                    <Clock className="h-4 w-4 mr-2 animate-spin" />
-                                    Sending...
-                                </>
-                            ) : (
-                                <>
-                                    <Send className="h-4 w-4 mr-2" />
-                                    Send Message
-                                </>
-                            )}
+                    <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+                        <Button variant="secondary" onClick={() => setIsComposeOpen(false)}>Cancel</Button>
+                        <Button onClick={handleStartConversation} disabled={isCreatingConv}>
+                            {isCreatingConv ? 'Creating...' : 'Start Conversation'}
                         </Button>
                     </div>
                 </div>
-            </Modal>
-
-            {/* View Message Modal */}
-            <Modal
-                isOpen={!!viewingMessage}
-                onClose={() => setViewingMessage(null)}
-                title="Message Details"
-            >
-                {viewingMessage && (
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-4 pb-4 border-b">
-                            <div className={`h-12 w-12 rounded-full flex items-center justify-center ${getRoleColor((viewingMessage.recipient_role || 'admin') as Types.UserRole)}`}>
-                                {getRoleIcon((viewingMessage.recipient_role || 'admin') as Types.UserRole)}
-                            </div>
-                            <div className="flex-1">
-                                <p className="font-medium text-gray-900">
-                                    To: {viewingMessage.recipient_name || 'Unknown'}
-                                </p>
-                                <p className="text-sm text-gray-500">
-                                    {new Date(viewingMessage.created_at).toLocaleString('en-NG')}
-                                </p>
-                            </div>
-                            {viewingMessage.is_read ? (
-                                <span className="flex items-center gap-1 text-green-600 text-sm">
-                                    <MailOpen className="h-4 w-4" />
-                                    Read
-                                </span>
-                            ) : (
-                                <span className="flex items-center gap-1 text-gray-400 text-sm">
-                                    <Mail className="h-4 w-4" />
-                                    Unread
-                                </span>
-                            )}
-                        </div>
-
-                        <div>
-                            <h3 className="font-bold text-lg text-gray-900 mb-2">{viewingMessage.subject}</h3>
-                            <p className="text-gray-700 whitespace-pre-wrap">{viewingMessage.body}</p>
-                        </div>
-
-                        <div className="flex justify-end gap-3 pt-4 border-t">
-                            <Button variant="secondary" onClick={() => handleDelete(viewingMessage.id)}>
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Delete
-                            </Button>
-
-                            {(currentRole === 'admin' || viewingMessage.sender_role?.toLowerCase() === 'admin' || viewingMessage.sender_role?.toLowerCase() === 'administrator') && (
-                                <Button
-                                    onClick={() => {
-                                        // Set up reply
-                                        const senderId = typeof viewingMessage.sender === 'object' ? (viewingMessage.sender as any).id || (viewingMessage.sender as any).pk : viewingMessage.sender;
-                                        const senderRole = viewingMessage.sender_role?.toLowerCase() || 'admin';
-
-                                        // Normalize role for frontend state
-                                        let targetRole: any = senderRole;
-                                        if (senderRole === 'administrator') targetRole = 'admin';
-
-                                        setRecipientType(targetRole);
-                                        setSubject(`Re: ${viewingMessage.subject}`);
-                                        setBody(`\n\n--- Original Message ---\n${viewingMessage.body}`);
-
-                                        // Find recipient in list
-                                        const targetRec = allRecipients.find(r => String(r.userId) === String(senderId));
-                                        if (targetRec) {
-                                            setSelectedRecipient(targetRec.id);
-                                        }
-
-                                        setViewingMessage(null);
-                                        setIsComposeOpen(true);
-                                    }}
-                                >
-                                    <Reply className="h-4 w-4 mr-2" />
-                                    Reply
-                                </Button>
-                            )}
-
-                            <Button variant="secondary" onClick={() => setViewingMessage(null)}>
-                                Close
-                            </Button>
-                        </div>
-                    </div>
-                )}
             </Modal>
         </div>
     );

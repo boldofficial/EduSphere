@@ -7,8 +7,8 @@ export interface PaginatedResponse<T> {
 
 export interface Entity {
   id: string;
-  created_at: number;
-  updated_at: number;
+  created_at: string | number;
+  updated_at: string | number;
 }
 
 export interface CoreValue {
@@ -376,18 +376,36 @@ export interface Announcement extends Entity {
 }
 
 // Phase 3: Messaging
+export interface Conversation extends Entity {
+  school: number;
+  type: 'DIRECT' | 'GROUP' | 'BROADCAST';
+  metadata: Record<string, any>;
+  participants: ConversationParticipant[];
+  last_message?: {
+    body: string;
+    sender_name: string;
+    created_at: string;
+  };
+  unread_count: number;
+}
+
+export interface ConversationParticipant extends Entity {
+  user: number;
+  user_name: string;
+  user_role: string;
+  last_read_at: string | null;
+  is_archived: boolean;
+  is_muted: boolean;
+}
+
 export interface Message extends Entity {
-  sender?: number;
+  conversation: string; // UUID
+  sender: number;
   sender_name?: string;
   sender_role?: string;
-  recipient: number;
-  recipient_name?: string;
-  recipient_role?: string;
-  subject: string;
   body: string;
   attachment_url?: string;
-  is_read: boolean;
-  read_at?: string | null;
+  is_system_generated: boolean;
 }
 
 // Phase 3: Calendar Events

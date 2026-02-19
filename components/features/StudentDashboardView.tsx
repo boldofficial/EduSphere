@@ -135,7 +135,7 @@ export const StudentDashboardView = () => {
 
     const myAnnouncements = useMemo(() => announcements
         .filter(a => a.target === 'all' || (currentRole === 'parent' && a.target === 'parents') || (a.target === 'class' && a.class_id === student.class_id))
-        .sort((a, b) => (a.is_pinned === b.is_pinned) ? b.created_at - a.created_at : a.is_pinned ? -1 : 1).slice(0, 3), [announcements, currentRole, student.class_id]);
+        .sort((a, b) => (a.is_pinned === b.is_pinned) ? new Date(b.created_at).getTime() - new Date(a.created_at).getTime() : a.is_pinned ? -1 : 1).slice(0, 3), [announcements, currentRole, student.class_id]);
 
     const subjectAnalysis = useMemo(() => {
         if (!isResultPublished || !myScore || !myScore.rows.length) return null;

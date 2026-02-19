@@ -2,10 +2,11 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
     FileUploadView, SettingsView, PublicStatsView, SchoolMessageViewSet, 
-    NotificationViewSet, SchoolAnnouncementViewSet, NewsletterViewSet
+    ConversationViewSet, NotificationViewSet, SchoolAnnouncementViewSet, NewsletterViewSet
 )
 
 router = DefaultRouter()
+router.register(r'conversations', ConversationViewSet, basename='conversation')
 router.register(r'messages', SchoolMessageViewSet, basename='message')
 router.register(r'notifications', NotificationViewSet, basename='notification')
 router.register(r'announcements', SchoolAnnouncementViewSet, basename='announcement')

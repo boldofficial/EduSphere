@@ -54,7 +54,7 @@ export const NotificationCenter: React.FC = () => {
                 const isForAll = a.target === 'all';
                 const isForMyRole = (currentRole === 'parent' && a.target === 'parents');
                 const isForMyClass = a.target === 'class' && a.class_id === classId;
-                const isRecent = a.created_at >= threeDaysAgo.getTime();
+                const isRecent = new Date(a.created_at).getTime() >= threeDaysAgo.getTime();
                 return (isForAll || isForMyRole || isForMyClass) && isRecent;
             })
             .forEach(a => {
@@ -117,8 +117,8 @@ export const NotificationCenter: React.FC = () => {
         sevenDaysAgo.setDate(today.getDate() - 7);
         const safeNewsletters = Array.isArray(newsletters) ? newsletters : [];
         const latestNewsletter = safeNewsletters
-            .filter(n => n.is_published && n.created_at >= sevenDaysAgo.getTime())
-            .sort((a, b) => b.created_at - a.created_at)[0];
+            .filter(n => n.is_published && new Date(n.created_at).getTime() >= sevenDaysAgo.getTime())
+            .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
 
         if (latestNewsletter) {
             items.push({

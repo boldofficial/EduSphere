@@ -35,45 +35,33 @@ export const MessageInboxWidget: React.FC<MessageInboxWidgetProps> = ({
     const myProfileId = currentUser?.id;
     const myAuthId = currentUser?.id;
 
-    // Get messages for this user (both received and sent)
+    // Get messages for this user (they are already filtered by backend to only show my conversations)
     const myMessages = React.useMemo(() => {
-        return messages
-            .filter((m: Types.Message) =>
-                String(m.recipient) === String(myProfileId) ||
-                String(m.sender) === String(myProfileId) ||
-                String(m.recipient) === String(myAuthId) ||
-                String(m.sender) === String(myAuthId)
-            )
+        return [...messages]
             .sort((a: Types.Message, b: Types.Message) => {
                 const aTime = new Date(a.created_at).getTime();
                 const bTime = new Date(b.created_at).getTime();
                 return bTime - aTime;
             })
             .slice(0, maxMessages);
-    }, [messages, myProfileId, myAuthId, maxMessages]);
+    }, [messages, maxMessages]);
 
-    // Get unread count (only for received messages)
-    const unreadCount = React.useMemo(() => {
-        return messages.filter((m: Types.Message) =>
-            (String(m.recipient) === String(myProfileId) || String(m.recipient) === String(myAuthId)) && !m.is_read
-        ).length;
-    }, [messages, myProfileId, myAuthId]);
+    // Get unread count - this is trickier now as read status is per-participant
+    // For now, we'll rely on the conversational unread counts or just show 0 in this simplified widget
+    const unreadCount = 0;
 
     // Check if this message was sent to me
     const isMessageToMe = (message: Types.Message) => {
-        return String(message.recipient) === String(myProfileId) || String(message.recipient) === String(myAuthId);
+        return String(message.sender) !== String(currentUser?.id);
     };
 
     // Check if this message was sent by me
     const isMessageFromMe = (message: Types.Message) => {
-        return String(message.sender) === String(myProfileId) || String(message.sender) === String(myAuthId);
+        return String(message.sender) === String(currentUser?.id);
     };
 
     const handleViewMessage = (message: Types.Message) => {
-        // Mark as read if it's a received message and not already read
-        if (isMessageToMe(message) && !message.is_read) {
-            updateMessage({ id: message.id, updates: { is_read: true } });
-        }
+        // Note: Read status is now managed at conversation level in the new architecture
         setViewingMessage(message);
         setIsReplyMode(false);
         setReplyBody('');
@@ -85,15 +73,9 @@ export const MessageInboxWidget: React.FC<MessageInboxWidgetProps> = ({
             return;
         }
 
-        if (!viewingMessage.sender) {
-            addToast('Cannot determine who sent this message.', 'error');
-            return;
-        }
-
-        // Send payload matching backend SchoolMessageSerializer
+        // Send payload using conversation ID
         const payload = {
-            recipient: viewingMessage.sender,
-            subject: `Re: ${viewingMessage.subject}`,
+            conversation: viewingMessage.conversation,
             body: replyBody.trim(),
         } as any;
 
@@ -118,7 +100,7 @@ export const MessageInboxWidget: React.FC<MessageInboxWidgetProps> = ({
 
     // Check if message is from admin (can reply)
     const canReply = (message: Types.Message) => {
-        return isMessageToMe(message) && (message.sender_role === 'ADMIN' || message.sender_role === 'SUPER_ADMIN' || message.sender_role === 'admin');
+        return isMessageToMe(message) && ['admin', 'SCHOOL_ADMIN', 'SUPER_ADMIN'].some(r => message.sender_role?.toUpperCase().includes(r));
     };
 
     // Get display name for sender
@@ -138,7 +120,7 @@ export const MessageInboxWidget: React.FC<MessageInboxWidgetProps> = ({
                 </div>
                 <div className="text-center py-8 text-gray-400">
                     <Mail className="h-10 w-10 mx-auto mb-2 opacity-50" />
-                    <p className="text-sm">No messages yet</p>
+                    <p className="text-sm">No recent messages</p>
                 </div>
             </Card>
         );
@@ -150,57 +132,40 @@ export const MessageInboxWidget: React.FC<MessageInboxWidgetProps> = ({
                 <div className="p-4 border-b border-gray-100 flex items-center justify-between">
                     <h3 className="font-bold text-gray-900 flex items-center gap-2">
                         <Mail className="h-5 w-5 text-brand-500" />
-                        Messages
-                        {unreadCount > 0 && (
-                            <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">
-                                {unreadCount} new
-                            </span>
-                        )}
+                        Recent Messages
                     </h3>
                 </div>
                 <div className="divide-y divide-gray-50 max-h-[400px] overflow-y-auto">
                     {myMessages.map((message: Types.Message) => {
-                        const isReceived = String(message.recipient) === String(currentUser?.id);
-                        const isUnread = isReceived && !message.is_read;
+                        const isMe = String(message.sender) === String(currentUser?.id);
 
                         return (
                             <div
                                 key={message.id}
                                 onClick={() => handleViewMessage(message)}
-                                className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors ${isUnread ? 'bg-brand-50/50' : ''
-                                    }`}
+                                className="p-4 hover:bg-gray-50 cursor-pointer transition-colors"
                             >
                                 <div className="flex items-start gap-3">
-                                    <div className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 ${isUnread ? 'bg-brand-100 text-brand-600' : 'bg-gray-100 text-gray-500'
-                                        }`}>
-                                        {isReceived ? (
-                                            isUnread ? <Mail className="h-4 w-4" /> : <MailOpen className="h-4 w-4" />
-                                        ) : (
-                                            <Send className="h-4 w-4" />
-                                        )}
+                                    <div className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 ${!isMe ? 'bg-brand-100 text-brand-600' : 'bg-gray-100 text-gray-500'}`}>
+                                        {isMe ? <Send className="h-4 w-4" /> : <Mail className="h-4 w-4" />}
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 flex-wrap">
-                                            <p className={`text-sm truncate ${isUnread ? 'font-bold text-gray-900' : 'font-medium text-gray-700'}`}>
-                                                {message.subject}
+                                            <p className="text-sm font-medium text-gray-700 truncate">
+                                                {!isMe ? message.sender_name : 'To Conversation'}
                                             </p>
-                                            {!isReceived && (
-                                                <span className="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">
+                                            {isMe && (
+                                                <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">
                                                     Sent
                                                 </span>
                                             )}
                                         </div>
                                         <p className="text-xs text-gray-500 truncate mt-0.5">
-                                            {isReceived ? `From: ${getSenderName(message)}` : message.body}
+                                            {message.body}
                                         </p>
                                         <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
                                             <Clock className="h-3 w-3" />
-                                            {new Date(message.created_at).toLocaleDateString('en-NG', {
-                                                month: 'short',
-                                                day: 'numeric',
-                                                hour: '2-digit',
-                                                minute: '2-digit'
-                                            })}
+                                            {Utils.formatDate(message.created_at)}
                                         </p>
                                     </div>
                                     <ChevronRight className="h-4 w-4 text-gray-300 shrink-0" />
@@ -215,7 +180,7 @@ export const MessageInboxWidget: React.FC<MessageInboxWidgetProps> = ({
             <Modal
                 isOpen={!!viewingMessage}
                 onClose={closeModal}
-                title={viewingMessage?.subject || 'Message'}
+                title="Message Details"
                 size="sm"
             >
                 {viewingMessage && (

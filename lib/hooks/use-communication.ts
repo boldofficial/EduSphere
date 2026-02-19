@@ -174,12 +174,49 @@ export function useDeleteNewsletter() {
 }
 
 // =============================================
+// CONVERSATIONS
+// =============================================
+export function useConversations() {
+    return useQuery({
+        queryKey: ['conversations'],
+        queryFn: () => fetchAll<Types.Conversation>('conversations/'),
+    });
+}
+
+export function useCreateConversation() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (item: Partial<Types.Conversation> & { participant_ids?: number[] }) => {
+            const response = await apiClient.post('conversations/', item);
+            return response.data;
+        },
+        onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['conversations'] }); },
+    });
+}
+
+export function useMarkConversationRead() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (id: string) => {
+            const response = await apiClient.post(`conversations/${id}/mark-read/`);
+            return response.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['conversations'] });
+        },
+    });
+}
+
+// =============================================
 // MESSAGES
 // =============================================
-export function useMessages() {
+export function useMessages(conversationId?: string) {
     return useQuery({
-        queryKey: queryKeys.messages,
-        queryFn: () => fetchAll<Types.Message>('messages/'),
+        queryKey: conversationId ? ['messages', conversationId] : queryKeys.messages,
+        queryFn: () => {
+            const url = conversationId ? `messages/?conversation=${conversationId}` : 'messages/';
+            return fetchAll<Types.Message>(url);
+        },
     });
 }
 
@@ -190,7 +227,13 @@ export function useCreateMessage() {
             const response = await apiClient.post('messages/', item);
             return response.data;
         },
-        onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.messages }); },
+        onSuccess: (_, variables) => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.messages });
+            if (variables.conversation) {
+                queryClient.invalidateQueries({ queryKey: ['messages', variables.conversation] });
+                queryClient.invalidateQueries({ queryKey: ['conversations'] });
+            }
+        },
     });
 }
 

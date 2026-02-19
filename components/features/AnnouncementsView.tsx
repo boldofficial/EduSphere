@@ -153,7 +153,7 @@ export const AnnouncementsView: React.FC = () => {
             // Pinned first, then by date
             if (a.is_pinned && !b.is_pinned) return -1;
             if (!a.is_pinned && b.is_pinned) return 1;
-            return b.created_at - a.created_at;
+            return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
         });
 
     const getTargetIcon = (target: Types.Announcement['target']) => {
@@ -240,7 +240,7 @@ export const AnnouncementsView: React.FC = () => {
                                 <p className="text-2xl font-bold text-gray-900">
                                     {announcements.filter(a => {
                                         const weekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
-                                        return a.created_at > weekAgo;
+                                        return new Date(a.created_at).getTime() > weekAgo;
                                     }).length}
                                 </p>
                                 <p className="text-xs text-gray-500">This Week</p>
