@@ -203,8 +203,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     if (currentRole === 'staff' && currentStaffProfile) {
         const staffModules = currentStaffProfile.assigned_modules || [];
         if (staffModules.length > 0) {
-            // Staff with specific modules gets dashboard + their assigned modules
-            allowedNavIds = ['dashboard', ...staffModules];
+            // Staff with specific modules gets dashboard, messages + their assigned modules
+            allowedNavIds = ['dashboard', 'messages', ...staffModules];
         }
     }
 

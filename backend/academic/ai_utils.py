@@ -9,22 +9,31 @@ logger = logging.getLogger(__name__)
 
 def _get_ai_config():
     """Read AI provider config from PlatformSettings, with env fallback."""
+    env_gemini_key = os.environ.get('GEMINI_API_KEY', '')
+    
     try:
         from schools.models import PlatformSettings
         settings = PlatformSettings.objects.filter(id=1).first()
         if settings:
-            return {
+            # Prioritize DB if explicitly set, else fallback to env
+            db_gemini_key = settings.gemini_api_key
+            final_gemini_key = db_gemini_key if db_gemini_key else env_gemini_key
+            
+            config = {
                 'provider': settings.ai_provider or 'gemini',
-                'gemini_key': settings.gemini_api_key or os.environ.get('GEMINI_API_KEY', ''),
+                'gemini_key': final_gemini_key,
                 'openrouter_key': settings.openrouter_api_key or '',
                 'openrouter_model': settings.openrouter_model or 'google/gemini-2.0-flash-001',
             }
-    except Exception:
-        pass
+            logger.info(f"AI Config loaded from PlatformSettings. Key present: {bool(config['gemini_key'])}")
+            return config
+    except Exception as e:
+        logger.warning(f"Could not load AI PlatformSettings: {str(e)}. Falling back to env.")
+    
     # Fallback to env
     return {
         'provider': 'gemini',
-        'gemini_key': os.environ.get('GEMINI_API_KEY', ''),
+        'gemini_key': env_gemini_key,
         'openrouter_key': '',
         'openrouter_model': 'google/gemini-2.0-flash-001',
     }
@@ -32,19 +41,26 @@ def _get_ai_config():
 
 class AcademicAI:
     def __init__(self):
-        config = _get_ai_config()
-        self.provider = config['provider']
-        self.model = None
+        try:
+            config = _get_ai_config()
+            self.provider = config['provider']
+            self.model = None
 
-        if self.provider == 'openrouter' and config['openrouter_key']:
-            self.openrouter_key = config['openrouter_key']
-            self.openrouter_model = config['openrouter_model']
-            self.model = 'openrouter'  # Sentinel to indicate a valid provider is configured
-        elif config['gemini_key']:
-            genai.configure(api_key=config['gemini_key'])
-            self.model = genai.GenerativeModel('gemini-1.5-flash')
-            self.provider = 'gemini'
-        else:
+            if self.provider == 'openrouter' and config['openrouter_key']:
+                self.openrouter_key = config['openrouter_key']
+                self.openrouter_model = config['openrouter_model']
+                self.model = 'openrouter'
+                logger.debug("AI initialized with OpenRouter")
+            elif config['gemini_key']:
+                genai.configure(api_key=config['gemini_key'])
+                self.model = genai.GenerativeModel('gemini-1.5-flash')
+                self.provider = 'gemini'
+                logger.debug("AI initialized with Gemini Flash")
+            else:
+                logger.error("AI Initialization Failed: No API key found for provider")
+                self.model = None
+        except Exception as e:
+            logger.error(f"AI Initialization Critical Error: {str(e)}", exc_info=True)
             self.model = None
 
     def _generate(self, prompt):

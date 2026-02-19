@@ -20,7 +20,7 @@ import {
     useCreateMessage, useUpdateMessage, useDeleteMessage
 } from '@/lib/hooks/use-data';
 
-type RecipientType = 'teacher' | 'student' | 'staff' | 'parent';
+type RecipientType = 'teacher' | 'student' | 'staff' | 'parent' | 'admin';
 
 interface Recipient {
     id: string;
@@ -59,8 +59,8 @@ export const MessagesView: React.FC = () => {
     const [subject, setSubject] = useState('');
     const [body, setBody] = useState('');
 
-    // Check permissions
-    if (!['admin', 'teacher', 'staff'].includes(currentRole || '')) {
+    // Check permissions - Expand to student and parent
+    if (!['admin', 'teacher', 'staff', 'student', 'parent'].includes(currentRole || '')) {
         return (
             <div className="flex items-center justify-center h-64">
                 <p className="text-gray-500">You don't have permission to access this page.</p>
@@ -72,38 +72,54 @@ export const MessagesView: React.FC = () => {
     const allRecipients: Recipient[] = useMemo(() => {
         const recipients: Recipient[] = [];
 
-        // Teachers
+        // 1. Teachers
         teachers.forEach((t: Types.Teacher) => {
-            recipients.push({
-                id: String(t.id),
-                userId: t.user,
-                name: t.name,
-                email: t.email,
-                type: 'teacher'
-            });
+            if (t.user) { // Only show those with login accounts
+                recipients.push({
+                    id: String(t.id),
+                    userId: t.user,
+                    name: t.name,
+                    email: t.email,
+                    type: 'teacher'
+                });
+            }
         });
 
-        // Staff
+        // 2. Staff
         staff.forEach((s: Types.Staff) => {
-            recipients.push({
-                id: String(s.id),
-                userId: s.user,
-                name: s.name,
-                email: s.email,
-                type: 'staff'
-            });
+            if (s.user) {
+                const rec = {
+                    id: String(s.id),
+                    userId: s.user,
+                    name: s.name,
+                    email: s.email,
+                    type: 'staff' as any
+                };
+                recipients.push(rec);
+
+                // If staff role indicates they are an admin, also add as admin target
+                const roleLower = s.role.toLowerCase();
+                if (roleLower.includes('admin') || roleLower.includes('principal') || roleLower.includes('director')) {
+                    recipients.push({
+                        ...rec,
+                        type: 'admin'
+                    });
+                }
+            }
         });
 
-        // Students (for messaging their parents)
+        // 3. Students & Parents (Admins/Teachers can message parents, or students can message teachers)
         students.forEach((s: Types.Student) => {
-            recipients.push({
-                id: String(s.id),
-                userId: s.user,
-                name: s.names,
-                email: s.parent_email,
-                type: 'student',
-                parentName: s.parent_name
-            });
+            if (s.user) {
+                recipients.push({
+                    id: String(s.id),
+                    userId: s.user,
+                    name: s.names,
+                    email: s.parent_email,
+                    type: 'student',
+                    parentName: s.parent_name
+                });
+            }
         });
 
         return recipients;
@@ -428,11 +444,13 @@ export const MessagesView: React.FC = () => {
                                 <option value="teacher">Teacher</option>
                                 <option value="student">Student/Parent</option>
                                 <option value="staff">Staff</option>
+                                <option value="admin">Administration</option>
                             </Select>
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                {recipientType === 'student' ? 'Select Student (Parent will receive)' : 'Select Recipient'}
+                                {recipientType === 'student' ? 'Select Student (Parent will receive)' :
+                                    recipientType === 'admin' ? 'Select Admin' : 'Select Recipient'}
                             </label>
                             <Select
                                 value={selectedRecipient}
@@ -446,6 +464,9 @@ export const MessagesView: React.FC = () => {
                                             : r.name}
                                     </option>
                                 ))}
+                                {recipientType === 'admin' && filteredRecipients.length === 0 && (
+                                    <option value="" disabled>No admins found. Please choose a Staff member.</option>
+                                )}
                             </Select>
                         </div>
                     </div>
@@ -561,6 +582,33 @@ export const MessagesView: React.FC = () => {
                             <Button variant="secondary" onClick={() => handleDelete(viewingMessage.id)}>
                                 <Trash2 className="h-4 w-4 mr-2" />
                                 Delete
+                            </Button>
+                            <Button
+                                onClick={() => {
+                                    // Set up reply
+                                    const senderId = typeof viewingMessage.sender === 'object' ? (viewingMessage.sender as any).id || (viewingMessage.sender as any).pk : viewingMessage.sender;
+                                    const senderRole = viewingMessage.sender_role?.toLowerCase() || 'admin';
+
+                                    // Normalize role for frontend state
+                                    let targetRole: any = senderRole;
+                                    if (senderRole === 'administrator') targetRole = 'admin';
+
+                                    setRecipientType(targetRole);
+                                    setSubject(`Re: ${viewingMessage.subject}`);
+                                    setBody(`\n\n--- Original Message ---\n${viewingMessage.body}`);
+
+                                    // Find recipient in list
+                                    const targetRec = allRecipients.find(r => String(r.userId) === String(senderId));
+                                    if (targetRec) {
+                                        setSelectedRecipient(targetRec.id);
+                                    }
+
+                                    setViewingMessage(null);
+                                    setIsComposeOpen(true);
+                                }}
+                            >
+                                <Reply className="h-4 w-4 mr-2" />
+                                Reply
                             </Button>
                             <Button variant="secondary" onClick={() => setViewingMessage(null)}>
                                 Close

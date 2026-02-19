@@ -254,7 +254,7 @@ export const INITIAL_SETTINGS: Settings = {
       dashboardWidgets: ['my_scores', 'my_attendance', 'my_fees', 'class_info']
     },
     staff: {
-      navigation: ['dashboard', 'calendar'],
+      navigation: ['dashboard', 'calendar', 'messages'],
       dashboardWidgets: ['quick_actions', 'my_tasks']
     }
   },
