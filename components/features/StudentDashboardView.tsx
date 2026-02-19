@@ -55,11 +55,16 @@ export const StudentDashboardView = () => {
 
     const student = useMemo(() => {
         let foundStudent: Types.Student | undefined;
-        if (currentUser?.student_id) {
-            foundStudent = students.find((s: Types.Student) => s.id === currentUser.student_id);
+        // Priority: Use profile_id (or student_id) from currentUser
+        const profileId = currentUser?.profile_id || currentUser?.student_id;
+
+        if (profileId) {
+            foundStudent = students.find((s: Types.Student) => s.id === profileId);
         }
-        return foundStudent || students[0] || {
-            id: 'demo', names: 'Student Name', student_no: 'NG-001', class_id: '',
+
+        // Final fallback for demo/unassigned users
+        return foundStudent || {
+            id: 'unassigned', names: currentUser?.username || 'Guest Student', student_no: '---', class_id: '',
             gender: 'Male', passport_url: '/placeholder.jpg',
         } as any;
     }, [students, currentUser]);
@@ -107,8 +112,8 @@ export const StudentDashboardView = () => {
 
     const stats = [
         { label: 'Term Average', value: isResultPublished ? `${average.toFixed(1)}%` : '--', icon: TrendingUp, color: 'bg-green-500', trend: previousTermData.average !== null ? average - previousTermData.average : null, trendSuffix: '%' },
-        { label: 'Attendance', value: `${myAttendance}%`, icon: Calendar, color: 'bg-blue-500', trend: previousTermData.attendance !== null ? myAttendance - previousTermData.attendance : null, trendSuffix: '%' },
-        { label: 'Fee Balance', value: `₦${balance.toLocaleString()}`, icon: CreditCard, color: balance > 0 ? 'bg-red-500' : 'bg-green-600', trend: null, trendSuffix: '' },
+        { label: 'Attendance', value: `${myAttendance}%`, icon: Calendar, color: 'bg-indigo-500', trend: previousTermData.attendance !== null ? myAttendance - previousTermData.attendance : null, trendSuffix: '%' },
+        { label: 'Fee Balance', value: `₦${balance.toLocaleString()}`, icon: CreditCard, color: balance > 0 ? 'bg-rose-500' : 'bg-emerald-600', trend: null, trendSuffix: '' },
         { label: 'Rank', value: isResultPublished && position ? Utils.ordinalSuffix(position) : '--', icon: Award, color: 'bg-amber-500', trend: isResultPublished && previousTermData.position !== null && position !== null ? previousTermData.position - position : null, trendSuffix: '' },
     ];
 
@@ -158,7 +163,7 @@ export const StudentDashboardView = () => {
     }
 
     return (
-        <div className="space-y-6 lg:space-y-8">
+        <div className="space-y-6 lg:space-y-8 bg-white min-h-screen rounded-2xl p-6 lg:p-8 border border-gray-100 shadow-sm">
             <StudentProfileHeader
                 student={student}
                 selectedSession={targetSession}

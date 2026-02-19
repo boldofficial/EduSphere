@@ -75,7 +75,7 @@ export const LearningCenterView: React.FC = () => {
                     <h1 className="text-2xl font-bold text-gray-900">Learning Center</h1>
                     <p className="text-gray-500">Access and manage classroom notes and materials</p>
                 </div>
-                {canUpload && (
+                {(isAdmin || isTeacher) && (
                     <Button onClick={() => setShowUploadModal(true)}>
                         <Plus className="h-4 w-4 mr-2" />
                         Upload Material
@@ -95,17 +95,19 @@ export const LearningCenterView: React.FC = () => {
                             className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none"
                         />
                     </div>
-                    <div className="w-full md:w-64">
-                        <Select
-                            value={selectedClassFilter}
-                            onChange={(e) => setSelectedClassFilter(e.target.value)}
-                        >
-                            <option value="all">All Classes</option>
-                            {classes.map(c => (
-                                <option key={c.id} value={c.id}>{c.name}</option>
-                            ))}
-                        </Select>
-                    </div>
+                    {isAdmin && (
+                        <div className="w-full md:w-64">
+                            <Select
+                                value={selectedClassFilter}
+                                onChange={(e) => setSelectedClassFilter(e.target.value)}
+                            >
+                                <option value="all">All Classes</option>
+                                {classes.map(c => (
+                                    <option key={c.id} value={c.id}>{c.name}</option>
+                                ))}
+                            </Select>
+                        </div>
+                    )}
                 </div>
             </Card>
 

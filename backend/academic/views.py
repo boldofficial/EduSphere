@@ -376,6 +376,9 @@ class AIInsightsView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
+        if request.user.role not in ('SCHOOL_ADMIN', 'SUPER_ADMIN'):
+            raise PermissionDenied("Only administrators can access cross-student AI insights.")
+        
         school = getattr(request.user, 'school', None) or getattr(request, 'tenant', None)
         if not school:
             return Response({"error": "No school context found"}, status=400)
@@ -427,6 +430,9 @@ class AITimetableGenerateView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
+        if request.user.role not in ('SCHOOL_ADMIN', 'SUPER_ADMIN'):
+            raise PermissionDenied("Only administrators can trigger AI timetable generation.")
+        
         school = getattr(request.user, 'school', None) or getattr(request, 'tenant', None)
         if not school:
             return Response({"error": "No school context found"}, status=400)
@@ -637,6 +643,13 @@ class SubjectScoreViewSet(TenantViewSet):
     serializer_class = SubjectScoreSerializer
     pagination_class = StandardPagination
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        user = self.request.user
+        if user.role == 'STUDENT' and hasattr(user, 'student_profile'):
+            qs = qs.filter(student=user.student_profile)
+        return qs
+
 class AttendanceSessionViewSet(TenantViewSet):
     queryset = AttendanceSession.objects.select_related('student_class', 'school').all()
     serializer_class = AttendanceSessionSerializer
@@ -657,6 +670,13 @@ class AttendanceRecordViewSet(TenantViewSet):
     serializer_class = AttendanceRecordSerializer
     pagination_class = LargePagination
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        user = self.request.user
+        if user.role == 'STUDENT' and hasattr(user, 'student_profile'):
+            qs = qs.filter(student=user.student_profile)
+        return qs
+
 class SchoolEventViewSet(TenantViewSet):
     queryset = SchoolEvent.objects.select_related('created_by', 'school').all()
     serializer_class = SchoolEventSerializer
@@ -674,6 +694,13 @@ class LessonViewSet(TenantViewSet):
     serializer_class = LessonSerializer
     pagination_class = StandardPagination
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        user = self.request.user
+        if user.role == 'STUDENT' and hasattr(user, 'student_profile'):
+            qs = qs.filter(student_class=user.student_profile.current_class)
+        return qs
+
     def perform_create(self, serializer):
         # Assign teacher profile automatically if current user is a teacher
         teacher = None
@@ -689,6 +716,13 @@ class ConductEntryViewSet(TenantViewSet):
     queryset = ConductEntry.objects.select_related('student', 'recorded_by', 'school').all()
     serializer_class = ConductEntrySerializer
     pagination_class = StandardPagination
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        user = self.request.user
+        if user.role == 'STUDENT' and hasattr(user, 'student_profile'):
+            qs = qs.filter(student=user.student_profile)
+        return qs
 
     def perform_create(self, serializer):
         if hasattr(self.request.user, 'school') and self.request.user.school:
@@ -754,10 +788,24 @@ class TimetableViewSet(TenantViewSet):
     serializer_class = TimetableSerializer
     pagination_class = StandardPagination
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        user = self.request.user
+        if user.role == 'STUDENT' and hasattr(user, 'student_profile'):
+            qs = qs.filter(student_class=user.student_profile.current_class)
+        return qs
+
 class TimetableEntryViewSet(TenantViewSet):
     queryset = TimetableEntry.objects.select_related('timetable', 'period', 'subject', 'teacher', 'school').all()
     serializer_class = TimetableEntrySerializer
     pagination_class = LargePagination
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        user = self.request.user
+        if user.role == 'STUDENT' and hasattr(user, 'student_profile'):
+            qs = qs.filter(timetable__student_class=user.student_profile.current_class)
+        return qs
 
 class GradingSchemeViewSet(TenantViewSet):
     queryset = GradingScheme.objects.select_related('school').prefetch_related('ranges').all()
@@ -1036,6 +1084,9 @@ class AILessonPlanView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
+        if request.user.role not in ('SCHOOL_ADMIN', 'SUPER_ADMIN', 'TEACHER'):
+            raise PermissionDenied("Only staff members can generate AI lesson plans.")
+        
         subject = request.data.get('subject')
         class_name = request.data.get('class_name')
         topic = request.data.get('topic')

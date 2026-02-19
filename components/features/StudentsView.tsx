@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Search, User, Edit, Trash2, UserCheck, Zap, AlertTriangle } from 'lucide-react';
+import { Plus, Search, User, Edit, Trash2, UserCheck, Zap, AlertTriangle, GraduationCap } from 'lucide-react';
 import * as Types from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -189,36 +189,73 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                     const isAtRisk = currentScore && (currentScore.average || 0) < (settings?.promotion_threshold || 50);
                     const attendanceLow = currentScore && (currentScore.attendance_present || 0) < (currentScore.attendance_total || 0) * 0.7;
 
+                    const accentColor = s.gender === 'Female' ? 'rose' : 'indigo';
+
                     return (
-                        <Card key={s.id} className={`hover:border-brand-300 transition-colors group relative overflow-hidden ${isAtRisk ? 'border-red-200' : ''}`}>
-                            {isAtRisk && (
-                                <div className="absolute top-2 right-2 z-10">
-                                    <div className="bg-red-600 text-white rounded-full p-1.5 shadow-lg animate-pulse" title="Academic At-Risk">
-                                        <AlertTriangle className="h-3 w-3" />
+                        <Card key={s.id} className={`group relative overflow-hidden border border-gray-100 bg-white shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl ${isAtRisk ? 'ring-2 ring-red-500' : ''}`}>
+                            {/* Simple Colorful Header Strip */}
+                            <div className={`h-16 w-full bg-gradient-to-r ${s.gender === 'Female' ? 'from-rose-400 to-pink-500' : 'from-indigo-400 to-blue-500'} opacity-80`} />
+
+                            <div className="px-5 pb-5 -mt-8 relative">
+                                {isAtRisk && (
+                                    <div className="absolute top-10 right-4 z-10">
+                                        <div className="bg-red-600 text-white rounded-full p-1.5 shadow-lg animate-pulse" title="Academic At-Risk">
+                                            <AlertTriangle className="h-4 w-4" />
+                                        </div>
                                     </div>
-                                </div>
-                            )}
-                            <div className="flex flex-col items-center text-center p-2 relative">
-                                <div className={`h-20 w-20 rounded-full mb-4 flex items-center justify-center overflow-hidden border-4 border-white shadow-sm ${isAtRisk ? 'ring-2 ring-red-100 ring-offset-2' : ''}`}>
-                                    {passportUrl ? (
-                                        <img src={passportUrl} alt={s.names} className="h-full w-full object-cover" />
-                                    ) : (
-                                        <User className="h-10 w-10 text-gray-400" />
-                                    )}
-                                </div>
-                                <h3 className="font-bold text-gray-900 line-clamp-1">{s.names}</h3>
-                                <div className="flex items-center gap-1.5 mb-2">
-                                    <span className="text-xs font-mono text-gray-500">{s.student_no}</span>
-                                    {attendanceLow && (
-                                        <div className="h-1.5 w-1.5 rounded-full bg-amber-500" title="Low Attendance" />
-                                    )}
-                                </div>
-                                <span className="px-2 py-1 rounded-full bg-brand-50 text-brand-700 text-xs font-medium mb-4">{cls}</span>
-                                <div className="w-full border-t pt-3 flex justify-between items-center text-xs text-gray-500">
-                                    <div className="flex flex-col items-start"><span className="font-medium text-gray-700">{s.gender}</span><span>{s.dob}</span></div>
-                                    <div className="flex gap-2">
-                                        <button onClick={() => handleEdit(s)} className="p-1.5 hover:bg-gray-100 rounded text-gray-600"><Edit className="h-4 w-4" /></button>
-                                        <button onClick={() => onDelete(s.id)} className="p-1.5 hover:bg-red-50 rounded text-red-500"><Trash2 className="h-4 w-4" /></button>
+                                )}
+
+                                {/* Profile Picture */}
+                                <div className="flex flex-col items-center">
+                                    <div className={`h-20 w-20 rounded-2xl bg-white p-1 shadow-md mb-3`}>
+                                        <div className="h-full w-full rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center border border-gray-100">
+                                            {passportUrl ? (
+                                                <img src={passportUrl} alt={s.names} className="h-full w-full object-cover" />
+                                            ) : (
+                                                <User className={`h-10 w-10 text-${accentColor}-200`} />
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <h3 className="font-bold text-gray-900 text-base lg:text-lg text-center w-full">{s.names}</h3>
+
+                                    <div className="flex items-center gap-2 mt-1 mb-4">
+                                        <span className={`px-2 py-0.5 rounded-lg bg-${accentColor}-100 text-${accentColor}-700 text-[11px] font-bold tracking-tight border border-${accentColor}-200`}>
+                                            {s.student_no}
+                                        </span>
+                                        {attendanceLow && (
+                                            <div className="h-2 w-2 rounded-full bg-amber-500" title="Low Attendance" />
+                                        )}
+                                    </div>
+
+                                    {/* Class Badge */}
+                                    <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gray-50 border border-gray-100 mb-5 w-full justify-center`}>
+                                        <GraduationCap className={`h-4 w-4 text-${accentColor}-500`} />
+                                        <span className="text-xs font-semibold text-gray-700">{cls}</span>
+                                    </div>
+
+                                    {/* Footer Actions */}
+                                    <div className="w-full flex items-center justify-between pt-3 border-t border-gray-100">
+                                        <div className="flex flex-col px-1">
+                                            <span className="text-[10px] font-bold text-gray-400 uppercase">Status</span>
+                                            <span className="text-xs font-bold text-emerald-600 flex items-center gap-1">
+                                                <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
+                                            </span>
+                                        </div>
+                                        <div className="flex gap-1">
+                                            <button
+                                                onClick={() => handleEdit(s)}
+                                                className={`p-1.5 hover:bg-${accentColor}-50 rounded-lg text-gray-400 hover:text-${accentColor}-600 transition-colors`}
+                                            >
+                                                <Edit className="h-4 w-4" />
+                                            </button>
+                                            <button
+                                                onClick={() => onDelete(s.id)}
+                                                className="p-1.5 hover:bg-rose-50 rounded-lg text-gray-400 hover:text-rose-600 transition-colors"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

@@ -25,8 +25,17 @@ def get_user_me_data(user):
         'email': user.email,
         'role': user.role,
         'school': user.school.name if user.school else None,
-        'subscription': None
+        'subscription': None,
+        'profile_id': None,
+        'student_id': None # Kept for potential frontend compatibility
     }
+
+    # Fetch profile ID based on role
+    if user.role == 'STUDENT' and hasattr(user, 'student_profile'):
+        data['profile_id'] = user.student_profile.id
+        data['student_id'] = user.student_profile.id
+    elif user.role in ['TEACHER', 'STAFF'] and hasattr(user, 'teacher_profile'):
+        data['profile_id'] = user.teacher_profile.id
 
     if user.school and hasattr(user.school, 'subscription'):
         from schools.models import PlatformModule

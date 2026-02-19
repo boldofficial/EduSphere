@@ -52,9 +52,23 @@ class StudentFeeViewSet(TenantViewSet):
     queryset = StudentFee.objects.all()
     serializer_class = StudentFeeSerializer
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        user = self.request.user
+        if user.role == 'STUDENT' and hasattr(user, 'student_profile'):
+            qs = qs.filter(student=user.student_profile)
+        return qs
+
 class PaymentViewSet(TenantViewSet):
     queryset = Payment.objects.all()
     serializer_class = PaymentSerializer
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        user = self.request.user
+        if user.role == 'STUDENT' and hasattr(user, 'student_profile'):
+            qs = qs.filter(student=user.student_profile)
+        return qs
 
 class ExpenseViewSet(TenantViewSet):
     queryset = Expense.objects.all()

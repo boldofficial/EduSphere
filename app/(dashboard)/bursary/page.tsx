@@ -50,8 +50,19 @@ export default function BursaryPage() {
     // Get the student for student/parent roles
     const student = useMemo(() => {
         if (!isStudentOrParent) return null;
-        const studentId = currentUser?.student_id || students[0]?.id;
-        return students.find((s: Types.Student) => s.id === studentId) || students[0];
+
+        // Use profile_id (the specific Student ID) first, then fallback to student_id
+        const profileId = currentUser?.profile_id || currentUser?.student_id;
+
+        if (profileId) {
+            // Check if student is in the current page results
+            const foundInList = students.find((s: Types.Student) => s.id === profileId);
+            if (foundInList) return foundInList;
+        }
+
+        // If not found in list, we might need to fetch it specifically or rely on mock/null
+        // Since we are in the student's own view, being unauthenticated or unprofiled is the edge case
+        return students[0] || null;
     }, [isStudentOrParent, currentUser, students]);
 
     const studentClass = useMemo(() => {

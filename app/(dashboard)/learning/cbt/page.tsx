@@ -7,21 +7,26 @@ import { Plus } from 'lucide-react';
 import { useQuizzes } from '@/lib/hooks/use-data';
 import { CreateQuizModal } from '@/components/features/learning/LearningModals';
 import { useRouter } from 'next/navigation';
+import { useSchoolStore } from '@/lib/store';
 
 export default function CBTPage() {
     const router = useRouter();
+    const { currentRole, currentUser } = useSchoolStore();
+    const isStudent = currentRole === 'student';
     const { data: quizzes = [], isLoading } = useQuizzes();
 
     return (
         <div className="p-6 space-y-6">
             <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-bold">Computer Based Tests (CBT)</h1>
-                <CreateQuizModal>
-                    <Button>
-                        <Plus className="w-4 h-4 mr-2" />
-                        Create Quiz
-                    </Button>
-                </CreateQuizModal>
+                {!isStudent && (
+                    <CreateQuizModal>
+                        <Button>
+                            <Plus className="w-4 h-4 mr-2" />
+                            Create Quiz
+                        </Button>
+                    </CreateQuizModal>
+                )}
             </div>
 
             <div className="grid gap-4">
@@ -30,7 +35,9 @@ export default function CBTPage() {
                 ) : quizzes?.length === 0 ? (
                     <Card className="text-center">
                         <div className="p-8 text-gray-500">
-                            No quizzes found. Create one to get started.
+                            {isStudent
+                                ? "No quizzes are available for your class at the moment."
+                                : "No quizzes found. Create one to get started."}
                         </div>
                     </Card>
                 ) : (

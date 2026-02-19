@@ -7,8 +7,11 @@ import { Plus, ArrowLeft, ClipboardCheck } from 'lucide-react';
 import { useAssignments } from '@/lib/hooks/use-data';
 import { CreateAssignmentModal } from '@/components/features/learning/LearningModals';
 import { SubmissionGradingView } from '@/components/features/learning/SubmissionGradingView';
+import { useSchoolStore } from '@/lib/store';
 
 export default function AssignmentsPage() {
+    const { currentRole, currentUser } = useSchoolStore();
+    const isStudent = currentRole === 'student';
     const { data: assignments = [], isLoading } = useAssignments();
     const [gradingAssignment, setGradingAssignment] = useState<any | null>(null);
 
@@ -38,12 +41,14 @@ export default function AssignmentsPage() {
         <div className="p-6 space-y-6">
             <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-bold">Assignments</h1>
-                <CreateAssignmentModal>
-                    <Button>
-                        <Plus className="w-4 h-4 mr-2" />
-                        Create Assignment
-                    </Button>
-                </CreateAssignmentModal>
+                {!isStudent && (
+                    <CreateAssignmentModal>
+                        <Button>
+                            <Plus className="w-4 h-4 mr-2" />
+                            Create Assignment
+                        </Button>
+                    </CreateAssignmentModal>
+                )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -52,7 +57,9 @@ export default function AssignmentsPage() {
                 ) : assignments?.length === 0 ? (
                     <Card className="text-center col-span-full">
                         <div className="p-8 text-gray-500">
-                            No assignments found. Create one to get started.
+                            {isStudent
+                                ? "No assignments have been assigned to your class yet."
+                                : "No assignments found. Create one to get started."}
                         </div>
                     </Card>
                 ) : (
@@ -72,13 +79,22 @@ export default function AssignmentsPage() {
                                 </div>
                             </div>
                             <div className="p-4 bg-gray-50 border-t rounded-b-xl flex gap-2">
-                                <Button
-                                    className="flex-1 text-xs gap-2"
-                                    onClick={() => setGradingAssignment(assignment)}
-                                >
-                                    <ClipboardCheck className="w-3 h-3" />
-                                    Grade Submissions
-                                </Button>
+                                {isStudent ? (
+                                    <Button
+                                        className="flex-1 text-xs gap-2"
+                                        variant="outline"
+                                    >
+                                        View Details
+                                    </Button>
+                                ) : (
+                                    <Button
+                                        className="flex-1 text-xs gap-2"
+                                        onClick={() => setGradingAssignment(assignment)}
+                                    >
+                                        <ClipboardCheck className="w-3 h-3" />
+                                        Grade Submissions
+                                    </Button>
+                                )}
                             </div>
                         </Card>
                     ))

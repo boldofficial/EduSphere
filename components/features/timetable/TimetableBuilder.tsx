@@ -8,6 +8,7 @@ import * as Types from '@/lib/types';
 import { Loader2, Plus, Calendar, User, BookOpen, AlertCircle, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/providers/toast-provider';
+import { useSchoolStore } from '@/lib/store';
 
 // Fetch Periods Hook (Custom)
 function usePeriods() {
@@ -21,11 +22,33 @@ function usePeriods() {
 }
 
 export const TimetableBuilder = () => {
+    const { currentRole, currentUser } = useSchoolStore();
+    const isAdmin = currentRole === 'admin' || currentRole === 'super_admin';
+    const isStudent = currentRole === 'student';
+
     const { data: classes = [] } = useClasses();
     const { data: subjects = [] } = useSubjects();
     const { data: teachers = [] } = useTeachers();
     const { data: periods = [] } = usePeriods();
+
+    // Auto-select class for students
     const [selectedClassId, setSelectedClassId] = useState<string>('');
+
+    React.useEffect(() => {
+        if (isStudent && currentUser) {
+            // Priority 1: Current class from student profile
+            // Priority 2: profile_id if it's a class ID (rare)
+            // Priority 3: class_id directly on user
+            const profile = currentUser.student_profile;
+            const targetClassId = profile?.current_class || currentUser?.student_id?.current_class || currentUser?.class_id;
+
+            if (targetClassId) {
+                console.log('Auto-selecting class for student:', targetClassId);
+                setSelectedClassId(targetClassId);
+            }
+        }
+    }, [isStudent, currentUser, classes]);
+
     const [isSettingUp, setIsSettingUp] = useState(false);
     const [isGenerating, setIsGenerating] = useState(false);
     const { addToast } = useToast();
@@ -100,6 +123,17 @@ export const TimetableBuilder = () => {
     };
 
     if (!selectedClassId) {
+        // For students, if no class is found, show a clearer error
+        if (isStudent) {
+            return (
+                <div className="p-12 text-center bg-white rounded-xl border border-gray-100 shadow-sm flex flex-col items-center">
+                    <AlertCircle className="w-12 h-12 text-amber-500 mb-4" />
+                    <h2 className="text-xl font-bold text-gray-900 mb-2">Class Not Found</h2>
+                    <p className="text-gray-500 max-w-md">We couldn't determine your assigned class. Please contact the school administrator.</p>
+                </div>
+            );
+        }
+
         // Show Period Setup if no periods exist
         if (periods.length === 0) {
             const handleSetupDefaults = async () => {
@@ -114,6 +148,16 @@ export const TimetableBuilder = () => {
                     setIsSettingUp(false);
                 }
             };
+
+            if (isStudent) {
+                return (
+                    <div className="p-12 text-center bg-white rounded-xl border border-gray-100 shadow-sm flex flex-col items-center">
+                        <Calendar className="w-8 h-8 text-gray-300 mb-4" />
+                        <h2 className="text-xl font-bold text-gray-900 mb-2">Notice</h2>
+                        <p className="text-gray-500">The school schedule is currently being set up. Please check back later.</p>
+                    </div>
+                );
+            }
 
             return (
                 <div className="p-12 text-center bg-white rounded-xl border border-gray-100 shadow-sm flex flex-col items-center">
@@ -169,13 +213,15 @@ export const TimetableBuilder = () => {
                 <AlertCircle className="w-10 h-10 text-yellow-600 mx-auto mb-3" />
                 <h3 className="font-bold text-yellow-800">No Timetable Found</h3>
                 <p className="text-yellow-600 mb-4">This class doesn't have an active timetable yet.</p>
-                <Button onClick={() => apiClient.post('/timetables/', {
-                    title: 'General Timetable',
-                    student_class: selectedClassId,
-                    is_active: true
-                }).then(() => window.location.reload())}>
-                    Create Timetable
-                </Button>
+                {!isStudent && (
+                    <Button onClick={() => apiClient.post('/timetables/', {
+                        title: 'General Timetable',
+                        student_class: selectedClassId,
+                        is_active: true
+                    }).then(() => window.location.reload())}>
+                        Create Timetable
+                    </Button>
+                )}
             </div>
         );
     }
@@ -188,27 +234,31 @@ export const TimetableBuilder = () => {
                     <h2 className="text-xl font-black text-gray-900">{classes.find(c => c.id === selectedClassId)?.name}</h2>
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => setSelectedClassId('')}>Change Class</Button>
-                    <Button
-                        size="sm"
-                        onClick={handleAIGenerate}
-                        disabled={isGenerating}
-                        className="bg-brand-900 hover:bg-black text-white gap-2 border-brand-800"
-                    >
-                        {isGenerating ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                            <Sparkles className="h-4 w-4 text-brand-300 fill-brand-300" />
-                        )}
-                        AI Magic Generate
-                    </Button>
-                    <Button
-                        size="sm"
-                        onClick={handlePublish}
-                        disabled={isGenerating || !activeTimetable}
-                    >
-                        Publish
-                    </Button>
+                    {!isStudent && <Button variant="outline" size="sm" onClick={() => setSelectedClassId('')}>Change Class</Button>}
+                    {!isStudent && (
+                        <>
+                            <Button
+                                size="sm"
+                                onClick={handleAIGenerate}
+                                disabled={isGenerating}
+                                className="bg-brand-900 hover:bg-black text-white gap-2 border-brand-800"
+                            >
+                                {isGenerating ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                    <Sparkles className="h-4 w-4 text-brand-300 fill-brand-300" />
+                                )}
+                                AI Magic Generate
+                            </Button>
+                            <Button
+                                size="sm"
+                                onClick={handlePublish}
+                                disabled={isGenerating || !activeTimetable}
+                            >
+                                Publish
+                            </Button>
+                        </>
+                    )}
                 </div>
             </div>
 
@@ -254,8 +304,8 @@ export const TimetableBuilder = () => {
                                     return (
                                         <td
                                             key={day}
-                                            onClick={() => handleCellClick(day, period.id)}
-                                            className="p-2 border-r last:border-0 cursor-pointer hover:bg-brand-50 transition-colors relative group h-24 align-top"
+                                            onClick={() => !isStudent && handleCellClick(day, period.id)}
+                                            className={`p-2 border-r last:border-0 transition-colors relative group h-24 align-top ${!isStudent ? 'cursor-pointer hover:bg-brand-50' : ''}`}
                                         >
                                             {entry ? (
                                                 <div className="h-full flex flex-col justify-between p-1 bg-white border border-brand-100 rounded-lg shadow-sm group-hover:border-brand-300">
