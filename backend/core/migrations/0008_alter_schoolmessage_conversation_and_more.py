@@ -4,6 +4,40 @@ import django.db.models.deletion
 from django.db import migrations, models
 
 
+def migrate_existing_messages(apps, schema_editor):
+    SchoolMessage = apps.get_model('core', 'SchoolMessage')
+    Conversation = apps.get_model('core', 'Conversation')
+    School = apps.get_model('schools', 'School')
+    
+    # Find all messages without a conversation
+    orphan_messages = SchoolMessage.objects.filter(conversation__isnull=True)
+    if not orphan_messages.exists():
+        return
+
+    # Create a legacy conversation for each school and assign orphan messages
+    for school in School.objects.all():
+        school_orphans = orphan_messages.filter(sender__school=school)
+        if school_orphans.exists():
+            # Create a "Legacy Messages" conversation for this school
+            conv = Conversation.objects.create(
+                school=school,
+                type='DIRECT',
+                metadata={'migrated': True, 'title': 'Legacy Conversation'}
+            )
+            school_orphans.update(conversation=conv)
+    
+    # Final catch-all for any stragglers (shouldn't be any if all users have schools)
+    unschool_orphans = SchoolMessage.objects.filter(conversation__isnull=True)
+    if unschool_orphans.exists():
+        first_school = School.objects.first()
+        if first_school:
+            conv = Conversation.objects.create(
+                school=first_school,
+                type='DIRECT',
+                metadata={'migrated': True, 'title': 'Legacy Conversation (Global)'}
+            )
+            unschool_orphans.update(conversation=conv)
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -11,11 +45,11 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.RunPython(migrate_existing_messages),
         migrations.AlterField(
             model_name='schoolmessage',
             name='conversation',
-            field=models.ForeignKey(default='00000000-0000-0000-0000-000000000000', on_delete=django.db.models.deletion.CASCADE, related_name='messages', to='core.conversation'),
-            preserve_default=False,
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='messages', to='core.conversation'),
         ),
         migrations.AlterField(
             model_name='schoolmessage',
