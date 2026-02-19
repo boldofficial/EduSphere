@@ -367,14 +367,30 @@ class AcademicAI:
            ]
         
         Ensure every regular period for every class is filled if possible, adhering to teacher availability.
+        
+        NOTE ON TEACHERS: If a teacher has no listed 'expertise', you may treat them as a generalist academic teacher and assign them to any subject, but avoid over-loading them. If expertise is listed, prioritize that.
         """
         
         try:
             text = self._generate(prompt)
             if not text:
                 return None
-            text = text.replace('```json', '').replace('```', '').strip()
-            return json.loads(text)
+            
+            # Robust JSON array extraction
+            start = text.find('[')
+            end = text.rfind(']')
+            if start != -1 and end != -1:
+                cleaned_text = text[start:end+1]
+            else:
+                cleaned_text = text.replace('```json', '').replace('```', '').strip()
+            
+            try:
+                data = json.loads(cleaned_text)
+                return data if isinstance(data, list) else None
+            except json.JSONDecodeError as je:
+                logger.error(f"AI Timetable JSON Parse Error: {str(je)}")
+                logger.error(f"Raw AI Response: {text}")
+                return None
         except Exception as e:
             logger.error(f"AI Timetable Generation Error: {str(e)}")
             return None

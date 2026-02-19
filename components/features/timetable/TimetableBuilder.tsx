@@ -100,9 +100,10 @@ export const TimetableBuilder = () => {
             const res = await apiClient.post('/timetables/magic-generate/');
             addToast(res.data.message || 'Timetable generated successfully!', 'success');
             window.location.reload();
-        } catch (error) {
+        } catch (error: any) {
             console.error('AI Generation Failed:', error);
-            addToast('Failed to generate timetable. Please ensure periods and teachers are set up.', 'error');
+            const message = error.response?.data?.error || 'Failed to generate timetable. Please ensure periods and teachers are set up.';
+            addToast(message, 'error');
         } finally {
             setIsGenerating(false);
         }

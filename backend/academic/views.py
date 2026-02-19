@@ -470,10 +470,17 @@ class AITimetableGenerateView(APIView):
             school_data["periods"].append({"id": str(p.id), "name": p.name, "category": p.category})
 
         ai = AcademicAI()
-        entries = ai.generate_timetable(school_data)
+        try:
+            entries = ai.generate_timetable(school_data)
+        except Exception as e:
+            logger.error(f"AI Timetable unexpected crash: {str(e)}")
+            return Response({"error": f"Internal AI Error: {str(e)}"}, status=500)
 
         if not entries:
-            return Response({"error": "AI failed to generate timetable"}, status=500)
+            # Check if it was a parsing error or a model configuration issue
+            if ai.model is None:
+                return Response({"error": "AI model not configured. Please check your API keys in Platform Settings."}, status=500)
+            return Response({"error": "AI failed to generate a valid timetable. This usually happens when teacher expertise is not set up correctly."}, status=500)
 
         # process and save entries
         with transaction.atomic():
@@ -497,13 +504,16 @@ class AITimetableGenerateView(APIView):
                     ).delete()
 
                     # Save new entry
+                    teacher_id = entry_data.get('teacher_id')
+                    if not teacher_id: teacher_id = None
+                    
                     TimetableEntry.objects.create(
                         school=school,
                         timetable=timetable,
                         day_of_week=entry_data['day'],
                         period_id=entry_data['period_id'],
                         subject_id=entry_data['subject_id'],
-                        teacher_id=entry_data['teacher_id']
+                        teacher_id=teacher_id
                     )
                 except Exception as e:
                     logger.error(f"Error saving AI Timetable Entry: {str(e)}")
