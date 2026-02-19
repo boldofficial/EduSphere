@@ -413,13 +413,20 @@ class SchoolMessageViewSet(CachingMixin, viewsets.ModelViewSet):
         }
         tone = request.data.get('tone', 'formal')
 
-        ai = AcademicAI()
-        draft = ai.draft_professional_message(context, tone=tone)
+        try:
+            ai = AcademicAI()
+            if not ai.model:
+                return Response({"error": "AI service is not configured. Please contact the administrator."}, status=503)
 
-        if not draft:
-            return Response({"error": "AI drafting failed. Please try again."}, status=500)
+            draft = ai.draft_professional_message(context, tone=tone)
 
-        return Response({"draft": draft})
+            if not draft:
+                return Response({"error": "AI drafting failed. Please try again."}, status=503)
+
+            return Response({"draft": draft})
+        except Exception as e:
+            logger.error(f"AI Draft Error: {str(e)}", exc_info=True)
+            return Response({"error": f"An error occurred: {str(e)}"}, status=500)
 
 class NotificationViewSet(viewsets.ModelViewSet):
     """Per-user in-app notifications"""

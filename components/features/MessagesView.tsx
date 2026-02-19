@@ -59,8 +59,8 @@ export const MessagesView: React.FC = () => {
     const [subject, setSubject] = useState('');
     const [body, setBody] = useState('');
 
-    // Only admin can access this view
-    if (currentRole !== 'admin') {
+    // Check permissions
+    if (!['admin', 'teacher', 'staff'].includes(currentRole || '')) {
         return (
             <div className="flex items-center justify-center h-64">
                 <p className="text-gray-500">You don't have permission to access this page.</p>
@@ -126,10 +126,21 @@ export const MessagesView: React.FC = () => {
     const filteredMessages = useMemo(() => {
         return messages
             .filter((m: Types.Message) => {
+                // Robust ID comparison
+                const currentUserId = currentUser?.id ? String(currentUser.id) : null;
+                if (!currentUserId) return false;
+
                 // For sent view, show messages sent by current user
-                if (viewMode === 'sent' && String(m.sender) !== String(currentUser?.id)) return false;
+                if (viewMode === 'sent') {
+                    const senderId = typeof m.sender === 'object' ? String((m.sender as any).id || (m.sender as any).pk) : String(m.sender);
+                    if (senderId !== currentUserId) return false;
+                }
+
                 // For inbox view, show messages received
-                if (viewMode === 'inbox' && String(m.recipient) !== String(currentUser?.id)) return false;
+                if (viewMode === 'inbox') {
+                    const recipientId = typeof m.recipient === 'object' ? String((m.recipient as any).id || (m.recipient as any).pk) : String(m.recipient);
+                    if (recipientId !== currentUserId) return false;
+                }
 
                 // Apply recipient filter
                 if (recipientFilter !== 'all' && m.recipient_role !== recipientFilter) return false;
