@@ -54,7 +54,9 @@ export const MessagesView: React.FC = () => {
     const [viewMode, setViewMode] = useState<'sent' | 'inbox'>('sent');
 
     // Compose form state
-    const [recipientType, setRecipientType] = useState<RecipientType>('teacher');
+    const [recipientType, setRecipientType] = useState<RecipientType>(
+        currentRole === 'admin' ? 'teacher' : 'admin'
+    );
     const [selectedRecipient, setSelectedRecipient] = useState('');
     const [subject, setSubject] = useState('');
     const [body, setBody] = useState('');
@@ -99,7 +101,14 @@ export const MessagesView: React.FC = () => {
 
                 // If staff role indicates they are an admin, also add as admin target
                 const roleLower = s.role.toLowerCase();
-                if (roleLower.includes('admin') || roleLower.includes('principal') || roleLower.includes('director')) {
+                const isAdminRole = roleLower.includes('admin') ||
+                    roleLower.includes('principal') ||
+                    roleLower.includes('director') ||
+                    roleLower.includes('proprietor') ||
+                    roleLower.includes('head') ||
+                    roleLower.includes('secretary');
+
+                if (isAdminRole) {
                     recipients.push({
                         ...rec,
                         type: 'admin'
@@ -194,7 +203,7 @@ export const MessagesView: React.FC = () => {
     }, [messages, currentUser?.id]);
 
     const resetCompose = () => {
-        setRecipientType('teacher');
+        setRecipientType(currentRole === 'admin' ? 'teacher' : 'admin');
         setSelectedRecipient('');
         setSubject('');
         setBody('');
@@ -441,10 +450,16 @@ export const MessagesView: React.FC = () => {
                                     setSelectedRecipient('');
                                 }}
                             >
-                                <option value="teacher">Teacher</option>
-                                <option value="student">Student/Parent</option>
-                                <option value="staff">Staff</option>
-                                <option value="admin">Administration</option>
+                                {currentRole === 'admin' ? (
+                                    <>
+                                        <option value="teacher">Teacher</option>
+                                        <option value="student">Student/Parent</option>
+                                        <option value="staff">Staff</option>
+                                        <option value="admin">Administration</option>
+                                    </>
+                                ) : (
+                                    <option value="admin">Administration</option>
+                                )}
                             </Select>
                         </div>
                         <div>
@@ -583,33 +598,37 @@ export const MessagesView: React.FC = () => {
                                 <Trash2 className="h-4 w-4 mr-2" />
                                 Delete
                             </Button>
-                            <Button
-                                onClick={() => {
-                                    // Set up reply
-                                    const senderId = typeof viewingMessage.sender === 'object' ? (viewingMessage.sender as any).id || (viewingMessage.sender as any).pk : viewingMessage.sender;
-                                    const senderRole = viewingMessage.sender_role?.toLowerCase() || 'admin';
 
-                                    // Normalize role for frontend state
-                                    let targetRole: any = senderRole;
-                                    if (senderRole === 'administrator') targetRole = 'admin';
+                            {(currentRole === 'admin' || viewingMessage.sender_role?.toLowerCase() === 'admin' || viewingMessage.sender_role?.toLowerCase() === 'administrator') && (
+                                <Button
+                                    onClick={() => {
+                                        // Set up reply
+                                        const senderId = typeof viewingMessage.sender === 'object' ? (viewingMessage.sender as any).id || (viewingMessage.sender as any).pk : viewingMessage.sender;
+                                        const senderRole = viewingMessage.sender_role?.toLowerCase() || 'admin';
 
-                                    setRecipientType(targetRole);
-                                    setSubject(`Re: ${viewingMessage.subject}`);
-                                    setBody(`\n\n--- Original Message ---\n${viewingMessage.body}`);
+                                        // Normalize role for frontend state
+                                        let targetRole: any = senderRole;
+                                        if (senderRole === 'administrator') targetRole = 'admin';
 
-                                    // Find recipient in list
-                                    const targetRec = allRecipients.find(r => String(r.userId) === String(senderId));
-                                    if (targetRec) {
-                                        setSelectedRecipient(targetRec.id);
-                                    }
+                                        setRecipientType(targetRole);
+                                        setSubject(`Re: ${viewingMessage.subject}`);
+                                        setBody(`\n\n--- Original Message ---\n${viewingMessage.body}`);
 
-                                    setViewingMessage(null);
-                                    setIsComposeOpen(true);
-                                }}
-                            >
-                                <Reply className="h-4 w-4 mr-2" />
-                                Reply
-                            </Button>
+                                        // Find recipient in list
+                                        const targetRec = allRecipients.find(r => String(r.userId) === String(senderId));
+                                        if (targetRec) {
+                                            setSelectedRecipient(targetRec.id);
+                                        }
+
+                                        setViewingMessage(null);
+                                        setIsComposeOpen(true);
+                                    }}
+                                >
+                                    <Reply className="h-4 w-4 mr-2" />
+                                    Reply
+                                </Button>
+                            )}
+
                             <Button variant="secondary" onClick={() => setViewingMessage(null)}>
                                 Close
                             </Button>
