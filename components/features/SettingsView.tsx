@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Save } from 'lucide-react';
+import { Save, Lock } from 'lucide-react';
 import * as Types from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -41,6 +41,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, onUpdate }
         invoice_due_days: s.invoice_due_days ?? 14,
         director_name: s.director_name ?? '',
         head_of_school_name: s.head_of_school_name ?? '',
+        custom_domain: s.custom_domain ?? '',
     });
 
     const [formData, setFormData] = useState<Types.Settings>(initializeForm(settings));
@@ -163,6 +164,51 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, onUpdate }
                             <Input label="Due Days" type="number" value={formData.invoice_due_days?.toString() || '14'} onChange={e => handleChange('invoice_due_days', parseInt(e.target.value) || 14)} />
                         </div>
                         <textarea value={formData.invoice_notes || ''} onChange={e => handleChange('invoice_notes', e.target.value)} placeholder="Invoice notes (optional)..." rows={1} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500" />
+                    </div>
+                </Card>
+                <Card title="Domain Management">
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Standard Subdomain</label>
+                            <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg font-mono text-sm text-brand-600">
+                                <span>.{settings.domain || 'your-school'}</span>
+                                <span className="text-[10px] bg-brand-100 text-brand-700 px-2 py-0.5 rounded-full font-bold uppercase">Default</span>
+                            </div>
+                        </div>
+                        <div className="pt-4 border-t border-gray-100">
+                            <Input
+                                label="Custom Domain"
+                                placeholder="e.g. portal.yourschool.com"
+                                value={formData.custom_domain || ''}
+                                onChange={e => handleChange('custom_domain', e.target.value)}
+                                disabled={!settings.subscription?.plan?.custom_domain_enabled}
+                                className="font-mono"
+                            />
+                            {settings.subscription?.plan?.custom_domain_enabled && (
+                                <div className="mt-3 p-3 bg-blue-50 border border-blue-100 rounded-xl flex items-start gap-3">
+                                    <div className="p-1.5 bg-blue-100 text-blue-600 rounded-lg">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="text-[11px] font-bold text-blue-900 uppercase tracking-tight">DNS Configuration Required</p>
+                                        <p className="text-[10px] text-blue-800 font-medium leading-relaxed">
+                                            Point your domain&apos;s <strong>CNAME</strong> record to: <code className="bg-blue-100 px-1 rounded text-blue-900 font-bold">app.myregistra.net</code>
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+                            {!settings.subscription?.plan?.custom_domain_enabled && (
+                                <div className="mt-2 p-3 bg-amber-50 border border-amber-100 rounded-xl flex items-start gap-3">
+                                    <div className="p-1.5 bg-amber-100 text-amber-600 rounded-lg">
+                                        <Lock size={14} />
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="text-[11px] font-bold text-amber-900 uppercase tracking-tight">Upgrade Required</p>
+                                        <p className="text-[10px] text-amber-800 font-medium">Custom domains are only available on Enterprise plans. Contact support to upgrade.</p>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </Card>
             </div>

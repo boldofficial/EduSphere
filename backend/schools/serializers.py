@@ -4,7 +4,7 @@ from .models import School, SubscriptionPlan, Subscription, PlatformSettings
 class SubscriptionPlanSerializer(serializers.ModelSerializer):
     class Meta:
         model = SubscriptionPlan
-        fields = ['id', 'name', 'slug', 'price', 'description', 'features', 'allowed_modules', 'duration_days', 'is_active']
+        fields = ['id', 'name', 'slug', 'price', 'description', 'features', 'allowed_modules', 'duration_days', 'is_active', 'custom_domain_enabled']
 
 class SubscriptionSerializer(serializers.ModelSerializer):
     plan_name = serializers.CharField(source='plan.name', read_only=True)

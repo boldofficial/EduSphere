@@ -31,6 +31,18 @@ export interface Testimonial {
   image: string | null;
 }
 
+export interface SubscriptionPlan extends Entity {
+  name: string;
+  slug: string;
+  price: number;
+  duration_days: number;
+  description: string;
+  features: string[];
+  allowed_modules: string[];
+  is_active: boolean;
+  custom_domain_enabled: boolean;
+}
+
 export interface Settings extends Entity {
   school_name: string;
   school_address: string;
@@ -88,6 +100,15 @@ export interface Settings extends Entity {
   invoice_notes: string; // Custom notes on invoice
   invoice_due_days: number; // Days until payment is due
 
+  // Domain & Subscription
+  domain?: string;
+  custom_domain?: string;
+  subscription?: {
+    plan: SubscriptionPlan;
+    status: string;
+    end_date: string;
+  };
+
   // Role Permissions Configuration
   role_permissions: Record<UserRole, RolePermissions>;
 }
@@ -126,6 +147,7 @@ export interface Admission extends Entity {
 
 export interface Class extends Entity {
   name: string;
+  category: string;
   class_teacher_id: string | null;
   subjects: string[] | null;
 }
@@ -198,6 +220,7 @@ export interface Student extends Entity {
   password?: string; // Portal login password (set by admin)
   assigned_fees?: string[]; // IDs of optional fees assigned to this student
   discounts?: StudentDiscount[]; // Applied discounts/scholarships
+  assigned_subjects?: string[]; // List of subject names
 }
 
 export interface StudentDiscount {

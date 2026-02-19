@@ -52,6 +52,7 @@ class SubscriptionPlan(models.Model):
     description = models.TextField(blank=True)
     features = models.JSONField(default=list) # List of feature strings (marketing)
     allowed_modules = models.JSONField(default=list) # List of module IDs (students, bursary, etc.)
+    custom_domain_enabled = models.BooleanField(default=False, help_text="Allow school to use custom domain")
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

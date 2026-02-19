@@ -27,8 +27,11 @@ export const ClassesView: React.FC<ClassesViewProps> = ({ classes, teachers, onU
     const allKnownSubjects = Array.from(new Set([
         ...Utils.PRESET_PRESCHOOL_SUBJECTS,
         ...Utils.PRESET_PRIMARY_SUBJECTS,
+        ...Utils.PRESET_JUNIOR_SEC_SUBJECTS,
+        ...Utils.PRESET_SSS_SCIENCE_SUBJECTS,
+        ...Utils.PRESET_SSS_ART_SUBJECTS,
+        ...Utils.PRESET_SSS_COMMERCE_SUBJECTS,
         'French', 'Music', 'Phonics', 'Handwriting', 'Diction', 'Home Economics', 'Agricultural Science',
-        'History', 'Geography', 'Literature', 'Coding/Robotics'
     ])).sort();
 
     const handleEdit = (cls: Types.Class) => {
@@ -43,6 +46,7 @@ export const ClassesView: React.FC<ClassesViewProps> = ({ classes, teachers, onU
             created_at: Date.now(),
             updated_at: Date.now(),
             name: '',
+            category: '',
             class_teacher_id: null,
             subjects: []
         } as Types.Class);
@@ -95,9 +99,17 @@ export const ClassesView: React.FC<ClassesViewProps> = ({ classes, teachers, onU
         }
     };
 
-    const applyPreset = (type: 'nursery' | 'primary') => {
+    const applyPreset = (type: 'nursery' | 'primary' | 'jss' | 'sss_sci' | 'sss_art' | 'sss_comm') => {
         if (!editingClass) return;
-        const subjects = type === 'nursery' ? Utils.PRESET_PRESCHOOL_SUBJECTS : Utils.PRESET_PRIMARY_SUBJECTS;
+        let subjects: string[] = [];
+        switch (type) {
+            case 'nursery': subjects = Utils.PRESET_PRESCHOOL_SUBJECTS; break;
+            case 'primary': subjects = Utils.PRESET_PRIMARY_SUBJECTS; break;
+            case 'jss': subjects = Utils.PRESET_JUNIOR_SEC_SUBJECTS; break;
+            case 'sss_sci': subjects = Utils.PRESET_SSS_SCIENCE_SUBJECTS; break;
+            case 'sss_art': subjects = Utils.PRESET_SSS_ART_SUBJECTS; break;
+            case 'sss_comm': subjects = Utils.PRESET_SSS_COMMERCE_SUBJECTS; break;
+        }
         setEditingClass({ ...editingClass, subjects: [...subjects] });
     };
 
@@ -230,8 +242,12 @@ export const ClassesView: React.FC<ClassesViewProps> = ({ classes, teachers, onU
                                     <button type="button" onClick={handleSelectAllFiltered} className="text-xs bg-brand-100 text-brand-700 px-2 py-1 rounded hover:bg-brand-200 font-medium">
                                         {filteredPool.every(s => activeSubjects.includes(s)) ? 'Unselect Filtered' : 'Select Filtered'}
                                     </button>
-                                    <button type="button" onClick={() => applyPreset('nursery')} className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded hover:bg-purple-200 font-medium">Nursery Preset</button>
-                                    <button type="button" onClick={() => applyPreset('primary')} className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200 font-medium">Primary Preset</button>
+                                    <button type="button" onClick={() => applyPreset('nursery')} className="text-[10px] bg-purple-100 text-purple-700 px-2 py-1 rounded hover:bg-purple-200 font-bold uppercase tracking-wider transition-colors">Nursery</button>
+                                    <button type="button" onClick={() => applyPreset('primary')} className="text-[10px] bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200 font-bold uppercase tracking-wider transition-colors">Primary</button>
+                                    <button type="button" onClick={() => applyPreset('jss')} className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-1 rounded hover:bg-emerald-200 font-bold uppercase tracking-wider transition-colors">JSS</button>
+                                    <button type="button" onClick={() => applyPreset('sss_sci')} className="text-[10px] bg-amber-100 text-amber-700 px-2 py-1 rounded hover:bg-amber-200 font-bold uppercase tracking-wider transition-colors">SSS Science</button>
+                                    <button type="button" onClick={() => applyPreset('sss_art')} className="text-[10px] bg-indigo-100 text-indigo-700 px-2 py-1 rounded hover:bg-indigo-200 font-bold uppercase tracking-wider transition-colors">SSS Art</button>
+                                    <button type="button" onClick={() => applyPreset('sss_comm')} className="text-[10px] bg-slate-100 text-slate-700 px-2 py-1 rounded hover:bg-slate-200 font-bold uppercase tracking-wider transition-colors">SSS Commerce</button>
                                 </div>
                             </div>
                             <div className="flex gap-2 mb-4">

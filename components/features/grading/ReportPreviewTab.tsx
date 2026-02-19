@@ -86,7 +86,7 @@ export const ReportPreviewTab: React.FC<ReportPreviewTabProps> = ({
                                         currentClass={currentClass}
                                         score={studentScore || { id: '', student_id: student.id, class_id: selectedClass, session: settings.current_session, term: settings.current_term, rows: [], average: 0, created_at: Date.now(), updated_at: Date.now(), affective: {}, psychomotor: {} }}
                                         settings={settings}
-                                        subjects={classSubjects}
+                                        subjects={(student.assigned_subjects && student.assigned_subjects.length > 0) ? student.assigned_subjects : classSubjects}
                                     />
                                 </div>
                             );
@@ -188,7 +188,7 @@ export const ReportPreviewTab: React.FC<ReportPreviewTabProps> = ({
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {classSubjects.map((subj) => {
+                                    {((selectedStudent.assigned_subjects && selectedStudent.assigned_subjects.length > 0) ? selectedStudent.assigned_subjects : classSubjects).map((subj) => {
                                         const row = previewScore.rows?.find(r => r.subject === subj) || { ca1: 0, ca2: 0, exam: 0, total: 0, grade: '-', comment: '-' };
                                         const gradeColor = row.grade === 'A' ? 'text-green-600' : row.grade === 'B' ? 'text-blue-600' : row.grade === 'C' ? 'text-amber-600' : row.grade === 'D' ? 'text-orange-500' : row.grade === 'F' ? 'text-red-500' : 'text-gray-400';
                                         return (

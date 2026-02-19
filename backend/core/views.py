@@ -124,7 +124,14 @@ class SettingsView(APIView):
                 
                 'role_permissions': settings_obj.role_permissions,
                 'subscription_status': sub_status,
-                'school_domain': school.domain,
+                'domain': school.domain,
+                'custom_domain': school.custom_domain,
+                'subscription': {
+                    'status': sub_status,
+                    'plan': {
+                        'custom_domain_enabled': school.subscription.plan.custom_domain_enabled if hasattr(school, 'subscription') and school.subscription and school.subscription.plan else False
+                    }
+                },
                 'api_version': SETTINGS_VERSION,
             })
         except Exception as e:
@@ -182,6 +189,7 @@ class SettingsView(APIView):
                     if 'school_address' in data: school.address = data['school_address']
                     if 'school_email' in data: school.email = data['school_email']
                     if 'school_phone' in data: school.phone = data['school_phone']
+                    if 'custom_domain' in data: school.custom_domain = data['custom_domain']
                     if 'logo_media' in data: 
                         school.logo = process_base64(data['logo_media'])
                     school.save()

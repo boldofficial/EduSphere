@@ -95,7 +95,14 @@ export const ScoreEntryTab: React.FC<ScoreEntryTabProps> = ({
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                        {activeStudents.map(s => {
+                        {activeStudents.filter(s => {
+                            // If student has assigned subjects, they must take the selected one
+                            if (s.assigned_subjects && s.assigned_subjects.length > 0) {
+                                return s.assigned_subjects.includes(selectedSubject);
+                            }
+                            // Default: student takes all class subjects
+                            return true;
+                        }).map(s => {
                             const row = getRow(s.id);
                             const totalBg = row.total >= 70 ? 'bg-emerald-50' : row.total >= 50 ? 'bg-blue-50' : row.total >= 40 ? 'bg-yellow-50' : row.total > 0 ? 'bg-red-50' : '';
                             const totalText = row.total >= 70 ? 'text-emerald-700' : row.total >= 50 ? 'text-blue-700' : row.total >= 40 ? 'text-yellow-700' : row.total > 0 ? 'text-red-600' : 'text-gray-400';

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Plus, Search, User, Edit, Trash2, UserCheck, Zap, AlertTriangle, GraduationCap } from 'lucide-react';
+import { Plus, Search, User, Edit, Trash2, UserCheck, Zap, AlertTriangle, GraduationCap, Library } from 'lucide-react';
 import * as Types from '@/lib/types';
+import * as Utils from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -308,6 +309,45 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                             <Input label="Parent Email" type="email" value={formData.parent_email || ''} onChange={e => setFormData({ ...formData, parent_email: e.target.value })} placeholder="For password recovery" />
                             <Input label="Residential Address" value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} />
                         </div>
+                    </div>
+
+                    <div className="border-t pt-4 mt-2">
+                        <div className="flex justify-between items-center mb-3">
+                            <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wide flex items-center gap-2">
+                                <Library className="h-4 w-4 text-brand-500" /> Subject Selection (E.g. Science/Art)
+                            </h4>
+                            <span className="text-[10px] text-gray-500 italic">Leave empty to use class defaults</span>
+                        </div>
+
+                        {formData.class_id ? (
+                            <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 max-h-[200px] overflow-y-auto">
+                                <div className="grid grid-cols-2 gap-2">
+                                    {Utils.getSubjectsForClass(classes.find(c => c.id === formData.class_id)).map(subj => {
+                                        const isAssigned = (formData.assigned_subjects || []).includes(subj);
+                                        return (
+                                            <label key={subj} className={`flex items-center gap-2 p-2 rounded border cursor-pointer transition-all ${isAssigned ? 'bg-brand-50 border-brand-200 text-brand-700' : 'bg-white border-gray-200 text-gray-600 hover:border-brand-200'}`}>
+                                                <input
+                                                    type="checkbox"
+                                                    className="rounded text-brand-600"
+                                                    checked={isAssigned}
+                                                    onChange={() => {
+                                                        const current = formData.assigned_subjects || [];
+                                                        if (isAssigned) {
+                                                            setFormData({ ...formData, assigned_subjects: current.filter(s => s !== subj) });
+                                                        } else {
+                                                            setFormData({ ...formData, assigned_subjects: [...current, subj] });
+                                                        }
+                                                    }}
+                                                />
+                                                <span className="text-xs font-medium truncate" title={subj}>{subj}</span>
+                                            </label>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        ) : (
+                            <p className="text-xs text-gray-400 italic">Select a class first to see available subjects</p>
+                        )}
                     </div>
 
                     <div className="border-t pt-4 mt-2">

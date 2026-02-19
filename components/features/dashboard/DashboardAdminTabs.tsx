@@ -112,7 +112,10 @@ export const DashboardSchoolsTab: React.FC<SchoolsTabProps> = ({ schools, onSele
                                     <div className="font-bold text-gray-900">{school.name}</div>
                                     <div className="text-xs text-gray-500">{new Date(school.created_at).toLocaleDateString()}</div>
                                 </td>
-                                <td className="py-4 px-4 font-mono text-xs text-brand-600">.{school.domain}</td>
+                                <td className="py-4 px-4 font-mono text-xs text-brand-600">
+                                    <div>.{school.domain}</div>
+                                    {school.custom_domain && <div className="text-[9px] text-gray-400 mt-1">{school.custom_domain}</div>}
+                                </td>
                                 <td className="py-4 px-4 text-sm text-gray-600">{school.email || 'N/A'}</td>
                                 <td className="py-4 px-4">
                                     <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase ${school.subscription_status === 'active' ? 'bg-green-100 text-green-700' :
@@ -280,8 +283,8 @@ export const DashboardPlatformSettingsTab: React.FC<PlatformSettingsTabProps> = 
 
                         <div className="flex items-center gap-2 pt-2 border-t border-white/10">
                             <span className={`h-2 w-2 rounded-full ${(editedPlatformSettings?.ai_provider === 'openrouter' && editedPlatformSettings?.openrouter_api_key) ||
-                                    (editedPlatformSettings?.ai_provider !== 'openrouter' && editedPlatformSettings?.gemini_api_key)
-                                    ? 'bg-green-400 animate-pulse' : 'bg-red-400'
+                                (editedPlatformSettings?.ai_provider !== 'openrouter' && editedPlatformSettings?.gemini_api_key)
+                                ? 'bg-green-400 animate-pulse' : 'bg-red-400'
                                 }`} />
                             <span className="text-xs opacity-60">
                                 {(editedPlatformSettings?.ai_provider === 'openrouter' && editedPlatformSettings?.openrouter_api_key) ||
@@ -381,23 +384,45 @@ export const SchoolManagementModal: React.FC<SchoolModalProps> = ({
                     <div className="bg-gray-50 p-6 rounded-2xl mb-8 space-y-4">
                         <h4 className="text-[10px] font-black uppercase text-gray-400 tracking-wider">Management Actions</h4>
                         <div className="space-y-4">
-                            <div>
-                                <label className="block text-xs font-bold text-gray-500 mb-1">Edit Domain / URL</label>
-                                <div className="flex gap-2">
-                                    <Input
-                                        defaultValue={selectedSchool.domain}
-                                        id="school_domain_input"
-                                        className="font-mono text-sm"
-                                    />
-                                    <Button
-                                        variant="outline"
-                                        onClick={() => {
-                                            const input = document.getElementById('school_domain_input') as HTMLInputElement;
-                                            handleUpdateSchool(selectedSchool.id, { domain: input.value });
-                                        }}
-                                    >
-                                        Update
-                                    </Button>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 mb-1">Subdomain</label>
+                                    <div className="flex gap-2">
+                                        <Input
+                                            defaultValue={selectedSchool.domain}
+                                            id="school_domain_input"
+                                            className="font-mono text-sm"
+                                        />
+                                        <Button
+                                            variant="outline"
+                                            onClick={() => {
+                                                const input = document.getElementById('school_domain_input') as HTMLInputElement;
+                                                handleUpdateSchool(selectedSchool.id, { domain: input.value });
+                                            }}
+                                        >
+                                            Update
+                                        </Button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 mb-1">Custom Domain</label>
+                                    <div className="flex gap-2">
+                                        <Input
+                                            defaultValue={selectedSchool.custom_domain}
+                                            id="school_custom_domain_input"
+                                            className="font-mono text-sm"
+                                            placeholder="e.g. portal.school.com"
+                                        />
+                                        <Button
+                                            variant="outline"
+                                            onClick={() => {
+                                                const input = document.getElementById('school_custom_domain_input') as HTMLInputElement;
+                                                handleUpdateSchool(selectedSchool.id, { custom_domain: input.value });
+                                            }}
+                                        >
+                                            Update
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
                         </div>

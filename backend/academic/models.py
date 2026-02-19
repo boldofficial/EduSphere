@@ -60,7 +60,17 @@ class Teacher(TenantModel):
         return f"{self.name} ({self.school.name}) - {self.staff_type}"
 
 class Class(TenantModel):
+    CATEGORY_CHOICES = [
+        ('Nursery', 'Nursery/Pre-School'),
+        ('Primary', 'Primary'),
+        ('JSS', 'Junior Secondary (JSS)'),
+        ('SSS_Science', 'Senior Secondary (Science)'),
+        ('SSS_Art', 'Senior Secondary (Art)'),
+        ('SSS_Commerce', 'Senior Secondary (Commerce)'),
+        ('Other', 'Other/General'),
+    ]
     name = models.CharField(max_length=100)
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='Primary')
     class_teacher = models.ForeignKey(Teacher, on_delete=models.SET_NULL, null=True, related_name='classes')
     subjects = models.ManyToManyField(Subject, blank=True)
     
@@ -69,7 +79,7 @@ class Class(TenantModel):
     is_graduation_class = models.BooleanField(default=False, help_text="Check if this is the final class (e.g., SS3).")
 
     def __str__(self):
-        return f"{self.name} ({self.school.name})"
+        return f"{self.name} ({self.school.name}) - {self.category}"
 
 class SubjectTeacher(TenantModel):
     """
@@ -116,6 +126,7 @@ class Student(TenantModel):
     # Financial Persistence
     assigned_fees = models.JSONField(default=list, blank=True) # List of FeeItem IDs
     discounts = models.JSONField(default=list, blank=True)     # List of discount objects
+    assigned_subjects = models.JSONField(default=list, blank=True) # List of subject names (strings)
 
     def __str__(self):
         return f"{self.names} ({self.school.name})"

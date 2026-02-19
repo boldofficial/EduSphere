@@ -24,13 +24,29 @@ export const BroadsheetView: React.FC<BroadsheetViewProps> = ({ students, classe
         const studentScore = scores.find(sc => sc.student_id === s.id && sc.session === settings.current_session && sc.term === settings.current_term);
         const subjectScores: Record<string, number> = {};
         let total = 0;
+
+        // Determine which subjects this student actually takes
+        const studentSubjects = (s.assigned_subjects && s.assigned_subjects.length > 0) ? s.assigned_subjects : subjects;
+
         subjects.forEach(subj => {
-            const row = studentScore?.rows.find(r => r.subject === subj);
-            const val = row ? row.total : 0;
-            subjectScores[subj] = val;
-            total += val;
+            const isTaken = studentSubjects.includes(subj);
+            if (isTaken) {
+                const row = studentScore?.rows.find(r => r.subject === subj);
+                const val = row ? row.total : 0;
+                subjectScores[subj] = val;
+                total += val;
+            } else {
+                subjectScores[subj] = -1; // -1 indicates not taken
+            }
         });
-        return { ...s, scores: subjectScores, total, average: subjects.length > 0 ? total / subjects.length : 0 };
+
+        const subjectsCount = studentSubjects.length;
+        return {
+            ...s,
+            scores: subjectScores,
+            total,
+            average: subjectsCount > 0 ? total / subjectsCount : 0
+        };
     }).sort((a, b) => b.average - a.average);
 
     const handleExportPDF = async () => {

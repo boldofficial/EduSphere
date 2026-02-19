@@ -168,6 +168,7 @@ class SchoolManagementView(APIView):
         # Simple field update
         school.name = request.data.get('name', school.name)
         school.domain = request.data.get('domain', school.domain)
+        school.custom_domain = request.data.get('custom_domain', school.custom_domain)
         school.email = request.data.get('email', school.email)
         school.phone = request.data.get('phone', school.phone)
         school.address = request.data.get('address', school.address)

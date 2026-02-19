@@ -62,7 +62,7 @@ class AcademicAI:
             'Authorization': f'Bearer {self.openrouter_key}',
             'Content-Type': 'application/json',
             'HTTP-Referer': 'https://myregistra.net',
-            'X-Title': 'EduSphere AI',
+            'X-Title': 'Registra AI',
         }
         payload = {
             'model': self.openrouter_model,

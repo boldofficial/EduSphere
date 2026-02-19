@@ -75,33 +75,103 @@ export const debounce = <T extends (...args: any[]) => any>(
 };
 
 export const PRESET_PRESCHOOL_SUBJECTS = [
-  'Language',
+  'Literacy',
   'Numeracy',
-  'Sensorial',
+  'Basic Science & Technology',
+  'Social Studies/Civic Education',
+  'Sensorial Education',
   'Practical Life',
-  'Cultural Studies',
-  'Art',
-  'Story Telling',
-  'C.R.S'
+  'Creative Arts/Coloring',
+  'Rhymes/Poetry',
+  'Handwriting',
+  'Diction/Phonics',
+  'C.R.S/I.R.S',
+  'Health Education'
 ];
 
 export const PRESET_PRIMARY_SUBJECTS = [
   'Mathematics',
-  'Phonics/Spellings',
-  'Comprehension',
-  'Creative Writing',
-  'Poetry',
-  'Grammar',
-  'Library and Information Science',
-  'Creative Science',
-  'Christian Religious Studies',
-  'Information Communication Technology',
-  'Home Economics',
+  'English Language',
   'Social Studies',
-  'Creative Art',
+  'Civic Education',
+  'Basic Science',
+  'Basic Technology',
+  'Information Technology (ICT)',
+  'Agricultural Science',
+  'Home Economics',
+  'Physical and Health Education (PHE)',
+  'Christian Religious Studies (CRS)',
+  'Islamic Religious Studies (IRS)',
+  'Cultural and Creative Arts (CCA)',
+  'Yoruba Language',
+  'Igbo Language',
+  'Hausa Language',
+  'French Language',
   'Verbal Reasoning',
-  'Non-Verbal Reasoning',
-  'Quantitative Reasoning'
+  'Quantitative Reasoning',
+  'Handwriting'
+];
+
+export const PRESET_JUNIOR_SEC_SUBJECTS = [
+  'Mathematics',
+  'English Language',
+  'Basic Science',
+  'Basic Technology',
+  'Social Studies',
+  'Civic Education',
+  'Agricultural Science',
+  'Home Economics',
+  'Business Studies',
+  'Christian Religious Studies (CRS)',
+  'Islamic Religious Studies (IRS)',
+  'Cultural and Creative Arts (CCA)',
+  'Physical and Health Education (PHE)',
+  'French Language',
+  'Computer Studies (ICT)',
+  'Yoruba/Igbo/Hausa'
+];
+
+export const PRESET_SSS_SCIENCE_SUBJECTS = [
+  'Mathematics',
+  'English Language',
+  'Civic Education',
+  'Biology',
+  'Chemistry',
+  'Physics',
+  'Further Mathematics',
+  'Geography',
+  'Agricultural Science',
+  'Economics',
+  'Data Processing/Trade'
+];
+
+export const PRESET_SSS_ART_SUBJECTS = [
+  'Mathematics',
+  'English Language',
+  'Civic Education',
+  'Literature-in-English',
+  'Government',
+  'Christian Religious Studies (CRS)',
+  'Islamic Religious Studies (IRS)',
+  'History',
+  'Fine Art',
+  'Yoruba/Igbo/Hausa',
+  'Economics',
+  'Data Processing/Trade'
+];
+
+export const PRESET_SSS_COMMERCE_SUBJECTS = [
+  'Mathematics',
+  'English Language',
+  'Civic Education',
+  'Financial Accounting',
+  'Commerce',
+  'Economics',
+  'Government',
+  'Geography',
+  'Agricultural Science',
+  'Office Practice',
+  'Data Processing/Trade'
 ];
 
 export const INITIAL_SETTINGS: Settings = {
@@ -206,12 +276,26 @@ export const getSubjectsForClass = (cls: Class | undefined) => {
   if (lowerName.includes('play') || lowerName.includes('reception') || lowerName.includes('nursery') || lowerName.includes('kinder')) {
     return PRESET_PRESCHOOL_SUBJECTS;
   }
+  if (lowerName.includes('jss') || lowerName.includes('junior')) {
+    return PRESET_JUNIOR_SEC_SUBJECTS;
+  }
+  if (lowerName.includes('sss') || lowerName.includes('senior')) {
+    if (lowerName.includes('sci')) return PRESET_SSS_SCIENCE_SUBJECTS;
+    if (lowerName.includes('art')) return PRESET_SSS_ART_SUBJECTS;
+    if (lowerName.includes('comm') || lowerName.includes('bus')) return PRESET_SSS_COMMERCE_SUBJECTS;
+    return PRESET_SSS_SCIENCE_SUBJECTS; // Default to Science if unsure
+  }
   return PRESET_PRIMARY_SUBJECTS;
 };
 
 export const PRESET_CLASSES = [
   'Playschool', 'Reception', 'Kindergarten',
-  'Year 1', 'Year 2', 'Year 3', 'Year 4', 'Year 5', 'Year 6'
+  'Nursery 1', 'Nursery 2',
+  'Year 1', 'Year 2', 'Year 3', 'Year 4', 'Year 5', 'Year 6',
+  'JSS 1', 'JSS 2', 'JSS 3',
+  'SSS 1 Science', 'SSS 1 Art', 'SSS 1 Commerce',
+  'SSS 2 Science', 'SSS 2 Art', 'SSS 2 Commerce',
+  'SSS 3 Science', 'SSS 3 Art', 'SSS 3 Commerce'
 ];
 
 export const DOMAINS_AFFECTIVE = [
@@ -233,6 +317,7 @@ export const SEED_CLASSES: Class[] = [
     name: 'Playschool',
     class_teacher_id: null,
     subjects: PRESET_PRESCHOOL_SUBJECTS,
+    category: 'Preschool',
     created_at: Date.now(),
     updated_at: Date.now()
   },
@@ -241,6 +326,7 @@ export const SEED_CLASSES: Class[] = [
     name: 'Reception',
     class_teacher_id: null,
     subjects: PRESET_PRESCHOOL_SUBJECTS,
+    category: 'Preschool',
     created_at: Date.now(),
     updated_at: Date.now()
   },
@@ -249,6 +335,7 @@ export const SEED_CLASSES: Class[] = [
     name: 'Kindergarten',
     class_teacher_id: null,
     subjects: PRESET_PRESCHOOL_SUBJECTS,
+    category: 'Preschool',
     created_at: Date.now(),
     updated_at: Date.now()
   },
@@ -257,6 +344,7 @@ export const SEED_CLASSES: Class[] = [
     name: 'Year 1',
     class_teacher_id: null,
     subjects: PRESET_PRIMARY_SUBJECTS,
+    category: 'Primary',
     created_at: Date.now(),
     updated_at: Date.now()
   },
@@ -265,6 +353,7 @@ export const SEED_CLASSES: Class[] = [
     name: 'Year 2',
     class_teacher_id: null,
     subjects: PRESET_PRIMARY_SUBJECTS,
+    category: 'Primary',
     created_at: Date.now(),
     updated_at: Date.now()
   },
@@ -273,6 +362,7 @@ export const SEED_CLASSES: Class[] = [
     name: 'Year 3',
     class_teacher_id: null,
     subjects: PRESET_PRIMARY_SUBJECTS,
+    category: 'Primary',
     created_at: Date.now(),
     updated_at: Date.now()
   },
@@ -281,6 +371,7 @@ export const SEED_CLASSES: Class[] = [
     name: 'Year 4',
     class_teacher_id: null,
     subjects: PRESET_PRIMARY_SUBJECTS,
+    category: 'Primary',
     created_at: Date.now(),
     updated_at: Date.now()
   },
@@ -289,6 +380,7 @@ export const SEED_CLASSES: Class[] = [
     name: 'Year 5',
     class_teacher_id: null,
     subjects: PRESET_PRIMARY_SUBJECTS,
+    category: 'Primary',
     created_at: Date.now(),
     updated_at: Date.now()
   },
@@ -297,6 +389,7 @@ export const SEED_CLASSES: Class[] = [
     name: 'Year 6',
     class_teacher_id: null,
     subjects: PRESET_PRIMARY_SUBJECTS,
+    category: 'Primary',
     created_at: Date.now(),
     updated_at: Date.now()
   }
