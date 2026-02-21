@@ -15,14 +15,14 @@ def _get_ai_config():
         from schools.models import PlatformSettings
         settings = PlatformSettings.objects.filter(id=1).first()
         if settings:
-            # Prioritize DB if explicitly set, else fallback to env
+            # Prioritize DB if explicitly set (and not just an empty string), else fallback to env
             db_gemini_key = settings.gemini_api_key
-            final_gemini_key = db_gemini_key if db_gemini_key else env_gemini_key
+            final_gemini_key = db_gemini_key if db_gemini_key and db_gemini_key.strip() else env_gemini_key
             
             config = {
                 'provider': settings.ai_provider or 'gemini',
                 'gemini_key': final_gemini_key,
-                'openrouter_key': settings.openrouter_api_key or '',
+                'openrouter_key': settings.openrouter_api_key if settings.openrouter_api_key and settings.openrouter_api_key.strip() else '',
                 'openrouter_model': settings.openrouter_model or 'google/gemini-2.0-flash-001',
             }
             logger.info(f"AI Config loaded from PlatformSettings. Key present: {bool(config['gemini_key'])}")

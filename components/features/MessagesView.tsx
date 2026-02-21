@@ -74,9 +74,9 @@ export const MessagesView: React.FC = () => {
             if (s.user) {
                 const rec = { id: String(s.id), userId: s.user, name: s.name, type: 'staff' as any };
                 recipients.push(rec);
-                // Broaden admin detection: principal, admin, head, director, management
+                // Broaden admin detection: principal, admin, head, director, management, bursar, registrar, etc.
                 const role = s.role.toLowerCase();
-                const isAdmin = ['principal', 'admin', 'head', 'director', 'manage', 'secretary', 'proprietor'].some(r => role.includes(r));
+                const isAdmin = ['principal', 'admin', 'head', 'director', 'manage', 'secretary', 'proprietor', 'accountant', 'bursar', 'registrar', 'clerk', 'office'].some(r => role.includes(r));
                 if (isAdmin) {
                     recipients.push({ ...rec, type: 'admin' });
                 }
@@ -105,11 +105,12 @@ export const MessagesView: React.FC = () => {
     // Auto-select recipient for non-admin users
     useEffect(() => {
         if (isComposeOpen && currentRole !== 'admin') {
+            // Priority 1: Explicitly flagged Admin roles
             const adminRec = allRecipients.find(r => r.type === 'admin');
             if (adminRec && adminRec.userId) {
                 setSelectedRecipient(adminRec.userId);
             } else {
-                // Fallback: search for any staff member if no explicit admin found
+                // Priority 2: Any staff member (as a fallback for "Administration")
                 const staffRec = allRecipients.find(r => r.type === 'staff');
                 if (staffRec && staffRec.userId) {
                     setSelectedRecipient(staffRec.userId);
@@ -119,8 +120,16 @@ export const MessagesView: React.FC = () => {
     }, [isComposeOpen, currentRole, allRecipients]);
 
     const handleStartConversation = () => {
-        if (!selectedRecipient || !newConvSubject.trim() || !messageBody.trim()) {
-            addToast('Please fill in all fields', 'warning');
+        if (!selectedRecipient) {
+            addToast('Please select a recipient', 'warning');
+            return;
+        }
+        if (!newConvSubject.trim()) {
+            addToast('Please enter a subject', 'warning');
+            return;
+        }
+        if (!messageBody.trim()) {
+            addToast('Please enter your message', 'warning');
             return;
         }
 

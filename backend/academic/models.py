@@ -166,18 +166,6 @@ class StudentHistory(TenantModel):
     def __str__(self):
         return f"{self.student.names} - {self.event_type} ({self.session})"
 
-class StudentHistory(TenantModel):
-    """Tracks status changes and important milestones for a student"""
-    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='history')
-    action = models.CharField(max_length=100) # e.g. "Status Changed", "Promoted", "Graduated"
-    from_value = models.CharField(max_length=255, blank=True)
-    to_value = models.CharField(max_length=255, blank=True)
-    session = models.CharField(max_length=50, blank=True)
-    term = models.CharField(max_length=50, blank=True)
-    recorded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
-
-    def __str__(self):
-        return f"{self.student.names} - {self.action} ({self.created_at})"
 
 class StudentAchievement(TenantModel):
     """Portfolio section for student awards and extracurricular wins"""
