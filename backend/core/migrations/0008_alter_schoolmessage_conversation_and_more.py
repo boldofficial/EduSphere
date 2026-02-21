@@ -63,6 +63,8 @@ def migrate_existing_messages(apps, schema_editor):
 
 class Migration(migrations.Migration):
 
+    atomic = False
+
     dependencies = [
         ('core', '0007_conversation_conversationparticipant_and_more'),
     ]
