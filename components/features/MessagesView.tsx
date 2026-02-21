@@ -91,9 +91,19 @@ export const MessagesView: React.FC = () => {
         return recipients;
     }, [staff, students]);
 
-    const filteredRecipients = useMemo(() =>
-        allRecipients.filter(r => r.type === recipientType),
-        [allRecipients, recipientType]);
+    const filteredRecipients = useMemo(() => {
+        if (currentRole === 'admin') {
+            // For admins, merge Teachers (admin/academic) and Non-Academic Staff 
+            // but keep Students separate for clarity if needed
+            if (recipientType === 'staff' || recipientType === 'admin') {
+                return allRecipients.filter(r => r.type === 'staff' || r.type === 'admin').reduce((unique: any[], r) => {
+                    if (!unique.find(u => u.userId === r.userId)) unique.push(r);
+                    return unique;
+                }, []);
+            }
+        }
+        return allRecipients.filter(r => r.type === recipientType);
+    }, [allRecipients, recipientType, currentRole]);
 
     // Selection Side Effects
     useEffect(() => {
@@ -116,8 +126,11 @@ export const MessagesView: React.FC = () => {
                     setSelectedRecipient(staffRec.userId);
                 }
             }
+        } else if (isComposeOpen && currentRole === 'admin' && filteredRecipients.length > 0) {
+            // Pre-select first valid recipient for admin convenience if not already set
+            if (!selectedRecipient) setSelectedRecipient(filteredRecipients[0].userId);
         }
-    }, [isComposeOpen, currentRole, allRecipients]);
+    }, [isComposeOpen, currentRole, allRecipients, filteredRecipients, selectedRecipient]);
 
     const handleStartConversation = () => {
         if (!selectedRecipient) {

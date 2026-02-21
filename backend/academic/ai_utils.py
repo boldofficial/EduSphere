@@ -7,9 +7,12 @@ import requests
 logger = logging.getLogger(__name__)
 
 
+from django.conf import settings as django_settings
+
 def _get_ai_config():
-    """Read AI provider config from PlatformSettings, with env fallback."""
-    env_gemini_key = os.environ.get('GEMINI_API_KEY', '')
+    """Read AI provider config from PlatformSettings, with django.conf.settings fallback."""
+    env_gemini_key = getattr(django_settings, 'GEMINI_API_KEY', '')
+    env_openrouter_key = getattr(django_settings, 'OPENROUTER_API_KEY', '')
     
     try:
         from schools.models import PlatformSettings

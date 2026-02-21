@@ -65,6 +65,10 @@ for h in INTERNAL_HOSTS:
 
 ROOT_DOMAIN = os.environ.get('ROOT_DOMAIN', 'myregistra.net')
 
+# AI Service Keys (Centralized)
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
+OPENROUTER_API_KEY = os.environ.get('OPENROUTER_API_KEY')
+
 
 # =============================================================================
 # APPLICATION DEFINITION
