@@ -207,6 +207,19 @@ export function useMarkConversationRead() {
     });
 }
 
+export function useArchiveConversation() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (id: string) => {
+            const response = await apiClient.post(`conversations/${id}/archive/`);
+            return response.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['conversations'] });
+        },
+    });
+}
+
 // =============================================
 // MESSAGES
 // =============================================

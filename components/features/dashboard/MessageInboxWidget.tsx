@@ -98,9 +98,9 @@ export const MessageInboxWidget: React.FC<MessageInboxWidgetProps> = ({
         setReplyBody('');
     };
 
-    // Check if message is from admin (can reply)
+    // Any message sent to me can be replied to (conversation-based, anyone can reply)
     const canReply = (message: Types.Message) => {
-        return isMessageToMe(message) && ['admin', 'SCHOOL_ADMIN', 'SUPER_ADMIN'].some(r => message.sender_role?.toUpperCase().includes(r));
+        return isMessageToMe(message);
     };
 
     // Get display name for sender

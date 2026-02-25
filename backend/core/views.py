@@ -33,9 +33,7 @@ from academic.serializers import Base64ImageField
 SETTINGS_VERSION = "1.0.2"
 
 class SettingsView(APIView):
-    # Allow Any for now to prevent login page blocks if settings are fetched globally
-    # Ideally should be IsAuthenticatedOrReadOnly or similar
-    permission_classes = [AllowAny] 
+    permission_classes = [IsAuthenticated]
 
     def get_school(self, request):
         # Use tenant set by middleware if available
@@ -311,6 +309,38 @@ class SettingsView(APIView):
                 'hint': 'Please check if all numeric fields are valid numbers.'
             }, status=400)
 
+class PublicSettingsView(APIView):
+    """
+    Lightweight, unauthenticated endpoint for SEO metadata and landing pages.
+    Returns ONLY safe public fields — no bank details, no permissions, no internal config.
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        domain = request.META.get('HTTP_X_TENANT_ID', 'demo')
+        try:
+            from schools.models import School, SchoolSettings
+            from core.media_utils import get_media_url
+
+            school = School.objects.get(domain=domain)
+            settings_obj, _ = SchoolSettings.objects.get_or_create(school=school)
+
+            return Response({
+                'school_name': school.name,
+                'school_tagline': settings_obj.school_tagline or '',
+                'school_email': school.email or '',
+                'school_phone': school.phone or '',
+                'logo_media': get_media_url(school.logo),
+                'landing_primary_color': settings_obj.landing_primary_color,
+                'domain': school.domain,
+            })
+        except Exception:
+            return Response({
+                'school_name': 'Registra',
+                'school_tagline': 'The operating system for modern schools',
+            })
+
+
 class PublicStatsView(APIView):
     """
     Publicly accessible statistics for a school landing page.
@@ -380,24 +410,86 @@ class ConversationViewSet(CachingMixin, viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if not user.is_authenticated or not hasattr(user, 'school'):
+        if not user.is_authenticated:
             return Conversation.objects.none()
-        
-        return Conversation.objects.filter(
-            school=user.school,
-            participants__user=user
-        ).prefetch_related('participants__user').order_by('-created_at').distinct()
 
-    def perform_create(self, serializer):
-        conv = serializer.save(school=self.request.user.school)
+        # Use tenant middleware if available, fallback to user.school
+        school = getattr(self.request, 'tenant', None) or getattr(user, 'school', None)
+        if not school:
+            return Conversation.objects.none()
+
+        # Subquery annotations to avoid N+1 in serializer
+        from django.db.models import Subquery, OuterRef, Count, Q
+        from users.models import User
+
+        latest_msg = SchoolMessage.objects.filter(
+            conversation=OuterRef('pk')
+        ).order_by('-created_at')
+
+        # Get current user's last_read_at for unread calculation
+        user_participant = ConversationParticipant.objects.filter(
+            conversation=OuterRef('pk'),
+            user=user
+        )
+
+        qs = Conversation.objects.filter(
+            school=school,
+            participants__user=user
+        ).annotate(
+            _last_msg_body=Subquery(latest_msg.values('body')[:1]),
+            _last_msg_sender=Subquery(
+                latest_msg.annotate(
+                    _sender_name=Subquery(
+                        User.objects.filter(pk=OuterRef('sender_id')).values('username')[:1]
+                    )
+                ).values('_sender_name')[:1]
+            ),
+            _last_msg_time=Subquery(latest_msg.values('created_at')[:1]),
+            _user_last_read=Subquery(user_participant.values('last_read_at')[:1]),
+        ).prefetch_related('participants__user').order_by('-_last_msg_time', '-created_at').distinct()
+
+        return qs
+
+    def create(self, request, *args, **kwargs):
+        """Custom create that handles duplicate prevention gracefully."""
+        user = request.user
+        school = getattr(request, 'tenant', None) or getattr(user, 'school', None)
+        if not school:
+            return Response({"detail": "No school context found."}, status=400)
+
+        participant_ids = request.data.get('participant_ids', [])
+        conv_type = request.data.get('type', 'DIRECT')
+
+        # For DIRECT conversations, return existing one instead of creating duplicate
+        if conv_type == 'DIRECT' and len(participant_ids) == 1:
+            other_id = participant_ids[0]
+            existing = Conversation.objects.filter(
+                school=school,
+                type='DIRECT',
+                participants__user=user
+            ).filter(
+                participants__user_id=other_id
+            ).first()
+            if existing:
+                serializer = self.get_serializer(existing)
+                return Response(serializer.data, status=200)
+
+        # Normal creation flow
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        conv = serializer.save(school=school)
+
         # Add creator as participant
-        ConversationParticipant.objects.create(user=self.request.user, conversation=conv)
-        
-        # Add other participants if specified in initial request (simplified for now)
-        participants = self.request.data.get('participant_ids', [])
-        for pid in participants:
-            if pid != self.request.user.id:
+        ConversationParticipant.objects.create(user=user, conversation=conv)
+
+        # Add other participants
+        for pid in participant_ids:
+            if pid != user.id:
                 ConversationParticipant.objects.get_or_create(user_id=pid, conversation=conv)
+
+        # Re-serialize to include participants
+        out_serializer = self.get_serializer(conv)
+        return Response(out_serializer.data, status=201)
 
     @action(detail=True, methods=['post'], url_path='mark-read')
     def mark_read(self, request, pk=None):
@@ -407,6 +499,17 @@ class ConversationViewSet(CachingMixin, viewsets.ModelViewSet):
             participant.last_read_at = timezone.now()
             participant.save()
             return Response({"status": "read"})
+        return Response({"error": "not a participant"}, status=403)
+
+    @action(detail=True, methods=['post'], url_path='archive')
+    def archive(self, request, pk=None):
+        """Archive a conversation for the current user (soft delete)."""
+        conv = self.get_object()
+        participant = conv.participants.filter(user=request.user).first()
+        if participant:
+            participant.is_archived = True
+            participant.save()
+            return Response({"status": "archived"})
         return Response({"error": "not a participant"}, status=403)
 
 class SchoolMessageViewSet(CachingMixin, viewsets.ModelViewSet):
@@ -438,13 +541,32 @@ class SchoolMessageViewSet(CachingMixin, viewsets.ModelViewSet):
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("Not a participant in this conversation")
             
-        serializer.save(sender=self.request.user)
+        msg = serializer.save(sender=self.request.user)
         
         # Update last_read_at for this participant
-        participant = ConversationParticipant.objects.filter(user=self.request.user, conversation=conversation).first()
-        if participant:
-            participant.last_read_at = timezone.now()
-            participant.save()
+        ConversationParticipant.objects.filter(
+            user=self.request.user, conversation=conversation
+        ).update(last_read_at=timezone.now())
+
+        # Auto-create notifications for other participants
+        other_participants = ConversationParticipant.objects.filter(
+            conversation=conversation
+        ).exclude(user=self.request.user).select_related('user')
+
+        school = getattr(self.request, 'tenant', None) or getattr(self.request.user, 'school', None)
+        if school:
+            notifications = [
+                Notification(
+                    school=school,
+                    user=p.user,
+                    title=f"New message from {self.request.user.username}",
+                    message=msg.body[:200],
+                    category='system',
+                    link='/dashboard/messages'
+                )
+                for p in other_participants
+            ]
+            Notification.objects.bulk_create(notifications)
 
     @action(detail=False, methods=['post'], url_path='ai-draft')
     def ai_draft(self, request):
@@ -480,22 +602,18 @@ class SchoolMessageViewSet(CachingMixin, viewsets.ModelViewSet):
             return Response({"error": f"An error occurred: {str(e)}"}, status=500)
 
 class NotificationViewSet(viewsets.ModelViewSet):
-    """Per-user in-app notifications"""
+    """Per-user in-app notifications — read-only for regular users."""
     permission_classes = [IsAuthenticated]
     serializer_class = NotificationSerializer
     pagination_class = StandardPagination
+    # Only admins can create notifications via API; regular users are read-only
+    http_method_names = ['get', 'patch', 'delete', 'head', 'options']
 
     def get_queryset(self):
         user = self.request.user
         if not user.is_authenticated:
             return Notification.objects.none()
         return Notification.objects.filter(user=user).order_by('-created_at')
-
-    def perform_create(self, serializer):
-        serializer.save(
-            user=self.request.user,
-            school=self.request.user.school if hasattr(self.request.user, 'school') else None
-        )
 
     @action(detail=False, methods=['post'], url_path='mark-all-read')
     def mark_all_read(self, request):
@@ -513,10 +631,14 @@ class SchoolAnnouncementViewSet(CachingMixin, viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if not user.is_authenticated or not hasattr(user, 'school'):
+        if not user.is_authenticated:
+            return SchoolAnnouncement.objects.none()
+
+        school = getattr(self.request, 'tenant', None) or getattr(user, 'school', None)
+        if not school:
             return SchoolAnnouncement.objects.none()
         
-        qs = SchoolAnnouncement.objects.filter(school=user.school)
+        qs = SchoolAnnouncement.objects.filter(school=school)
         
         # Staff/Admins see all (including inactive), others only see active
         if user.role not in ('SUPER_ADMIN', 'SCHOOL_ADMIN', 'STAFF', 'TEACHER'):
@@ -525,12 +647,15 @@ class SchoolAnnouncementViewSet(CachingMixin, viewsets.ModelViewSet):
         return qs.select_related('author', 'school')
 
     def perform_create(self, serializer):
-        if hasattr(self.request.user, 'school') and self.request.user.school:
-            serializer.save(
-                author=self.request.user, 
-                school=self.request.user.school,
-                author_role=self.request.user.role
-            )
+        school = getattr(self.request, 'tenant', None) or getattr(self.request.user, 'school', None)
+        if not school:
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError({"detail": "Cannot create announcement: no school context found."})
+        serializer.save(
+            author=self.request.user, 
+            school=school,
+            author_role=self.request.user.role
+        )
 
 class NewsletterViewSet(CachingMixin, viewsets.ModelViewSet):
     """School newsletters"""

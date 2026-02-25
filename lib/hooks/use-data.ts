@@ -118,7 +118,7 @@ export {
     useEvents, useCreateEvent, useUpdateEvent, useDeleteEvent,
     useNewsletters, useCreateNewsletter, useUpdateNewsletter, useDeleteNewsletter,
     useMessages, useCreateMessage, useUpdateMessage, useDeleteMessage,
-    useConversations, useCreateConversation, useMarkConversationRead,
+    useConversations, useCreateConversation, useMarkConversationRead, useArchiveConversation,
 } from './use-communication';
 
 export {
