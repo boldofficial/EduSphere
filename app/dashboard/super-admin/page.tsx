@@ -6,7 +6,7 @@ import { useSchoolStore } from '@/lib/store';
 import {
     LayoutDashboard, School as SchoolIcon, CreditCard, Settings,
     LogOut, Search, AlertCircle, Grid, ScrollText, Mail, Rocket,
-    MessageSquare
+    MessageSquare, Megaphone
 } from 'lucide-react';
 import {
     useSystemHealth, useAdminSchools, useAdminPlans, useAdminRevenue,
@@ -28,6 +28,7 @@ import { GovernanceTab, BroadcastsTab } from './components/GovernanceTab';
 import { SupportTab } from './components/SupportTab';
 import { SchoolEditModal } from './components/SchoolEditModal';
 import { DashboardDemoRequestsTab } from '@/components/features/dashboard/DashboardDemoRequestsTab';
+import { EmailMarketingTab } from '@/components/features/dashboard/EmailMarketingTab';
 
 function SidebarItem({ icon: Icon, label, active, onClick }: any) {
     return (
@@ -45,7 +46,7 @@ function SidebarItem({ icon: Icon, label, active, onClick }: any) {
 export default function SuperAdminDashboard() {
     const { currentUser, currentRole, logout, hasHydrated } = useSchoolStore();
     const router = useRouter();
-    const [activeTab, setActiveTab] = useState<'overview' | 'tenants' | 'financials' | 'plans' | 'governance' | 'broadcasts' | 'modules' | 'settings' | 'templates' | 'logs' | 'demo_requests' | 'support'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'tenants' | 'financials' | 'plans' | 'governance' | 'broadcasts' | 'modules' | 'settings' | 'templates' | 'logs' | 'demo_requests' | 'support' | 'email_marketing'>('overview');
     const [searchQuery, setSearchQuery] = useState('');
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
@@ -178,6 +179,7 @@ export default function SuperAdminDashboard() {
                     <SidebarItem icon={Settings} label="Platform Settings" active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} />
                     <SidebarItem icon={Mail} label="Email Templates" active={activeTab === 'templates'} onClick={() => setActiveTab('templates')} />
                     <SidebarItem icon={ScrollText} label="Delivery Logs" active={activeTab === 'logs'} onClick={() => setActiveTab('logs')} />
+                    <SidebarItem icon={Megaphone} label="Email Marketing" active={activeTab === 'email_marketing'} onClick={() => setActiveTab('email_marketing')} />
                     <SidebarItem icon={Rocket} label="Demo Requests" active={activeTab === 'demo_requests'} onClick={() => setActiveTab('demo_requests')} />
                     <SidebarItem icon={MessageSquare} label="Support Tickets" active={activeTab === 'support'} onClick={() => setActiveTab('support')} />
                 </nav>
@@ -292,6 +294,7 @@ export default function SuperAdminDashboard() {
                     {activeTab === 'settings' && <PlatformSettingsTab settings={platformSettings} />}
                     {activeTab === 'templates' && <EmailTemplatesTab templates={templates} />}
                     {activeTab === 'logs' && <EmailLogsTab logs={emailLogs} />}
+                    {activeTab === 'email_marketing' && <EmailMarketingTab />}
                     {activeTab === 'demo_requests' && <DashboardDemoRequestsTab />}
                     {activeTab === 'support' && <SupportTab />}
                 </div>
