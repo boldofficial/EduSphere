@@ -15,6 +15,7 @@ interface SchoolState {
 
     // Legacy view state (kept for compatibility if needed, but should be phased out)
     view: Types.ViewState;
+    setView: (view: Types.ViewState) => void;
     // Hydration tracking
     hasHydrated: boolean;
     setHasHydrated: (state: boolean) => void;

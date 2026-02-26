@@ -17,6 +17,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied, NotFound, ValidationError
+import os
 from .models import SubscriptionPlan, School, Subscription, SchoolPayment, PlatformModule
 from .serializers import SubscriptionPlanSerializer, SchoolSerializer
 from core.models import GlobalActivityLog
@@ -30,7 +31,11 @@ class PlatformModulesView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        modules = PlatformModule.objects.all().order_by('id')
+        # Super admins see all modules; others only see active ones
+        if request.user.role == 'SUPER_ADMIN':
+            modules = PlatformModule.objects.all().order_by('id')
+        else:
+            modules = PlatformModule.objects.filter(is_active=True).order_by('id')
         return Response([{
             'id': m.module_id,
             'name': m.name,
@@ -363,6 +368,8 @@ class PlatformSettingsView(APIView):
         return settings
 
     def get(self, request):
+        if request.user.role != 'SUPER_ADMIN':
+            raise PermissionDenied('Only Super Admins can view platform settings')
         from .serializers import PlatformSettingsSerializer
         settings = self.get_settings()
         serializer = PlatformSettingsSerializer(settings)
@@ -427,7 +434,7 @@ class AdminDemoRequestView(APIView):
             'name': demo_req.name,
             'school_name': demo_req.school_name,
             'login_url': "https://demo.myregistra.net/login",
-            'password': "demo_pressure_2025"
+            'password': os.environ.get('DEMO_DEFAULT_PASSWORD', 'changeme')
         }
         
         email_sent = False

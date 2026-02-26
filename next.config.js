@@ -1,10 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    env: {
-        GEMINI_API_KEY: process.env.GEMINI_API_KEY,
-    },
-
-    turbopack: {},
+    // NOTE: GEMINI_API_KEY is available server-side only via process.env.GEMINI_API_KEY
+    // Do NOT expose it to the client via the `env` config block.
 
     // Security headers for production
     async headers() {

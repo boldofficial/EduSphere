@@ -20,6 +20,35 @@ class EmailTemplate(models.Model):
     def __str__(self):
         return self.name
 
+class EmailCampaign(models.Model):
+    STATUS_CHOICES = (
+        ('draft', 'Draft'),
+        ('sending', 'Sending'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+    )
+
+    title = models.CharField(max_length=255)
+    template = models.ForeignKey(EmailTemplate, on_delete=models.SET_NULL, null=True, blank=True)
+    custom_subject = models.CharField(max_length=255, blank=True, null=True)
+    custom_body = models.TextField(blank=True, null=True, help_text="Custom HTML body if not using a template")
+    
+    # Audience filters
+    audience_filter = models.JSONField(default=dict, blank=True, help_text="Filters applied to select recipients (e.g. {'role': 'SCHOOL_ADMIN'})")
+    
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
+    total_recipients = models.IntegerField(default=0)
+    sent_count = models.IntegerField(default=0)
+    failed_count = models.IntegerField(default=0)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    started_at = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return self.title
+
 class EmailLog(models.Model):
     STATUS_CHOICES = (
         ('sent', 'Sent'),
@@ -28,7 +57,9 @@ class EmailLog(models.Model):
     )
 
     recipient = models.EmailField()
-    template = models.ForeignKey(EmailTemplate, on_delete=models.SET_NULL, null=True)
+    template = models.ForeignKey(EmailTemplate, on_delete=models.SET_NULL, null=True, blank=True)
+    campaign = models.ForeignKey(EmailCampaign, on_delete=models.CASCADE, null=True, blank=True, related_name='logs')
+    subject = models.CharField(max_length=255, blank=True, default='') # Actual subject sent
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='queued')
     error_message = models.TextField(blank=True)
     sent_at = models.DateTimeField(auto_now_add=True)

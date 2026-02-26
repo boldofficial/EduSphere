@@ -7,7 +7,23 @@ from .models import EmailTemplate, EmailLog
 
 logger = logging.getLogger(__name__)
 
-def send_template_email(template_name, recipient_email, context=None):
+from django.template.loader import render_to_string
+from django.utils import timezone
+
+def wrap_professional_email(html_content, platform_name="Registra"):
+    """
+    Wraps HTML content in the professional base_email.html layout.
+    """
+    context = {
+        'content': html_content,
+        'platform_name': platform_name,
+        'year': timezone.now().year,
+        'platform_url': settings.FRONTEND_URL if hasattr(settings, 'FRONTEND_URL') else '#',
+        'support_url': f"{settings.FRONTEND_URL}/support" if hasattr(settings, 'FRONTEND_URL') else '#',
+    }
+    return render_to_string('emails/base_email.html', context)
+
+def send_template_email(template_name, recipient_email, context=None, campaign=None, use_wrapper=True):
     """
     Sends an email using a database-stored template.
     
@@ -15,6 +31,8 @@ def send_template_email(template_name, recipient_email, context=None):
         template_name (str): The 'slug' or 'name' of the EmailTemplate.
         recipient_email (str): The recipient's email address.
         context (dict): Dictionary of variables to render in the template.
+        campaign (EmailCampaign, optional): The campaign associated with this email.
+        use_wrapper (bool): Whether to wrap the email content in the professional layout.
     """
     if context is None:
         context = {}
@@ -31,7 +49,8 @@ def send_template_email(template_name, recipient_email, context=None):
                 recipient=recipient_email,
                 status='failed',
                 error_message=error_msg,
-                metadata=context
+                metadata=context,
+                campaign=campaign
             )
         except Exception as log_error:
             logger.error(f"Failed to create EmailLog for missing template: {log_error}")
@@ -45,14 +64,34 @@ def send_template_email(template_name, recipient_email, context=None):
     html_template = Template(email_template.body_html)
     html_content = html_template.render(Context(context))
 
-    # 4. Generate Plain Text (Fallback)
-    if email_template.body_text:
-        text_template = Template(email_template.body_text)
-        text_content = text_template.render(Context(context))
-    else:
-        text_content = strip_tags(html_content)
+    # 4. Wrap in professional layout if requested
+    if use_wrapper:
+        html_content = wrap_professional_email(html_content)
 
-    # 5. Get Dynamic SMTP/API Settings
+    # 5. Generate Plain Text (Fallback)
+    text_content = strip_tags(html_content)
+
+    return _send_raw_email(recipient_email, subject, html_content, text_content, template=email_template, campaign=campaign, context=context)
+
+def send_custom_email(recipient_email, subject, body_html, campaign=None, use_wrapper=True):
+    """
+    Sends a custom HTML email, optionally wrapped in the professional layout.
+    
+    Args:
+        recipient_email (str): The recipient's email address.
+        subject (str): The subject of the email.
+        body_html (str): The HTML content of the email.
+        campaign (EmailCampaign, optional): The campaign associated with this email.
+        use_wrapper (bool): Whether to wrap the email content in the professional layout.
+    """
+    if use_wrapper:
+        body_html = wrap_professional_email(body_html)
+    
+    text_content = strip_tags(body_html)
+    return _send_raw_email(recipient_email, subject, body_html, text_content, campaign=campaign)
+
+def _send_raw_email(recipient_email, subject, html_content, text_content, template=None, campaign=None, context=None):
+    """Internal helper to handle the actual sending logic (SMTP/Brevo)."""
     from schools.models import PlatformSettings
     import requests
     from django.core.mail import get_connection
@@ -79,7 +118,7 @@ def send_template_email(template_name, recipient_email, context=None):
         headers = {
             "accept": "application/json",
             "content-type": "application/json",
-            "api-key": p_settings.email_api_key
+            "api-key": api_key
         }
         payload = {
             "sender": {"name": email_from_name, "email": email_from},
@@ -103,8 +142,7 @@ def send_template_email(template_name, recipient_email, context=None):
         email_host = getattr(p_settings, 'email_host', None) if p_settings else None
         email_host = (email_host.strip() if email_host else settings.EMAIL_HOST)
         
-        email_port = getattr(p_settings, 'email_port', None) if p_settings else None
-        email_port = email_port or settings.EMAIL_PORT
+        email_port = getattr(p_settings, 'email_port', settings.EMAIL_PORT) if p_settings else settings.EMAIL_PORT
         
         email_user = getattr(p_settings, 'email_user', None) if p_settings else None
         email_user = (email_user.strip() if email_user else settings.EMAIL_HOST_USER)
@@ -138,19 +176,21 @@ def send_template_email(template_name, recipient_email, context=None):
         except Exception as e:
             status = 'failed'
             error_message = f"{type(e).__name__}: {str(e)}"
-            logger.error(f"Failed to send SMTP email '{template_name}' to {recipient_email}: {error_message}")
+            logger.error(f"Failed to send SMTP email to {recipient_email}: {error_message}")
             if settings.DEBUG:
                 import traceback
                 logger.error(traceback.format_exc())
 
-    # 7. Create Log Entry
+    # Log the attempt
     try:
         EmailLog.objects.create(
             recipient=recipient_email,
-            template=email_template,
+            template=template,
+            campaign=campaign,
+            subject=subject,
             status=status,
             error_message=error_message,
-            metadata=context
+            metadata=context or {}
         )
     except Exception as log_error:
         logger.error(f"Failed to create EmailLog: {log_error}")

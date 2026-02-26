@@ -10,8 +10,7 @@ class TenantMiddleware(MiddlewareMixin):
         # 1. Get tenant identifier from header (set by Next.js middleware)
         tenant_domain = request.headers.get('X-Tenant-ID')
         
-        # DEBUG LOGGING - Using logger
-        logger.info(f"[TENANT_DEBUG] Host: {request.get_host()}, X-Tenant-ID Header: {tenant_domain}")
+        logger.debug(f"Tenant resolution: host={request.get_host()}, header={tenant_domain}")
 
         # 2. Fallback for Local Dev / No Header (e.g. direct API calls)
         from django.conf import settings
@@ -34,10 +33,10 @@ class TenantMiddleware(MiddlewareMixin):
                     Q(domain=tenant_domain) | Q(custom_domain=tenant_domain)
                 ).first()
                 if request.tenant:
-                    logger.info(f"[TENANT_DEBUG] Found Tenant: {request.tenant.domain}")
+                    logger.debug(f"Resolved tenant: {request.tenant.domain}")
                     request.subdomain = tenant_domain
                 else:
-                    logger.warning(f"[TENANT_DEBUG] No tenant found for domain: {tenant_domain}")
+                    logger.debug(f"No tenant found for domain: {tenant_domain}")
                     request.subdomain = None
                 # Also set back to tenant_domain for consistency in serializer checks
                 request.tenant_id = tenant_domain
@@ -104,7 +103,7 @@ class AuditLogMiddleware:
                 }
             )
         except Exception as e:
-            print(f"Audit log error: {e}")
+            logger.error(f"Audit log error: {e}")
 
         return response
 

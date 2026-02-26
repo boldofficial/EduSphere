@@ -32,6 +32,18 @@ export const StrategicAnalyticsTab: React.FC<AnalyticsTabProps> = ({ data }) => 
     const totalRevenue = data.revenue?.reduce((acc, curr) => acc + curr.value, 0) || 0;
     const totalSchools = data.registrations?.reduce((acc, curr) => acc + curr.value, 0) || 0;
 
+    // Calculate growth percentages
+    const getGrowth = (list: any[]) => {
+        if (!list || list.length < 2) return 0;
+        const last = list[list.length - 1].value;
+        const prev = list[list.length - 2].value;
+        if (prev === 0) return last > 0 ? 100 : 0;
+        return ((last - prev) / prev) * 100;
+    };
+
+    const revGrowth = getGrowth(data.revenue);
+    const regGrowth = getGrowth(data.registrations);
+
     return (
         <div className="space-y-8 animate-in fade-in zoom-in duration-500">
             {/* Header Cards */}
@@ -43,7 +55,8 @@ export const StrategicAnalyticsTab: React.FC<AnalyticsTabProps> = ({ data }) => 
                     <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80 mb-2">Total Platform Revenue</p>
                     <h3 className="text-4xl font-black mb-4 tracking-tighter">₦{totalRevenue.toLocaleString()}</h3>
                     <div className="flex items-center gap-2 text-xs font-bold bg-white/20 w-max px-3 py-1 rounded-full border border-white/20">
-                        <ArrowUpRight size={14} /> 12% vs last month
+                        {revGrowth >= 0 ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+                        {Math.abs(revGrowth).toFixed(1)}% vs last month
                     </div>
                 </div>
 
@@ -54,7 +67,7 @@ export const StrategicAnalyticsTab: React.FC<AnalyticsTabProps> = ({ data }) => 
                     <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80 mb-2">Institutional Growth</p>
                     <h3 className="text-4xl font-black mb-4 tracking-tighter">{totalSchools} Schools</h3>
                     <div className="flex items-center gap-2 text-xs font-bold bg-white/20 w-max px-3 py-1 rounded-full border border-white/20">
-                        <Activity size={14} /> +2 this week
+                        <Activity size={14} /> {regGrowth >= 0 ? '+' : ''}{Math.abs(regGrowth).toFixed(0)}% this month
                     </div>
                 </div>
 
@@ -181,27 +194,34 @@ export const StrategicAnalyticsTab: React.FC<AnalyticsTabProps> = ({ data }) => 
                 <div className="bg-gray-900 text-white p-8 rounded-[40px] shadow-2xl shadow-gray-950/20 flex flex-col justify-between">
                     <div>
                         <h4 className="text-xl font-black tracking-tight mb-2">Platform Integrity</h4>
-                        <p className="text-xs text-brand-400 font-bold uppercase tracking-wider mb-8">System reliability snapshots</p>
+                        <p className="text-xs text-brand-400 font-bold uppercase tracking-wider mb-8">Data-driven performance insights</p>
 
                         <div className="space-y-6">
                             <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/10">
-                                <span className="text-sm font-bold opacity-60 uppercase tracking-wider">Payment Reliability</span>
-                                <span className="text-lg font-black text-green-400 font-mono">99.9%</span>
+                                <span className="text-sm font-bold opacity-60 uppercase tracking-wider">Market Adoption</span>
+                                <span className="text-lg font-black text-green-400 font-mono">
+                                    {((totalSchools / 100) * 100).toFixed(1)}% Active
+                                </span>
                             </div>
                             <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/10">
-                                <span className="text-sm font-bold opacity-60 uppercase tracking-wider">Storage Availability</span>
-                                <span className="text-lg font-black text-blue-400 font-mono">98.4%</span>
+                                <span className="text-sm font-bold opacity-60 uppercase tracking-wider">Plan Yield</span>
+                                <span className="text-lg font-black text-blue-400 font-mono">
+                                    ₦{(totalRevenue / (data.plans.length || 1)).toLocaleString()} / Plan
+                                </span>
                             </div>
                             <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/10">
-                                <span className="text-sm font-bold opacity-60 uppercase tracking-wider">API Latency (Avg)</span>
-                                <span className="text-lg font-black text-amber-400 font-mono">142ms</span>
+                                <span className="text-sm font-bold opacity-60 uppercase tracking-wider">Reporting Health</span>
+                                <span className="text-lg font-black text-amber-400 font-mono">Optimal</span>
                             </div>
                         </div>
                     </div>
 
                     <div className="pt-8 mt-8 border-t border-white/10 text-center">
-                        <button className="text-[10px] font-black uppercase tracking-[0.3em] text-brand-400 hover:text-brand-300 transition-colors">
-                            Generate Full Audit PDF
+                        <button
+                            onClick={() => window.print()}
+                            className="text-[10px] font-black uppercase tracking-[0.3em] text-brand-400 hover:text-brand-300 transition-colors"
+                        >
+                            Export Strategic Intelligence
                         </button>
                     </div>
                 </div>

@@ -31,7 +31,7 @@ export default async function DashboardPage() {
     // We fetch everything needed for the Admin view. 
     // Optimization: conditionally fetch based on role.
 
-    let students = [], teachers = [], staff = [], payments = [], expenses = [], fees = [], classes = [], settings = Utils.INITIAL_SETTINGS, announcements = [], schools = [], platformSettings = null;
+    let students = [], teachers = [], staff = [], payments = [], expenses = [], fees = [], classes = [], settings = Utils.INITIAL_SETTINGS, announcements = [], schools = [], platformSettings = null, systemHealth = null, supportTickets = [];
 
     // Help normalize paginated DRF responses
     const normalize = (data: any) => {
@@ -58,6 +58,8 @@ export default async function DashboardPage() {
                 currentRole === 'super_admin' ? fetchServer('/schools/platform-settings/').catch(() => null) : Promise.resolve(null),
                 currentRole === 'super_admin' ? fetchServer('/schools/analytics/strategic/').catch(() => null) : Promise.resolve(null),
                 currentRole === 'super_admin' ? fetchServer('/schools/governance/').catch(() => null) : Promise.resolve(null),
+                currentRole === 'super_admin' ? fetchServer('/schools/health/').catch(() => null) : Promise.resolve(null),
+                currentRole === 'super_admin' ? fetchServer('/schools/support/tickets/').catch(() => []) : Promise.resolve([]),
             ]);
 
             students = normalize(results[0]);
@@ -71,6 +73,8 @@ export default async function DashboardPage() {
             announcements = normalize(results[8]);
             schools = normalize(results[9]);
             platformSettings = results[10];
+            systemHealth = results[13];
+            supportTickets = normalize(results[14]);
 
             // Inject extra data for Super Admin features
             if (currentRole === 'super_admin') {
@@ -133,6 +137,8 @@ export default async function DashboardPage() {
             announcements={announcements}
             schools={schools}
             platformSettings={platformSettings}
+            systemHealthData={systemHealth}
+            supportTickets={supportTickets}
         // onChangeView handled effectively by Links in the Client Component or Navigation logic
         />
     );

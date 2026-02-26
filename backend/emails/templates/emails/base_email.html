@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f7f9;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+        .wrapper {
+            width: 100%;
+            table-layout: fixed;
+            background-color: #f4f7f9;
+            padding-bottom: 40px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            margin-top: 40px;
+        }
+        .header {
+            background-color: #1A3A5C;
+            padding: 32px;
+            text-align: center;
+        }
+        .header h1 {
+            color: #ffffff;
+            margin: 0;
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+        .content {
+            padding: 40px;
+            color: #334155;
+            line-height: 1.6;
+            font-size: 16px;
+        }
+        .footer {
+            padding: 32px;
+            text-align: center;
+            color: #94a3b8;
+            font-size: 12px;
+            background-color: #f8fafc;
+        }
+        .footer a {
+            color: #64748b;
+            text-decoration: underline;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #3B82F6;
+            color: #ffffff !important;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 24px;
+        }
+        @media only screen and (max-width: 600px) {
+            .container {
+                margin-top: 0;
+                border-radius: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="container">
+            <div class="header">
+                <h1>{{ platform_name|default:"Registra" }}</h1>
+            </div>
+            <div class="content">
+                {{ content|safe }}
+            </div>
+            <div class="footer">
+                <p>&copy; {{ year }} {{ platform_name|default:"Registra" }}. All rights reserved.</p>
+                <p>
+                    <a href="{{ platform_url }}">Visit our website</a> | 
+                    <a href="{{ support_url }}">Support Center</a>
+                </p>
+                <p style="margin-top: 16px; font-size: 10px; opacity: 0.8;">
+                    You are receiving this email because you are a registered user of {{ platform_name|default:"Registra" }}.
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

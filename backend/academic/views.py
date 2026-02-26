@@ -37,16 +37,6 @@ from .serializers import (
     AdmissionIntakeSerializer, AdmissionSerializer
 )
 from rest_framework.views import APIView
-
-class HeaderEchoView(APIView):
-    authentication_classes = []
-    permission_classes = [permissions.AllowAny]
-    def get(self, request):
-        return Response({
-            "headers": {k: v for k, v in request.headers.items()},
-            "tenant_attr": str(getattr(request, 'tenant', 'None')),
-            "subdomain_attr": str(getattr(request, 'subdomain', 'None'))
-        })
 from core.pagination import StandardPagination, LargePagination
 from core.cache_utils import CachingMixin
 
@@ -233,6 +223,8 @@ class StudentViewSet(TenantViewSet):
                     updated_count += 1
                 except (Student.DoesNotExist, Class.DoesNotExist):
                     continue
+
+        return Response({"success": True, "updated": updated_count})
         
     @action(detail=False, methods=['post'], url_path='trigger-auto-promotion')
     def trigger_auto_promotion(self, request):
@@ -519,6 +511,8 @@ class AITimetableGenerateView(APIView):
                     logger.error(f"Error saving AI Timetable Entry: {str(e)}")
                     continue 
 
+        return Response({"success": True, "message": "Timetable generated successfully"})
+
 
 class AdmissionIntakeViewSet(TenantViewSet):
     queryset = AdmissionIntake.objects.all()
@@ -554,7 +548,10 @@ class AdmissionViewSet(TenantViewSet):
         admission = self.get_object()
         student_no = request.data.get('student_no')
         class_id = request.data.get('class_id')
-        password = request.data.get('password', 'merit_student_2025')
+        password = request.data.get('password')
+        if not password:
+            import os
+            password = os.environ.get('STUDENT_DEFAULT_PASSWORD', 'changeme')
 
         if not student_no or not class_id:
             return Response({"error": "student_no and class_id are required"}, status=400)
@@ -627,7 +624,7 @@ class AdmissionViewSet(TenantViewSet):
             })
 
 class StudentHistoryViewSet(TenantViewSet):
-    queryset = StudentHistory.objects.all()
+    queryset = StudentHistory.objects.select_related('student', 'student_class').all()
     serializer_class = StudentHistorySerializer
 
     def get_queryset(self):
@@ -638,7 +635,7 @@ class StudentHistoryViewSet(TenantViewSet):
         return qs
 
 class StudentAchievementViewSet(TenantViewSet):
-    queryset = StudentAchievement.objects.all()
+    queryset = StudentAchievement.objects.select_related('student').all()
     serializer_class = StudentAchievementSerializer
 
     def get_queryset(self):

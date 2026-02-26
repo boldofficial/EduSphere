@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server'
 
-console.log('>>> MIDDLEWARE_FILE_LOADED_V3');
+
 
 export async function middleware(request: NextRequest) {
     const hostname = request.headers.get('host') || '';
@@ -34,22 +34,7 @@ export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
     const accessToken = request.cookies.get('access_token')?.value;
 
-    // Deep Tracing for Debugging
-    console.log(`[MIDDLEWARE_TRACE] ${request.method} ${host}${pathname}`);
-    console.log(`[MIDDLEWARE_INFO] isRoot: ${isRoot}, isSubdomain: ${isSubdomain}, tenantId: ${tenantId}`);
-    console.log(`[MIDDLEWARE_HEADERS] Proto: ${request.headers.get('x-forwarded-proto')}, Host: ${request.headers.get('x-forwarded-host')}`);
 
-    // Debug helper: allow checking if middleware is active on subdomain
-    if (pathname === '/api/middleware-check') {
-        return NextResponse.json({
-            success: true,
-            host,
-            tenantId,
-            isSubdomain,
-            isRoot,
-            rootDomain
-        });
-    }
 
     // 2. Access Control
     // Define public paths that don't require authentication
@@ -74,7 +59,6 @@ export async function middleware(request: NextRequest) {
         pathname.includes('.'); // Static files (fallback)
 
     if (!accessToken && !isPublicPath) {
-        console.log(`[MIDDLEWARE_REDIRECT] Redirecting unauthenticated user from ${pathname} to /login`);
         const url = request.nextUrl.clone();
         url.pathname = '/login';
 
@@ -90,19 +74,12 @@ export async function middleware(request: NextRequest) {
         requestHeaders.set('x-tenant-id', tenantId);
     }
 
-    // Add trace headers for debugging
-    requestHeaders.set('x-middleware-auth', accessToken ? 'true' : 'false');
-    requestHeaders.set('x-middleware-tenant', tenantId || 'none');
-
     const response = NextResponse.next({
         request: {
             headers: requestHeaders,
         },
     });
 
-    // Add trace to response for browser viewing
-    response.headers.set('x-middleware-trace', '2');
-    response.headers.set('x-tenant-detected', tenantId || 'none');
     return response;
 }
 

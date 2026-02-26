@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     SubjectViewSet, TeacherViewSet, ClassViewSet, StudentViewSet,
     ReportCardViewSet, SubjectScoreViewSet, AttendanceSessionViewSet, AttendanceRecordViewSet,
-    SchoolEventViewSet, HeaderEchoView, StudentHistoryViewSet, StudentAchievementViewSet,
+    SchoolEventViewSet, StudentHistoryViewSet, StudentAchievementViewSet,
     AIInsightsView, AITimetableGenerateView, AIPredictiveInsightsView, AILessonPlanView,
     AdmissionIntakeViewSet, AdmissionViewSet, LessonViewSet, ConductEntryViewSet,
     PeriodViewSet, TimetableViewSet, TimetableEntryViewSet, GradingSchemeViewSet,
@@ -41,7 +41,7 @@ router.register(r'broadsheet', views.BroadsheetView, basename='broadsheet')
 router.register(r'data-migration', AcademicDataMigrationViewSet, basename='data-migration')
 
 urlpatterns = [
-    path('debug-headers/', HeaderEchoView.as_view(), name='debug-headers'),
+
     path('global-search/', views.GlobalSearchView.as_view(), name='global-search'),
     path('ai-insights/', views.AIInsightsView.as_view(), name='ai-insights'),
     path('timetables/magic-generate/', views.AITimetableGenerateView.as_view(), name='magic-generate'),

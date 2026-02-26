@@ -36,17 +36,29 @@ class TenantViewSet(viewsets.ModelViewSet):
         school = getattr(user, 'school', None) or getattr(self.request, 'tenant', None)
         serializer.save(school=school)
 
+
+class IsAdminOrReadOnly(permissions.BasePermission):
+    """Allow read access to all authenticated users, but write access only to admins and staff."""
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return request.user.role in ('SUPER_ADMIN', 'SCHOOL_ADMIN', 'STAFF')
+
+
 class FeeCategoryViewSet(TenantViewSet):
     queryset = FeeCategory.objects.all()
     serializer_class = FeeCategorySerializer
+    permission_classes = [permissions.IsAuthenticated, IsAdminOrReadOnly]
 
 class ScholarshipViewSet(TenantViewSet):
     queryset = Scholarship.objects.all()
     serializer_class = ScholarshipSerializer
+    permission_classes = [permissions.IsAuthenticated, IsAdminOrReadOnly]
 
 class FeeItemViewSet(TenantViewSet):
     queryset = FeeItem.objects.all()
     serializer_class = FeeItemSerializer
+    permission_classes = [permissions.IsAuthenticated, IsAdminOrReadOnly]
 
 class StudentFeeViewSet(TenantViewSet):
     queryset = StudentFee.objects.all()
@@ -73,10 +85,12 @@ class PaymentViewSet(TenantViewSet):
 class ExpenseViewSet(TenantViewSet):
     queryset = Expense.objects.all()
     serializer_class = ExpenseSerializer
+    permission_classes = [permissions.IsAuthenticated, IsAdminOrReadOnly]
 
 class AdmissionPackageViewSet(TenantViewSet):
     queryset = AdmissionPackage.objects.all()
     serializer_class = AdmissionPackageSerializer
+    permission_classes = [permissions.IsAuthenticated, IsAdminOrReadOnly]
 
 # ==========================================
 # PAYROLL VIEWSETS
@@ -102,7 +116,7 @@ class StaffSalaryStructureViewSet(TenantViewSet):
             
         structure, created = StaffSalaryStructure.objects.get_or_create(
             staff_id=staff_id,
-            school=request.user.school
+            school=getattr(request.user, 'school', None) or getattr(request, 'tenant', None)
         )
         # Recalculate just in case basic salary changed
         structure.calculate_totals()
@@ -130,7 +144,9 @@ class PayrollViewSet(TenantViewSet):
         except ValueError:
             return Response({"error": "Invalid date format. Use YYYY-MM-DD"}, status=400)
             
-        school = request.user.school
+        school = getattr(request.user, 'school', None) or getattr(request, 'tenant', None)
+        if not school:
+            return Response({"error": "School context not found"}, status=400)
         
         # Check if exists
         if Payroll.objects.filter(school=school, month=month_start).exists():
@@ -206,14 +222,17 @@ class PayrollViewSet(TenantViewSet):
         # Auto-create Expense Check
         create_expense = request.data.get('create_expense', False)
         if create_expense:
+            # Use payroll's school for session/term lookup (not request.user.school)
+            from schools.models import SchoolSettings
+            school_settings = SchoolSettings.objects.filter(school=payroll.school).first()
             Expense.objects.create(
                 school=payroll.school,
                 title=f"Staff Payroll - {payroll.month.strftime('%B %Y')}",
                 amount=payroll.total_wage_bill,
                 category='salary',
                 date=timezone.now().date(),
-                session=request.user.school.current_session, # Assuming property exists or similar
-                term=request.user.school.current_term,
+                session=school_settings.current_session if school_settings else '',
+                term=school_settings.current_term if school_settings else '',
                 recorded_by=request.user.username,
                 description=f"Automated payroll entry for {payroll.total_staff} staff."
             )
@@ -224,7 +243,9 @@ class DashboardViewSet(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def list(self, request):
-        school = request.user.school
+        school = getattr(request.user, 'school', None) or getattr(request, 'tenant', None)
+        if not school:
+            return Response({"error": "School context not found"}, status=400)
         
         # Simple aggregated stats
         from django.db.models import Sum

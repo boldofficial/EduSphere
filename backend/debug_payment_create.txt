@@ -1,6 +1,0 @@
-CREATE CALL: User=sholemsvision (ID: 6)
-User School: Test School
-CREATE CALL: User=sholemsvision (ID: 6)
-User School: Test School
-CREATE CALL: User=sholemsvision (ID: 6)
-User School: Test School

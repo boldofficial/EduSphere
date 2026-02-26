@@ -5,6 +5,7 @@ import './globals.css'
 import { ToastProvider } from '@/components/providers/toast-provider'
 import QueryProvider from '@/components/providers/query-provider'
 import { PWAProvider } from '@/components/providers/pwa-provider'
+import { AuthProvider } from '@/components/providers/AuthProvider'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -31,7 +32,7 @@ export async function generateMetadata(): Promise<Metadata> {
     let schoolTagline = 'The operating system for modern schools';
 
     try {
-        const res = await fetch(`${DJANGO_API_URL}/api/settings/`, {
+        const res = await fetch(`${DJANGO_API_URL}/api/public-settings/`, {
             headers: { 'X-Tenant-ID': tenantId },
             next: { revalidate: 3600 }
         });
@@ -87,9 +88,6 @@ export const viewport: Viewport = {
     initialScale: 1,
 }
 
-import { AuthProvider } from '@/components/providers/AuthProvider'
-
-// ...
 
 export default function RootLayout({
     children,

@@ -1,5 +1,0 @@
-﻿.next/dev/types/routes.d.ts(109,8): error TS2300: Duplicate identifier 'LayoutProps'.
-.next/types/routes.d.ts(109,8): error TS2300: Duplicate identifier 'LayoutProps'.
-components/features/StaffView.tsx(128,13): error TS2322: Type 'string | number' is not assignable to type 'number'.
-  Type 'string' is not assignable to type 'number'.
-components/features/StaffView.tsx(299,75): error TS2322: Type 'string' is not assignable to type 'number'.

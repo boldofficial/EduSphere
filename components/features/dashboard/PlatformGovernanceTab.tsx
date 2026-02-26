@@ -7,6 +7,10 @@ import {
     Search, Filter, Plus, Megaphone
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useToast } from '@/components/providers/toast-provider';
+import apiClient from '@/lib/api-client';
+import { Trash2 } from 'lucide-react';
 
 interface GovernanceTabProps {
     activities: {
@@ -37,7 +41,42 @@ const ACTION_ICONS: Record<string, React.ReactNode> = {
 
 import { CreditCard } from 'lucide-react';
 
-export const PlatformGovernanceTab: React.FC<GovernanceTabProps> = ({ activities, announcements }) => {
+export const PlatformGovernanceTab: React.FC<GovernanceTabProps> = ({ activities: initialActivities, announcements }) => {
+    const [searchTerm, setSearchTerm] = React.useState('');
+    const [isSearching, setIsSearching] = React.useState(false);
+    const [searchResults, setSearchResults] = React.useState<{ schools: any[], logs: any[] } | null>(null);
+    const [maintenanceMode, setMaintenanceMode] = React.useState(false);
+    const { addToast } = useToast();
+
+    const handleSearch = async () => {
+        if (!searchTerm.trim()) {
+            setSearchResults(null);
+            return;
+        }
+        setIsSearching(true);
+        try {
+            const res = await apiClient.get(`schools/search/global/?q=${searchTerm}`);
+            setSearchResults(res.data);
+        } catch {
+            addToast('Search failed', 'error');
+        } finally {
+            setIsSearching(false);
+        }
+    };
+
+    const toggleMaintenance = async () => {
+        const newMode = !maintenanceMode;
+        try {
+            await apiClient.post('schools/maintenance/', { action: newMode ? 'enable' : 'disable' });
+            setMaintenanceMode(newMode);
+            addToast(`Maintenance mode ${newMode ? 'enabled' : 'disabled'}`, 'success');
+        } catch {
+            addToast('Failed to update maintenance mode', 'error');
+        }
+    };
+
+    const displayActivities = searchResults?.logs || initialActivities;
+
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Left Column: Activity Feed */}
@@ -47,23 +86,61 @@ export const PlatformGovernanceTab: React.FC<GovernanceTabProps> = ({ activities
                         <div>
                             <h3 className="text-2xl font-black text-gray-900 flex items-center gap-3">
                                 <Activity className="text-indigo-600" size={28} />
-                                Platform Audit Log
+                                {searchResults ? 'Search Results' : 'Platform Audit Log'}
                             </h3>
-                            <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mt-1">Real-time security and operational events</p>
+                            <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mt-1">
+                                {searchResults ? `Found ${searchResults.logs.length} events and ${searchResults.schools.length} schools` : 'Real-time security and operational events'}
+                            </p>
                         </div>
-                        <div className="flex gap-2">
-                            <button className="p-3 hover:bg-gray-100 rounded-2xl text-gray-400 transition-colors">
+                        <div className="flex gap-2 items-center">
+                            <div className="relative">
+                                <Input
+                                    className="w-64 h-10 pl-10 rounded-xl bg-gray-50 border-gray-100 text-xs"
+                                    placeholder="Search logs or schools..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                                />
+                                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                {isSearching && <div className="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />}
+                            </div>
+                            <button
+                                onClick={handleSearch}
+                                className="p-3 hover:bg-brand-50 rounded-xl text-brand-600 transition-colors"
+                            >
                                 <Search size={18} />
                             </button>
-                            <button className="p-3 hover:bg-gray-100 rounded-2xl text-gray-400 transition-colors">
-                                <Filter size={18} />
-                            </button>
+                            {searchResults && (
+                                <button
+                                    onClick={() => { setSearchResults(null); setSearchTerm(''); }}
+                                    className="p-3 hover:bg-gray-100 rounded-xl text-gray-400 transition-colors"
+                                >
+                                    <Trash2 size={18} className="rotate-45" />
+                                </button>
+                            )}
                         </div>
                     </div>
 
                     <div className="flex-1 overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
+                        {searchResults?.schools && searchResults.schools.length > 0 && (
+                            <div className="mb-8 space-y-4">
+                                <h4 className="text-[10px] font-black uppercase tracking-widest text-brand-500 flex items-center gap-2">
+                                    <School size={14} /> Matching Schools
+                                </h4>
+                                <div className="grid grid-cols-2 gap-4">
+                                    {searchResults.schools.map(school => (
+                                        <div key={school.id} className="p-4 bg-brand-50/50 border border-brand-100 rounded-2xl">
+                                            <div className="font-bold text-sm text-gray-900">{school.name}</div>
+                                            <div className="text-[10px] text-brand-600 font-mono">.{school.domain}</div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="h-px bg-gray-100 my-8" />
+                            </div>
+                        )}
+
                         <div className="space-y-4">
-                            {activities.map((activity) => (
+                            {displayActivities.map((activity: any) => (
                                 <div key={activity.id} className="group p-5 bg-gray-50 hover:bg-white hover:shadow-lg hover:shadow-indigo-500/5 border border-transparent hover:border-indigo-100 rounded-3xl transition-all duration-300">
                                     <div className="flex items-start gap-4">
                                         <div className={`p-3 rounded-2xl bg-white shadow-sm border border-gray-100 group-hover:scale-110 transition-transform`}>
@@ -80,11 +157,11 @@ export const PlatformGovernanceTab: React.FC<GovernanceTabProps> = ({ activities
                                             <div className="flex items-center gap-4">
                                                 <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white border border-gray-100 rounded-full">
                                                     <School size={10} className="text-brand-500" />
-                                                    <span className="text-[10px] font-black text-gray-500 tracking-tight">{activity.school_name}</span>
+                                                    <span className="text-[10px] font-black text-gray-500 tracking-tight">{activity.school_name || 'System'}</span>
                                                 </div>
                                                 <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white border border-gray-100 rounded-full">
                                                     <User size={10} className="text-purple-500" />
-                                                    <span className="text-[10px] font-black text-gray-500 tracking-tight">{activity.user_email}</span>
+                                                    <span className="text-[10px] font-black text-gray-500 tracking-tight">{activity.user_email || 'automated'}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -156,9 +233,12 @@ export const PlatformGovernanceTab: React.FC<GovernanceTabProps> = ({ activities
                         <div className="p-4 bg-gray-50 rounded-2xl flex items-center justify-between group">
                             <div>
                                 <h5 className="font-black text-xs uppercase tracking-tight text-gray-900">Maintenance Mode</h5>
-                                <p className="text-[10px] text-gray-400 font-bold uppercase">Disable school access</p>
+                                <p className="text-[10px] text-gray-400 font-bold uppercase">{maintenanceMode ? 'Enabled for all schools' : 'Disable school access'}</p>
                             </div>
-                            <div className="w-12 h-6 bg-gray-200 rounded-full relative p-1 cursor-pointer group-hover:bg-gray-300 transition-colors">
+                            <div
+                                onClick={toggleMaintenance}
+                                className={`w-12 h-6 rounded-full relative p-1 cursor-pointer transition-colors ${maintenanceMode ? 'bg-brand-500 flex justify-end' : 'bg-gray-200 group-hover:bg-gray-300'}`}
+                            >
                                 <div className="w-4 h-4 bg-white rounded-full shadow-sm" />
                             </div>
                         </div>

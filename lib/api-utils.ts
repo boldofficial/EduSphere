@@ -20,18 +20,6 @@ export async function safeJsonParse(request: NextRequest) {
 }
 
 /**
- * Simplified auth context for single-school system.
- */
-export async function getAuthContext(supabase: any) {
-    // During refactor, return a guest admin context or check JWT when Django is ready
-    return {
-        user: { id: 'demo' },
-        role: 'admin',
-        error: null
-    }
-}
-
-/**
  * Check rate limit and return error response if exceeded
  */
 export function withRateLimit(

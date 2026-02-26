@@ -10,6 +10,8 @@ import {
     Lock,
     TrendingUp,
     Megaphone,
+    LifeBuoy,
+    Mail,
 } from 'lucide-react';
 import { useUpdateSettings } from '@/lib/hooks/use-data';
 import { useToast } from '@/components/providers/toast-provider';
@@ -41,8 +43,10 @@ import { StrategicAnalyticsTab } from './dashboard/StrategicAnalyticsTab';
 import { PlatformGovernanceTab } from './dashboard/PlatformGovernanceTab';
 import { DashboardDemoRequestsTab } from './dashboard/DashboardDemoRequestsTab';
 import { DataMigrationTab } from './dashboard/DataMigrationTab';
+import { SupportTicketsTab } from './dashboard/SupportTicketsTab';
+import { EmailMarketingTab } from './dashboard/EmailMarketingTab';
 
-type TabType = 'overview' | 'cms' | 'roles' | 'health' | 'schools' | 'platform_settings' | 'analytics_strategic' | 'governance' | 'demo_requests' | 'data_migration';
+type TabType = 'overview' | 'cms' | 'roles' | 'health' | 'schools' | 'platform_settings' | 'analytics_strategic' | 'governance' | 'demo_requests' | 'data_migration' | 'support_tickets' | 'marketing';
 
 interface UserSubscription {
     plan_name: string;
@@ -72,11 +76,14 @@ interface DashboardViewProps {
     announcements?: any[];
     schools?: any[];
     platformSettings?: any;
+    systemHealthData?: any;
+    supportTickets?: any[];
     onChangeView?: (view: Types.ViewState) => void;
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
-    user, students, teachers, staff, payments, expenses, fees, classes, settings, announcements = [], schools = [], platformSettings: initialPlatformSettings, onChangeView
+    user, students, teachers, staff, payments, expenses, fees, classes, settings, announcements = [], schools = [], platformSettings: initialPlatformSettings,
+    systemHealthData, supportTickets = [], onChangeView
 }) => {
     const { mutate: updateSettings } = useUpdateSettings();
     const setSettings = (newSettings: Types.Settings) => updateSettings(newSettings);
@@ -275,6 +282,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         { id: 'analytics_strategic' as TabType, name: 'Strategic Analytics', icon: TrendingUp, superAdminOnly: true },
         { id: 'governance' as TabType, name: 'Governance & Logs', icon: ShieldCheck, superAdminOnly: true },
         { id: 'health' as TabType, name: 'System Health', icon: Database },
+        { id: 'support_tickets' as TabType, name: 'Support Tickets', icon: LifeBuoy, superAdminOnly: true },
+        { id: 'marketing' as TabType, name: 'Email Marketing', icon: Mail, superAdminOnly: true },
         { id: 'platform_settings' as TabType, name: 'Platform Settings', icon: Settings, superAdminOnly: true },
         { id: 'data_migration' as TabType, name: 'Data Migration', icon: Database, superAdminOnly: true },
         { id: 'demo_requests' as TabType, name: 'Demo Requests', icon: Users, superAdminOnly: true },
@@ -397,7 +406,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             {/* Health Tab */}
             {activeTab === 'health' && (
                 <DashboardHealthTab
-                    systemHealth={systemHealth}
+                    systemHealthData={systemHealthData}
                     students={students}
                     teachers={teachers}
                     staff={staff}
@@ -440,9 +449,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <DashboardDemoRequestsTab />
             )}
 
+            {/* Email Marketing Tab */}
+            {activeTab === 'marketing' && (
+                <EmailMarketingTab />
+            )}
+
             {/* Data Migration Tab */}
             {activeTab === 'data_migration' && (
                 <DataMigrationTab />
+            )}
+
+            {/* Support Tickets Tab */}
+            {activeTab === 'support_tickets' && (
+                <SupportTicketsTab tickets={supportTickets} />
             )}
 
             {/* School Management Modal */}

@@ -1,8 +1,0 @@
-Testing GET http://127.0.0.1:8000/api/schools/plans/ with headers {'X-Tenant-ID': 'null'}
-Status Code: 200
-Content Type: application/json
-Body (first 500 chars): [{"id":1,"name":"Free Pilot","slug":"enterprise","price":"0.00","description":"Full platform access for early adopters.","features":["Unlimited Students","Full Messaging","Result Management","Staff Management"],"allowed_modules":[],"duration_days":730,"is_active":true}]
-
-Testing GET http://127.0.0.1:8000/api/settings/ with headers {'X-Tenant-ID': 'null'}
-Status Code: 200
-Body (first 500 chars): {"school_name":"Registra Platform","subscription_status":"active","current_session":"2025/2026"}

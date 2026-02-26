@@ -13,7 +13,10 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from pathlib import Path
 from datetime import timedelta
 import os
+import logging
 import dj_database_url
+
+_settings_logger = logging.getLogger(__name__)
 
 # Load environment variables from .env file in development
 try:
@@ -133,6 +136,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
+# Documentation/Frontend URLs
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
 
 # =============================================================================
 # DATABASE CONFIGURATION
@@ -142,7 +147,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': dj_database_url.config(
         default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
-        conn_max_age=0,  # Recommended for Neon pooler to avoid connection issues
+        conn_max_age=int(os.environ.get('DB_CONN_MAX_AGE', 600)),
         conn_health_checks=True,
     )
 }
@@ -166,10 +171,9 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760 # 10MB
 
 # Enforce PostgreSQL in Production
 if not DEBUG and DATABASES['default']['ENGINE'] == 'django.db.backends.sqlite3':
-    from django.core.exceptions import ImproperlyConfigured
-    # raise ImproperlyConfigured("SQLite is not supported in production! Set DATABASE_URL to a PostgreSQL instance.")
-    # Temporarily warned instead of raised to allow staged rollout
-    print("WARNING: SQLite is NOT recommended for production. Set DATABASE_URL.")
+    _settings_logger.warning(
+        "SQLite is NOT recommended for production. Set DATABASE_URL to a PostgreSQL instance."
+    )
 
 
 # =============================================================================
@@ -501,9 +505,7 @@ else:
 if not DEBUG:
     SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
     SESSION_CACHE_ALIAS = 'default'
-    # Critical for subdomains
-    SESSION_COOKIE_DOMAIN = '.myregistra.net'
-    CSRF_COOKIE_DOMAIN = '.myregistra.net'
+    # SESSION_COOKIE_DOMAIN and CSRF_COOKIE_DOMAIN already set in SECURITY SETTINGS block above
 
 
 # Celery Configuration

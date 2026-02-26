@@ -19,7 +19,7 @@ import * as Types from '@/lib/types';
 // ─── System Health Tab ─────────────────────────────────────────────────
 
 interface HealthTabProps {
-    systemHealth: { name: string; status: string; ok: boolean }[];
+    systemHealthData: any;
     students: Types.Student[];
     teachers: Types.Teacher[];
     staff: Types.Staff[];
@@ -27,53 +27,82 @@ interface HealthTabProps {
 }
 
 export const DashboardHealthTab: React.FC<HealthTabProps> = ({
-    systemHealth, students, teachers, staff, classes
-}) => (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-            <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
-                <Database size={18} className="text-brand-500" />
-                System Status
-            </h3>
-            <div className="space-y-4">
-                {systemHealth.map((item, i) => (
-                    <div key={i} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                        <span className="font-medium text-gray-700">{item.name}</span>
-                        <span className={`text-sm font-bold flex items-center gap-2 ${item.ok ? 'text-green-600' : 'text-yellow-600'}`}>
-                            {item.ok ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
-                            {item.status}
-                        </span>
-                    </div>
-                ))}
-            </div>
-        </div>
+    systemHealthData, students, teachers, staff, classes
+}) => {
+    const metrics = [
+        {
+            name: 'Cache (Redis)',
+            status: systemHealthData?.redis_status || 'Checking...',
+            ok: systemHealthData?.redis_status === 'connected',
+            error: systemHealthData?.redis_error
+        },
+        {
+            name: 'Task Queue (Celery)',
+            status: systemHealthData?.celery_status || 'Checking...',
+            ok: systemHealthData?.celery_status === 'active',
+            error: systemHealthData?.celery_error
+        },
+        {
+            name: 'Database Latency',
+            status: systemHealthData?.db_latency || '...',
+            ok: true
+        },
+    ];
 
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-            <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
-                <Activity size={18} className="text-brand-500" />
-                Data Summary
-            </h3>
-            <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-blue-50 rounded-xl">
-                    <span className="font-medium text-gray-700">Students</span>
-                    <span className="text-lg font-bold text-blue-600">{students.length}</span>
+    return (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+                <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+                    <Database size={18} className="text-brand-500" />
+                    System Status
+                </h3>
+                <div className="space-y-4">
+                    {metrics.map((item, i) => (
+                        <div key={i} className="flex flex-col p-4 bg-gray-50 rounded-xl">
+                            <div className="flex items-center justify-between">
+                                <span className="font-medium text-gray-700">{item.name}</span>
+                                <span className={`text-sm font-bold flex items-center gap-2 ${item.ok ? 'text-green-600' : 'text-rose-600'}`}>
+                                    {item.ok ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
+                                    <span className="uppercase">{item.status}</span>
+                                </span>
+                            </div>
+                            {item.error && (
+                                <p className="mt-2 text-[10px] text-rose-500 font-mono bg-rose-50 p-2 rounded-lg border border-rose-100">
+                                    {item.error}
+                                </p>
+                            )}
+                        </div>
+                    ))}
                 </div>
-                <div className="flex items-center justify-between p-4 bg-green-50 rounded-xl">
-                    <span className="font-medium text-gray-700">Teachers</span>
-                    <span className="text-lg font-bold text-green-600">{teachers.length}</span>
-                </div>
-                <div className="flex items-center justify-between p-4 bg-amber-50 rounded-xl">
-                    <span className="font-medium text-gray-700">Non-Academic Staff</span>
-                    <span className="text-lg font-bold text-amber-600">{staff.length}</span>
-                </div>
-                <div className="flex items-center justify-between p-4 bg-purple-50 rounded-xl">
-                    <span className="font-medium text-gray-700">Classes</span>
-                    <span className="text-lg font-bold text-purple-600">{classes.length}</span>
+            </div>
+
+            <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+                <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+                    <Activity size={18} className="text-brand-500" />
+                    Data Summary
+                </h3>
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between p-4 bg-blue-50 rounded-xl">
+                        <span className="font-medium text-gray-700">Students</span>
+                        <span className="text-lg font-bold text-blue-600">{students.length}</span>
+                    </div>
+                    <div className="flex items-center justify-between p-4 bg-green-50 rounded-xl">
+                        <span className="font-medium text-gray-700">Teachers</span>
+                        <span className="text-lg font-bold text-green-600">{teachers.length}</span>
+                    </div>
+                    <div className="flex items-center justify-between p-4 bg-amber-50 rounded-xl">
+                        <span className="font-medium text-gray-700">Non-Academic Staff</span>
+                        <span className="text-lg font-bold text-amber-600">{staff.length}</span>
+                    </div>
+                    <div className="flex items-center justify-between p-4 bg-purple-50 rounded-xl">
+                        <span className="font-medium text-gray-700">Classes</span>
+                        <span className="text-lg font-bold text-purple-600">{classes.length}</span>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-);
+    );
+};
 
 // ─── Schools Management Tab ────────────────────────────────────────────
 
@@ -320,6 +349,14 @@ export const SchoolManagementModal: React.FC<SchoolModalProps> = ({
 }) => {
     if (!isOpen || !selectedSchool) return null;
 
+    const [domain, setDomain] = React.useState(selectedSchool.domain);
+    const [customDomain, setCustomDomain] = React.useState(selectedSchool.custom_domain || '');
+
+    React.useEffect(() => {
+        setDomain(selectedSchool.domain);
+        setCustomDomain(selectedSchool.custom_domain || '');
+    }, [selectedSchool]);
+
     return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto overflow-x-hidden animate-in zoom-in-95 duration-200">
@@ -389,16 +426,14 @@ export const SchoolManagementModal: React.FC<SchoolModalProps> = ({
                                     <label className="block text-xs font-bold text-gray-500 mb-1">Subdomain</label>
                                     <div className="flex gap-2">
                                         <Input
-                                            defaultValue={selectedSchool.domain}
-                                            id="school_domain_input"
+                                            value={domain}
+                                            onChange={(e) => setDomain(e.target.value)}
                                             className="font-mono text-sm"
                                         />
                                         <Button
                                             variant="outline"
-                                            onClick={() => {
-                                                const input = document.getElementById('school_domain_input') as HTMLInputElement;
-                                                handleUpdateSchool(selectedSchool.id, { domain: input.value });
-                                            }}
+                                            disabled={domain === selectedSchool.domain}
+                                            onClick={() => handleUpdateSchool(selectedSchool.id, { domain })}
                                         >
                                             Update
                                         </Button>
@@ -408,17 +443,15 @@ export const SchoolManagementModal: React.FC<SchoolModalProps> = ({
                                     <label className="block text-xs font-bold text-gray-500 mb-1">Custom Domain</label>
                                     <div className="flex gap-2">
                                         <Input
-                                            defaultValue={selectedSchool.custom_domain}
-                                            id="school_custom_domain_input"
+                                            value={customDomain}
+                                            onChange={(e) => setCustomDomain(e.target.value)}
                                             className="font-mono text-sm"
                                             placeholder="e.g. portal.school.com"
                                         />
                                         <Button
                                             variant="outline"
-                                            onClick={() => {
-                                                const input = document.getElementById('school_custom_domain_input') as HTMLInputElement;
-                                                handleUpdateSchool(selectedSchool.id, { custom_domain: input.value });
-                                            }}
+                                            disabled={customDomain === (selectedSchool.custom_domain || '')}
+                                            onClick={() => handleUpdateSchool(selectedSchool.id, { custom_domain: customDomain })}
                                         >
                                             Update
                                         </Button>
