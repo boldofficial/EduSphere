@@ -6,7 +6,7 @@ import { useSchoolStore } from '@/lib/store';
 import {
     LayoutDashboard, School as SchoolIcon, CreditCard, Settings,
     LogOut, Search, AlertCircle, Grid, ScrollText, Mail, Rocket,
-    MessageSquare, Megaphone
+    MessageSquare, Megaphone, Wallet, Shield, Radio
 } from 'lucide-react';
 import {
     useSystemHealth, useAdminSchools, useAdminPlans, useAdminRevenue,
@@ -30,14 +30,25 @@ import { SchoolEditModal } from './components/SchoolEditModal';
 import { DashboardDemoRequestsTab } from '@/components/features/dashboard/DashboardDemoRequestsTab';
 import { EmailMarketingTab } from '@/components/features/dashboard/EmailMarketingTab';
 
+function SidebarGroup({ label }: { label: string }) {
+    return (
+        <div className="px-4 pt-6 pb-2">
+            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-brand-400/50">{label}</span>
+        </div>
+    );
+}
+
 function SidebarItem({ icon: Icon, label, active, onClick }: any) {
     return (
         <button
             onClick={onClick}
-            className={`flex items-center gap-3 px-4 py-3 w-full rounded-xl transition-all ${active ? 'bg-brand-600 text-white shadow-lg shadow-brand-900/50 font-bold' : 'text-slate-300 hover:text-white hover:bg-white/5'
-                }`}
+            className={`flex items-center gap-3 px-4 py-2.5 w-full rounded-xl transition-all text-sm ${
+                active
+                    ? 'bg-gradient-to-r from-brand-600 to-brand-500 text-white shadow-lg shadow-brand-600/40 font-bold'
+                    : 'text-slate-400 hover:text-white hover:bg-white/5 font-medium'
+            }`}
         >
-            <Icon size={20} />
+            <Icon size={18} />
             <span>{label}</span>
         </button>
     );
@@ -164,35 +175,42 @@ export default function SuperAdminDashboard() {
     return (
         <div className="min-h-screen bg-gray-50 font-primary flex">
             {/* Sidebar */}
-            <aside className="w-64 bg-brand-950 text-white fixed h-full z-10 flex flex-col">
-                <div className="p-6 border-b border-slate-700/50 flex items-center gap-3">
-                    <div className="h-16 w-full flex items-center justify-start">
+            <aside className="w-72 bg-gradient-to-b from-brand-950 via-brand-900 to-brand-950 text-white fixed h-full z-10 flex flex-col border-r border-brand-800/30">
+                <div className="p-6 border-b border-white/5 flex items-center gap-3">
+                    <div className="h-14 w-full flex items-center justify-start">
                         <img src="/footer-logo.png" alt="Registra" className="h-full w-auto object-contain" />
                     </div>
                 </div>
-                <nav className="flex-1 p-4 space-y-2 overflow-y-auto custom-scrollbar">
+                <nav className="flex-1 px-3 py-2 space-y-0.5 overflow-y-auto custom-scrollbar">
+                    <SidebarGroup label="Core" />
                     <SidebarItem icon={LayoutDashboard} label="Overview" active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} />
                     <SidebarItem icon={SchoolIcon} label="Tenants (Schools)" active={activeTab === 'tenants'} onClick={() => setActiveTab('tenants')} />
-                    <SidebarItem icon={CreditCard} label="Financials" active={activeTab === 'financials'} onClick={() => setActiveTab('financials')} />
+                    <SidebarItem icon={Wallet} label="Financials" active={activeTab === 'financials'} onClick={() => setActiveTab('financials')} />
                     <SidebarItem icon={CreditCard} label="Plans & Pricing" active={activeTab === 'plans'} onClick={() => setActiveTab('plans')} />
                     <SidebarItem icon={Grid} label="Modules Library" active={activeTab === 'modules'} onClick={() => setActiveTab('modules')} />
-                    <SidebarItem icon={Settings} label="Platform Settings" active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} />
+
+                    <SidebarGroup label="Communication" />
                     <SidebarItem icon={Mail} label="Email Templates" active={activeTab === 'templates'} onClick={() => setActiveTab('templates')} />
                     <SidebarItem icon={ScrollText} label="Delivery Logs" active={activeTab === 'logs'} onClick={() => setActiveTab('logs')} />
                     <SidebarItem icon={Megaphone} label="Email Marketing" active={activeTab === 'email_marketing'} onClick={() => setActiveTab('email_marketing')} />
+                    <SidebarItem icon={Radio} label="Broadcasts" active={activeTab === 'broadcasts'} onClick={() => setActiveTab('broadcasts')} />
+
+                    <SidebarGroup label="Advanced" />
+                    <SidebarItem icon={Shield} label="Governance" active={activeTab === 'governance'} onClick={() => setActiveTab('governance')} />
                     <SidebarItem icon={Rocket} label="Demo Requests" active={activeTab === 'demo_requests'} onClick={() => setActiveTab('demo_requests')} />
                     <SidebarItem icon={MessageSquare} label="Support Tickets" active={activeTab === 'support'} onClick={() => setActiveTab('support')} />
+                    <SidebarItem icon={Settings} label="Platform Settings" active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} />
                 </nav>
-                <div className="p-4 border-t border-white/10">
-                    <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 w-full text-slate-300 hover:text-white hover:bg-white/5 rounded-xl transition-all">
-                        <LogOut size={20} />
-                        <span className="font-medium">Logout</span>
+                <div className="p-3 border-t border-white/5">
+                    <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-2.5 w-full text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all text-sm font-medium">
+                        <LogOut size={18} />
+                        <span>Logout</span>
                     </button>
                 </div>
             </aside>
 
             {/* Main Content */}
-            <main className="ml-64 flex-1">
+            <main className="ml-72 flex-1">
                 <header className="h-20 bg-white border-b border-gray-100 flex items-center justify-between px-8 sticky top-0 z-30">
                     <div className="relative w-96">
                         <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">

@@ -3,8 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import { CreditCard, Zap, Server, Mail } from 'lucide-react';
 import { useUpdatePlatformSettings } from '@/lib/hooks/use-data';
+import { useToast } from '@/components/providers/toast-provider';
 
 export function PlatformSettingsTab({ settings }: { settings: any }) {
+    const { addToast } = useToast();
     const [editedSettings, setEditedSettings] = useState<any>(null);
     const [isSaving, setIsSaving] = useState(false);
     const updateMutation = useUpdatePlatformSettings();
@@ -18,9 +20,9 @@ export function PlatformSettingsTab({ settings }: { settings: any }) {
         setIsSaving(true);
         try {
             await updateMutation.mutateAsync(editedSettings);
-            alert('Settings updated successfully');
+            addToast('Settings updated successfully', 'success');
         } catch (error) {
-            alert('Failed to update settings');
+            addToast('Failed to update settings', 'error');
         } finally {
             setIsSaving(false);
         }
@@ -31,7 +33,7 @@ export function PlatformSettingsTab({ settings }: { settings: any }) {
     return (
         <div className="max-w-4xl space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div>
-                <h2 className="text-3xl font-black text-gray-900 uppercase">Platform Settings</h2>
+                <h2 className="text-3xl font-black text-gray-900 tracking-tight">Platform Settings</h2>
                 <p className="text-gray-500 font-medium text-sm">Configure global payment methods, Paystack API keys, and system-wide defaults.</p>
             </div>
             <form onSubmit={handleSave} className="space-y-6">

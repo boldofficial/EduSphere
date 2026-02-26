@@ -3,8 +3,10 @@
 import React, { useState } from 'react';
 import { Zap } from 'lucide-react';
 import apiClient from '@/lib/api-client';
+import { useToast } from '@/components/providers/toast-provider';
 
 export function ModulesTab({ modules = [] }: { modules: any[] }) {
+    const { addToast } = useToast();
     const [togglingId, setTogglingId] = useState<string | null>(null);
 
     const handleToggle = async (moduleId: string, currentStatus: boolean) => {
@@ -14,7 +16,7 @@ export function ModulesTab({ modules = [] }: { modules: any[] }) {
             await apiClient.post('/schools/modules/toggle/', { module_id: moduleId, action });
             window.location.reload();
         } catch (error) {
-            alert('Failed to toggle module');
+            addToast('Failed to toggle module', 'error');
         } finally {
             setTogglingId(null);
         }
@@ -23,8 +25,8 @@ export function ModulesTab({ modules = [] }: { modules: any[] }) {
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
             <div>
-                <h2 className="text-3xl font-black text-gray-900 uppercase">Module Library</h2>
-                <p className="text-gray-500 font-medium text-sm">Global master switches. Turning a module OFF here disables it platform-wide, overriding all subscription plans.</p>
+                <h2 className="text-3xl font-black text-gray-900 tracking-tight">Module Library</h2>
+                <p className="text-gray-500 font-medium text-sm">Global master switches. Turning a module OFF here disables it platform-wide.</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {modules.map((mod) => (

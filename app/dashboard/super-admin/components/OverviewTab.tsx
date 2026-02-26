@@ -14,13 +14,13 @@ import { AIPlatformInsights } from '@/components/features/AIPlatformInsights';
 
 export function StatCard({ title, value, icon: Icon, color, trend }: any) {
     return (
-        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col gap-4 hover:shadow-md transition-all group">
+        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col gap-4 hover:shadow-lg transition-all group">
             <div className="flex items-center gap-4">
-                <div className={`w-12 h-12 ${color} rounded-xl flex items-center justify-center text-white shadow-lg opacity-90 group-hover:scale-110 transition-transform`}>
-                    <Icon size={24} />
+                <div className={`w-12 h-12 ${color} rounded-xl flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform`}>
+                    <Icon size={22} />
                 </div>
                 <div>
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{title}</p>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{title}</p>
                     <h3 className="text-2xl font-black text-gray-900 tracking-tight">{value}</h3>
                 </div>
             </div>
@@ -88,7 +88,7 @@ export function OverviewTab({ schools, plans, revenue, health, strategic, govern
         <div className="space-y-10 animate-in fade-in duration-500">
             <div className="flex justify-between items-end">
                 <div>
-                    <h2 className="text-3xl font-bold text-gray-900 tracking-tight">System Overview</h2>
+                    <h2 className="text-3xl font-black text-gray-900 tracking-tight">System Overview</h2>
                     <p className="text-gray-500 mt-1">Cross-tenant performance and infrastructure health.</p>
                 </div>
                 <div className="text-right">
@@ -139,26 +139,26 @@ export function OverviewTab({ schools, plans, revenue, health, strategic, govern
                     title="Total Schools"
                     value={stats.total_schools || schools.length}
                     icon={SchoolIcon}
-                    color="bg-blue-500"
+                    color="bg-gradient-to-br from-blue-500 to-indigo-600"
                     trend="+2 new this week"
                 />
                 <StatCard
                     title="Global Students"
                     value={stats.total_students || 0}
                     icon={Users}
-                    color="bg-indigo-500"
+                    color="bg-gradient-to-br from-violet-500 to-purple-700"
                 />
                 <StatCard
                     title="Total Teachers"
                     value={stats.total_teachers || 0}
                     icon={GraduationCap}
-                    color="bg-orange-500"
+                    color="bg-gradient-to-br from-orange-500 to-amber-600"
                 />
                 <StatCard
                     title="Annual Revenue"
                     value={`₦${parseFloat(revenue?.total_revenue || 0).toLocaleString()}`}
                     icon={CreditCard}
-                    color="bg-emerald-500"
+                    color="bg-gradient-to-br from-emerald-500 to-teal-600"
                     trend="On track"
                 />
             </div>

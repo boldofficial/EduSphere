@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Plus, Grid } from 'lucide-react';
+import { Plus, Grid, Pencil, Trash2 } from 'lucide-react';
 import apiClient from '@/lib/api-client';
+import { useToast } from '@/components/providers/toast-provider';
 
 export function PlansTab({ plans, modules = [] }: any) {
+    const { addToast } = useToast();
     const [isProcessing, setIsProcessing] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
     const [editingPlan, setEditingPlan] = useState<any>(null);
@@ -63,7 +65,7 @@ export function PlansTab({ plans, modules = [] }: any) {
             }
             window.location.reload();
         } catch (error) {
-            alert('Failed to save plan');
+            addToast('Failed to save plan', 'error');
         } finally {
             setIsProcessing(false);
         }
@@ -74,16 +76,16 @@ export function PlansTab({ plans, modules = [] }: any) {
         try {
             await apiClient.delete(`/schools/plans/manage/${id}/`);
             window.location.reload();
-        } catch (e) { alert("Failed to delete"); }
+        } catch (e) { addToast('Failed to delete plan', 'error'); }
     };
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
             <div className="flex justify-between items-center">
-                <h2 className="text-3xl font-bold text-gray-900">Subscription Plans</h2>
+                <h2 className="text-3xl font-black text-gray-900 tracking-tight">Subscription Plans</h2>
                 <button
                     onClick={() => openModal()}
-                    className="px-4 py-2 bg-brand-600 text-white rounded-lg flex items-center gap-2 hover:bg-brand-700"
+                    className="px-5 py-3 bg-gradient-to-r from-brand-600 to-brand-500 text-white rounded-2xl flex items-center gap-2 hover:shadow-lg hover:shadow-brand-600/20 transition-all font-bold text-sm"
                 >
                     <Plus size={18} /> Create Plan
                 </button>
@@ -91,10 +93,15 @@ export function PlansTab({ plans, modules = [] }: any) {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {plans.map((plan: any) => (
-                    <div key={plan.id} className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition-all relative group">
-                        <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-                            <button onClick={() => openModal(plan)} className="p-1 bg-blue-100 text-blue-600 rounded">Edit</button>
-                            <button onClick={() => handleDelete(plan.id)} className="p-1 bg-red-100 text-red-600 rounded">Del</button>
+                    <div key={plan.id} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-lg transition-all relative group overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-brand-500 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1.5">
+                            <button onClick={() => openModal(plan)} className="p-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors">
+                                <Pencil size={14} />
+                            </button>
+                            <button onClick={() => handleDelete(plan.id)} className="p-1.5 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 transition-colors">
+                                <Trash2 size={14} />
+                            </button>
                         </div>
                         <div className="flex justify-between items-start mb-4">
                             <h3 className="font-bold text-xl text-gray-900">{plan.name}</h3>

@@ -1,13 +1,17 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ScrollText, Megaphone, Clock } from 'lucide-react';
+import { ScrollText, Megaphone, Clock, Search, Filter } from 'lucide-react';
 import apiClient from '@/lib/api-client';
+import { useToast } from '@/components/providers/toast-provider';
 
 export function GovernanceTab({ activities = [] }: any) {
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
-            <h2 className="text-3xl font-bold text-gray-900">Global Activity Log</h2>
+            <div>
+                <h2 className="text-3xl font-black text-gray-900 tracking-tight">Global Activity Log</h2>
+                <p className="text-gray-500 text-sm font-medium mt-1">Platform-wide audit trail of all significant events.</p>
+            </div>
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                 <table className="w-full text-left">
                     <thead className="bg-gray-50 border-b border-gray-200">
@@ -44,6 +48,7 @@ export function GovernanceTab({ activities = [] }: any) {
 }
 
 export function BroadcastsTab({ announcements = [] }: any) {
+    const { addToast } = useToast();
     const [modalOpen, setModalOpen] = useState(false);
     const [title, setTitle] = useState('');
     const [message, setMessage] = useState('');
@@ -55,10 +60,10 @@ export function BroadcastsTab({ announcements = [] }: any) {
         setIsProcessing(true);
         try {
             await apiClient.post('/schools/governance/', { title, message, priority });
-            alert("Announcement Broadcasted!");
+            addToast('Announcement broadcasted successfully!', 'success');
             window.location.reload();
         } catch (error) {
-            alert("Broadcast failed");
+            addToast('Broadcast failed', 'error');
         } finally {
             setIsProcessing(false);
             setModalOpen(false);
@@ -68,8 +73,8 @@ export function BroadcastsTab({ announcements = [] }: any) {
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
             <div className="flex justify-between items-center">
-                <h2 className="text-3xl font-bold text-gray-900">Platform Broadcasts</h2>
-                <button onClick={() => setModalOpen(true)} className="px-4 py-2 bg-brand-600 text-white rounded-lg flex items-center gap-2 hover:bg-brand-700">
+                <h2 className="text-3xl font-black text-gray-900 tracking-tight">Platform Broadcasts</h2>
+                <button onClick={() => setModalOpen(true)} className="px-5 py-3 bg-gradient-to-r from-brand-600 to-brand-500 text-white rounded-2xl flex items-center gap-2 hover:shadow-lg hover:shadow-brand-600/20 transition-all font-bold text-sm">
                     <Megaphone size={18} /> New Broadcast
                 </button>
             </div>
