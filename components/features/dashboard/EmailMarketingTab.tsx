@@ -37,10 +37,12 @@ export const EmailMarketingTab: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isIndividualModalOpen, setIsIndividualModalOpen] = useState(false);
+    const [stats, setStats] = useState<{ total_sent: number; total_failed: number; total_emails: number; campaign_count: number; success_rate: number }>({ total_sent: 0, total_failed: 0, total_emails: 0, campaign_count: 0, success_rate: 0 });
     const { addToast } = useToast();
 
     useEffect(() => {
         fetchData();
+        fetchStats();
     }, [activeSubTab]);
 
     const fetchData = async () => {
@@ -57,6 +59,15 @@ export const EmailMarketingTab: React.FC = () => {
             addToast('Failed to fetch data', 'error');
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const fetchStats = async () => {
+        try {
+            const res = await apiClient.get('emails/campaigns/stats/');
+            setStats(res.data);
+        } catch (error) {
+            // Stats are non-critical, silently fail
         }
     };
 
@@ -133,12 +144,20 @@ export const EmailMarketingTab: React.FC = () => {
                             <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400">Marketing Analytics</h4>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                                    <div className="text-2xl font-black text-gray-900 leading-none">85%</div>
-                                    <div className="text-[9px] font-black uppercase tracking-tight text-gray-400 mt-1">Open Rate</div>
+                                    <div className="text-2xl font-black text-gray-900 leading-none">{stats.success_rate}%</div>
+                                    <div className="text-[9px] font-black uppercase tracking-tight text-gray-400 mt-1">Success Rate</div>
                                 </div>
                                 <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                                    <div className="text-2xl font-black text-gray-900 leading-none">12k</div>
+                                    <div className="text-2xl font-black text-gray-900 leading-none">{stats.total_sent}</div>
                                     <div className="text-[9px] font-black uppercase tracking-tight text-gray-400 mt-1">Total Sent</div>
+                                </div>
+                                <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                                    <div className="text-2xl font-black text-gray-900 leading-none">{stats.campaign_count}</div>
+                                    <div className="text-[9px] font-black uppercase tracking-tight text-gray-400 mt-1">Campaigns</div>
+                                </div>
+                                <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                                    <div className="text-2xl font-black text-rose-600 leading-none">{stats.total_failed}</div>
+                                    <div className="text-[9px] font-black uppercase tracking-tight text-gray-400 mt-1">Failed</div>
                                 </div>
                             </div>
                         </div>
