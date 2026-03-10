@@ -31,6 +31,9 @@ class ScholarshipSerializer(serializers.ModelSerializer):
         read_only_fields = ('school',)
 
 class FeeItemSerializer(serializers.ModelSerializer):
+    category = serializers.PrimaryKeyRelatedField(
+        queryset=FeeCategory.objects.none(), required=False, allow_null=True
+    )
     category_name = serializers.CharField(source='category.name', read_only=True)
     target_class_name = serializers.CharField(source='target_class.name', read_only=True)
     
@@ -65,7 +68,8 @@ class FeeItemSerializer(serializers.ModelSerializer):
 
         # Compatibility logic: if name is provided but category is not
         name = attrs.get('name')
-        if not category and not name:
+        existing_category = getattr(self.instance, 'category', None)
+        if not category and not name and not existing_category:
             raise serializers.ValidationError({"category": "This field is required if 'name' is not provided."})
 
         if school and category and category.school != school:
@@ -74,7 +78,7 @@ class FeeItemSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"target_class": "Class must belong to your school."})
         
         # Map class_id to target_class if provided
-        if attrs.get('class_id'):
+        if 'class_id' in attrs:
             attrs['target_class'] = attrs.pop('class_id')
             
         return attrs
@@ -93,6 +97,13 @@ class FeeItemSerializer(serializers.ModelSerializer):
             validated_data['category'] = category
 
         return super().create(validated_data)
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['name'] = instance.category.name if instance.category_id else ''
+        data['class_id'] = instance.target_class_id
+        data['is_optional'] = bool(instance.category.is_optional) if instance.category_id else False
+        return data
 
 class StudentFeeSerializer(serializers.ModelSerializer):
     student_name = serializers.CharField(source='student.names', read_only=True)
