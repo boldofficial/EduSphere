@@ -34,9 +34,20 @@ class FeeItemSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source='category.name', read_only=True)
     target_class_name = serializers.CharField(source='target_class.name', read_only=True)
     
+    # Virtual fields for compatibility with fallback frontend payload
+    name = serializers.CharField(write_only=True, required=False)
+    class_id = serializers.PrimaryKeyRelatedField(
+        queryset=Class.objects.none(), write_only=True, required=False, allow_null=True
+    )
+    is_optional = serializers.BooleanField(write_only=True, required=False, default=False)
+
     class Meta:
         model = FeeItem
-        fields = '__all__'
+        fields = [
+            'id', 'category', 'category_name', 'amount', 'session', 'term', 
+            'target_class', 'target_class_name', 'active', 'school',
+            'name', 'class_id', 'is_optional'
+        ]
         read_only_fields = ('school',)
 
     def __init__(self, *args, **kwargs):
@@ -45,17 +56,43 @@ class FeeItemSerializer(serializers.ModelSerializer):
         if school:
             self.fields['category'].queryset = FeeCategory.objects.filter(school=school)
             self.fields['target_class'].queryset = Class.objects.filter(school=school)
+            self.fields['class_id'].queryset = Class.objects.filter(school=school)
 
     def validate(self, attrs):
         school = attrs.get('school') or _school_from_request(self)
         category = attrs.get('category')
-        target_class = attrs.get('target_class')
+        target_class = attrs.get('target_class') or attrs.get('class_id')
+
+        # Compatibility logic: if name is provided but category is not
+        name = attrs.get('name')
+        if not category and not name:
+            raise serializers.ValidationError({"category": "This field is required if 'name' is not provided."})
 
         if school and category and category.school != school:
             raise serializers.ValidationError({"category": "Category must belong to your school."})
         if school and target_class and target_class.school != school:
             raise serializers.ValidationError({"target_class": "Class must belong to your school."})
+        
+        # Map class_id to target_class if provided
+        if attrs.get('class_id'):
+            attrs['target_class'] = attrs.pop('class_id')
+            
         return attrs
+
+    def create(self, validated_data):
+        name = validated_data.pop('name', None)
+        is_optional = validated_data.pop('is_optional', False)
+        school = validated_data.get('school') or _school_from_request(self)
+
+        if name and not validated_data.get('category'):
+            category, _ = FeeCategory.objects.get_or_create(
+                name=name,
+                school=school,
+                defaults={'is_optional': is_optional}
+            )
+            validated_data['category'] = category
+
+        return super().create(validated_data)
 
 class StudentFeeSerializer(serializers.ModelSerializer):
     student_name = serializers.CharField(source='student.names', read_only=True)

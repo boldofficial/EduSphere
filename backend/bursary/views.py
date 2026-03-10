@@ -304,3 +304,49 @@ class DashboardViewSet(viewsets.ViewSet):
         }
         
         return Response(data)
+
+    @action(detail=False, methods=['get'], url_path='financial-stats')
+    def financial_stats(self, request):
+        school = get_request_school(request)
+        if not school:
+            return Response({"error": "School context not found"}, status=400)
+        
+        session = request.query_params.get('session')
+        term = request.query_params.get('term')
+
+        # Filter by session/term if provided
+        filters = {"school": school}
+        if session:
+            filters["session"] = session
+        if term:
+            filters["term"] = term
+        
+        from django.db.models import Sum
+        
+        # Note: session/term filtering for expected_revenue relies on FeeItem
+        expected_fees = StudentFee.objects.filter(
+            fee_item__school=school, 
+            fee_item__session=session if session else timezone.now().year, 
+            fee_item__term=term if term else ""
+        ).aggregate(Sum('amount'))['amount__sum'] or 0
+        
+        total_collected = Payment.objects.filter(**filters).aggregate(Sum('amount'))['amount__sum'] or 0
+        total_expenses = Expense.objects.filter(**filters).aggregate(Sum('amount'))['amount__sum'] or 0
+        
+        # Payroll stats (approximate based on session/term as payroll is monthly)
+        total_payroll = Payroll.objects.filter(
+            school=school, status='paid'
+        ).aggregate(Sum('total_wage_bill'))['total_wage_bill'] or 0
+        
+        # Outstanding
+        outstanding = expected_fees - total_collected
+        
+        data = {
+            "expected_revenue": expected_fees,
+            "total_collected": total_collected,
+            "total_outstanding": outstanding,
+            "total_expenses": total_expenses,
+            "net_balance": total_collected - total_expenses - total_payroll,
+        }
+        
+        return Response(data)
