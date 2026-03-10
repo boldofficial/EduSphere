@@ -15,6 +15,7 @@ import {
 } from '@/lib/hooks/use-data';
 import apiClient from '@/lib/api-client';
 import { CommandPalette } from '@/components/features/CommandPalette';
+import { useToast } from '@/components/providers/toast-provider';
 
 // Extracted Tab Components
 import { OverviewTab } from './components/OverviewTab';
@@ -29,6 +30,7 @@ import { SupportTab } from './components/SupportTab';
 import { SchoolEditModal } from './components/SchoolEditModal';
 import { DashboardDemoRequestsTab } from '@/components/features/dashboard/DashboardDemoRequestsTab';
 import { EmailMarketingTab } from '@/components/features/dashboard/EmailMarketingTab';
+import { ConfirmActionModal } from './components/ConfirmActionModal';
 
 function SidebarGroup({ label }: { label: string }) {
     return (
@@ -56,6 +58,7 @@ function SidebarItem({ icon: Icon, label, active, onClick }: any) {
 
 export default function SuperAdminDashboard() {
     const { currentUser, currentRole, logout, hasHydrated } = useSchoolStore();
+    const { addToast } = useToast();
     const router = useRouter();
     const [activeTab, setActiveTab] = useState<'overview' | 'tenants' | 'financials' | 'plans' | 'governance' | 'broadcasts' | 'modules' | 'settings' | 'templates' | 'logs' | 'demo_requests' | 'support' | 'email_marketing'>('overview');
     const [searchQuery, setSearchQuery] = useState('');
@@ -65,6 +68,8 @@ export default function SuperAdminDashboard() {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [selectedSchoolForEdit, setSelectedSchoolForEdit] = useState<any>(null);
     const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+    const [impersonateTarget, setImpersonateTarget] = useState<number | null>(null);
+    const [isImpersonating, setIsImpersonating] = useState(false);
 
     // Command Palette Keyboard Shortcut
     useEffect(() => {
@@ -78,31 +83,49 @@ export default function SuperAdminDashboard() {
         return () => window.removeEventListener('keydown', handleCmdK);
     }, []);
 
-    const handleImpersonate = async (userId: number) => {
-        if (!userId) { alert("No administrator found for this school."); return; }
-        if (!confirm("Are you sure you want to impersonate this user? You will be logged into their account.")) return;
+    const handleImpersonate = (userId: number) => {
+        if (!userId) {
+            addToast('No administrator found for this school.', 'error');
+            return;
+        }
+        setImpersonateTarget(userId);
+    };
+
+    const confirmImpersonate = async () => {
+        if (!impersonateTarget) return;
+
+        setIsImpersonating(true);
         try {
             const res = await fetch('/api/auth/impersonate', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_id: userId }),
+                body: JSON.stringify({ user_id: impersonateTarget }),
             });
             if (res.ok) {
                 const data = await res.json();
                 useSchoolStore.getState().login(data.user.role, data.user);
-                window.location.href = '/dashboard';
-            } else { alert("Impersonation failed"); }
-        } catch (error) { console.error("Impersonation error", error); alert("An error occurred"); }
+                addToast('Impersonation started successfully.', 'success');
+                router.push('/dashboard');
+            } else {
+                addToast('Impersonation failed', 'error');
+            }
+        } catch (error) {
+            console.error("Impersonation error", error);
+            addToast('An error occurred while impersonating this user.', 'error');
+        } finally {
+            setIsImpersonating(false);
+            setImpersonateTarget(null);
+        }
     };
 
     const handleLogout = async () => {
         try {
             await fetch('/api/auth/logout', { method: 'POST' });
             logout();
-            window.location.href = '/';
+            router.push('/');
         } catch (error) {
             console.error("Logout failed", error);
             logout();
-            window.location.href = '/login';
+            router.push('/login');
         }
     };
 
@@ -116,15 +139,15 @@ export default function SuperAdminDashboard() {
 
     // Fetch Data
     const { data: healthData, error: healthError } = useSystemHealth();
-    const { data: schools = [] } = useAdminSchools();
-    const { data: plans = [] } = useAdminPlans();
-    const { data: revenueStats = { total_revenue: 0 } } = useAdminRevenue();
-    const { data: strategicData } = useStrategicAnalytics();
-    const { data: governanceData } = usePlatformGovernance();
+    const { data: schools = [], refetch: refetchSchools } = useAdminSchools();
+    const { data: plans = [], refetch: refetchPlans } = useAdminPlans();
+    const { data: revenueStats = { total_revenue: 0 }, refetch: refetchRevenue } = useAdminRevenue();
+    const { data: strategicData, refetch: refetchStrategicAnalytics } = useStrategicAnalytics();
+    const { data: governanceData, refetch: refetchPlatformGovernance } = usePlatformGovernance();
     const { data: searchResults, isLoading: searchLoading } = useGlobalSearch(searchQuery);
-    const { data: modules = [] } = useModules();
+    const { data: modules = [], refetch: refetchModules } = useModules();
     const { data: platformSettings } = usePlatformSettings();
-    const { data: templates = [] } = useEmailTemplates();
+    const { data: templates = [], refetch: refetchEmailTemplates } = useEmailTemplates();
     const { data: emailLogs = [] } = useEmailLogs();
 
     const handleToggleMaintenance = async () => {
@@ -133,17 +156,42 @@ export default function SuperAdminDashboard() {
             const nextMode = !isMaintenanceMode;
             await apiClient.post('/schools/maintenance/', { action: nextMode ? 'on' : 'off' });
             setIsMaintenanceMode(nextMode);
-            alert(`Maintenance mode turned ${nextMode ? 'ON' : 'OFF'}`);
-        } catch (error) { alert("Failed to toggle maintenance mode"); }
+            addToast(`Maintenance mode turned ${nextMode ? 'ON' : 'OFF'}`, 'success');
+        } catch (error) {
+            addToast("Failed to toggle maintenance mode", 'error');
+        }
         finally { setIsTogglingMaintenance(false); }
     };
 
     const handleUpdateSchool = async (id: number, data: any) => {
         try {
             await apiClient.put(`/schools/manage/${id}/`, data);
-            alert('School details updated successfully');
-            window.location.reload();
-        } catch (error) { alert('Failed to update school details'); }
+            await Promise.all([refetchSchools(), refetchRevenue(), refetchStrategicAnalytics()]);
+            addToast('School details updated successfully', 'success');
+        } catch (error) {
+            addToast('Failed to update school details', 'error');
+        }
+    };
+
+    const handleTenantDataChanged = async () => {
+        await Promise.all([
+            refetchSchools(),
+            refetchRevenue(),
+            refetchStrategicAnalytics(),
+            refetchPlatformGovernance(),
+        ]);
+    };
+
+    const handlePlansChanged = async () => {
+        await Promise.all([refetchPlans(), refetchSchools()]);
+    };
+
+    const handleModulesChanged = async () => {
+        await Promise.all([refetchModules(), refetchPlans()]);
+    };
+
+    const handleGovernanceChanged = async () => {
+        await refetchPlatformGovernance();
     };
 
     if (!hasHydrated || !currentUser) {
@@ -166,7 +214,7 @@ export default function SuperAdminDashboard() {
                         <p><strong>User ID:</strong> {currentUser?.id || 'not logged in'}</p>
                     </div>
                     <button onClick={() => router.push('/login')} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Go to Login</button>
-                    <button onClick={() => window.location.reload()} className="block w-full mt-2 text-sm text-gray-500 hover:text-gray-700">Refresh Page</button>
+                    <button onClick={() => router.refresh()} className="block w-full mt-2 text-sm text-gray-500 hover:text-gray-700">Refresh Page</button>
                 </div>
             </div>
         );
@@ -303,14 +351,14 @@ export default function SuperAdminDashboard() {
                         </div>
                     )}
                     {activeTab === 'overview' && <OverviewTab schools={schools} plans={plans} revenue={revenueStats} health={healthData} strategic={strategicData} governance={governanceData} onImpersonate={(userId: number) => handleImpersonate(userId)} />}
-                    {activeTab === 'tenants' && <TenantsTab schools={schools} plans={plans} onImpersonate={(userId: number) => handleImpersonate(userId)} onEdit={(school: any) => { setSelectedSchoolForEdit(school); setIsEditModalOpen(true); }} />}
+                    {activeTab === 'tenants' && <TenantsTab schools={schools} plans={plans} onImpersonate={(userId: number) => handleImpersonate(userId)} onEdit={(school: any) => { setSelectedSchoolForEdit(school); setIsEditModalOpen(true); }} onDataChanged={handleTenantDataChanged} />}
                     {activeTab === 'financials' && <FinancialsTab revenue={revenueStats} />}
-                    {activeTab === 'plans' && <PlansTab plans={plans} modules={modules} />}
+                    {activeTab === 'plans' && <PlansTab plans={plans} modules={modules} onPlansChanged={handlePlansChanged} />}
                     {activeTab === 'governance' && <GovernanceTab activities={governanceData?.activities} />}
-                    {activeTab === 'broadcasts' && <BroadcastsTab announcements={governanceData?.announcements} />}
-                    {activeTab === 'modules' && <ModulesTab modules={modules} />}
+                    {activeTab === 'broadcasts' && <BroadcastsTab announcements={governanceData?.announcements} onBroadcastChanged={handleGovernanceChanged} />}
+                    {activeTab === 'modules' && <ModulesTab modules={modules} onModulesChanged={handleModulesChanged} />}
                     {activeTab === 'settings' && <PlatformSettingsTab settings={platformSettings} />}
-                    {activeTab === 'templates' && <EmailTemplatesTab templates={templates} />}
+                    {activeTab === 'templates' && <EmailTemplatesTab templates={templates} onTemplatesChanged={refetchEmailTemplates} />}
                     {activeTab === 'logs' && <EmailLogsTab logs={emailLogs} />}
                     {activeTab === 'email_marketing' && <EmailMarketingTab />}
                     {activeTab === 'demo_requests' && <DashboardDemoRequestsTab />}
@@ -331,6 +379,16 @@ export default function SuperAdminDashboard() {
                 schools={schools}
                 isOpen={isCommandPaletteOpen}
                 onClose={() => setIsCommandPaletteOpen(false)}
+            />
+            <ConfirmActionModal
+                isOpen={Boolean(impersonateTarget)}
+                title="Confirm Impersonation"
+                message="You will be logged in as this school's administrator."
+                confirmLabel="Impersonate Admin"
+                confirmVariant="warning"
+                isProcessing={isImpersonating}
+                onConfirm={confirmImpersonate}
+                onCancel={() => setImpersonateTarget(null)}
             />
         </div>
     );

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Mail, X } from 'lucide-react';
 import { useUpdateEmailTemplate } from '@/lib/hooks/use-data';
+import { useToast } from '@/components/providers/toast-provider';
 
 function TemplateEditModal({ template, onClose, onSave }: any) {
     const [formData, setFormData] = useState({
@@ -58,18 +59,20 @@ function TemplateEditModal({ template, onClose, onSave }: any) {
     );
 }
 
-export function EmailTemplatesTab({ templates = [] }: { templates: any[] }) {
+export function EmailTemplatesTab({ templates = [], onTemplatesChanged }: { templates: any[]; onTemplatesChanged?: () => Promise<unknown> | void }) {
     const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const { addToast } = useToast();
     const updateMutation = useUpdateEmailTemplate();
 
     const handleSave = async (data: any) => {
         try {
             await updateMutation.mutateAsync({ id: selectedTemplate.id, updates: data });
-            alert('Template updated successfully');
+            await onTemplatesChanged?.();
+            addToast('Template updated successfully', 'success');
             setIsEditModalOpen(false);
         } catch (error) {
-            alert('Failed to update template');
+            addToast('Failed to update template', 'error');
         }
     };
 

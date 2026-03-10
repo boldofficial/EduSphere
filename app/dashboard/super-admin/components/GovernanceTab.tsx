@@ -47,7 +47,7 @@ export function GovernanceTab({ activities = [] }: any) {
     );
 }
 
-export function BroadcastsTab({ announcements = [] }: any) {
+export function BroadcastsTab({ announcements = [], onBroadcastChanged }: any) {
     const { addToast } = useToast();
     const [modalOpen, setModalOpen] = useState(false);
     const [title, setTitle] = useState('');
@@ -61,7 +61,10 @@ export function BroadcastsTab({ announcements = [] }: any) {
         try {
             await apiClient.post('/schools/governance/', { title, message, priority });
             addToast('Announcement broadcasted successfully!', 'success');
-            window.location.reload();
+            setTitle('');
+            setMessage('');
+            setPriority('low');
+            await onBroadcastChanged?.();
         } catch (error) {
             addToast('Broadcast failed', 'error');
         } finally {

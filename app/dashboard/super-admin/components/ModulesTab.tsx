@@ -5,7 +5,7 @@ import { Zap } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 import { useToast } from '@/components/providers/toast-provider';
 
-export function ModulesTab({ modules = [] }: { modules: any[] }) {
+export function ModulesTab({ modules = [], onModulesChanged }: { modules: any[]; onModulesChanged?: () => Promise<void> | void }) {
     const { addToast } = useToast();
     const [togglingId, setTogglingId] = useState<string | null>(null);
 
@@ -14,7 +14,8 @@ export function ModulesTab({ modules = [] }: { modules: any[] }) {
         try {
             const action = currentStatus ? 'off' : 'on';
             await apiClient.post('/schools/modules/toggle/', { module_id: moduleId, action });
-            window.location.reload();
+            await onModulesChanged?.();
+            addToast(`Module turned ${action.toUpperCase()} successfully`, 'success');
         } catch (error) {
             addToast('Failed to toggle module', 'error');
         } finally {

@@ -14,10 +14,13 @@ import {
     User, Clock, CheckCircle, Send, Hash,
     ChevronRight, HelpCircle
 } from 'lucide-react';
+import { useToast } from '@/components/providers/toast-provider';
+import { ConfirmActionModal } from './ConfirmActionModal';
 
 export function SupportTab() {
     const { data: tickets = [], isLoading, refetch } = useSupportTickets();
     const { data: schools = [] } = useAdminSchools();
+    const { addToast } = useToast();
     const createMutation = useCreateSupportTicket();
     const respondMutation = useRespondToTicket();
     const resolveMutation = useResolveTicket();
@@ -26,6 +29,8 @@ export function SupportTab() {
     const [message, setMessage] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [pendingResolveId, setPendingResolveId] = useState<number | null>(null);
+    const [isResolving, setIsResolving] = useState(false);
 
     // New Ticket State
     const [newTicket, setNewTicket] = useState({
@@ -52,7 +57,7 @@ export function SupportTab() {
     const handleCreateTicket = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!newTicket.school_id) {
-            alert("Please select a school");
+            addToast('Please select a school', 'error');
             return;
         }
 
@@ -65,8 +70,9 @@ export function SupportTab() {
             setIsCreateModalOpen(false);
             setNewTicket({ school_id: '', subject: '', category: 'technical', priority: 'medium', description: '' });
             refetch();
+            addToast('Ticket created successfully', 'success');
         } catch (error) {
-            alert("Failed to create ticket");
+            addToast('Failed to create ticket', 'error');
         } finally {
             setIsSubmitting(false);
         }
@@ -81,20 +87,31 @@ export function SupportTab() {
             await respondMutation.mutateAsync({ id: selectedTicketId, message });
             setMessage('');
             refetch();
+            addToast('Response sent successfully', 'success');
         } catch (error) {
-            alert("Failed to send response");
+            addToast('Failed to send response', 'error');
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    const handleResolve = async (id: number) => {
-        if (!confirm("Mark this ticket as resolved?")) return;
+    const handleResolve = (id: number) => {
+        setPendingResolveId(id);
+    };
+
+    const confirmResolve = async () => {
+        if (!pendingResolveId) return;
+
+        setIsResolving(true);
         try {
-            await resolveMutation.mutateAsync(id);
+            await resolveMutation.mutateAsync(pendingResolveId);
             refetch();
+            setPendingResolveId(null);
+            addToast('Ticket marked as resolved', 'success');
         } catch (error) {
-            alert("Failed to resolve ticket");
+            addToast('Failed to resolve ticket', 'error');
+        } finally {
+            setIsResolving(false);
         }
     };
 
@@ -403,6 +420,16 @@ export function SupportTab() {
                     </Card>
                 </div>
             )}
+            <ConfirmActionModal
+                isOpen={Boolean(pendingResolveId)}
+                title="Resolve Ticket"
+                message="Mark this support ticket as resolved?"
+                confirmLabel="Mark Resolved"
+                confirmVariant="warning"
+                isProcessing={isResolving}
+                onConfirm={confirmResolve}
+                onCancel={() => setPendingResolveId(null)}
+            />
         </div>
     );
 }

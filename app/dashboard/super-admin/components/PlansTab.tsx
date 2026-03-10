@@ -4,12 +4,14 @@ import React, { useState } from 'react';
 import { Plus, Grid, Pencil, Trash2 } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 import { useToast } from '@/components/providers/toast-provider';
+import { ConfirmActionModal } from './ConfirmActionModal';
 
-export function PlansTab({ plans, modules = [] }: any) {
+export function PlansTab({ plans, modules = [], onPlansChanged }: any) {
     const { addToast } = useToast();
     const [isProcessing, setIsProcessing] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
     const [editingPlan, setEditingPlan] = useState<any>(null);
+    const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
 
     // Form State
     const [name, setName] = useState('');
@@ -60,10 +62,13 @@ export function PlansTab({ plans, modules = [] }: any) {
         try {
             if (editingPlan) {
                 await apiClient.put(`/schools/plans/manage/${editingPlan.id}/`, payload);
+                addToast('Plan updated successfully', 'success');
             } else {
                 await apiClient.post('/schools/plans/manage/', payload);
+                addToast('Plan created successfully', 'success');
             }
-            window.location.reload();
+            setModalOpen(false);
+            await onPlansChanged?.();
         } catch (error) {
             addToast('Failed to save plan', 'error');
         } finally {
@@ -71,12 +76,20 @@ export function PlansTab({ plans, modules = [] }: any) {
         }
     };
 
-    const handleDelete = async (id: number) => {
-        if (!confirm("Delete this plan?")) return;
+    const handleDelete = async () => {
+        if (!pendingDeleteId) return;
+
+        setIsProcessing(true);
         try {
-            await apiClient.delete(`/schools/plans/manage/${id}/`);
-            window.location.reload();
-        } catch (e) { addToast('Failed to delete plan', 'error'); }
+            await apiClient.delete(`/schools/plans/manage/${pendingDeleteId}/`);
+            addToast('Plan deleted successfully', 'success');
+            setPendingDeleteId(null);
+            await onPlansChanged?.();
+        } catch (e) {
+            addToast('Failed to delete plan', 'error');
+        } finally {
+            setIsProcessing(false);
+        }
     };
 
     return (
@@ -99,7 +112,7 @@ export function PlansTab({ plans, modules = [] }: any) {
                             <button onClick={() => openModal(plan)} className="p-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors">
                                 <Pencil size={14} />
                             </button>
-                            <button onClick={() => handleDelete(plan.id)} className="p-1.5 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 transition-colors">
+                            <button onClick={() => setPendingDeleteId(plan.id)} className="p-1.5 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 transition-colors">
                                 <Trash2 size={14} />
                             </button>
                         </div>
@@ -190,6 +203,16 @@ export function PlansTab({ plans, modules = [] }: any) {
                     </div>
                 </div>
             )}
+            <ConfirmActionModal
+                isOpen={Boolean(pendingDeleteId)}
+                title="Delete Subscription Plan"
+                message="This action cannot be undone. Schools on this plan may be affected."
+                confirmLabel="Delete Plan"
+                confirmVariant="danger"
+                isProcessing={isProcessing}
+                onConfirm={handleDelete}
+                onCancel={() => setPendingDeleteId(null)}
+            />
         </div>
     );
 }

@@ -1,18 +1,38 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-    Plus, Ghost, Search, Filter, ChevronLeft, ChevronRight,
-    MoreHorizontal, Pencil, Trash2, Power, Ban, CreditCard
+    Ban,
+    ChevronLeft,
+    ChevronRight,
+    CreditCard,
+    Filter,
+    Ghost,
+    MoreHorizontal,
+    Pencil,
+    Plus,
+    Power,
+    Search,
+    Trash2
 } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 import { useToast } from '@/components/providers/toast-provider';
+import { ConfirmActionModal } from './ConfirmActionModal';
 
 const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'myregistra.net';
 const PAGE_SIZE = 10;
 
-export function TenantsTab({ schools, plans, onImpersonate, onEdit }: any) {
+type TenantAction = 'delete' | 'suspend' | 'activate' | 'approve';
+
+const ACTION_PAST_TENSE: Record<TenantAction, string> = {
+    delete: 'deleted',
+    suspend: 'suspended',
+    activate: 'activated',
+    approve: 'approved',
+};
+
+export function TenantsTab({ schools, plans, onImpersonate, onEdit, onDataChanged }: any) {
     const router = useRouter();
     const { addToast } = useToast();
     const [isProcessing, setIsProcessing] = useState(false);
@@ -21,8 +41,11 @@ export function TenantsTab({ schools, plans, onImpersonate, onEdit }: any) {
     const [amount, setAmount] = useState('');
     const [reference, setReference] = useState('');
     const [openDropdown, setOpenDropdown] = useState<number | null>(null);
+    const [pendingAction, setPendingAction] = useState<{
+        schoolId: number;
+        action: TenantAction;
+    } | null>(null);
 
-    // Search, filter, pagination
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [currentPage, setCurrentPage] = useState(1);
@@ -44,20 +67,25 @@ export function TenantsTab({ schools, plans, onImpersonate, onEdit }: any) {
     const totalPages = Math.max(1, Math.ceil(filteredSchools.length / PAGE_SIZE));
     const paginatedSchools = filteredSchools.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
-    const handleAction = async (schoolId: number, action: 'delete' | 'suspend' | 'activate' | 'approve') => {
-        if (!confirm(`Are you sure you want to ${action} this school?`)) return;
+    const handleAction = (schoolId: number, action: TenantAction) => {
+        setPendingAction({ schoolId, action });
+    };
+
+    const executePendingAction = async () => {
+        if (!pendingAction) return;
 
         setIsProcessing(true);
         try {
-            if (action === 'delete') {
-                await apiClient.delete(`/schools/manage/${schoolId}/`);
+            if (pendingAction.action === 'delete') {
+                await apiClient.delete(`/schools/manage/${pendingAction.schoolId}/`);
             } else {
-                await apiClient.patch(`/schools/manage/${schoolId}/`, { action });
+                await apiClient.patch(`/schools/manage/${pendingAction.schoolId}/`, { action: pendingAction.action });
             }
-            addToast(`School ${action}d successfully`, 'success');
-            setTimeout(() => window.location.reload(), 500);
+            await onDataChanged?.();
+            addToast(`School ${ACTION_PAST_TENSE[pendingAction.action]} successfully`, 'success');
+            setPendingAction(null);
         } catch (error) {
-            addToast(`Failed to ${action} school`, 'error');
+            addToast(`Failed to ${pendingAction.action} school`, 'error');
         } finally {
             setIsProcessing(false);
         }
@@ -76,11 +104,11 @@ export function TenantsTab({ schools, plans, onImpersonate, onEdit }: any) {
         try {
             await apiClient.post('/schools/payments/record/', {
                 school_id: selectedSchool.id,
-                amount: amount,
-                reference: reference
+                amount,
+                reference
             });
+            await onDataChanged?.();
             addToast('Payment recorded successfully', 'success');
-            setTimeout(() => window.location.reload(), 500);
         } catch (error) {
             addToast('Payment recording failed', 'error');
         } finally {
@@ -100,7 +128,6 @@ export function TenantsTab({ schools, plans, onImpersonate, onEdit }: any) {
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
-            {/* Header */}
             <div className="flex justify-between items-center">
                 <div>
                     <h2 className="text-3xl font-black text-gray-900 tracking-tight">Tenants</h2>
@@ -114,7 +141,6 @@ export function TenantsTab({ schools, plans, onImpersonate, onEdit }: any) {
                 </button>
             </div>
 
-            {/* Search & Filter Bar */}
             <div className="flex items-center gap-4">
                 <div className="relative flex-1 max-w-sm">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
@@ -144,7 +170,6 @@ export function TenantsTab({ schools, plans, onImpersonate, onEdit }: any) {
                 </span>
             </div>
 
-            {/* Table */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                 <table className="w-full text-left">
                     <thead className="bg-gray-50/80 border-b border-gray-100">
@@ -234,11 +259,10 @@ export function TenantsTab({ schools, plans, onImpersonate, onEdit }: any) {
                     </tbody>
                 </table>
 
-                {/* Pagination */}
                 {totalPages > 1 && (
                     <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between bg-gray-50/50">
                         <span className="text-xs font-bold text-gray-400">
-                            Showing {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filteredSchools.length)} of {filteredSchools.length}
+                            Showing {(currentPage - 1) * PAGE_SIZE + 1}-{Math.min(currentPage * PAGE_SIZE, filteredSchools.length)} of {filteredSchools.length}
                         </span>
                         <div className="flex items-center gap-2">
                             <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}
@@ -263,7 +287,6 @@ export function TenantsTab({ schools, plans, onImpersonate, onEdit }: any) {
                 )}
             </div>
 
-            {/* Payment Modal */}
             {paymentModalOpen && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
                     <div className="bg-white p-8 rounded-3xl w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200">
@@ -291,6 +314,17 @@ export function TenantsTab({ schools, plans, onImpersonate, onEdit }: any) {
                     </div>
                 </div>
             )}
+
+            <ConfirmActionModal
+                isOpen={Boolean(pendingAction)}
+                title="Confirm School Action"
+                message={pendingAction ? `Are you sure you want to ${pendingAction.action} this school?` : ''}
+                confirmLabel={pendingAction ? `Yes, ${pendingAction.action}` : 'Confirm'}
+                confirmVariant={pendingAction?.action === 'delete' ? 'danger' : 'warning'}
+                isProcessing={isProcessing}
+                onConfirm={executePendingAction}
+                onCancel={() => setPendingAction(null)}
+            />
         </div>
     );
 }
