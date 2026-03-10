@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useSchoolStore } from '@/lib/store';
 import { UserRole } from '@/lib/types';
@@ -329,9 +328,7 @@ export const LoginView = () => {
                                 <span className="text-xl font-bold text-gray-900">{publicBranding.school_name || "Registra"}</span>
                             </div>
                         ) : (
-                            <Link href="/">
                                 <img src="/logo-white.png" alt="Registra" className="h-20 w-auto object-contain hover:opacity-80 transition-opacity" />
-                            </Link>
                         )}
                     </div>
                 </div>
