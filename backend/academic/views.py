@@ -39,9 +39,29 @@ from .serializers import (
 from rest_framework.views import APIView
 from core.pagination import StandardPagination, LargePagination
 from core.cache_utils import CachingMixin
+from core.tenant_utils import get_request_school
 
 class TenantViewSet(CachingMixin, viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, IsAdminOrReadOnly]
+
+    def _enforce_related_school(self, value, school, field_name="field"):
+        if value is None or school is None:
+            return
+
+        if hasattr(value, "school"):
+            related_school = getattr(value, "school", None)
+            if related_school and related_school != school:
+                raise PermissionDenied(f"{field_name} must belong to your school.")
+            return
+
+        if isinstance(value, dict):
+            for key, item in value.items():
+                self._enforce_related_school(item, school, f"{field_name}.{key}")
+            return
+
+        if isinstance(value, (list, tuple, set)):
+            for index, item in enumerate(value):
+                self._enforce_related_school(item, school, f"{field_name}[{index}]")
 
     def get_queryset(self):
         user = self.request.user
@@ -49,29 +69,25 @@ class TenantViewSet(CachingMixin, viewsets.ModelViewSet):
             return self.queryset.none()
         
         if user.is_superuser:
-            return self.queryset.all()
-        
-        if hasattr(user, 'school') and user.school:
-            return self.queryset.filter(school=user.school)
-        
-        # Fallback to tenant context from headers/middleware
-        tenant_school = getattr(self.request, 'tenant', None)
-        if tenant_school:
-            return self.queryset.filter(school=tenant_school)
+            school = get_request_school(self.request, allow_super_admin_tenant=True)
+            return self.queryset.filter(school=school) if school else self.queryset.all()
+
+        school = get_request_school(self.request, allow_super_admin_tenant=False)
+        if school:
+            return self.queryset.filter(school=school)
 
         return self.queryset.none()
 
     def perform_create(self, serializer):
-        user_school = getattr(self.request.user, 'school', None)
-        tenant_school = getattr(self.request, 'tenant', None)
-        
-        if user_school:
-            serializer.save(school=user_school)
-        elif tenant_school:
-            serializer.save(school=tenant_school)
+        school = get_request_school(self.request, allow_super_admin_tenant=True)
+        for field_name, value in serializer.validated_data.items():
+            self._enforce_related_school(value, school, field_name)
+        if school:
+            serializer.save(school=school)
+        elif self.request.user.is_superuser:
+            serializer.save()
         else:
-             if self.request.user.is_superuser:
-                 serializer.save()
+            raise PermissionDenied("School context not found.")
         self.invalidate_cache()
 
     def perform_update(self, serializer):
@@ -79,9 +95,11 @@ class TenantViewSet(CachingMixin, viewsets.ModelViewSet):
         user = self.request.user
         # Tenant isolation: verify the object belongs to the user's school
         if not user.is_superuser and hasattr(instance, 'school'):
-            user_school = getattr(user, 'school', None) or getattr(self.request, 'tenant', None)
+            user_school = get_request_school(self.request, allow_super_admin_tenant=False)
             if user_school and instance.school != user_school:
                 raise PermissionDenied('You cannot modify records belonging to another school.')
+            for field_name, value in serializer.validated_data.items():
+                self._enforce_related_school(value, user_school, field_name)
         super().perform_update(serializer)
         self.invalidate_cache()
 
@@ -89,7 +107,7 @@ class TenantViewSet(CachingMixin, viewsets.ModelViewSet):
         user = self.request.user
         # Tenant isolation: verify the object belongs to the user's school
         if not user.is_superuser and hasattr(instance, 'school'):
-            user_school = getattr(user, 'school', None) or getattr(self.request, 'tenant', None)
+            user_school = get_request_school(self.request, allow_super_admin_tenant=False)
             if user_school and instance.school != user_school:
                 raise PermissionDenied('You cannot delete records belonging to another school.')
         super().perform_destroy(instance)
@@ -118,11 +136,8 @@ class TeacherViewSet(TenantViewSet):
     def perform_create(self, serializer):
         # Determine staff_type from path
         staff_type = 'NON_ACADEMIC' if 'staff' in self.request.path else 'ACADEMIC'
-        
-        user_school = getattr(self.request.user, 'school', None)
-        tenant_school = getattr(self.request, 'tenant', None)
-        school = user_school or tenant_school
 
+        school = get_request_school(self.request, allow_super_admin_tenant=True)
         serializer.save(school=school, staff_type=staff_type)
         self.invalidate_cache()
 
@@ -144,7 +159,7 @@ class ClassViewSet(TenantViewSet):
         if not session or not term:
             return Response({"error": "session and term are required query parameters"}, status=400)
 
-        school = getattr(request.user, 'school', None) or getattr(request, 'tenant', None)
+        school = get_request_school(request)
         
         generator = BroadsheetPDFGenerator(school, instance, session, term)
         pdf_buffer = generator.generate()
@@ -165,7 +180,7 @@ class ClassViewSet(TenantViewSet):
         if not session or not term:
             return Response({"error": "session and term are required query parameters"}, status=400)
 
-        school = getattr(request.user, 'school', None) or getattr(request, 'tenant', None)
+        school = get_request_school(request)
         
         generator = ReportCardPDFGenerator(school)
         pdf_buffer = generator.generate_bulk(instance, session, term)
@@ -201,6 +216,10 @@ class StudentViewSet(TenantViewSet):
         promotions = request.data.get('promotions', {})
         if not promotions:
             return Response({"error": "No promotions provided"}, status=400)
+
+        school = get_request_school(request)
+        if not school and not request.user.is_superuser:
+            return Response({"error": "School context not found"}, status=403)
         
         updated_count = 0
         with transaction.atomic():
@@ -208,7 +227,7 @@ class StudentViewSet(TenantViewSet):
                 try:
                     student = Student.objects.get(pk=student_id)
                     # Check tenant isolation if not superuser
-                    if not request.user.is_superuser and student.school != request.user.school:
+                    if school and student.school != school:
                         continue
                     
                     if next_class_id == 'graduate':
@@ -216,7 +235,10 @@ class StudentViewSet(TenantViewSet):
                         student.current_class = None
                         # student.is_active = False # or similar
                     else:
-                        target_class = Class.objects.get(pk=next_class_id)
+                        target_class_qs = Class.objects.filter(pk=next_class_id)
+                        if school:
+                            target_class_qs = target_class_qs.filter(school=school)
+                        target_class = target_class_qs.get()
                         student.current_class = target_class
                     
                     student.save()
@@ -238,7 +260,7 @@ class StudentViewSet(TenantViewSet):
         if not session or not term:
             return Response({"error": "session and term are required"}, status=400)
 
-        school = getattr(request.user, 'school', None) or getattr(request, 'tenant', None)
+        school = get_request_school(request)
         if not school:
             return Response({"error": "School context not found"}, status=403)
 
@@ -261,7 +283,7 @@ class ReportCardViewSet(TenantViewSet):
         Export a single student report card as a PDF.
         """
         instance = self.get_object()
-        school = getattr(request.user, 'school', None) or getattr(request, 'tenant', None)
+        school = get_request_school(request)
         
         generator = ReportCardPDFGenerator(school)
         pdf_buffer = generator.generate_single(instance)
@@ -346,7 +368,7 @@ class ReportCardViewSet(TenantViewSet):
         class_id = request.data.get('class_id')
         session = request.data.get('session')
         term = request.data.get('term')
-        school = getattr(request.user, 'school', None) or getattr(request, 'tenant', None)
+        school = get_request_school(request)
 
         if not all([class_id, session, term, school]):
             return Response({"error": "class_id, session, and term are required"}, status=400)
@@ -371,7 +393,7 @@ class AIInsightsView(APIView):
         if request.user.role not in ('SCHOOL_ADMIN', 'SUPER_ADMIN'):
             raise PermissionDenied("Only administrators can access cross-student AI insights.")
         
-        school = getattr(request.user, 'school', None) or getattr(request, 'tenant', None)
+        school = get_request_school(request)
         if not school:
             return Response({"error": "No school context found"}, status=400)
 
@@ -425,7 +447,7 @@ class AITimetableGenerateView(APIView):
         if request.user.role not in ('SCHOOL_ADMIN', 'SUPER_ADMIN'):
             raise PermissionDenied("Only administrators can trigger AI timetable generation.")
         
-        school = getattr(request.user, 'school', None) or getattr(request, 'tenant', None)
+        school = get_request_school(request)
         if not school:
             return Response({"error": "No school context found"}, status=400)
 
@@ -566,7 +588,7 @@ class AdmissionViewSet(TenantViewSet):
             # 2. Create Student
             from .models import Student, Class
             try:
-                target_class = Class.objects.get(pk=class_id)
+                target_class = Class.objects.get(pk=class_id, school=admission.school)
             except Class.DoesNotExist:
                 return Response({"error": "Class not found"}, status=404)
             
@@ -690,8 +712,9 @@ class SchoolEventViewSet(TenantViewSet):
     pagination_class = StandardPagination
 
     def perform_create(self, serializer):
-        if hasattr(self.request.user, 'school') and self.request.user.school:
-            serializer.save(school=self.request.user.school, created_by=self.request.user)
+        school = get_request_school(self.request, allow_super_admin_tenant=True)
+        if school:
+            serializer.save(school=school, created_by=self.request.user)
         else:
             if self.request.user.is_superuser:
                 serializer.save(created_by=self.request.user)
@@ -714,8 +737,9 @@ class LessonViewSet(TenantViewSet):
         if hasattr(self.request.user, 'teacher_profile'):
             teacher = self.request.user.teacher_profile
         
-        if hasattr(self.request.user, 'school') and self.request.user.school:
-            serializer.save(school=self.request.user.school, teacher=teacher)
+        school = get_request_school(self.request, allow_super_admin_tenant=True)
+        if school:
+            serializer.save(school=school, teacher=teacher)
         else:
             serializer.save(teacher=teacher)
 
@@ -732,8 +756,9 @@ class ConductEntryViewSet(TenantViewSet):
         return qs
 
     def perform_create(self, serializer):
-        if hasattr(self.request.user, 'school') and self.request.user.school:
-            serializer.save(school=self.request.user.school, recorded_by=self.request.user)
+        school = get_request_school(self.request, allow_super_admin_tenant=True)
+        if school:
+            serializer.save(school=school, recorded_by=self.request.user)
         else:
             serializer.save(recorded_by=self.request.user)
 
@@ -747,9 +772,7 @@ class PeriodViewSet(TenantViewSet):
         """
         Creates a standard set of periods for the school.
         """
-        user_school = getattr(request.user, 'school', None)
-        tenant_school = getattr(request, 'tenant', None)
-        school = user_school or tenant_school
+        school = get_request_school(request)
 
         if not school:
             return Response({"error": "School context not found"}, status=400)
@@ -859,7 +882,7 @@ class BroadsheetView(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def list(self, request):
-        school = getattr(request.user, 'school', None) or getattr(request, 'tenant', None)
+        school = get_request_school(request)
         if not school:
             return Response({"error": "School context not found"}, status=400)
 
@@ -932,7 +955,7 @@ class GlobalSearchView(APIView):
         if len(query) < 2:
             return Response({"students": [], "staff": [], "classes": []})
 
-        school = getattr(request.user, 'school', None) or getattr(request, 'tenant', None)
+        school = get_request_school(request)
         if not school:
             return Response({"error": "No school context found"}, status=400)
 
@@ -969,7 +992,7 @@ class AIPredictiveInsightsView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        school = getattr(request.user, 'school', None) or getattr(request, 'tenant', None)
+        school = get_request_school(request)
         if not school:
             return Response({"error": "No school context found"}, status=400)
 

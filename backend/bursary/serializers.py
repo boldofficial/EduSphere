@@ -5,7 +5,18 @@ from .models import (
     SalaryAllowance, SalaryDeduction, StaffSalaryStructure, Payroll, PayrollEntry
 )
 from academic.serializers import StudentSerializer, ClassSerializer, TeacherSerializer
-from academic.models import Student, Class, Teacher
+from academic.models import Student, Class, Teacher, AdmissionIntake
+from core.tenant_utils import get_request_school
+
+
+def _school_from_request(serializer):
+    request = serializer.context.get('request')
+    if not request:
+        return None
+    try:
+        return get_request_school(request, allow_super_admin_tenant=True)
+    except Exception:
+        return None
 
 class FeeCategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -28,6 +39,24 @@ class FeeItemSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ('school',)
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        school = _school_from_request(self)
+        if school:
+            self.fields['category'].queryset = FeeCategory.objects.filter(school=school)
+            self.fields['target_class'].queryset = Class.objects.filter(school=school)
+
+    def validate(self, attrs):
+        school = attrs.get('school') or _school_from_request(self)
+        category = attrs.get('category')
+        target_class = attrs.get('target_class')
+
+        if school and category and category.school != school:
+            raise serializers.ValidationError({"category": "Category must belong to your school."})
+        if school and target_class and target_class.school != school:
+            raise serializers.ValidationError({"target_class": "Class must belong to your school."})
+        return attrs
+
 class StudentFeeSerializer(serializers.ModelSerializer):
     student_name = serializers.CharField(source='student.names', read_only=True)
     fee_item_details = FeeItemSerializer(source='fee_item', read_only=True)
@@ -36,6 +65,28 @@ class StudentFeeSerializer(serializers.ModelSerializer):
         model = StudentFee
         fields = '__all__'
         read_only_fields = ('school',)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        school = _school_from_request(self)
+        if school:
+            self.fields['student'].queryset = Student.objects.filter(school=school)
+            self.fields['fee_item'].queryset = FeeItem.objects.filter(school=school)
+            self.fields['scholarship'].queryset = Scholarship.objects.filter(school=school)
+
+    def validate(self, attrs):
+        school = attrs.get('school') or _school_from_request(self)
+        student = attrs.get('student')
+        fee_item = attrs.get('fee_item')
+        scholarship = attrs.get('scholarship')
+
+        if school and student and student.school != school:
+            raise serializers.ValidationError({"student": "Student must belong to your school."})
+        if school and fee_item and fee_item.school != school:
+            raise serializers.ValidationError({"fee_item": "Fee item must belong to your school."})
+        if school and scholarship and scholarship.school != school:
+            raise serializers.ValidationError({"scholarship": "Scholarship must belong to your school."})
+        return attrs
 
 class PaymentLineItemSerializer(serializers.ModelSerializer):
     class Meta:
@@ -59,6 +110,24 @@ class PaymentSerializer(serializers.ModelSerializer):
             'created_at'
         ]
         read_only_fields = ('school', 'reference')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        school = _school_from_request(self)
+        if school:
+            self.fields['student'].queryset = Student.objects.filter(school=school)
+            self.fields['category'].queryset = FeeCategory.objects.filter(school=school)
+
+    def validate(self, attrs):
+        school = attrs.get('school') or _school_from_request(self)
+        student = attrs.get('student')
+        category = attrs.get('category')
+
+        if school and student and student.school != school:
+            raise serializers.ValidationError({"student": "Student must belong to your school."})
+        if school and category and category.school != school:
+            raise serializers.ValidationError({"category": "Category must belong to your school."})
+        return attrs
 
     def create(self, validated_data):
         items_data = validated_data.pop('items_input', [])
@@ -90,6 +159,26 @@ class AdmissionPackageSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ('school',)
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        school = _school_from_request(self)
+        if school:
+            self.fields['intake'].queryset = AdmissionIntake.objects.filter(school=school)
+            self.fields['fees'].queryset = FeeItem.objects.filter(school=school)
+
+    def validate(self, attrs):
+        school = attrs.get('school') or _school_from_request(self)
+        intake = attrs.get('intake')
+        fees = attrs.get('fees')
+
+        if school and intake and intake.school != school:
+            raise serializers.ValidationError({"intake": "Intake must belong to your school."})
+        if school and fees:
+            invalid_fee = next((fee for fee in fees if fee.school != school), None)
+            if invalid_fee:
+                raise serializers.ValidationError({"fees": "All fees must belong to your school."})
+        return attrs
+
 # ==========================================
 # PAYROLL SERIALIZERS
 # ==========================================
@@ -118,6 +207,19 @@ class StaffSalaryStructureSerializer(serializers.ModelSerializer):
             'structure_data', 'total_allowances', 'total_deductions', 'net_salary_preview'
         ]
         read_only_fields = ('school',)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        school = _school_from_request(self)
+        if school:
+            self.fields['staff'].queryset = Teacher.objects.filter(school=school)
+
+    def validate(self, attrs):
+        school = attrs.get('school') or _school_from_request(self)
+        staff = attrs.get('staff')
+        if school and staff and staff.school != school:
+            raise serializers.ValidationError({"staff": "Staff must belong to your school."})
+        return attrs
 
     def update(self, instance, validated_data):
         instance = super().update(instance, validated_data)

@@ -1,6 +1,7 @@
 from rest_framework import viewsets, permissions, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.exceptions import PermissionDenied
 from django.utils import timezone
 from users.models import User
 from academic.models import Teacher
@@ -15,26 +16,51 @@ from .serializers import (
     SalaryAllowanceSerializer, SalaryDeductionSerializer, 
     StaffSalaryStructureSerializer, PayrollSerializer, PayrollEntrySerializer
 )
+from core.tenant_utils import get_request_school
 
 class TenantViewSet(viewsets.ModelViewSet):
     """Base ViewSet ensuring data isolation by School."""
     permission_classes = [permissions.IsAuthenticated]
+
+    def _enforce_related_school(self, value, school, field_name="field"):
+        if value is None or school is None:
+            return
+
+        if hasattr(value, "school"):
+            related_school = getattr(value, "school", None)
+            if related_school and related_school != school:
+                raise PermissionDenied(f"{field_name} must belong to your school.")
+            return
+
+        if isinstance(value, dict):
+            for key, item in value.items():
+                self._enforce_related_school(item, school, f"{field_name}.{key}")
+            return
+
+        if isinstance(value, (list, tuple, set)):
+            for index, item in enumerate(value):
+                self._enforce_related_school(item, school, f"{field_name}[{index}]")
     
     def get_queryset(self):
-        user = self.request.user
-        school = getattr(user, 'school', None)
-        if hasattr(self.request, 'tenant'):
-             school = self.request.tenant
-        
+        school = get_request_school(self.request)
         if not school:
             return self.queryset.none()
             
         return self.queryset.filter(school=school)
 
     def perform_create(self, serializer):
-        user = self.request.user
-        school = getattr(user, 'school', None) or getattr(self.request, 'tenant', None)
+        school = get_request_school(self.request)
+        for field_name, value in serializer.validated_data.items():
+            self._enforce_related_school(value, school, field_name)
+        if not school:
+            raise PermissionDenied("School context not found.")
         serializer.save(school=school)
+
+    def perform_update(self, serializer):
+        school = get_request_school(self.request)
+        for field_name, value in serializer.validated_data.items():
+            self._enforce_related_school(value, school, field_name)
+        super().perform_update(serializer)
 
 
 class IsAdminOrReadOnly(permissions.BasePermission):
@@ -116,7 +142,7 @@ class StaffSalaryStructureViewSet(TenantViewSet):
             
         structure, created = StaffSalaryStructure.objects.get_or_create(
             staff_id=staff_id,
-            school=getattr(request.user, 'school', None) or getattr(request, 'tenant', None)
+            school=get_request_school(request)
         )
         # Recalculate just in case basic salary changed
         structure.calculate_totals()
@@ -144,7 +170,7 @@ class PayrollViewSet(TenantViewSet):
         except ValueError:
             return Response({"error": "Invalid date format. Use YYYY-MM-DD"}, status=400)
             
-        school = getattr(request.user, 'school', None) or getattr(request, 'tenant', None)
+        school = get_request_school(request)
         if not school:
             return Response({"error": "School context not found"}, status=400)
         
@@ -243,7 +269,7 @@ class DashboardViewSet(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def list(self, request):
-        school = getattr(request.user, 'school', None) or getattr(request, 'tenant', None)
+        school = get_request_school(request)
         if not school:
             return Response({"error": "School context not found"}, status=400)
         

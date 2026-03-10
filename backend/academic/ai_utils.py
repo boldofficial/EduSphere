@@ -1,4 +1,7 @@
-import google.generativeai as genai
+try:
+    import google.generativeai as genai
+except Exception:  # pragma: no cover - optional runtime dependency
+    genai = None
 import os
 import logging
 import json
@@ -54,11 +57,14 @@ class AcademicAI:
                 self.openrouter_model = config['openrouter_model']
                 self.model = 'openrouter'
                 logger.debug("AI initialized with OpenRouter")
-            elif config['gemini_key']:
+            elif config['gemini_key'] and genai is not None:
                 genai.configure(api_key=config['gemini_key'])
                 self.model = genai.GenerativeModel('gemini-1.5-flash')
                 self.provider = 'gemini'
                 logger.debug("AI initialized with Gemini Flash")
+            elif config['gemini_key'] and genai is None:
+                logger.error("Gemini SDK not installed. AI features are disabled.")
+                self.model = None
             else:
                 logger.error("AI Initialization Failed: No API key found for provider")
                 self.model = None

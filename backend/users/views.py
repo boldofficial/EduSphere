@@ -138,20 +138,33 @@ class CreateAccountView(APIView):
             logger.error(f"[AUTH_DEBUG] Teacher profile NOT FOUND for ID: {profile_id}")
             raise NotFound({"detail": f"{profile_type.capitalize()} profile not found with ID {profile_id}"})
 
-        # Create or update the User record
-        user, created = User.objects.get_or_create(
-            username=email,
-            defaults={
-                'email': email,
-                'role': role,
-                'school': profile.school,
-                'is_active': True
-            }
-        )
+        # Create or update the User record (strict school isolation)
+        existing_user = User.objects.filter(username=email).first()
+        created = existing_user is None
+
+        if existing_user and existing_user.school and existing_user.school != profile.school:
+            logger.warning(
+                f"Cross-tenant account setup blocked: {email} already belongs to {existing_user.school}"
+            )
+            raise ValidationError({"detail": "This account email already belongs to another school."})
+
+        if created:
+            user = User.objects.create(
+                username=email,
+                email=email,
+                role=role,
+                school=profile.school,
+                is_active=True
+            )
+        else:
+            user = existing_user
+            # Never reassign users across schools; this is guarded above.
+            if not user.school:
+                user.school = profile.school
+            user.email = email
+            user.role = role
 
         user.set_password(password)
-        # Explicitly update role if it changed or user existed
-        user.role = role 
         user.save()
 
         # Link the user to the profile if not already linked

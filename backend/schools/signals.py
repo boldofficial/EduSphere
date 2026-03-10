@@ -14,6 +14,12 @@ def send_school_status_email(sender, instance, created, **kwargs):
     # 1. New School Signup -> Welcome Email (triggered when created)
     if created:
         logger.info(f"New school created: {instance.name}. Queueing welcome email.")
+        if not instance.email:
+            logger.warning(
+                "Skipping welcome email for %s because school email is empty.",
+                instance.name,
+            )
+            return
         try:
             send_email_task.delay(
                 'welcome_email', 
@@ -32,6 +38,12 @@ def send_school_status_email(sender, instance, created, **kwargs):
         sub_status = instance.subscription.status
 
     if not created and sub_status == 'active':
+        if not instance.email:
+            logger.warning(
+                "Skipping approval email for %s because school email is empty.",
+                instance.name,
+            )
+            return
         # Ideally, check if previous status was 'pending' using a field tracker package
         # or by checking instance._state.adding (already handled by 'created')
         logger.info(f"School activated: {instance.name}. Queueing approval email.")

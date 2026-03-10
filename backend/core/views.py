@@ -7,6 +7,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
 from django.core.files.storage import default_storage
 from django.conf import settings
 from django.utils import timezone
@@ -29,6 +30,7 @@ from .pagination import StandardPagination
 from .cache_utils import CachingMixin
 from schools.models import SchoolSettings
 from academic.serializers import Base64ImageField
+from core.tenant_utils import get_request_school
 
 SETTINGS_VERSION = "1.0.2"
 
@@ -36,15 +38,7 @@ class SettingsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get_school(self, request):
-        # Use tenant set by middleware if available
-        if hasattr(request, 'tenant') and request.tenant:
-            return request.tenant
-        
-        # Fallback to user's school if authenticated
-        if request.user.is_authenticated:
-            return getattr(request.user, 'school', None)
-            
-        return None
+        return get_request_school(request, allow_super_admin_tenant=True)
 
     def get(self, request):
         try:
@@ -137,6 +131,8 @@ class SettingsView(APIView):
                 },
                 'api_version': SETTINGS_VERSION,
             })
+        except PermissionDenied:
+            raise
         except Exception as e:
             # Fallback to demo if anything goes wrong during GET
             return Response({
@@ -413,8 +409,7 @@ class ConversationViewSet(CachingMixin, viewsets.ModelViewSet):
         if not user.is_authenticated:
             return Conversation.objects.none()
 
-        # Use tenant middleware if available, fallback to user.school
-        school = getattr(self.request, 'tenant', None) or getattr(user, 'school', None)
+        school = get_request_school(self.request, allow_super_admin_tenant=True)
         if not school:
             return Conversation.objects.none()
 
@@ -453,12 +448,22 @@ class ConversationViewSet(CachingMixin, viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         """Custom create that handles duplicate prevention gracefully."""
         user = request.user
-        school = getattr(request, 'tenant', None) or getattr(user, 'school', None)
+        school = get_request_school(request, allow_super_admin_tenant=True)
         if not school:
             return Response({"detail": "No school context found."}, status=400)
 
         participant_ids = request.data.get('participant_ids', [])
         conv_type = request.data.get('type', 'DIRECT')
+
+        # Enforce same-school participants only.
+        if participant_ids:
+            from users.models import User
+
+            valid_participants = User.objects.filter(id__in=participant_ids, school=school).values_list('id', flat=True)
+            valid_set = set(valid_participants)
+            if len(valid_set) != len(set(participant_ids)):
+                return Response({"detail": "All participants must belong to the same school."}, status=400)
+            participant_ids = [pid for pid in participant_ids if pid in valid_set]
 
         # For DIRECT conversations, return existing one instead of creating duplicate
         if conv_type == 'DIRECT' and len(participant_ids) == 1:
@@ -522,19 +527,32 @@ class SchoolMessageViewSet(CachingMixin, viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         conversation_id = self.request.query_params.get('conversation')
+        school = get_request_school(self.request, allow_super_admin_tenant=True)
+        if not school:
+            return SchoolMessage.objects.none()
         
         if not conversation_id:
             # Fallback for compatibility or global view (though grouped is better)
-            return SchoolMessage.objects.filter(conversation__participants__user=user).select_related('sender', 'conversation')
+            return SchoolMessage.objects.filter(
+                conversation__participants__user=user,
+                conversation__school=school
+            ).select_related('sender', 'conversation')
             
         # High security: must be a participant
         if not ConversationParticipant.objects.filter(user=user, conversation_id=conversation_id).exists():
             return SchoolMessage.objects.none()
             
-        return SchoolMessage.objects.filter(conversation_id=conversation_id).select_related('sender')
+        return SchoolMessage.objects.filter(
+            conversation_id=conversation_id,
+            conversation__school=school
+        ).select_related('sender')
 
     def perform_create(self, serializer):
         conversation = serializer.validated_data.get('conversation')
+        school = get_request_school(self.request, allow_super_admin_tenant=True)
+        if school and conversation.school != school:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Cross-tenant conversation access denied.")
         
         # Ensure participant or broadcast sender
         if not ConversationParticipant.objects.filter(user=self.request.user, conversation=conversation).exists():
@@ -553,7 +571,7 @@ class SchoolMessageViewSet(CachingMixin, viewsets.ModelViewSet):
             conversation=conversation
         ).exclude(user=self.request.user).select_related('user')
 
-        school = getattr(self.request, 'tenant', None) or getattr(self.request.user, 'school', None)
+        school = conversation.school
         if school:
             notifications = [
                 Notification(
@@ -575,7 +593,7 @@ class SchoolMessageViewSet(CachingMixin, viewsets.ModelViewSet):
         Body: { "topic": str, "recipient_type": str, "key_points": str, "tone": "formal" }
         """
         from academic.ai_utils import AcademicAI
-        school = getattr(request.user, 'school', None)
+        school = get_request_school(request, allow_super_admin_tenant=True)
         school_name = school.name if school else 'Our School'
 
         context = {
@@ -634,7 +652,7 @@ class SchoolAnnouncementViewSet(CachingMixin, viewsets.ModelViewSet):
         if not user.is_authenticated:
             return SchoolAnnouncement.objects.none()
 
-        school = getattr(self.request, 'tenant', None) or getattr(user, 'school', None)
+        school = get_request_school(self.request, allow_super_admin_tenant=True)
         if not school:
             return SchoolAnnouncement.objects.none()
         
@@ -647,7 +665,7 @@ class SchoolAnnouncementViewSet(CachingMixin, viewsets.ModelViewSet):
         return qs.select_related('author', 'school')
 
     def perform_create(self, serializer):
-        school = getattr(self.request, 'tenant', None) or getattr(self.request.user, 'school', None)
+        school = get_request_school(self.request, allow_super_admin_tenant=True)
         if not school:
             from rest_framework.exceptions import ValidationError
             raise ValidationError({"detail": "Cannot create announcement: no school context found."})
@@ -665,10 +683,14 @@ class NewsletterViewSet(CachingMixin, viewsets.ModelViewSet):
     
     def get_queryset(self):
         user = self.request.user
-        if not user.is_authenticated or not hasattr(user, 'school'):
+        if not user.is_authenticated:
             return Newsletter.objects.none()
-            
-        qs = Newsletter.objects.filter(school=user.school)
+
+        school = get_request_school(self.request, allow_super_admin_tenant=True)
+        if not school:
+            return Newsletter.objects.none()
+
+        qs = Newsletter.objects.filter(school=school)
         
         # Staff/Admins see all (including unpublished), others only see published
         if user.role not in ('SUPER_ADMIN', 'SCHOOL_ADMIN', 'STAFF', 'TEACHER'):
@@ -677,8 +699,9 @@ class NewsletterViewSet(CachingMixin, viewsets.ModelViewSet):
         return qs.select_related('school')
 
     def perform_create(self, serializer):
-        if hasattr(self.request.user, 'school') and self.request.user.school:
-            serializer.save(school=self.request.user.school)
+        school = get_request_school(self.request, allow_super_admin_tenant=True)
+        if school:
+            serializer.save(school=school)
 
     @action(detail=False, methods=['post'], url_path='ai-generate')
     def ai_generate(self, request):
@@ -690,7 +713,7 @@ class NewsletterViewSet(CachingMixin, viewsets.ModelViewSet):
         from academic.models import SchoolEvent, StudentAchievement, Student, Teacher
 
         try:
-            school = getattr(request.user, 'school', None)
+            school = get_request_school(request, allow_super_admin_tenant=True)
             if not school:
                 return Response({"error": "School not found"}, status=400)
 

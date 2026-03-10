@@ -1,5 +1,17 @@
 from rest_framework import serializers
 from .models import Assignment, Submission, Quiz, Question, Option, Attempt, StudentAnswer
+from academic.models import Class, Subject, Teacher, Student
+from core.tenant_utils import get_request_school
+
+
+def _school_from_request(serializer):
+    request = serializer.context.get('request')
+    if not request:
+        return None
+    try:
+        return get_request_school(request, allow_super_admin_tenant=True)
+    except Exception:
+        return None
 
 class AssignmentSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
@@ -16,6 +28,22 @@ class AssignmentSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ('school',)
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        school = _school_from_request(self)
+        if school:
+            self.fields['student_class'].queryset = Class.objects.filter(school=school)
+            self.fields['subject'].queryset = Subject.objects.filter(school=school)
+            self.fields['teacher'].queryset = Teacher.objects.filter(school=school)
+
+    def validate(self, attrs):
+        school = attrs.get('school') or _school_from_request(self)
+        for field in ('student_class', 'subject', 'teacher'):
+            value = attrs.get(field)
+            if school and value and value.school != school:
+                raise serializers.ValidationError({field: f"{field} must belong to your school."})
+        return attrs
+
 class SubmissionSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         ret = super().to_representation(instance)
@@ -28,6 +56,23 @@ class SubmissionSerializer(serializers.ModelSerializer):
         model = Submission
         fields = '__all__'
         read_only_fields = ('school',)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        school = _school_from_request(self)
+        if school:
+            self.fields['assignment'].queryset = Assignment.objects.filter(school=school)
+            self.fields['student'].queryset = Student.objects.filter(school=school)
+
+    def validate(self, attrs):
+        school = attrs.get('school') or _school_from_request(self)
+        assignment = attrs.get('assignment')
+        student = attrs.get('student')
+        if school and assignment and assignment.school != school:
+            raise serializers.ValidationError({"assignment": "Assignment must belong to your school."})
+        if school and student and student.school != school:
+            raise serializers.ValidationError({"student": "Student must belong to your school."})
+        return attrs
 
 class OptionSerializer(serializers.ModelSerializer):
     text = serializers.CharField(required=False, allow_blank=True)
@@ -43,6 +88,19 @@ class QuestionSerializer(serializers.ModelSerializer):
         model = Question
         fields = ['id', 'quiz', 'text', 'question_type', 'points', 'options', 'school']
         read_only_fields = ('school',)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        school = _school_from_request(self)
+        if school:
+            self.fields['quiz'].queryset = Quiz.objects.filter(school=school)
+
+    def validate(self, attrs):
+        school = attrs.get('school') or _school_from_request(self)
+        quiz = attrs.get('quiz')
+        if school and quiz and quiz.school != school:
+            raise serializers.ValidationError({"quiz": "Quiz must belong to your school."})
+        return attrs
 
     def create(self, validated_data):
         options_data = validated_data.pop('options', [])
@@ -107,6 +165,22 @@ class QuizSerializer(serializers.ModelSerializer):
                   'duration_minutes', 'start_time', 'end_time', 'is_published', 'questions', 'created_at', 'school']
         read_only_fields = ('school',)
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        school = _school_from_request(self)
+        if school:
+            self.fields['student_class'].queryset = Class.objects.filter(school=school)
+            self.fields['subject'].queryset = Subject.objects.filter(school=school)
+            self.fields['teacher'].queryset = Teacher.objects.filter(school=school)
+
+    def validate(self, attrs):
+        school = attrs.get('school') or _school_from_request(self)
+        for field in ('student_class', 'subject', 'teacher'):
+            value = attrs.get(field)
+            if school and value and value.school != school:
+                raise serializers.ValidationError({field: f"{field} must belong to your school."})
+        return attrs
+
 class StudentAnswerSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudentAnswer
@@ -120,3 +194,20 @@ class AttemptSerializer(serializers.ModelSerializer):
         model = Attempt
         fields = ['id', 'quiz', 'student', 'start_time', 'submit_time', 'total_score', 'answers', 'school']
         read_only_fields = ('school',)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        school = _school_from_request(self)
+        if school:
+            self.fields['quiz'].queryset = Quiz.objects.filter(school=school)
+            self.fields['student'].queryset = Student.objects.filter(school=school)
+
+    def validate(self, attrs):
+        school = attrs.get('school') or _school_from_request(self)
+        quiz = attrs.get('quiz')
+        student = attrs.get('student')
+        if school and quiz and quiz.school != school:
+            raise serializers.ValidationError({"quiz": "Quiz must belong to your school."})
+        if school and student and student.school != school:
+            raise serializers.ValidationError({"student": "Student must belong to your school."})
+        return attrs

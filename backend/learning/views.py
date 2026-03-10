@@ -1,6 +1,7 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.exceptions import PermissionDenied
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
 from django.db import transaction
@@ -10,11 +11,31 @@ from .serializers import (
     QuestionSerializer, AttemptSerializer, StudentAnswerSerializer
 )
 from core.pagination import StandardPagination, LargePagination
+from core.tenant_utils import get_request_school
 
 
 class LearningTenantViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     pagination_class = StandardPagination
+
+    def _enforce_related_school(self, value, school, field_name="field"):
+        if value is None or school is None:
+            return
+
+        if hasattr(value, "school"):
+            related_school = getattr(value, "school", None)
+            if related_school and related_school != school:
+                raise PermissionDenied(f"{field_name} must belong to your school.")
+            return
+
+        if isinstance(value, dict):
+            for key, item in value.items():
+                self._enforce_related_school(item, school, f"{field_name}.{key}")
+            return
+
+        if isinstance(value, (list, tuple, set)):
+            for index, item in enumerate(value):
+                self._enforce_related_school(item, school, f"{field_name}[{index}]")
 
     def get_queryset(self):
         """Base tenant-filtered queryset — prevents cross-school data leaks."""
@@ -22,16 +43,27 @@ class LearningTenantViewSet(viewsets.ModelViewSet):
         if not user.is_authenticated:
             return self.queryset.none()
         if user.is_superuser:
-            return self.queryset.all()
-        if hasattr(user, 'school') and user.school:
-            return self.queryset.filter(school=user.school)
+            school = get_request_school(self.request, allow_super_admin_tenant=True)
+            return self.queryset.filter(school=school) if school else self.queryset.all()
+        school = get_request_school(self.request, allow_super_admin_tenant=False)
+        if school:
+            return self.queryset.filter(school=school)
         return self.queryset.none()
 
     def perform_create(self, serializer):
-        if hasattr(self.request.user, 'school') and self.request.user.school:
-            serializer.save(school=self.request.user.school)
+        school = get_request_school(self.request, allow_super_admin_tenant=True)
+        for field_name, value in serializer.validated_data.items():
+            self._enforce_related_school(value, school, field_name)
+        if school:
+            serializer.save(school=school)
         else:
-            serializer.save()
+            raise PermissionDenied("School context not found.")
+
+    def perform_update(self, serializer):
+        school = get_request_school(self.request, allow_super_admin_tenant=True)
+        for field_name, value in serializer.validated_data.items():
+            self._enforce_related_school(value, school, field_name)
+        super().perform_update(serializer)
 
 
 class AssignmentViewSet(LearningTenantViewSet):
@@ -91,8 +123,12 @@ class QuizViewSet(LearningTenantViewSet):
         if not lesson_id:
             return Response({"error": "lesson_id is required"}, status=status.HTTP_400_BAD_REQUEST)
 
+        school = get_request_school(request)
+        if not school:
+            return Response({"error": "School context not found"}, status=status.HTTP_400_BAD_REQUEST)
+
         try:
-            lesson = Lesson.objects.select_related('subject', 'student_class').get(id=lesson_id)
+            lesson = Lesson.objects.select_related('subject', 'student_class').get(id=lesson_id, school=school)
         except Lesson.DoesNotExist:
             return Response({"error": "Lesson not found"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -110,7 +146,6 @@ class QuizViewSet(LearningTenantViewSet):
         if not questions_data:
             return Response({"error": "AI quiz generation failed. Please try again."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        school = getattr(request.user, 'school', None) or getattr(request, 'tenant', None)
         teacher = getattr(request.user, 'teacher_profile', None)
 
         with transaction.atomic():
@@ -159,6 +194,8 @@ class QuizViewSet(LearningTenantViewSet):
         student = getattr(request.user, 'student_profile', None)
         if not student:
             return Response({'detail': 'Only students can take quizzes'}, status=status.HTTP_403_FORBIDDEN)
+        if student.school != quiz.school:
+            return Response({'detail': 'Cross-tenant quiz access denied'}, status=status.HTTP_403_FORBIDDEN)
         
         # Check if quiz has already been attempted
         if Attempt.objects.filter(quiz=quiz, student=student).exists():

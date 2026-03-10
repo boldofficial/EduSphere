@@ -12,6 +12,17 @@ from .models import (
     SubjectTeacher, StudentHistory, StudentAchievement,
     AdmissionIntake, Admission
 )
+from core.tenant_utils import get_request_school
+
+
+def _school_from_request(serializer):
+    request = serializer.context.get('request')
+    if not request:
+        return None
+    try:
+        return get_request_school(request, allow_super_admin_tenant=True)
+    except Exception:
+        return None
 
 class Base64ImageField(serializers.CharField):
     """
@@ -92,6 +103,12 @@ class TeacherSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ('school',)
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        school = _school_from_request(self)
+        if school:
+            self.fields['user'].queryset = User.objects.filter(school=school)
+
     def to_representation(self, instance):
         ret = super().to_representation(instance)
         from core.media_utils import get_media_url
@@ -113,6 +130,12 @@ class ClassSerializer(serializers.ModelSerializer):
         model = Class
         fields = ['id', 'name', 'class_teacher', 'class_teacher_id', 'subjects_input', 'created_at', 'updated_at']
         read_only_fields = ('id', 'school', 'class_teacher')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        school = _school_from_request(self)
+        if school:
+            self.fields['class_teacher_id'].queryset = Teacher.objects.filter(school=school)
 
     def to_internal_value(self, data):
         # Map frontend 'subjects' to 'subjects_input'
@@ -202,7 +225,10 @@ class StudentSerializer(serializers.ModelSerializer):
         # Resolve class
         if class_id:
             try:
-                validated_data['current_class'] = Class.objects.get(id=class_id)
+                class_qs = Class.objects.filter(id=class_id)
+                if school:
+                    class_qs = class_qs.filter(school=school)
+                validated_data['current_class'] = class_qs.get()
             except Class.DoesNotExist:
                 pass
                 
@@ -247,7 +273,8 @@ class StudentSerializer(serializers.ModelSerializer):
             
             if class_id:
                 try:
-                    validated_data['current_class'] = Class.objects.get(id=class_id)
+                    class_qs = Class.objects.filter(id=class_id, school=instance.school)
+                    validated_data['current_class'] = class_qs.get()
                 except Class.DoesNotExist:
                     pass
                     
@@ -333,6 +360,13 @@ class ReportCardSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ('school',)
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        school = _school_from_request(self)
+        if school:
+            self.fields['student_id'].queryset = Student.objects.filter(school=school)
+            self.fields['class_id'].queryset = Class.objects.filter(school=school)
+
     def get_validators(self):
         # Suppress automatic unique validation so we can handle it in create() via update_or_create
         return []
@@ -342,6 +376,22 @@ class ReportCardSerializer(serializers.ModelSerializer):
         # Map frontend field names to backend fields if they differ
         # Using student_id as input is handled by the PrimaryKeyRelatedField source='student'
         return super().to_internal_value(data)
+
+    def validate(self, attrs):
+        school = attrs.get('school') or _school_from_request(self)
+        instance = getattr(self, 'instance', None)
+        if not school and instance is not None:
+            school = instance.school
+
+        student = attrs.get('student')
+        if student and school and student.school != school:
+            raise serializers.ValidationError({"student_id": "Student must belong to your school."})
+
+        student_class = attrs.get('student_class')
+        if student_class and school and student_class.school != school:
+            raise serializers.ValidationError({"class_id": "Class must belong to your school."})
+
+        return attrs
 
     def create(self, validated_data):
         scores_data = validated_data.pop('rows', None) or validated_data.pop('scores', [])
@@ -362,7 +412,8 @@ class ReportCardSerializer(serializers.ModelSerializer):
         report_card = ReportCard.objects.filter(
             student=student, 
             session=session, 
-            term=term
+            term=term,
+            school=school
         ).first()
 
         if report_card:
