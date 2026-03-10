@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useSchoolStore } from '@/lib/store';
 import { UserRole } from '@/lib/types';
@@ -316,8 +317,8 @@ export const LoginView = () => {
             )}
 
             {/* Left Side: Form */}
-            <div className={`flex-1 flex flex-col justify-center px-6 md:px-16 xl:px-24 py-12 relative z-10 ${isSystemRoot ? 'items-center' : 'lg:w-1/2 bg-white'}`}>
-                <div className={`mb-10 ${isSystemRoot ? 'text-center' : ''}`}>
+            <div className={`flex-1 flex flex-col justify-center px-6 md:px-16 xl:px-24 py-12 relative z-10 ${isSystemRoot ? 'items-start' : 'lg:w-1/2 bg-white'}`}>
+                <div className={`mb-10 ${isSystemRoot ? 'text-left w-full' : ''}`}>
                     <div
                         className="inline-block cursor-pointer transition-transform active:scale-95"
                         onClick={handleLogoClick}
@@ -328,7 +329,9 @@ export const LoginView = () => {
                                 <span className="text-xl font-bold text-gray-900">{publicBranding.school_name || "Registra"}</span>
                             </div>
                         ) : (
-                            <img src="/logo.png" alt="Registra" className="h-20 w-auto object-contain brightness-110 contrast-110 drop-shadow-lg" />
+                            <Link href="/">
+                                <img src="/logo-white.png" alt="Registra" className="h-20 w-auto object-contain hover:opacity-80 transition-opacity" />
+                            </Link>
                         )}
                     </div>
                 </div>
