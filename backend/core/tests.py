@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
-from django.test import TestCase, RequestFactory
+from django.test import TestCase, RequestFactory, override_settings
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.exceptions import PermissionDenied
@@ -164,3 +164,31 @@ class TenantIsolationAPITests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         error_text = str(response.data).lower()
         self.assertTrue("student_class" in error_text or "subject" in error_text)
+
+
+class PublicSettingsBrandingTests(APITestCase):
+    def setUp(self):
+        self.school = School.objects.create(
+            name="Meritland International School",
+            domain="meritland",
+            custom_domain="meritlandschools.com",
+            logo="https://cdn.example.com/meritland-logo.png",
+        )
+
+    def test_public_settings_returns_school_branding_by_domain(self):
+        response = self.client.get("/api/public-settings/", HTTP_X_TENANT_ID="meritland")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data.get("school_name"), self.school.name)
+        self.assertEqual(response.data.get("logo_media"), self.school.logo)
+
+    def test_public_settings_returns_school_branding_by_custom_domain(self):
+        response = self.client.get("/api/public-settings/", HTTP_X_TENANT_ID="meritlandschools.com")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data.get("school_name"), self.school.name)
+        self.assertEqual(response.data.get("domain"), self.school.domain)
+
+    @override_settings(ALLOWED_HOSTS=["testserver", "meritlandschools.com"])
+    def test_public_settings_resolves_from_request_host_without_header(self):
+        response = self.client.get("/api/public-settings/", HTTP_HOST="meritlandschools.com")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data.get("school_name"), self.school.name)

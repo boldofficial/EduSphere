@@ -313,12 +313,17 @@ class PublicSettingsView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
-        domain = request.META.get('HTTP_X_TENANT_ID', 'demo')
+        domain = request.META.get('HTTP_X_TENANT_ID')
+        if not domain and getattr(request, 'tenant', None):
+            domain = request.tenant.custom_domain or request.tenant.domain
+        if not domain:
+            domain = 'demo'
         try:
             from schools.models import School, SchoolSettings
+            from django.db.models import Q
             from core.media_utils import get_media_url
 
-            school = School.objects.get(domain=domain)
+            school = School.objects.get(Q(domain=domain) | Q(custom_domain=domain))
             settings_obj, _ = SchoolSettings.objects.get_or_create(school=school)
 
             return Response({
@@ -334,6 +339,7 @@ class PublicSettingsView(APIView):
             return Response({
                 'school_name': 'Registra',
                 'school_tagline': 'The operating system for modern schools',
+                'logo_media': None,
             })
 
 

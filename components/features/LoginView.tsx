@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSchoolStore } from '@/lib/store';
-import { useSettings } from '@/lib/hooks/use-data';
 import { UserRole } from '@/lib/types';
 import {
     ShieldCheck,
@@ -11,9 +10,7 @@ import {
     GraduationCap,
     Briefcase,
     ArrowRight,
-    Lock
 } from 'lucide-react';
-import * as Utils from '@/lib/utils';
 import { StaffLoginForm } from './login/StaffLoginForm';
 import { StudentLoginForm } from './login/StudentLoginForm';
 import { FindSchoolSection } from './login/FindSchoolSection';
@@ -21,8 +18,12 @@ import { ForgotPasswordModal } from './login/ForgotPasswordModal';
 
 export const LoginView = () => {
     const router = useRouter();
-    const { data: settings = Utils.INITIAL_SETTINGS } = useSettings();
     const { login } = useSchoolStore();
+    const [publicBranding, setPublicBranding] = useState({
+        school_name: 'Registra',
+        logo_media: null as string | null,
+        domain: '' as string,
+    });
 
     const [isDemo, setIsDemo] = useState(false);
     // Default to 'teacher' only on subdomains; on root we want to force school search or super admin secret
@@ -52,6 +53,30 @@ export const LoginView = () => {
     const [newPassword, setNewPassword] = useState('');
     const [logoClickCount, setLogoClickCount] = useState(0);
 
+    const resolveTenantContext = () => {
+        if (typeof window === 'undefined') {
+            return { isRoot: true, tenantId: '' };
+        }
+
+        const host = window.location.host.split(':')[0].replace(/^www\./, '');
+        const rootDomain = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'myregistra.net').split(':')[0].replace(/^www\./, '');
+
+        const isRoot =
+            host === rootDomain ||
+            host === 'localhost' ||
+            host.includes('127.0.0.1') ||
+            (host.includes('vercel.app') && !host.includes('-'));
+
+        let tenantId = '';
+        if (!isRoot) {
+            tenantId = host.endsWith(`.${rootDomain}`)
+                ? host.replace(`.${rootDomain}`, '')
+                : host;
+        }
+
+        return { isRoot, tenantId };
+    };
+
     const handleLogoClick = () => {
         if (!isSystemRoot) return;
         const newCount = logoClickCount + 1;
@@ -63,21 +88,36 @@ export const LoginView = () => {
     };
 
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const host = window.location.host.split(':')[0].replace(/^www\./, '');
-            const rootDomain = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'myregistra.net').split(':')[0].replace(/^www\./, '');
+        if (typeof window === 'undefined') return;
 
-            const isRoot =
-                host === rootDomain ||
-                host === 'localhost' ||
-                (host.includes('vercel.app') && !host.includes('-'));
+        const { isRoot, tenantId } = resolveTenantContext();
+        setIsSystemRoot(isRoot);
+        setIsDemo(tenantId === 'demo');
 
-            setIsSystemRoot(isRoot);
-            setIsDemo(host.startsWith('demo.'));
+        // Set default role if not on root domain
+        if (!isRoot) {
+            setSelectedRole('teacher');
 
-            // Set default role if not on root domain
-            if (!isRoot) {
-                setSelectedRole('teacher');
+            const loadPublicBranding = async () => {
+                try {
+                    const res = await fetch('/api/proxy/public-settings/', {
+                        headers: { 'x-tenant-id': tenantId },
+                        cache: 'no-store',
+                    });
+
+                    if (!res.ok) return;
+                    const data = await res.json();
+                    setPublicBranding({
+                        school_name: data.school_name || 'Registra',
+                        logo_media: data.logo_media || null,
+                        domain: data.domain || '',
+                    });
+                } catch {
+                    // Keep default branding fallback
+                }
+            };
+            if (tenantId) {
+                loadPublicBranding();
             }
         }
     }, []);
@@ -116,12 +156,19 @@ export const LoginView = () => {
                 }
                 tenantSlug = searchSlug;
             } else {
-                tenantSlug = window.location.host.split('.')[0];
+                tenantSlug = resolveTenantContext().tenantId;
+            }
+
+            if (!tenantSlug && selectedRole !== 'super_admin') {
+                setLoginError('Unable to resolve school portal. Please use your school login link.');
+                setIsLoading(false);
+                return;
             }
 
             let usernamePayload = email.trim().toLowerCase();
             if (selectedRole === 'student' && tenantSlug) {
-                usernamePayload = `${email}@${tenantSlug}`;
+                const usernameTenant = publicBranding.domain || tenantSlug;
+                usernamePayload = `${email}@${usernameTenant}`;
             }
 
             const res = await fetch('/api/auth/login', {
@@ -151,17 +198,23 @@ export const LoginView = () => {
         setLoginError('');
         setIsLoading(true);
         try {
-            let tenantSlug = isSystemRoot ? searchSlug : window.location.host.split('.')[0];
+            let tenantSlug = isSystemRoot ? searchSlug : resolveTenantContext().tenantId;
             if (!tenantSlug && isSystemRoot) {
                 setLoginError('Please find your school first.');
                 setIsLoading(false);
                 return;
             }
+            if (!tenantSlug) {
+                setLoginError('Unable to resolve school portal. Please use your school login link.');
+                setIsLoading(false);
+                return;
+            }
+            const usernameTenant = publicBranding.domain || tenantSlug;
 
             const res = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'x-tenant-id': tenantSlug },
-                body: JSON.stringify({ username: `${studentNo.trim()}@${tenantSlug}`, password }),
+                body: JSON.stringify({ username: `${studentNo.trim()}@${usernameTenant}`, password }),
             });
 
             if (!res.ok) {
@@ -271,8 +324,8 @@ export const LoginView = () => {
                     >
                         {!isSystemRoot ? (
                             <div className="flex items-center gap-3">
-                                <img src={settings.logo_media || "/logo.png"} alt={settings.school_name} className="h-10 w-auto object-contain" />
-                                <span className="text-xl font-bold text-gray-900">{settings.school_name}</span>
+                                <img src={publicBranding.logo_media || "/logo.png"} alt={publicBranding.school_name || "Registra"} className="h-10 w-auto object-contain" />
+                                <span className="text-xl font-bold text-gray-900">{publicBranding.school_name || "Registra"}</span>
                             </div>
                         ) : (
                             <img src="/logo.png" alt="Registra" className="h-20 w-auto object-contain brightness-110 contrast-110 drop-shadow-lg" />
