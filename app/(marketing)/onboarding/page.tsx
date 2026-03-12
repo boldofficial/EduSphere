@@ -12,7 +12,7 @@ const schema = z.object({
     school_name: z.string().min(3, "School name is required"),
     domain: z.string().min(3, "Subdomain is required").regex(/^[a-z0-9-]+$/, "Only lowercase letters, numbers, and hyphens"),
     email: z.string().email("Invalid email address"),
-    password: z.string().min(6, "Password must be at least 6 characters"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
     admin_name: z.string().optional().or(z.literal('')),
     plan_slug: z.string().min(1, "Please select a plan"),
     phone: z.string().optional().or(z.literal('')),
