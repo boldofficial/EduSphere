@@ -2,9 +2,10 @@ try:
     import google.generativeai as genai
 except Exception:  # pragma: no cover - optional runtime dependency
     genai = None
-import os
-import logging
 import json
+import logging
+import os
+
 import requests
 
 logger = logging.getLogger(__name__)
@@ -12,36 +13,42 @@ logger = logging.getLogger(__name__)
 
 from django.conf import settings as django_settings
 
+
 def _get_ai_config():
     """Read AI provider config from PlatformSettings, with django.conf.settings fallback."""
-    env_gemini_key = getattr(django_settings, 'GEMINI_API_KEY', '')
-    env_openrouter_key = getattr(django_settings, 'OPENROUTER_API_KEY', '')
-    
+    env_gemini_key = getattr(django_settings, "GEMINI_API_KEY", "")
+    env_openrouter_key = getattr(django_settings, "OPENROUTER_API_KEY", "")
+
     try:
         from schools.models import PlatformSettings
+
         settings = PlatformSettings.objects.filter(id=1).first()
         if settings:
             # Prioritize DB if explicitly set (and not just an empty string), else fallback to env
             db_gemini_key = settings.gemini_api_key
             final_gemini_key = db_gemini_key if db_gemini_key and db_gemini_key.strip() else env_gemini_key
-            
+
             config = {
-                'provider': settings.ai_provider or 'gemini',
-                'gemini_key': final_gemini_key,
-                'openrouter_key': settings.openrouter_api_key if settings.openrouter_api_key and settings.openrouter_api_key.strip() else '',
-                'openrouter_model': settings.openrouter_model or 'google/gemini-2.0-flash-001',
+                "provider": settings.ai_provider or "gemini",
+                "gemini_key": final_gemini_key,
+                "openrouter_key": (
+                    settings.openrouter_api_key
+                    if settings.openrouter_api_key and settings.openrouter_api_key.strip()
+                    else ""
+                ),
+                "openrouter_model": settings.openrouter_model or "google/gemini-2.0-flash-001",
             }
             logger.info(f"AI Config loaded from PlatformSettings. Key present: {bool(config['gemini_key'])}")
             return config
     except Exception as e:
         logger.warning(f"Could not load AI PlatformSettings: {str(e)}. Falling back to env.")
-    
+
     # Fallback to env
     return {
-        'provider': 'gemini',
-        'gemini_key': env_gemini_key,
-        'openrouter_key': '',
-        'openrouter_model': 'google/gemini-2.0-flash-001',
+        "provider": "gemini",
+        "gemini_key": env_gemini_key,
+        "openrouter_key": "",
+        "openrouter_model": "google/gemini-2.0-flash-001",
     }
 
 
@@ -49,20 +56,20 @@ class AcademicAI:
     def __init__(self):
         try:
             config = _get_ai_config()
-            self.provider = config['provider']
+            self.provider = config["provider"]
             self.model = None
 
-            if self.provider == 'openrouter' and config['openrouter_key']:
-                self.openrouter_key = config['openrouter_key']
-                self.openrouter_model = config['openrouter_model']
-                self.model = 'openrouter'
+            if self.provider == "openrouter" and config["openrouter_key"]:
+                self.openrouter_key = config["openrouter_key"]
+                self.openrouter_model = config["openrouter_model"]
+                self.model = "openrouter"
                 logger.debug("AI initialized with OpenRouter")
-            elif config['gemini_key'] and genai is not None:
-                genai.configure(api_key=config['gemini_key'])
-                self.model = genai.GenerativeModel('gemini-1.5-flash')
-                self.provider = 'gemini'
+            elif config["gemini_key"] and genai is not None:
+                genai.configure(api_key=config["gemini_key"])
+                self.model = genai.GenerativeModel("gemini-1.5-flash")
+                self.provider = "gemini"
                 logger.debug("AI initialized with Gemini Flash")
-            elif config['gemini_key'] and genai is None:
+            elif config["gemini_key"] and genai is None:
                 logger.error("Gemini SDK not installed. AI features are disabled.")
                 self.model = None
             else:
@@ -74,9 +81,9 @@ class AcademicAI:
 
     def _generate(self, prompt):
         """Unified generation method — routes to Gemini SDK or OpenRouter HTTP."""
-        if self.provider == 'openrouter':
+        if self.provider == "openrouter":
             return self._openrouter_generate(prompt)
-        elif self.model and self.provider == 'gemini':
+        elif self.model and self.provider == "gemini":
             response = self.model.generate_content(prompt)
             return response.text.strip()
         return None
@@ -84,20 +91,20 @@ class AcademicAI:
     def _openrouter_generate(self, prompt):
         """Call OpenRouter API (OpenAI-compatible)."""
         headers = {
-            'Authorization': f'Bearer {self.openrouter_key}',
-            'Content-Type': 'application/json',
-            'HTTP-Referer': 'https://myregistra.net',
-            'X-Title': 'Registra AI',
+            "Authorization": f"Bearer {self.openrouter_key}",
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://myregistra.net",
+            "X-Title": "Registra AI",
         }
         payload = {
-            'model': self.openrouter_model,
-            'messages': [{'role': 'user', 'content': prompt}],
-            'max_tokens': 4096,
+            "model": self.openrouter_model,
+            "messages": [{"role": "user", "content": prompt}],
+            "max_tokens": 4096,
         }
-        resp = requests.post('https://openrouter.ai/api/v1/chat/completions', headers=headers, json=payload, timeout=60)
+        resp = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload, timeout=60)
         resp.raise_for_status()
         data = resp.json()
-        return data['choices'][0]['message']['content'].strip()
+        return data["choices"][0]["message"]["content"].strip()
 
     def generate_student_remark(self, student_data):
         """
@@ -130,7 +137,7 @@ class AcademicAI:
         
         Provide only the remark text.
         """
-        
+
         try:
             return self._generate(prompt)
         except Exception as e:
@@ -168,7 +175,7 @@ class AcademicAI:
         
         Provide only the insight points.
         """
-        
+
         try:
             return self._generate(prompt)
         except Exception as e:
@@ -188,8 +195,8 @@ class AcademicAI:
         if not self.model:
             return None
 
-        rubric_section = f"\nGrading Rubric:\n{data['rubric']}" if data.get('rubric') else ""
-        
+        rubric_section = f"\nGrading Rubric:\n{data['rubric']}" if data.get("rubric") else ""
+
         prompt = f"""
         Act as an objective Academic Grader. 
         Evaluate the following student answer based on the question and optional rubric.
@@ -210,12 +217,12 @@ class AcademicAI:
         
         Provide ONLY the JSON object.
         """
-        
+
         try:
             text = self._generate(prompt)
             if not text:
                 return None
-            text = text.replace('```json', '').replace('```', '').strip()
+            text = text.replace("```json", "").replace("```", "").strip()
             return json.loads(text)
         except Exception as e:
             logger.error(f"AI Evaluation Error: {str(e)}")
@@ -268,12 +275,12 @@ class AcademicAI:
         
         Return ONLY the JSON object.
         """
-        
+
         try:
             text = self._generate(prompt)
             if not text:
                 return None
-            text = text.replace('```json', '').replace('```', '').strip()
+            text = text.replace("```json", "").replace("```", "").strip()
             return json.loads(text)
         except Exception as e:
             logger.error(f"AI Prediction Error: {str(e)}")
@@ -294,9 +301,9 @@ class AcademicAI:
         if not self.model:
             return None
 
-        objectives_section = f"\nLearning Objectives: {plan_data['objectives']}" if plan_data.get('objectives') else ""
-        notes_section = f"\nAdditional Notes: {plan_data['notes']}" if plan_data.get('notes') else ""
-        
+        objectives_section = f"\nLearning Objectives: {plan_data['objectives']}" if plan_data.get("objectives") else ""
+        notes_section = f"\nAdditional Notes: {plan_data['notes']}" if plan_data.get("notes") else ""
+
         prompt = f"""
         Act as an experienced Curriculum Specialist and Education Expert.
         Create a detailed, structured lesson plan for the following:
@@ -339,12 +346,12 @@ class AcademicAI:
         
         Return ONLY the JSON object.
         """
-        
+
         try:
             text = self._generate(prompt)
             if not text:
                 return None
-            text = text.replace('```json', '').replace('```', '').strip()
+            text = text.replace("```json", "").replace("```", "").strip()
             return json.loads(text)
         except Exception as e:
             logger.error(f"AI Lesson Plan Error: {str(e)}")
@@ -395,20 +402,20 @@ class AcademicAI:
         
         NOTE ON TEACHERS: If a teacher has no listed 'expertise', you may treat them as a generalist academic teacher and assign them to any subject, but avoid over-loading them. If expertise is listed, prioritize that.
         """
-        
+
         try:
             text = self._generate(prompt)
             if not text:
                 return None
-            
+
             # Robust JSON array extraction
-            start = text.find('[')
-            end = text.rfind(']')
+            start = text.find("[")
+            end = text.rfind("]")
             if start != -1 and end != -1:
-                cleaned_text = text[start:end+1]
+                cleaned_text = text[start : end + 1]
             else:
-                cleaned_text = text.replace('```json', '').replace('```', '').strip()
-            
+                cleaned_text = text.replace("```json", "").replace("```", "").strip()
+
             try:
                 data = json.loads(cleaned_text)
                 return data if isinstance(data, list) else None
@@ -420,7 +427,7 @@ class AcademicAI:
             logger.error(f"AI Timetable Generation Error: {str(e)}")
             return None
 
-    def generate_quiz_from_content(self, content_text, subject_name, num_questions=5, difficulty='medium'):
+    def generate_quiz_from_content(self, content_text, subject_name, num_questions=5, difficulty="medium"):
         """
         Generates MCQ quiz questions from lesson content.
         Returns a list of question dicts with options.
@@ -457,13 +464,13 @@ class AcademicAI:
             text = self._generate(prompt)
             if not text:
                 return None
-            text = text.replace('```json', '').replace('```', '').strip()
+            text = text.replace("```json", "").replace("```", "").strip()
             return json.loads(text)
         except Exception as e:
             logger.error(f"AI Quiz Generation Error: {str(e)}")
             return None
 
-    def draft_professional_message(self, context, tone='formal', topic='general'):
+    def draft_professional_message(self, context, tone="formal", topic="general"):
         """
         Drafts a professional school message/announcement.
         context: { "school_name": str, "recipient_type": str, "topic": str, "key_points": str }
@@ -498,11 +505,11 @@ class AcademicAI:
         if not self.model:
             return None
 
-        school_name = school_data.get('school_name', 'Our School')
-        period = school_data.get('period', 'This Month')
-        events = school_data.get('events', [])
-        achievements = school_data.get('achievements', [])
-        stats = school_data.get('stats', {})
+        school_name = school_data.get("school_name", "Our School")
+        period = school_data.get("period", "This Month")
+        events = school_data.get("events", [])
+        achievements = school_data.get("achievements", [])
+        stats = school_data.get("stats", {})
 
         prompt = f"""
         You are a school newsletter editor.
@@ -525,4 +532,3 @@ class AcademicAI:
         except Exception as e:
             logger.error(f"AI Newsletter Error: {str(e)}")
             raise
-

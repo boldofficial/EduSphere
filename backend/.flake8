@@ -1,0 +1,19 @@
+[flake8]
+max-line-length = 120
+exclude =
+    migrations,
+    __pycache__,
+    venv,
+    .git
+ignore =
+    # E501: line too long (handled by black)
+    E501,
+    # W503: line break before binary operator (PEP 8 updated)
+    W503,
+    # E203: whitespace before ':' (conflicts with black)
+    E203,
+    # E266: too many leading '#' for block comment
+    E266
+per-file-ignores =
+    # Allow unused imports in __init__.py
+    __init__.py:F401

@@ -183,7 +183,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ settings, stats }) => 
                         {settings.logo_media ? (
                             <img src={settings.logo_media} alt="School Logo" className="w-full h-full object-contain" />
                         ) : (
-                            <img src="/logo.png" alt="Registra Logo" className="w-full h-full object-contain" />
+                            <img src="/full-logo.png" alt="Registra Logo" className="w-full h-full object-contain" />
                         )}
                     </div>
 

@@ -186,7 +186,7 @@ export const INITIAL_SETTINGS: Settings = {
   current_session: '2025/2026',
   current_term: 'First Term',
 
-  logo_media: '/fruitful_logo_main.png',
+  logo_media: null,
   watermark_media: null,
 
   director_name: 'Godspower Arthur',
