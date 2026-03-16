@@ -1,32 +1,36 @@
 import logging
-from django.core.mail import EmailMultiAlternatives
+
 from django.conf import settings
-from django.template import Template, Context
+from django.core.mail import EmailMultiAlternatives
+from django.template import Context, Template
 from django.utils.html import strip_tags
-from .models import EmailTemplate, EmailLog
+
+from .models import EmailLog, EmailTemplate
 
 logger = logging.getLogger(__name__)
 
 from django.template.loader import render_to_string
 from django.utils import timezone
 
+
 def wrap_professional_email(html_content, platform_name="Registra"):
     """
     Wraps HTML content in the professional base_email.html layout.
     """
     context = {
-        'content': html_content,
-        'platform_name': platform_name,
-        'year': timezone.now().year,
-        'platform_url': settings.FRONTEND_URL if hasattr(settings, 'FRONTEND_URL') else '#',
-        'support_url': f"{settings.FRONTEND_URL}/support" if hasattr(settings, 'FRONTEND_URL') else '#',
+        "content": html_content,
+        "platform_name": platform_name,
+        "year": timezone.now().year,
+        "platform_url": settings.FRONTEND_URL if hasattr(settings, "FRONTEND_URL") else "#",
+        "support_url": f"{settings.FRONTEND_URL}/support" if hasattr(settings, "FRONTEND_URL") else "#",
     }
-    return render_to_string('emails/base_email.html', context)
+    return render_to_string("emails/base_email.html", context)
+
 
 def send_template_email(template_name, recipient_email, context=None, campaign=None, use_wrapper=True):
     """
     Sends an email using a database-stored template.
-    
+
     Args:
         template_name (str): The 'slug' or 'name' of the EmailTemplate.
         recipient_email (str): The recipient's email address.
@@ -46,11 +50,7 @@ def send_template_email(template_name, recipient_email, context=None, campaign=N
         # Create log entry even without template
         try:
             EmailLog.objects.create(
-                recipient=recipient_email,
-                status='failed',
-                error_message=error_msg,
-                metadata=context,
-                campaign=campaign
+                recipient=recipient_email, status="failed", error_message=error_msg, metadata=context, campaign=campaign
             )
         except Exception as log_error:
             logger.error(f"Failed to create EmailLog for missing template: {log_error}")
@@ -71,12 +71,21 @@ def send_template_email(template_name, recipient_email, context=None, campaign=N
     # 5. Generate Plain Text (Fallback)
     text_content = strip_tags(html_content)
 
-    return _send_raw_email(recipient_email, subject, html_content, text_content, template=email_template, campaign=campaign, context=context)
+    return _send_raw_email(
+        recipient_email,
+        subject,
+        html_content,
+        text_content,
+        template=email_template,
+        campaign=campaign,
+        context=context,
+    )
+
 
 def send_custom_email(recipient_email, subject, body_html, campaign=None, use_wrapper=True):
     """
     Sends a custom HTML email, optionally wrapped in the professional layout.
-    
+
     Args:
         recipient_email (str): The recipient's email address.
         subject (str): The subject of the email.
@@ -86,72 +95,71 @@ def send_custom_email(recipient_email, subject, body_html, campaign=None, use_wr
     """
     if use_wrapper:
         body_html = wrap_professional_email(body_html)
-    
+
     text_content = strip_tags(body_html)
     return _send_raw_email(recipient_email, subject, body_html, text_content, campaign=campaign)
 
+
 def _send_raw_email(recipient_email, subject, html_content, text_content, template=None, campaign=None, context=None):
     """Internal helper to handle the actual sending logic (SMTP/Brevo)."""
-    from schools.models import PlatformSettings
     import requests
+
     from django.core.mail import get_connection
-    
+
+    from schools.models import PlatformSettings
+
     p_settings = PlatformSettings.objects.first()
-    
-    provider = 'smtp'
+
+    provider = "smtp"
     email_from = settings.DEFAULT_FROM_EMAIL
-    email_from_name = 'Registra'
+    email_from_name = "Registra"
     api_key = None
 
     if p_settings:
         provider = p_settings.email_provider
         email_from = p_settings.email_from or settings.DEFAULT_FROM_EMAIL
-        email_from_name = p_settings.email_from_name or 'Registra'
+        email_from_name = p_settings.email_from_name or "Registra"
         api_key = p_settings.email_api_key.strip() if p_settings.email_api_key else None
 
-    status = 'sent'
-    error_message = ''
+    status = "sent"
+    error_message = ""
 
-    if provider == 'brevo_api' and api_key:
+    if provider == "brevo_api" and api_key:
         # Use Brevo API
         url = "https://api.brevo.com/v3/smtp/email"
-        headers = {
-            "accept": "application/json",
-            "content-type": "application/json",
-            "api-key": api_key
-        }
+        headers = {"accept": "application/json", "content-type": "application/json", "api-key": api_key}
         payload = {
             "sender": {"name": email_from_name, "email": email_from},
             "to": [{"email": recipient_email}],
             "subject": subject,
             "htmlContent": html_content,
-            "textContent": text_content
+            "textContent": text_content,
         }
         try:
             response = requests.post(url, json=payload, headers=headers, timeout=10)
             if response.status_code not in [200, 201, 202]:
-                status = 'failed'
+                status = "failed"
                 error_message = response.text
                 logger.error(f"Brevo API error: {response.text}")
         except Exception as e:
-            status = 'failed'
+            status = "failed"
             error_message = str(e)
             logger.error(f"Failed to send Brevo API email: {e}")
     else:
         # Use Dynamic SMTP (fallback to settings.py)
-        email_host = getattr(p_settings, 'email_host', None) if p_settings else None
-        email_host = (email_host.strip() if email_host else settings.EMAIL_HOST)
-        
-        email_port = getattr(p_settings, 'email_port', settings.EMAIL_PORT) if p_settings else settings.EMAIL_PORT
-        
-        email_user = getattr(p_settings, 'email_user', None) if p_settings else None
-        email_user = (email_user.strip() if email_user else settings.EMAIL_HOST_USER)
-        
-        email_password = getattr(p_settings, 'email_password', None) if p_settings else None
-        email_password = (email_password.strip() if email_password else settings.EMAIL_HOST_PASSWORD)
-        
-        use_tls = getattr(p_settings, 'email_use_tls', True) if p_settings else True
-        use_ssl = getattr(p_settings, 'email_use_ssl', False) if p_settings else False
+        email_host = getattr(p_settings, "email_host", None) if p_settings else None
+        email_host = email_host.strip() if email_host else settings.EMAIL_HOST
+
+        email_port = getattr(p_settings, "email_port", settings.EMAIL_PORT) if p_settings else settings.EMAIL_PORT
+
+        email_user = getattr(p_settings, "email_user", None) if p_settings else None
+        email_user = email_user.strip() if email_user else settings.EMAIL_HOST_USER
+
+        email_password = getattr(p_settings, "email_password", None) if p_settings else None
+        email_password = email_password.strip() if email_password else settings.EMAIL_HOST_PASSWORD
+
+        use_tls = getattr(p_settings, "email_use_tls", True) if p_settings else True
+        use_ssl = getattr(p_settings, "email_use_ssl", False) if p_settings else False
 
         try:
             connection = get_connection(
@@ -161,7 +169,7 @@ def _send_raw_email(recipient_email, subject, html_content, text_content, templa
                 password=email_password,
                 use_tls=use_tls,
                 use_ssl=use_ssl,
-                timeout=10
+                timeout=10,
             )
 
             email = EmailMultiAlternatives(
@@ -169,16 +177,17 @@ def _send_raw_email(recipient_email, subject, html_content, text_content, templa
                 body=text_content,
                 from_email=f"{email_from_name} <{email_from}>",
                 to=[recipient_email],
-                connection=connection
+                connection=connection,
             )
             email.attach_alternative(html_content, "text/html")
             email.send()
         except Exception as e:
-            status = 'failed'
+            status = "failed"
             error_message = f"{type(e).__name__}: {str(e)}"
             logger.error(f"Failed to send SMTP email to {recipient_email}: {error_message}")
             if settings.DEBUG:
                 import traceback
+
                 logger.error(traceback.format_exc())
 
     # Log the attempt
@@ -190,9 +199,9 @@ def _send_raw_email(recipient_email, subject, html_content, text_content, templa
             subject=subject,
             status=status,
             error_message=error_message,
-            metadata=context or {}
+            metadata=context or {},
         )
     except Exception as log_error:
         logger.error(f"Failed to create EmailLog: {log_error}")
 
-    return status == 'sent'
+    return status == "sent"

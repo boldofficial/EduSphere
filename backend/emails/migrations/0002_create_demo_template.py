@@ -2,14 +2,15 @@
 
 from django.db import migrations
 
+
 def create_demo_template(apps, schema_editor):
-    EmailTemplate = apps.get_model('emails', 'EmailTemplate')
-    
-    slug = 'demo-approved'
+    EmailTemplate = apps.get_model("emails", "EmailTemplate")
+
+    slug = "demo-approved"
     defaults = {
-        'name': 'Demo Request Approved',
-        'subject': 'Your Demo Request for {{ school_name }} is Approved!',
-        'body_html': """<!DOCTYPE html>
+        "name": "Demo Request Approved",
+        "subject": "Your Demo Request for {{ school_name }} is Approved!",
+        "body_html": """<!DOCTYPE html>
 <html>
 <head>
     <style>
@@ -62,7 +63,7 @@ def create_demo_template(apps, schema_editor):
     </div>
 </body>
 </html>""",
-        'body_text': """Welcome to Registra, {{ name }}!
+        "body_text": """Welcome to Registra, {{ name }}!
 
 Great news! Your request for access to the {{ school_name }} demo has been approved.
 
@@ -76,26 +77,28 @@ Please log in and explore the platform.
 
 Best regards,
 The Registra Team""",
-        'variables': {
-            'name': 'Applicant Name',
-            'school_name': 'School Name',
-            'login_url': 'Link to Login',
-            'username': 'Demo Username',
-            'password': 'Demo Password'
+        "variables": {
+            "name": "Applicant Name",
+            "school_name": "School Name",
+            "login_url": "Link to Login",
+            "username": "Demo Username",
+            "password": "Demo Password",
         },
-        'is_active': True
+        "is_active": True,
     }
 
     EmailTemplate.objects.get_or_create(slug=slug, defaults=defaults)
 
+
 def reverse_func(apps, schema_editor):
-    EmailTemplate = apps.get_model('emails', 'EmailTemplate')
-    EmailTemplate.objects.filter(slug='demo-approved').delete()
+    EmailTemplate = apps.get_model("emails", "EmailTemplate")
+    EmailTemplate.objects.filter(slug="demo-approved").delete()
+
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('emails', '0001_initial'),
+        ("emails", "0001_initial"),
     ]
 
     operations = [

@@ -1,10 +1,14 @@
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-from .models import School
-from emails.tasks import send_email_task
 import logging
 
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+from emails.tasks import send_email_task
+
+from .models import School
+
 logger = logging.getLogger(__name__)
+
 
 @receiver(post_save, sender=School)
 def send_school_status_email(sender, instance, created, **kwargs):
@@ -22,9 +26,7 @@ def send_school_status_email(sender, instance, created, **kwargs):
             return
         try:
             send_email_task.delay(
-                'welcome_email', 
-                instance.email, 
-                {'school_name': instance.name, 'domain': instance.domain}
+                "welcome_email", instance.email, {"school_name": instance.name, "domain": instance.domain}
             )
         except Exception as e:
             logger.error(f"Failed to queue welcome email for {instance.name}: {e}")
@@ -33,11 +35,11 @@ def send_school_status_email(sender, instance, created, **kwargs):
     # Note: We need to check if the status *changed* to active, not just if it is active.
     # In a real-world scenario, we'd use a pre_save signal or a specific field tracker.
     # For now, if status is active and not created, we assume it was just approved.
-    sub_status = 'none'
-    if hasattr(instance, 'subscription') and instance.subscription:
+    sub_status = "none"
+    if hasattr(instance, "subscription") and instance.subscription:
         sub_status = instance.subscription.status
 
-    if not created and sub_status == 'active':
+    if not created and sub_status == "active":
         if not instance.email:
             logger.warning(
                 "Skipping approval email for %s because school email is empty.",
@@ -49,12 +51,9 @@ def send_school_status_email(sender, instance, created, **kwargs):
         logger.info(f"School activated: {instance.name}. Queueing approval email.")
         try:
             send_email_task.delay(
-                'school_approved', 
-                instance.email, 
-                {
-                    'school_name': instance.name, 
-                    'login_url': f"https://{instance.domain}.myregistra.net/login"
-                }
+                "school_approved",
+                instance.email,
+                {"school_name": instance.name, "login_url": f"https://{instance.domain}.myregistra.net/login"},
             )
         except Exception as e:
             logger.error(f"Failed to queue approval email for {instance.name}: {e}")

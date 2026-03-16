@@ -8,32 +8,24 @@ All view classes are organized into domain-specific modules:
 - views_governance.py: Activity logs and announcements
 """
 
-# Public views
-from .views_public import (
-    PublicPlanListView,
-    VerifySchoolSlugView,
-    RegisterSchoolView,
-)
-
 # Admin management views
 from .views_admin import (
-    PlatformModulesView,
+    AdminDemoRequestView,
     ModuleToggleView,
+    PlanManagementView,
+    PlatformModulesView,
+    PlatformSettingsView,
+    RecordPaymentView,
     SchoolManagementView,
     SchoolRevenueView,
-    RecordPaymentView,
-    PlanManagementView,
-    PlanManagementView,
-    PlatformSettingsView,
-    AdminDemoRequestView,
 )
 
 # Analytics & monitoring views
 from .views_analytics import (
-    SystemHealthView,
-    StrategicAnalyticsView,
     GlobalSearchView,
     MaintenanceModeView,
+    StrategicAnalyticsView,
+    SystemHealthView,
 )
 
 # Governance views
@@ -42,13 +34,29 @@ from .views_governance import (
     UserAnnouncementsView,
 )
 
+# Public views
+from .views_public import (
+    PublicPlanListView,
+    RegisterSchoolView,
+    VerifySchoolSlugView,
+)
+
 __all__ = [
-    'PublicPlanListView', 'VerifySchoolSlugView', 'RegisterSchoolView',
-    'PlatformModulesView', 'ModuleToggleView',
-    'SchoolManagementView', 'SchoolRevenueView', 'RecordPaymentView',
-    'PlanManagementView', 'PlatformSettingsView',
-    'SystemHealthView', 'StrategicAnalyticsView',
-    'GlobalSearchView', 'MaintenanceModeView',
-    'PlatformGovernanceView', 'UserAnnouncementsView',
-    'AdminDemoRequestView',
+    "PublicPlanListView",
+    "VerifySchoolSlugView",
+    "RegisterSchoolView",
+    "PlatformModulesView",
+    "ModuleToggleView",
+    "SchoolManagementView",
+    "SchoolRevenueView",
+    "RecordPaymentView",
+    "PlanManagementView",
+    "PlatformSettingsView",
+    "SystemHealthView",
+    "StrategicAnalyticsView",
+    "GlobalSearchView",
+    "MaintenanceModeView",
+    "PlatformGovernanceView",
+    "UserAnnouncementsView",
+    "AdminDemoRequestView",
 ]

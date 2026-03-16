@@ -6,43 +6,43 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('schools', '0012_platformsettings_paystack_public_key_and_more'),
+        ("schools", "0012_platformsettings_paystack_public_key_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='platformsettings',
-            name='email_from',
+            model_name="platformsettings",
+            name="email_from",
             field=models.EmailField(blank=True, max_length=254, null=True),
         ),
         migrations.AddField(
-            model_name='platformsettings',
-            name='email_host',
+            model_name="platformsettings",
+            name="email_host",
             field=models.CharField(blank=True, max_length=100, null=True),
         ),
         migrations.AddField(
-            model_name='platformsettings',
-            name='email_password',
+            model_name="platformsettings",
+            name="email_password",
             field=models.CharField(blank=True, max_length=100, null=True),
         ),
         migrations.AddField(
-            model_name='platformsettings',
-            name='email_port',
+            model_name="platformsettings",
+            name="email_port",
             field=models.IntegerField(blank=True, default=587, null=True),
         ),
         migrations.AddField(
-            model_name='platformsettings',
-            name='email_use_ssl',
+            model_name="platformsettings",
+            name="email_use_ssl",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='platformsettings',
-            name='email_use_tls',
+            model_name="platformsettings",
+            name="email_use_tls",
             field=models.BooleanField(default=True),
         ),
         migrations.AddField(
-            model_name='platformsettings',
-            name='email_user',
+            model_name="platformsettings",
+            name="email_user",
             field=models.CharField(blank=True, max_length=100, null=True),
         ),
     ]

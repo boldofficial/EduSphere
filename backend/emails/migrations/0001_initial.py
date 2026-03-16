@@ -8,35 +8,62 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='EmailTemplate',
+            name="EmailTemplate",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(help_text="Unique identifier for the template (e.g., 'welcome_email')", max_length=100, unique=True)),
-                ('slug', models.SlugField(blank=True, max_length=100, unique=True)),
-                ('subject', models.CharField(max_length=255)),
-                ('body_html', models.TextField(help_text='The HTML content of the email. Use {{ variable }} for dynamic data.')),
-                ('body_text', models.TextField(blank=True, help_text='Plain text version for better deliverability.')),
-                ('variables', models.JSONField(default=dict, help_text="List of available variables for this template (e.g., {'user_name': 'John Doe'})")),
-                ('is_active', models.BooleanField(default=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "name",
+                    models.CharField(
+                        help_text="Unique identifier for the template (e.g., 'welcome_email')",
+                        max_length=100,
+                        unique=True,
+                    ),
+                ),
+                ("slug", models.SlugField(blank=True, max_length=100, unique=True)),
+                ("subject", models.CharField(max_length=255)),
+                (
+                    "body_html",
+                    models.TextField(help_text="The HTML content of the email. Use {{ variable }} for dynamic data."),
+                ),
+                ("body_text", models.TextField(blank=True, help_text="Plain text version for better deliverability.")),
+                (
+                    "variables",
+                    models.JSONField(
+                        default=dict,
+                        help_text="List of available variables for this template (e.g., {'user_name': 'John Doe'})",
+                    ),
+                ),
+                ("is_active", models.BooleanField(default=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
             ],
         ),
         migrations.CreateModel(
-            name='EmailLog',
+            name="EmailLog",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('recipient', models.EmailField(max_length=254)),
-                ('status', models.CharField(choices=[('sent', 'Sent'), ('failed', 'Failed'), ('queued', 'Queued')], default='queued', max_length=20)),
-                ('error_message', models.TextField(blank=True)),
-                ('sent_at', models.DateTimeField(auto_now_add=True)),
-                ('metadata', models.JSONField(blank=True, default=dict)),
-                ('template', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='emails.emailtemplate')),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("recipient", models.EmailField(max_length=254)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[("sent", "Sent"), ("failed", "Failed"), ("queued", "Queued")],
+                        default="queued",
+                        max_length=20,
+                    ),
+                ),
+                ("error_message", models.TextField(blank=True)),
+                ("sent_at", models.DateTimeField(auto_now_add=True)),
+                ("metadata", models.JSONField(blank=True, default=dict)),
+                (
+                    "template",
+                    models.ForeignKey(
+                        null=True, on_delete=django.db.models.deletion.SET_NULL, to="emails.emailtemplate"
+                    ),
+                ),
             ],
         ),
     ]

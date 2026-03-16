@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('academic', '0004_reportcard_affective_reportcard_attendance_present_and_more'),
+        ("academic", "0004_reportcard_affective_reportcard_attendance_present_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='student',
-            name='assigned_fees',
+            model_name="student",
+            name="assigned_fees",
             field=models.JSONField(blank=True, default=list),
         ),
         migrations.AddField(
-            model_name='student',
-            name='discounts',
+            model_name="student",
+            name="discounts",
             field=models.JSONField(blank=True, default=list),
         ),
     ]

@@ -6,65 +6,65 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('academic', '0012_alter_attendancerecord_created_at_and_more'),
-        ('learning', '0002_assignment_image_url_assignment_video_url'),
-        ('schools', '0012_platformsettings_paystack_public_key_and_more'),
+        ("academic", "0012_alter_attendancerecord_created_at_and_more"),
+        ("learning", "0002_assignment_image_url_assignment_video_url"),
+        ("schools", "0012_platformsettings_paystack_public_key_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='assignment',
-            name='created_at',
+            model_name="assignment",
+            name="created_at",
             field=models.DateTimeField(auto_now_add=True, db_index=True),
         ),
         migrations.AlterField(
-            model_name='attempt',
-            name='created_at',
+            model_name="attempt",
+            name="created_at",
             field=models.DateTimeField(auto_now_add=True, db_index=True),
         ),
         migrations.AlterField(
-            model_name='option',
-            name='created_at',
+            model_name="option",
+            name="created_at",
             field=models.DateTimeField(auto_now_add=True, db_index=True),
         ),
         migrations.AlterField(
-            model_name='question',
-            name='created_at',
+            model_name="question",
+            name="created_at",
             field=models.DateTimeField(auto_now_add=True, db_index=True),
         ),
         migrations.AlterField(
-            model_name='quiz',
-            name='created_at',
+            model_name="quiz",
+            name="created_at",
             field=models.DateTimeField(auto_now_add=True, db_index=True),
         ),
         migrations.AlterField(
-            model_name='studentanswer',
-            name='created_at',
+            model_name="studentanswer",
+            name="created_at",
             field=models.DateTimeField(auto_now_add=True, db_index=True),
         ),
         migrations.AlterField(
-            model_name='submission',
-            name='created_at',
+            model_name="submission",
+            name="created_at",
             field=models.DateTimeField(auto_now_add=True, db_index=True),
         ),
         migrations.AddIndex(
-            model_name='assignment',
-            index=models.Index(fields=['school', 'created_at'], name='learning_as_school__d5ad44_idx'),
+            model_name="assignment",
+            index=models.Index(fields=["school", "created_at"], name="learning_as_school__d5ad44_idx"),
         ),
         migrations.AddIndex(
-            model_name='option',
-            index=models.Index(fields=['school', 'created_at'], name='learning_op_school__e48410_idx'),
+            model_name="option",
+            index=models.Index(fields=["school", "created_at"], name="learning_op_school__e48410_idx"),
         ),
         migrations.AddIndex(
-            model_name='question',
-            index=models.Index(fields=['school', 'created_at'], name='learning_qu_school__a6bc26_idx'),
+            model_name="question",
+            index=models.Index(fields=["school", "created_at"], name="learning_qu_school__a6bc26_idx"),
         ),
         migrations.AddIndex(
-            model_name='quiz',
-            index=models.Index(fields=['school', 'created_at'], name='learning_qu_school__d02b58_idx'),
+            model_name="quiz",
+            index=models.Index(fields=["school", "created_at"], name="learning_qu_school__d02b58_idx"),
         ),
         migrations.AddIndex(
-            model_name='studentanswer',
-            index=models.Index(fields=['school', 'created_at'], name='learning_st_school__fc7a5e_idx'),
+            model_name="studentanswer",
+            index=models.Index(fields=["school", "created_at"], name="learning_st_school__fc7a5e_idx"),
         ),
     ]

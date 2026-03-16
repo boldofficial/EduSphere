@@ -8,83 +8,116 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('academic', '0013_class_is_graduation_class_class_next_class'),
-        ('schools', '0018_supportticket_ticketresponse_and_more'),
+        ("academic", "0013_class_is_graduation_class_class_next_class"),
+        ("schools", "0018_supportticket_ticketresponse_and_more"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='StudentAchievement',
+            name="StudentAchievement",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True, db_index=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('title', models.CharField(max_length=255)),
-                ('description', models.TextField(blank=True)),
-                ('date_achieved', models.DateField()),
-                ('category', models.CharField(blank=True, max_length=100)),
-                ('certificate_url', models.CharField(blank=True, max_length=512, null=True)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created_at", models.DateTimeField(auto_now_add=True, db_index=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("title", models.CharField(max_length=255)),
+                ("description", models.TextField(blank=True)),
+                ("date_achieved", models.DateField()),
+                ("category", models.CharField(blank=True, max_length=100)),
+                ("certificate_url", models.CharField(blank=True, max_length=512, null=True)),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='StudentHistory',
+            name="StudentHistory",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True, db_index=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('event_type', models.CharField(choices=[('promotion', 'Promotion'), ('graduation', 'Graduation'), ('withdrawal', 'Withdrawal'), ('suspension', 'Suspension'), ('reactivation', 'Reactivation')], max_length=50)),
-                ('session', models.CharField(max_length=50)),
-                ('remarks', models.TextField(blank=True)),
-                ('metadata', models.JSONField(blank=True, default=dict)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created_at", models.DateTimeField(auto_now_add=True, db_index=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "event_type",
+                    models.CharField(
+                        choices=[
+                            ("promotion", "Promotion"),
+                            ("graduation", "Graduation"),
+                            ("withdrawal", "Withdrawal"),
+                            ("suspension", "Suspension"),
+                            ("reactivation", "Reactivation"),
+                        ],
+                        max_length=50,
+                    ),
+                ),
+                ("session", models.CharField(max_length=50)),
+                ("remarks", models.TextField(blank=True)),
+                ("metadata", models.JSONField(blank=True, default=dict)),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.AddField(
-            model_name='student',
-            name='status',
-            field=models.CharField(choices=[('active', 'Active'), ('graduated', 'Graduated'), ('withdrawn', 'Withdrawn'), ('suspended', 'Suspended'), ('alumni', 'Alumni')], db_index=True, default='active', max_length=20),
+            model_name="student",
+            name="status",
+            field=models.CharField(
+                choices=[
+                    ("active", "Active"),
+                    ("graduated", "Graduated"),
+                    ("withdrawn", "Withdrawn"),
+                    ("suspended", "Suspended"),
+                    ("alumni", "Alumni"),
+                ],
+                db_index=True,
+                default="active",
+                max_length=20,
+            ),
         ),
         migrations.AddIndex(
-            model_name='student',
-            index=models.Index(fields=['school', 'status'], name='academic_st_school__928fe9_idx'),
+            model_name="student",
+            index=models.Index(fields=["school", "status"], name="academic_st_school__928fe9_idx"),
         ),
         migrations.AddField(
-            model_name='studentachievement',
-            name='school',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='%(class)s_related', to='schools.school'),
+            model_name="studentachievement",
+            name="school",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="%(class)s_related", to="schools.school"
+            ),
         ),
         migrations.AddField(
-            model_name='studentachievement',
-            name='student',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='achievements', to='academic.student'),
+            model_name="studentachievement",
+            name="student",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="achievements", to="academic.student"
+            ),
         ),
         migrations.AddField(
-            model_name='studenthistory',
-            name='school',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='%(class)s_related', to='schools.school'),
+            model_name="studenthistory",
+            name="school",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="%(class)s_related", to="schools.school"
+            ),
         ),
         migrations.AddField(
-            model_name='studenthistory',
-            name='student',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='history', to='academic.student'),
+            model_name="studenthistory",
+            name="student",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="history", to="academic.student"
+            ),
         ),
         migrations.AddField(
-            model_name='studenthistory',
-            name='student_class',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='academic.class'),
+            model_name="studenthistory",
+            name="student_class",
+            field=models.ForeignKey(
+                blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to="academic.class"
+            ),
         ),
         migrations.AddIndex(
-            model_name='studentachievement',
-            index=models.Index(fields=['school', 'created_at'], name='academic_st_school__4da140_idx'),
+            model_name="studentachievement",
+            index=models.Index(fields=["school", "created_at"], name="academic_st_school__4da140_idx"),
         ),
         migrations.AddIndex(
-            model_name='studenthistory',
-            index=models.Index(fields=['school', 'created_at'], name='academic_st_school__d626dd_idx'),
+            model_name="studenthistory",
+            index=models.Index(fields=["school", "created_at"], name="academic_st_school__d626dd_idx"),
         ),
     ]

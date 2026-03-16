@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('academic', '0017_alter_admission_child_dob_and_more'),
+        ("academic", "0017_alter_admission_child_dob_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='admission',
-            name='selected_package_items',
+            model_name="admission",
+            name="selected_package_items",
             field=models.JSONField(blank=True, default=list),
         ),
     ]

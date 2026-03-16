@@ -6,13 +6,25 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('academic', '0019_teacher_account_name_teacher_account_number_and_more'),
+        ("academic", "0019_teacher_account_name_teacher_account_number_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='class',
-            name='category',
-            field=models.CharField(choices=[('Nursery', 'Nursery/Pre-School'), ('Primary', 'Primary'), ('JSS', 'Junior Secondary (JSS)'), ('SSS_Science', 'Senior Secondary (Science)'), ('SSS_Art', 'Senior Secondary (Art)'), ('SSS_Commerce', 'Senior Secondary (Commerce)'), ('Other', 'Other/General')], default='Primary', max_length=50),
+            model_name="class",
+            name="category",
+            field=models.CharField(
+                choices=[
+                    ("Nursery", "Nursery/Pre-School"),
+                    ("Primary", "Primary"),
+                    ("JSS", "Junior Secondary (JSS)"),
+                    ("SSS_Science", "Senior Secondary (Science)"),
+                    ("SSS_Art", "Senior Secondary (Art)"),
+                    ("SSS_Commerce", "Senior Secondary (Commerce)"),
+                    ("Other", "Other/General"),
+                ],
+                default="Primary",
+                max_length=50,
+            ),
         ),
     ]

@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('learning', '0001_initial'),
+        ("learning", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='assignment',
-            name='image_url',
+            model_name="assignment",
+            name="image_url",
             field=models.URLField(blank=True, max_length=512, null=True),
         ),
         migrations.AddField(
-            model_name='assignment',
-            name='video_url',
+            model_name="assignment",
+            name="video_url",
             field=models.URLField(blank=True, max_length=512, null=True),
         ),
     ]

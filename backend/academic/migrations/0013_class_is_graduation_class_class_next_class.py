@@ -7,18 +7,25 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('academic', '0012_alter_attendancerecord_created_at_and_more'),
+        ("academic", "0012_alter_attendancerecord_created_at_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='class',
-            name='is_graduation_class',
-            field=models.BooleanField(default=False, help_text='Check if this is the final class (e.g., SS3).'),
+            model_name="class",
+            name="is_graduation_class",
+            field=models.BooleanField(default=False, help_text="Check if this is the final class (e.g., SS3)."),
         ),
         migrations.AddField(
-            model_name='class',
-            name='next_class',
-            field=models.ForeignKey(blank=True, help_text='The class students will be promoted to.', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='previous_classes', to='academic.class'),
+            model_name="class",
+            name="next_class",
+            field=models.ForeignKey(
+                blank=True,
+                help_text="The class students will be promoted to.",
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="previous_classes",
+                to="academic.class",
+            ),
         ),
     ]

@@ -6,13 +6,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('schools', '0015_platformsettings_paystack_public_key_and_more'),
+        ("schools", "0015_platformsettings_paystack_public_key_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='subscription',
-            name='status',
-            field=models.CharField(choices=[('active', 'Active'), ('expired', 'Expired'), ('cancelled', 'Cancelled'), ('pending', 'Approval Pending')], default='pending', max_length=20),
+            model_name="subscription",
+            name="status",
+            field=models.CharField(
+                choices=[
+                    ("active", "Active"),
+                    ("expired", "Expired"),
+                    ("cancelled", "Cancelled"),
+                    ("pending", "Approval Pending"),
+                ],
+                default="pending",
+                max_length=20,
+            ),
         ),
     ]

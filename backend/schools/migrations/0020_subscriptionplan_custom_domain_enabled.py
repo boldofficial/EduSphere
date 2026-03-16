@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('schools', '0019_add_ai_provider_fields'),
+        ("schools", "0019_add_ai_provider_fields"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='subscriptionplan',
-            name='custom_domain_enabled',
-            field=models.BooleanField(default=False, help_text='Allow school to use custom domain'),
+            model_name="subscriptionplan",
+            name="custom_domain_enabled",
+            field=models.BooleanField(default=False, help_text="Allow school to use custom domain"),
         ),
     ]

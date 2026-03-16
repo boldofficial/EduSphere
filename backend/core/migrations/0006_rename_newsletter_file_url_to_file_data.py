@@ -6,17 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0005_newsletter_schoolannouncement'),
+        ("core", "0005_newsletter_schoolannouncement"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='newsletter',
-            name='file_url',
+            model_name="newsletter",
+            name="file_url",
         ),
         migrations.AddField(
-            model_name='newsletter',
-            name='file_data',
-            field=models.TextField(default='', help_text='Base64 encoded PDF or URL'),
+            model_name="newsletter",
+            name="file_data",
+            field=models.TextField(default="", help_text="Base64 encoded PDF or URL"),
         ),
     ]

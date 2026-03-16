@@ -10,10 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
-from pathlib import Path
-from datetime import timedelta
-import os
 import logging
+import os
+from datetime import timedelta
+from pathlib import Path
+
 import dj_database_url
 
 _settings_logger = logging.getLogger(__name__)
@@ -21,6 +22,7 @@ _settings_logger = logging.getLogger(__name__)
 # Load environment variables from .env file in development
 try:
     from dotenv import load_dotenv
+
     load_dotenv()
 except ImportError:
     pass  # python-dotenv not installed, using system env vars
@@ -34,43 +36,44 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # =============================================================================
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 if not SECRET_KEY:
     # Fallback for development only - NEVER use in production
     import warnings
+
     warnings.warn(
         "DJANGO_SECRET_KEY not set! Using insecure default. "
         "Set DJANGO_SECRET_KEY environment variable for production.",
-        RuntimeWarning
+        RuntimeWarning,
     )
-    SECRET_KEY = 'django-insecure-dev-only-30k267t3v3vj-CHANGE-IN-PRODUCTION'
+    SECRET_KEY = "django-insecure-dev-only-30k267t3v3vj-CHANGE-IN-PRODUCTION"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 'yes')
+DEBUG = os.environ.get("DEBUG", "False").lower() in ("true", "1", "yes")
 
 # Parse ALLOWED_HOSTS from environment
-_env_hosts = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,.myregistra.net').split(',')
+_env_hosts = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1,.myregistra.net").split(",")
 ALLOWED_HOSTS = [host.strip() for host in _env_hosts if host.strip()]
 
 # Explicitly add localhost and 127.0.0.1 to handle internal health checks/curls
-if 'localhost' not in ALLOWED_HOSTS:
-    ALLOWED_HOSTS.append('localhost')
-if '127.0.0.1' not in ALLOWED_HOSTS:
-    ALLOWED_HOSTS.append('127.0.0.1')
+if "localhost" not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append("localhost")
+if "127.0.0.1" not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append("127.0.0.1")
 
 # IMPORANT: Include container names for internal Docker communication
 # "backend" is the service name, "registra_backend" is the container name
 # Next.js calls http://backend:8000, so Django sees "Host: backend:8000"
-INTERNAL_HOSTS = ['backend', 'registra_backend', 'frontend', 'registra_frontend', 'nginx']
+INTERNAL_HOSTS = ["backend", "registra_backend", "frontend", "registra_frontend", "nginx"]
 for h in INTERNAL_HOSTS:
     if h not in ALLOWED_HOSTS:
         ALLOWED_HOSTS.append(h)
 
-ROOT_DOMAIN = os.environ.get('ROOT_DOMAIN', 'myregistra.net')
+ROOT_DOMAIN = os.environ.get("ROOT_DOMAIN", "myregistra.net")
 
 # AI Service Keys (Centralized)
-GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
-OPENROUTER_API_KEY = os.environ.get('OPENROUTER_API_KEY')
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
 
 
 # =============================================================================
@@ -78,66 +81,64 @@ OPENROUTER_API_KEY = os.environ.get('OPENROUTER_API_KEY')
 # =============================================================================
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
     # Third party
-    'rest_framework',
-    'rest_framework_simplejwt',
-    'rest_framework_simplejwt.token_blacklist',  # For token rotation
-    'corsheaders',
-    'drf_spectacular',
-    'drf_spectacular_sidecar',
-    
+    "rest_framework",
+    "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",  # For token rotation
+    "corsheaders",
+    "drf_spectacular",
+    "drf_spectacular_sidecar",
     # Local
-    'core',
-    'schools',
-    'users',
-    'academic',
-    'bursary',
-    'learning',
-    'emails',
+    "core",
+    "schools",
+    "users",
+    "academic",
+    "bursary",
+    "learning",
+    "emails",
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'core.middleware.TenantMiddleware',
-    'core.middleware.AuditLogMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "core.middleware.TenantMiddleware",
+    "core.middleware.AuditLogMiddleware",
 ]
 
-ROOT_URLCONF = 'config.urls'
+ROOT_URLCONF = "config.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'config.wsgi.application'
+WSGI_APPLICATION = "config.wsgi.application"
 
 # Documentation/Frontend URLs
-FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:3000")
 
 # =============================================================================
 # DATABASE CONFIGURATION
@@ -145,35 +146,35 @@ FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
 
 # Use DATABASE_URL environment variable if provided, fallback to SQLite
 DATABASES = {
-    'default': dj_database_url.config(
+    "default": dj_database_url.config(
         default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
-        conn_max_age=int(os.environ.get('DB_CONN_MAX_AGE', 600)),
+        conn_max_age=int(os.environ.get("DB_CONN_MAX_AGE", 600)),
         conn_health_checks=True,
     )
 }
 
 # If using PostgreSQL, ensure it has some default options
-if DATABASES['default'].get('ENGINE') == 'django.db.backends.postgresql':
-    DATABASES['default']['OPTIONS'] = DATABASES['default'].get('OPTIONS', {})
-    DATABASES['default']['OPTIONS'].update({
-        'connect_timeout': 10,
-    })
+if DATABASES["default"].get("ENGINE") == "django.db.backends.postgresql":
+    DATABASES["default"]["OPTIONS"] = DATABASES["default"].get("OPTIONS", {})
+    DATABASES["default"]["OPTIONS"].update(
+        {
+            "connect_timeout": 10,
+        }
+    )
 
 # NOTE: Coolify manages database connections via DATABASE_URL environment variable
 # with dynamically generated container hostnames. Do not override DB_HOST.
 
 
 # Default primary key field type
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Increase max upload size for base64 images
-DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760 # 10MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10MB
 
 # Enforce PostgreSQL in Production
-if not DEBUG and DATABASES['default']['ENGINE'] == 'django.db.backends.sqlite3':
-    _settings_logger.warning(
-        "SQLite is NOT recommended for production. Set DATABASE_URL to a PostgreSQL instance."
-    )
+if not DEBUG and DATABASES["default"]["ENGINE"] == "django.db.backends.sqlite3":
+    _settings_logger.warning("SQLite is NOT recommended for production. Set DATABASE_URL to a PostgreSQL instance.")
 
 
 # =============================================================================
@@ -182,19 +183,19 @@ if not DEBUG and DATABASES['default']['ENGINE'] == 'django.db.backends.sqlite3':
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-        'OPTIONS': {
-            'min_length': 8,
-        }
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "OPTIONS": {
+            "min_length": 8,
+        },
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
@@ -203,8 +204,8 @@ AUTH_PASSWORD_VALIDATORS = [
 # INTERNATIONALIZATION
 # =============================================================================
 
-LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'Africa/Lagos'  # Nigerian timezone
+LANGUAGE_CODE = "en-us"
+TIME_ZONE = "Africa/Lagos"  # Nigerian timezone
 USE_I18N = True
 USE_TZ = True
 
@@ -213,25 +214,24 @@ USE_TZ = True
 # STATIC FILES
 # =============================================================================
 
-STATIC_URL = 'static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')] if os.path.exists(os.path.join(BASE_DIR, 'static')) else []
+STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")] if os.path.exists(os.path.join(BASE_DIR, "static")) else []
 
 
-
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 
 # =============================================================================
 # AUTH CONFIGURATION
 # =============================================================================
 
-AUTH_USER_MODEL = 'users.User'
+AUTH_USER_MODEL = "users.User"
 
 AUTHENTICATION_BACKENDS = [
-    'users.backends.EmailOrUsernameModelBackend',
-    'django.contrib.auth.backends.ModelBackend',
+    "users.backends.EmailOrUsernameModelBackend",
+    "django.contrib.auth.backends.ModelBackend",
 ]
 
 
@@ -240,41 +240,37 @@ AUTHENTICATION_BACKENDS = [
 # =============================================================================
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
-    ),
-    'DEFAULT_PARSER_CLASSES': [
-        'rest_framework.parsers.JSONParser',
-        'rest_framework.parsers.FormParser',
-        'rest_framework.parsers.MultiPartParser',
+    "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework_simplejwt.authentication.JWTAuthentication",),
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+    "DEFAULT_PARSER_CLASSES": [
+        "rest_framework.parsers.JSONParser",
+        "rest_framework.parsers.FormParser",
+        "rest_framework.parsers.MultiPartParser",
     ],
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 50,
-    'DEFAULT_THROTTLE_CLASSES': [
-        'rest_framework.throttling.AnonRateThrottle',
-        'rest_framework.throttling.UserRateThrottle',
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 50,
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
     ],
-    'DEFAULT_THROTTLE_RATES': {
-        'anon': '100/hour',
-        'user': '1000/hour',
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "100/hour",
+        "user": "1000/hour",
     },
-    'EXCEPTION_HANDLER': 'core.exceptions.custom_exception_handler',
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    "EXCEPTION_HANDLER": "core.exceptions.custom_exception_handler",
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'Registra API',
-    'DESCRIPTION': 'Multi-tenant School Management System API',
-    'VERSION': '1.0.0',
-    'SERVE_INCLUDE_SCHEMA': False,
-    'COMPONENT_SPLIT_PATCH': True,
-    'COMPONENT_SPLIT_REQUEST': True,
-    'SWAGGER_UI_DIST': 'SIDECAR',  # optional: include swagger-ui as sidecar
-    'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
-    'REDOC_DIST': 'SIDECAR',
+    "TITLE": "Registra API",
+    "DESCRIPTION": "Multi-tenant School Management System API",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "COMPONENT_SPLIT_PATCH": True,
+    "COMPONENT_SPLIT_REQUEST": True,
+    "SWAGGER_UI_DIST": "SIDECAR",  # optional: include swagger-ui as sidecar
+    "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
+    "REDOC_DIST": "SIDECAR",
 }
 
 
@@ -283,19 +279,17 @@ SPECTACULAR_SETTINGS = {
 # =============================================================================
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(
-        minutes=int(os.environ.get('JWT_ACCESS_TOKEN_LIFETIME_MINUTES', 60))
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=int(os.environ.get("JWT_ACCESS_TOKEN_LIFETIME_MINUTES", 60))),
+    "REFRESH_TOKEN_LIFETIME": timedelta(
+        days=int(os.environ.get("JWT_REFRESH_TOKEN_LIFETIME_DAYS", 1))  # Default to 1 day to match cookie
     ),
-    'REFRESH_TOKEN_LIFETIME': timedelta(
-        days=int(os.environ.get('JWT_REFRESH_TOKEN_LIFETIME_DAYS', 1)) # Default to 1 day to match cookie
-    ),
-    'ROTATE_REFRESH_TOKENS': True,
-    'BLACKLIST_AFTER_ROTATION': True,
-    'UPDATE_LAST_LOGIN': True,
-    'ALGORITHM': 'HS256',
-    'SIGNING_KEY': SECRET_KEY,
-    'AUTH_HEADER_TYPES': ('Bearer',),
-    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "UPDATE_LAST_LOGIN": True,
+    "ALGORITHM": "HS256",
+    "SIGNING_KEY": SECRET_KEY,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
 }
 
 
@@ -306,10 +300,7 @@ SIMPLE_JWT = {
 # Parse CORS origins from environment
 CORS_ALLOWED_ORIGINS = [
     origin.strip()
-    for origin in os.environ.get(
-        'CORS_ALLOWED_ORIGINS', 
-        'https://myregistra.net,http://localhost:3000'
-    ).split(',')
+    for origin in os.environ.get("CORS_ALLOWED_ORIGINS", "https://myregistra.net,http://localhost:3000").split(",")
     if origin.strip()
 ]
 
@@ -326,16 +317,15 @@ CORS_ALLOWED_ORIGIN_REGEXES = [
 ]
 
 CORS_ALLOW_CREDENTIALS = True
-CORS_EXPOSE_HEADERS = ['Content-Type', 'X-CSRFToken']
+CORS_EXPOSE_HEADERS = ["Content-Type", "X-CSRFToken"]
 
 # CSRF settings for production
 CSRF_TRUSTED_ORIGINS = [
-    origin.replace('http://', 'https://') if origin.startswith('http://') else origin
-    for origin in CORS_ALLOWED_ORIGINS
+    origin.replace("http://", "https://") if origin.startswith("http://") else origin for origin in CORS_ALLOWED_ORIGINS
 ]
 
 # Explicitly add root and wildcard for subdomains (Critical for Admin POST requests)
-_root = os.environ.get('ROOT_DOMAIN', 'myregistra.net')
+_root = os.environ.get("ROOT_DOMAIN", "myregistra.net")
 if f"https://{_root}" not in CSRF_TRUSTED_ORIGINS:
     CSRF_TRUSTED_ORIGINS.append(f"https://{_root}")
 if f"https://*.{_root}" not in CSRF_TRUSTED_ORIGINS:
@@ -348,26 +338,25 @@ if f"https://*.{_root}" not in CSRF_TRUSTED_ORIGINS:
 
 if not DEBUG:
     # SECURE_PROXY_SSL_HEADER is critical for detecting HTTPS behind Coolify/Traefik
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
     # Trust the X-Forwarded-Host header from Traefik
     USE_X_FORWARDED_HOST = True
-    
-    # Let the proxy (Coolify/Nginx) handle the redirect to avoid internal Docker network loops
-    SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'False').lower() == 'true'
 
-    
+    # Let the proxy (Coolify/Nginx) handle the redirect to avoid internal Docker network loops
+    SECURE_SSL_REDIRECT = os.environ.get("SECURE_SSL_REDIRECT", "False").lower() == "true"
+
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
-    
+
     # Allow cookies across subdomains
-    _root_domain = os.environ.get('ROOT_DOMAIN', 'myregistra.net')
+    _root_domain = os.environ.get("ROOT_DOMAIN", "myregistra.net")
     SESSION_COOKIE_DOMAIN = f".{_root_domain}"
     CSRF_COOKIE_DOMAIN = f".{_root_domain}"
-    
+
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
-    
+
     # HSTS settings
     SECURE_HSTS_SECONDS = 31536000  # 1 year
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
@@ -378,20 +367,20 @@ if not DEBUG:
 # R2 / S3 STORAGE CONFIGURATION
 # =============================================================================
 
-AWS_ACCESS_KEY_ID = os.environ.get('R2_ACCESS_KEY_ID')
-AWS_SECRET_ACCESS_KEY = os.environ.get('R2_SECRET_ACCESS_KEY')
-AWS_S3_ENDPOINT_URL = os.environ.get('R2_ENDPOINT')
-AWS_STORAGE_BUCKET_NAME = os.environ.get('R2_BUCKET_NAME')
-AWS_S3_SIGNATURE_VERSION = 's3v4'
-AWS_S3_REGION_NAME = 'auto'
+AWS_ACCESS_KEY_ID = os.environ.get("R2_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.environ.get("R2_SECRET_ACCESS_KEY")
+AWS_S3_ENDPOINT_URL = os.environ.get("R2_ENDPOINT")
+AWS_STORAGE_BUCKET_NAME = os.environ.get("R2_BUCKET_NAME")
+AWS_S3_SIGNATURE_VERSION = "s3v4"
+AWS_S3_REGION_NAME = "auto"
 
 # Only configure S3 storage if credentials are provided
 if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY and AWS_S3_ENDPOINT_URL:
     # Use custom domain if provided, otherwise fallback to endpoint URL
     # Useful if R2 bucket has a public URL enabled
-    _custom_domain = os.environ.get('R2_PUBLIC_URL')
-    AWS_S3_CUSTOM_DOMAIN = os.environ.get('R2_CUSTOM_DOMAIN')
-    
+    _custom_domain = os.environ.get("R2_PUBLIC_URL")
+    AWS_S3_CUSTOM_DOMAIN = os.environ.get("R2_CUSTOM_DOMAIN")
+
     # Always use signed URLs for R2 to ensure accessibility even if bucket is private
     # signatures can last up to 7 days (604800 seconds)
     AWS_QUERYSTRING_AUTH = True
@@ -433,43 +422,43 @@ else:
 # =============================================================================
 
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
-            'style': '{',
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {process:d} {thread:d} {message}",
+            "style": "{",
         },
-        'simple': {
-            'format': '{levelname} {message}',
-            'style': '{',
-        },
-    },
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple',
-        },
-        'file': {
-            'class': 'logging.FileHandler',
-            'filename': BASE_DIR / 'django_debug.log',
-            'formatter': 'verbose',
+        "simple": {
+            "format": "{levelname} {message}",
+            "style": "{",
         },
     },
-    'root': {
-        'handlers': ['console', 'file'],
-        'level': 'INFO',
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['console', 'file'],
-            'level': os.environ.get('DJANGO_LOG_LEVEL', 'INFO'),
-            'propagate': False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
         },
-        'django.request': {
-            'handlers': ['console', 'file'],
-            'level': 'DEBUG',
-            'propagate': False,
+        "file": {
+            "class": "logging.FileHandler",
+            "filename": BASE_DIR / "django_debug.log",
+            "formatter": "verbose",
+        },
+    },
+    "root": {
+        "handlers": ["console", "file"],
+        "level": "INFO",
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console", "file"],
+            "level": os.environ.get("DJANGO_LOG_LEVEL", "INFO"),
+            "propagate": False,
+        },
+        "django.request": {
+            "handlers": ["console", "file"],
+            "level": "DEBUG",
+            "propagate": False,
         },
     },
 }
@@ -480,49 +469,49 @@ LOGGING = {
 # =============================================================================
 
 # Default to None to allow fallback to LocMemCache if not provided
-REDIS_URL = os.environ.get('REDIS_URL')
+REDIS_URL = os.environ.get("REDIS_URL")
 
 if REDIS_URL:
     CACHES = {
-        'default': {
-            'BACKEND': 'django_redis.cache.RedisCache',
-            'LOCATION': REDIS_URL,
-            'OPTIONS': {
-                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-            }
+        "default": {
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": REDIS_URL,
+            "OPTIONS": {
+                "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            },
         }
     }
 else:
     # Fallback to local memory cache if Redis is not configured
     CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-            'LOCATION': 'unique-snowflake',
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "unique-snowflake",
         }
     }
 
 # Session settings - Use Redis/Cache for sessions in production
 if not DEBUG:
-    SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
-    SESSION_CACHE_ALIAS = 'default'
+    SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+    SESSION_CACHE_ALIAS = "default"
     # SESSION_COOKIE_DOMAIN and CSRF_COOKIE_DOMAIN already set in SECURITY SETTINGS block above
 
 
 # Celery Configuration
 # Handle local development without Redis
 if REDIS_URL:
-    CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', REDIS_URL)
-    CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', REDIS_URL)
+    CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", REDIS_URL)
+    CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", REDIS_URL)
 else:
     # Use memory broker for local dev without Redis
-    CELERY_BROKER_URL = 'memory://'
+    CELERY_BROKER_URL = "memory://"
     CELERY_RESULT_BACKEND = None
     CELERY_TASK_ALWAYS_EAGER = True  # Run tasks synchronously
     CELERY_TASK_EAGER_PROPAGATES = True
 
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes
@@ -532,17 +521,17 @@ CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes
 # EMAIL CONFIGURATION (BREVO / SMTP)
 # =============================================================================
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = os.environ.get('SMTP_HOST', 'smtp-relay.brevo.com')
-EMAIL_PORT = int(os.environ.get('SMTP_PORT', 587))
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = os.environ.get("SMTP_HOST", "smtp-relay.brevo.com")
+EMAIL_PORT = int(os.environ.get("SMTP_PORT", 587))
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.environ.get('SMTP_USER')
-EMAIL_HOST_PASSWORD = os.environ.get('SMTP_PASS')
-DEFAULT_FROM_EMAIL = os.environ.get('SMTP_FROM', 'noreply@myregistra.net')
+EMAIL_HOST_USER = os.environ.get("SMTP_USER")
+EMAIL_HOST_PASSWORD = os.environ.get("SMTP_PASS")
+DEFAULT_FROM_EMAIL = os.environ.get("SMTP_FROM", "noreply@myregistra.net")
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 # If credentials are not set (e.g. in dev), fallback to console backend
 if not EMAIL_HOST_USER or not EMAIL_HOST_PASSWORD:
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
     if DEBUG:
         print("WARNING: SMTP credentials not set. Emails will be printed to console.")

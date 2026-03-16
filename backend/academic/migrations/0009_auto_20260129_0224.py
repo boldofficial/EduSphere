@@ -2,27 +2,28 @@
 
 from django.db import migrations
 
+
 def create_default_schemes(apps, schema_editor):
-    School = apps.get_model('schools', 'School')
-    GradingScheme = apps.get_model('academic', 'GradingScheme')
-    GradeRange = apps.get_model('academic', 'GradeRange')
-    ReportCard = apps.get_model('academic', 'ReportCard')
+    School = apps.get_model("schools", "School")
+    GradingScheme = apps.get_model("academic", "GradingScheme")
+    GradeRange = apps.get_model("academic", "GradeRange")
+    ReportCard = apps.get_model("academic", "ReportCard")
 
     for school in School.objects.all():
         scheme, created = GradingScheme.objects.get_or_create(
             school=school,
             name="Standard WASSCE (Legacy)",
-            defaults={'is_default': True, 'description': "System generated default for existing reports."}
+            defaults={"is_default": True, "description": "System generated default for existing reports."},
         )
 
         if created:
             # Create Ranges: A(75+), B(65+), C(50+), D(40+), F(<40)
             ranges = [
-                ('A', 75.0, 100.0, 'Excellent', 5.0),
-                ('B', 65.0, 74.9, 'Very Good', 4.0),
-                ('C', 50.0, 64.9, 'Credit', 3.0),
-                ('D', 40.0, 49.9, 'Pass', 2.0),
-                ('F', 0.0, 39.9, 'Fail', 0.0),
+                ("A", 75.0, 100.0, "Excellent", 5.0),
+                ("B", 65.0, 74.9, "Very Good", 4.0),
+                ("C", 50.0, 64.9, "Credit", 3.0),
+                ("D", 40.0, 49.9, "Pass", 2.0),
+                ("F", 0.0, 39.9, "Fail", 0.0),
             ]
             for grade, min_s, max_s, remark, gpa in ranges:
                 GradeRange.objects.create(
@@ -32,16 +33,17 @@ def create_default_schemes(apps, schema_editor):
                     min_score=min_s,
                     max_score=max_s,
                     remark=remark,
-                    gpa_point=gpa
+                    gpa_point=gpa,
                 )
-        
+
         # Link existing Report Cards
         ReportCard.objects.filter(school=school, grading_scheme__isnull=True).update(grading_scheme=scheme)
+
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('academic', '0008_gradingscheme_graderange_reportcard_grading_scheme_and_more'),
+        ("academic", "0008_gradingscheme_graderange_reportcard_grading_scheme_and_more"),
     ]
 
     operations = [

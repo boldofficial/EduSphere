@@ -2,7 +2,7 @@ from django.apps import AppConfig
 
 
 class SchoolsConfig(AppConfig):
-    name = 'schools'
+    name = "schools"
 
     def ready(self):
         import schools.signals  # noqa

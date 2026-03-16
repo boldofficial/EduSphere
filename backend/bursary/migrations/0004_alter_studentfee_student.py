@@ -7,14 +7,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('academic', '0005_student_assigned_fees_student_discounts'),
-        ('bursary', '0003_paymentlineitem'),
+        ("academic", "0005_student_assigned_fees_student_discounts"),
+        ("bursary", "0003_paymentlineitem"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='studentfee',
-            name='student',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='student_fees_rel', to='academic.student'),
+            model_name="studentfee",
+            name="student",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="student_fees_rel", to="academic.student"
+            ),
         ),
     ]

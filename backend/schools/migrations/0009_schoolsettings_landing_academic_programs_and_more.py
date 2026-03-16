@@ -6,28 +6,28 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('schools', '0008_alter_school_logo'),
+        ("schools", "0008_alter_school_logo"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='schoolsettings',
-            name='landing_academic_programs',
+            model_name="schoolsettings",
+            name="landing_academic_programs",
             field=models.JSONField(blank=True, default=list),
         ),
         migrations.AddField(
-            model_name='schoolsettings',
-            name='landing_core_values',
+            model_name="schoolsettings",
+            name="landing_core_values",
             field=models.JSONField(blank=True, default=list),
         ),
         migrations.AddField(
-            model_name='schoolsettings',
-            name='landing_stats_config',
+            model_name="schoolsettings",
+            name="landing_stats_config",
             field=models.JSONField(blank=True, default=dict),
         ),
         migrations.AddField(
-            model_name='schoolsettings',
-            name='landing_testimonials',
+            model_name="schoolsettings",
+            name="landing_testimonials",
             field=models.JSONField(blank=True, default=list),
         ),
     ]

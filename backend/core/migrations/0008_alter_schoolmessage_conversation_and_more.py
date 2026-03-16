@@ -4,19 +4,18 @@ import django.db.models.deletion
 from django.db import migrations, models
 from django.db.models import Q
 
+
 def migrate_existing_messages(apps, schema_editor):
-    SchoolMessage = apps.get_model('core', 'SchoolMessage')
-    Conversation = apps.get_model('core', 'Conversation')
-    ConversationParticipant = apps.get_model('core', 'ConversationParticipant')
-    School = apps.get_model('schools', 'School')
-    
+    SchoolMessage = apps.get_model("core", "SchoolMessage")
+    Conversation = apps.get_model("core", "Conversation")
+    ConversationParticipant = apps.get_model("core", "ConversationParticipant")
+    School = apps.get_model("schools", "School")
+
     # Find all messages without a valid conversation
     # We catch both NULL and the invalid 0000... default from failed runs
-    INVALID_UUID = '00000000-0000-0000-0000-000000000000'
-    orphan_messages = SchoolMessage.objects.filter(
-        Q(conversation__isnull=True) | Q(conversation_id=INVALID_UUID)
-    )
-    
+    INVALID_UUID = "00000000-0000-0000-0000-000000000000"
+    orphan_messages = SchoolMessage.objects.filter(Q(conversation__isnull=True) | Q(conversation_id=INVALID_UUID))
+
     if not orphan_messages.exists():
         return
 
@@ -26,59 +25,50 @@ def migrate_existing_messages(apps, schema_editor):
         if school_orphans.exists():
             # Create a "Legacy Messages" conversation for this school
             conv = Conversation.objects.create(
-                school=school,
-                type='DIRECT',
-                metadata={'migrated': True, 'title': 'Legacy Conversation'}
+                school=school, type="DIRECT", metadata={"migrated": True, "title": "Legacy Conversation"}
             )
             school_orphans.update(conversation=conv)
-            
+
             # Ensure the unique senders are participants
-            senders = school_orphans.values_list('sender_id', flat=True).distinct()
+            senders = school_orphans.values_list("sender_id", flat=True).distinct()
             for sender_id in senders:
-                ConversationParticipant.objects.get_or_create(
-                    user_id=sender_id,
-                    conversation=conv
-                )
-    
+                ConversationParticipant.objects.get_or_create(user_id=sender_id, conversation=conv)
+
     # Final catch-all for any stragglers
-    unschool_orphans = SchoolMessage.objects.filter(
-        Q(conversation__isnull=True) | Q(conversation_id=INVALID_UUID)
-    )
+    unschool_orphans = SchoolMessage.objects.filter(Q(conversation__isnull=True) | Q(conversation_id=INVALID_UUID))
     if unschool_orphans.exists():
         first_school = School.objects.first()
         if first_school:
             conv = Conversation.objects.create(
-                school=first_school,
-                type='DIRECT',
-                metadata={'migrated': True, 'title': 'Legacy Conversation (Global)'}
+                school=first_school, type="DIRECT", metadata={"migrated": True, "title": "Legacy Conversation (Global)"}
             )
             unschool_orphans.update(conversation=conv)
-            
-            senders = unschool_orphans.values_list('sender_id', flat=True).distinct()
+
+            senders = unschool_orphans.values_list("sender_id", flat=True).distinct()
             for sender_id in senders:
-                ConversationParticipant.objects.get_or_create(
-                    user_id=sender_id,
-                    conversation=conv
-                )
+                ConversationParticipant.objects.get_or_create(user_id=sender_id, conversation=conv)
+
 
 class Migration(migrations.Migration):
 
     atomic = False
 
     dependencies = [
-        ('core', '0007_conversation_conversationparticipant_and_more'),
+        ("core", "0007_conversation_conversationparticipant_and_more"),
     ]
 
     operations = [
         migrations.RunPython(migrate_existing_messages),
         migrations.AlterField(
-            model_name='schoolmessage',
-            name='conversation',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='messages', to='core.conversation'),
+            model_name="schoolmessage",
+            name="conversation",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="messages", to="core.conversation"
+            ),
         ),
         migrations.AlterField(
-            model_name='schoolmessage',
-            name='is_system_generated',
+            model_name="schoolmessage",
+            name="is_system_generated",
             field=models.BooleanField(default=False),
         ),
     ]

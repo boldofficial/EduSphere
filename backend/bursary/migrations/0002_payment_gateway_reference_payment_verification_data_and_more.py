@@ -7,41 +7,57 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bursary', '0001_initial'),
-        ('schools', '0006_platformmodule'),
+        ("bursary", "0001_initial"),
+        ("schools", "0006_platformmodule"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='payment',
-            name='gateway_reference',
+            model_name="payment",
+            name="gateway_reference",
             field=models.CharField(blank=True, max_length=100, null=True),
         ),
         migrations.AddField(
-            model_name='payment',
-            name='verification_data',
+            model_name="payment",
+            name="verification_data",
             field=models.JSONField(blank=True, null=True),
         ),
         migrations.CreateModel(
-            name='Scholarship',
+            name="Scholarship",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('name', models.CharField(max_length=100)),
-                ('description', models.TextField(blank=True)),
-                ('benefit_type', models.CharField(choices=[('percentage', 'Percentage'), ('fixed', 'Fixed Amount')], default='percentage', max_length=20)),
-                ('value', models.DecimalField(decimal_places=2, max_digits=10)),
-                ('is_active', models.BooleanField(default=True)),
-                ('school', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='%(class)s_related', to='schools.school')),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("name", models.CharField(max_length=100)),
+                ("description", models.TextField(blank=True)),
+                (
+                    "benefit_type",
+                    models.CharField(
+                        choices=[("percentage", "Percentage"), ("fixed", "Fixed Amount")],
+                        default="percentage",
+                        max_length=20,
+                    ),
+                ),
+                ("value", models.DecimalField(decimal_places=2, max_digits=10)),
+                ("is_active", models.BooleanField(default=True)),
+                (
+                    "school",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="%(class)s_related",
+                        to="schools.school",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.AddField(
-            model_name='studentfee',
-            name='scholarship',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='bursary.scholarship'),
+            model_name="studentfee",
+            name="scholarship",
+            field=models.ForeignKey(
+                blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to="bursary.scholarship"
+            ),
         ),
     ]

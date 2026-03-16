@@ -6,13 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('academic', '0005_student_assigned_fees_student_discounts'),
+        ("academic", "0005_student_assigned_fees_student_discounts"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='teacher',
-            name='staff_type',
-            field=models.CharField(choices=[('ACADEMIC', 'Academic Staff'), ('NON_ACADEMIC', 'Non-Academic Staff')], default='ACADEMIC', max_length=20),
+            model_name="teacher",
+            name="staff_type",
+            field=models.CharField(
+                choices=[("ACADEMIC", "Academic Staff"), ("NON_ACADEMIC", "Non-Academic Staff")],
+                default="ACADEMIC",
+                max_length=20,
+            ),
         ),
     ]

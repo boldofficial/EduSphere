@@ -7,23 +7,23 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('academic', '0016_alter_studentachievement_category_and_more'),
+        ("academic", "0016_alter_studentachievement_category_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='admission',
-            name='child_dob',
+            model_name="admission",
+            name="child_dob",
             field=models.DateField(default=django.utils.timezone.now),
         ),
         migrations.AlterField(
-            model_name='admissionintake',
-            name='end_date',
+            model_name="admissionintake",
+            name="end_date",
             field=models.DateField(default=django.utils.timezone.now),
         ),
         migrations.AlterField(
-            model_name='admissionintake',
-            name='start_date',
+            model_name="admissionintake",
+            name="start_date",
             field=models.DateField(default=django.utils.timezone.now),
         ),
     ]

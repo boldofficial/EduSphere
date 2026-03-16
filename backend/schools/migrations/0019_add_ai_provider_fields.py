@@ -6,28 +6,32 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('schools', '0018_supportticket_ticketresponse_and_more'),
+        ("schools", "0018_supportticket_ticketresponse_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='platformsettings',
-            name='ai_provider',
-            field=models.CharField(choices=[('gemini', 'Google Gemini'), ('openrouter', 'OpenRouter (Multi-Model)')], default='gemini', max_length=20),
+            model_name="platformsettings",
+            name="ai_provider",
+            field=models.CharField(
+                choices=[("gemini", "Google Gemini"), ("openrouter", "OpenRouter (Multi-Model)")],
+                default="gemini",
+                max_length=20,
+            ),
         ),
         migrations.AddField(
-            model_name='platformsettings',
-            name='gemini_api_key',
+            model_name="platformsettings",
+            name="gemini_api_key",
             field=models.CharField(blank=True, max_length=255, null=True),
         ),
         migrations.AddField(
-            model_name='platformsettings',
-            name='openrouter_api_key',
+            model_name="platformsettings",
+            name="openrouter_api_key",
             field=models.CharField(blank=True, max_length=255, null=True),
         ),
         migrations.AddField(
-            model_name='platformsettings',
-            name='openrouter_model',
-            field=models.CharField(blank=True, default='google/gemini-2.0-flash-001', max_length=100, null=True),
+            model_name="platformsettings",
+            name="openrouter_model",
+            field=models.CharField(blank=True, default="google/gemini-2.0-flash-001", max_length=100, null=True),
         ),
     ]

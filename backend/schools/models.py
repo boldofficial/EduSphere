@@ -2,35 +2,60 @@ from django.db import models
 
 # Platform-wide module registry
 MODULES = [
-    {'id': 'students', 'name': 'Student Management', 'description': 'Manage student profiles, enrollment and admission.'},
-    {'id': 'teachers', 'name': 'Teacher Management', 'description': 'Track academic staff and assignments.'},
-    {'id': 'staff', 'name': 'Non-Academic Staff', 'description': 'Manage support staff and operational tasks.'},
-    {'id': 'classes', 'name': 'Class Management', 'description': 'Setup classes, curricula and subjects.'},
-    {'id': 'grading', 'name': 'Grading & Results', 'description': 'Enter scores, calculate averages and generate reports.'},
-    {'id': 'attendance', 'name': 'Attendance Tracking', 'description': 'Daily attendance for students and staff.'},
-    {'id': 'bursary', 'name': 'Bursary & Finance', 'description': 'Manage school fees, expenses and payroll.'},
-    {'id': 'announcements', 'name': 'Internal Broadcasts', 'description': 'Send messages to parents/staff within the school.'},
-    {'id': 'calendar', 'name': 'School Calendar', 'description': 'Schedule events and holidays.'},
-    {'id': 'learning', 'name': 'Learning Center', 'description': 'Access educational resources and lessons.'},
-    {'id': 'conduct', 'name': 'Conduct & Log', 'description': 'Track student behavior and discipline logs.'},
-    {'id': 'analytics', 'name': 'School Analytics', 'description': 'Performance and financial insights.'},
-    {'id': 'id_cards', 'name': 'ID Card Generator', 'description': 'Generate professional IDs for students.'},
-    {'id': 'broadsheet', 'name': 'Master Broadsheet', 'description': 'Generate comprehensive result sheets for terms.'},
-    {'id': 'admissions', 'name': 'Online Admissions', 'description': 'Handle application forms and admission processing.'},
-    {'id': 'newsletter', 'name': 'School newsletter', 'description': 'Create and publish newsletters for parents.'},
-    {'id': 'messages', 'name': 'Direct Messaging', 'description': 'Internal chat and messaging for staff/parents.'},
-    {'id': 'cms', 'name': 'Website CMS', 'description': 'Manage school website content and landing page.'},
+    {
+        "id": "students",
+        "name": "Student Management",
+        "description": "Manage student profiles, enrollment and admission.",
+    },
+    {"id": "teachers", "name": "Teacher Management", "description": "Track academic staff and assignments."},
+    {"id": "staff", "name": "Non-Academic Staff", "description": "Manage support staff and operational tasks."},
+    {"id": "classes", "name": "Class Management", "description": "Setup classes, curricula and subjects."},
+    {
+        "id": "grading",
+        "name": "Grading & Results",
+        "description": "Enter scores, calculate averages and generate reports.",
+    },
+    {"id": "attendance", "name": "Attendance Tracking", "description": "Daily attendance for students and staff."},
+    {"id": "bursary", "name": "Bursary & Finance", "description": "Manage school fees, expenses and payroll."},
+    {
+        "id": "announcements",
+        "name": "Internal Broadcasts",
+        "description": "Send messages to parents/staff within the school.",
+    },
+    {"id": "calendar", "name": "School Calendar", "description": "Schedule events and holidays."},
+    {"id": "learning", "name": "Learning Center", "description": "Access educational resources and lessons."},
+    {"id": "conduct", "name": "Conduct & Log", "description": "Track student behavior and discipline logs."},
+    {"id": "analytics", "name": "School Analytics", "description": "Performance and financial insights."},
+    {"id": "id_cards", "name": "ID Card Generator", "description": "Generate professional IDs for students."},
+    {"id": "broadsheet", "name": "Master Broadsheet", "description": "Generate comprehensive result sheets for terms."},
+    {
+        "id": "admissions",
+        "name": "Online Admissions",
+        "description": "Handle application forms and admission processing.",
+    },
+    {"id": "newsletter", "name": "School newsletter", "description": "Create and publish newsletters for parents."},
+    {"id": "messages", "name": "Direct Messaging", "description": "Internal chat and messaging for staff/parents."},
+    {"id": "cms", "name": "Website CMS", "description": "Manage school website content and landing page."},
 ]
+
 
 class School(models.Model):
     name = models.CharField(max_length=255)
-    domain = models.CharField(max_length=255, unique=True, null=True, blank=True, help_text="Permanent slug/subdomain (e.g. 'vine')")
-    custom_domain = models.CharField(max_length=255, unique=True, null=True, blank=True, help_text="Optional custom domain (e.g. 'portal.vineheritage.com')")
+    domain = models.CharField(
+        max_length=255, unique=True, null=True, blank=True, help_text="Permanent slug/subdomain (e.g. 'vine')"
+    )
+    custom_domain = models.CharField(
+        max_length=255,
+        unique=True,
+        null=True,
+        blank=True,
+        help_text="Optional custom domain (e.g. 'portal.vineheritage.com')",
+    )
     address = models.TextField(null=True, blank=True)
     phone = models.CharField(max_length=20, null=True, blank=True)
-    email = models.EmailField(null=True, blank=True) # Official school email
+    email = models.EmailField(null=True, blank=True)  # Official school email
     contact_person = models.CharField(max_length=255, null=True, blank=True)
-    logo = models.TextField(null=True, blank=True) # URL or Base64 to logo
+    logo = models.TextField(null=True, blank=True)  # URL or Base64 to logo
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -39,19 +64,20 @@ class School(models.Model):
 
     class Meta:
         indexes = [
-            models.Index(fields=['domain']),
-            models.Index(fields=['custom_domain']),
-            models.Index(fields=['created_at']),
+            models.Index(fields=["domain"]),
+            models.Index(fields=["custom_domain"]),
+            models.Index(fields=["created_at"]),
         ]
+
 
 class SubscriptionPlan(models.Model):
     name = models.CharField(max_length=100)
     slug = models.SlugField(unique=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    duration_days = models.IntegerField(default=30) # 30 for monthly, 365 for yearly
+    duration_days = models.IntegerField(default=30)  # 30 for monthly, 365 for yearly
     description = models.TextField(blank=True)
-    features = models.JSONField(default=list) # List of feature strings (marketing)
-    allowed_modules = models.JSONField(default=list) # List of module IDs (students, bursary, etc.)
+    features = models.JSONField(default=list)  # List of feature strings (marketing)
+    allowed_modules = models.JSONField(default=list)  # List of module IDs (students, bursary, etc.)
     custom_domain_enabled = models.BooleanField(default=False, help_text="Allow school to use custom domain")
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -59,9 +85,11 @@ class SubscriptionPlan(models.Model):
     def __str__(self):
         return f"{self.name} - ₦{self.price}"
 
+
 class PlatformModule(models.Model):
     """Global master switches for platform features."""
-    module_id = models.CharField(max_length=50, unique=True) # students, grading, etc.
+
+    module_id = models.CharField(max_length=50, unique=True)  # students, grading, etc.
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     is_active = models.BooleanField(default=True)
@@ -73,29 +101,32 @@ class PlatformModule(models.Model):
     @classmethod
     def sync_from_registry(cls):
         """Sync model instances with the MODULES constant."""
-        existing_ids = set(cls.objects.values_list('module_id', flat=True))
+        existing_ids = set(cls.objects.values_list("module_id", flat=True))
         for mod in MODULES:
-            if mod['id'] not in existing_ids:
+            if mod["id"] not in existing_ids:
                 cls.objects.create(
-                    module_id=mod['id'],
-                    name=mod['name'],
-                    description=mod['description'],
-                    is_active=True # Default to ON
+                    module_id=mod["id"],
+                    name=mod["name"],
+                    description=mod["description"],
+                    is_active=True,  # Default to ON
                 )
+
 
 class Subscription(models.Model):
     STATUS_CHOICES = (
-        ('active', 'Active'),
-        ('expired', 'Expired'),
-        ('cancelled', 'Cancelled'),
-        ('pending', 'Approval Pending'),
+        ("active", "Active"),
+        ("expired", "Expired"),
+        ("cancelled", "Cancelled"),
+        ("pending", "Approval Pending"),
     )
 
-    school = models.OneToOneField(School, on_delete=models.CASCADE, related_name='subscription')
+    school = models.OneToOneField(School, on_delete=models.CASCADE, related_name="subscription")
     plan = models.ForeignKey(SubscriptionPlan, on_delete=models.PROTECT)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
-    payment_method = models.CharField(max_length=20, choices=(('paystack', 'Paystack'), ('bank_transfer', 'Bank Transfer')), default='paystack')
-    payment_proof = models.TextField(null=True, blank=True) # Base64 or URL
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    payment_method = models.CharField(
+        max_length=20, choices=(("paystack", "Paystack"), ("bank_transfer", "Bank Transfer")), default="paystack"
+    )
+    payment_proof = models.TextField(null=True, blank=True)  # Base64 or URL
     start_date = models.DateTimeField(auto_now_add=True)
     end_date = models.DateTimeField()
     auto_renew = models.BooleanField(default=True)
@@ -105,50 +136,55 @@ class Subscription(models.Model):
     def __str__(self):
         return f"{self.school.name} - {self.plan.name} ({self.status})"
 
+
 class SchoolPayment(models.Model):
     STATUS_CHOICES = (
-        ('pending', 'Pending'),
-        ('success', 'Success'),
-        ('failed', 'Failed'),
+        ("pending", "Pending"),
+        ("success", "Success"),
+        ("failed", "Failed"),
     )
-    
-    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='payments')
+
+    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name="payments")
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    reference = models.CharField(max_length=100, unique=True) # e.g. Paystack reference
-    payment_method = models.CharField(max_length=20, default='paystack')
+    reference = models.CharField(max_length=100, unique=True)  # e.g. Paystack reference
+    payment_method = models.CharField(max_length=20, default="paystack")
     proof_image = models.TextField(null=True, blank=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     date = models.DateTimeField(auto_now_add=True)
-    
+
     def __str__(self):
         return f"{self.school.name} - {self.amount} ({self.status})"
+
+
 class SchoolSettings(models.Model):
-    school = models.OneToOneField(School, on_delete=models.CASCADE, related_name='settings')
-    current_session = models.CharField(max_length=20, default='2025/2026')
-    current_term = models.CharField(max_length=50, default='First Term')
+    school = models.OneToOneField(School, on_delete=models.CASCADE, related_name="settings")
+    current_session = models.CharField(max_length=20, default="2025/2026")
+    current_term = models.CharField(max_length=50, default="First Term")
     school_tagline = models.CharField(max_length=255, null=True, blank=True)
-    
+
     # Media
-    watermark_media = models.TextField(null=True, blank=True) # Base64 or URL
-    
+    watermark_media = models.TextField(null=True, blank=True)  # Base64 or URL
+
     # Signatories
     director_name = models.CharField(max_length=255, null=True, blank=True)
     director_signature = models.TextField(null=True, blank=True)
     head_of_school_name = models.CharField(max_length=255, null=True, blank=True)
     head_of_school_signature = models.TextField(null=True, blank=True)
-    
+
     # Report Card / UI Settings
     subjects_global = models.JSONField(default=list, blank=True)
-    terms_list = models.JSONField(default=list, blank=True) # terms is a reserved keyword in some contexts, using terms_list
+    terms_list = models.JSONField(
+        default=list, blank=True
+    )  # terms is a reserved keyword in some contexts, using terms_list
     show_position = models.BooleanField(default=True)
     show_skills = models.BooleanField(default=True)
     tiled_watermark = models.BooleanField(default=False)
     next_term_begins = models.DateField(null=True, blank=True)
-    class_teacher_label = models.CharField(max_length=100, default='Class Teacher')
-    head_teacher_label = models.CharField(max_length=100, default='Head of School')
-    report_font_family = models.CharField(max_length=100, default='inherit')
+    class_teacher_label = models.CharField(max_length=100, default="Class Teacher")
+    head_teacher_label = models.CharField(max_length=100, default="Head of School")
+    report_font_family = models.CharField(max_length=100, default="inherit")
     report_scale = models.IntegerField(default=100)
-    
+
     # Landing Page CMS
     landing_hero_title = models.CharField(max_length=255, null=True, blank=True)
     landing_hero_subtitle = models.CharField(max_length=255, null=True, blank=True)
@@ -156,19 +192,23 @@ class SchoolSettings(models.Model):
     landing_hero_image = models.TextField(null=True, blank=True)
     landing_about_text = models.TextField(null=True, blank=True)
     landing_gallery_images = models.JSONField(default=list, blank=True)
-    landing_primary_color = models.CharField(max_length=7, default='#1A3A5C')
+    landing_primary_color = models.CharField(max_length=7, default="#1A3A5C")
     landing_show_stats = models.BooleanField(default=True)
-    landing_cta_text = models.CharField(max_length=50, default='Start Your Journey')
-    
+    landing_cta_text = models.CharField(max_length=50, default="Start Your Journey")
+
     # New CMS Fields for structured content
-    landing_core_values = models.JSONField(default=list, blank=True) # list of {title, description, icon}
-    landing_academic_programs = models.JSONField(default=list, blank=True) # list of {title, age_range, description, image}
-    landing_testimonials = models.JSONField(default=list, blank=True) # list of {name, role, quote, image}
-    landing_stats_config = models.JSONField(default=dict, blank=True) # {students: true, teachers: true, etc}
-    
+    landing_core_values = models.JSONField(default=list, blank=True)  # list of {title, description, icon}
+    landing_academic_programs = models.JSONField(
+        default=list, blank=True
+    )  # list of {title, age_range, description, image}
+    landing_testimonials = models.JSONField(default=list, blank=True)  # list of {name, role, quote, image}
+    landing_stats_config = models.JSONField(default=dict, blank=True)  # {students: true, teachers: true, etc}
+
     # Promotion & Finance
     promotion_threshold = models.IntegerField(default=50)
-    promotion_rules = models.CharField(max_length=20, choices=(('auto', 'Auto'), ('manual', 'Manual')), default='manual')
+    promotion_rules = models.CharField(
+        max_length=20, choices=(("auto", "Auto"), ("manual", "Manual")), default="manual"
+    )
     show_bank_details = models.BooleanField(default=True)
     bank_name = models.CharField(max_length=255, null=True, blank=True)
     bank_account_name = models.CharField(max_length=255, null=True, blank=True)
@@ -176,55 +216,57 @@ class SchoolSettings(models.Model):
     bank_sort_code = models.CharField(max_length=20, null=True, blank=True)
     invoice_notes = models.TextField(null=True, blank=True)
     invoice_due_days = models.IntegerField(default=14)
-    
+
     # Permissions
     role_permissions = models.JSONField(default=dict, blank=True)
 
     def __str__(self):
         return f"Settings for {self.school.name}"
 
+
 class PlatformSettings(models.Model):
     """Global configuration for the entire Registra platform (Super Admin only)."""
+
     # Platform Bank Details (for school onboarding/subscriptions)
     bank_name = models.CharField(max_length=255, null=True, blank=True)
     account_name = models.CharField(max_length=255, null=True, blank=True)
     account_number = models.CharField(max_length=20, null=True, blank=True)
     bank_code = models.CharField(max_length=20, null=True, blank=True)
-    
+
     # Paystack Config
     paystack_public_key = models.CharField(max_length=255, null=True, blank=True)
     paystack_secret_key = models.CharField(max_length=255, null=True, blank=True)
-    
+
     # SMTP & API Email Config
     EMAIL_PROVIDERS = (
-        ('smtp', 'Standard SMTP'),
-        ('brevo_api', 'Brevo API'),
+        ("smtp", "Standard SMTP"),
+        ("brevo_api", "Brevo API"),
     )
-    email_provider = models.CharField(max_length=20, choices=EMAIL_PROVIDERS, default='smtp')
+    email_provider = models.CharField(max_length=20, choices=EMAIL_PROVIDERS, default="smtp")
     email_api_key = models.CharField(max_length=255, null=True, blank=True)
     email_host = models.CharField(max_length=100, null=True, blank=True)
     email_port = models.IntegerField(null=True, blank=True, default=587)
     email_user = models.CharField(max_length=100, null=True, blank=True)
     email_password = models.CharField(max_length=100, null=True, blank=True)
     email_from = models.EmailField(null=True, blank=True)
-    email_from_name = models.CharField(max_length=100, null=True, blank=True, default='Registra')
+    email_from_name = models.CharField(max_length=100, null=True, blank=True, default="Registra")
     email_use_tls = models.BooleanField(default=True)
     email_use_ssl = models.BooleanField(default=False)
-    
+
     # Global contact info
     support_email = models.EmailField(null=True, blank=True)
     support_phone = models.CharField(max_length=20, null=True, blank=True)
-    
+
     # AI Provider Configuration
     AI_PROVIDERS = (
-        ('gemini', 'Google Gemini'),
-        ('openrouter', 'OpenRouter (Multi-Model)'),
+        ("gemini", "Google Gemini"),
+        ("openrouter", "OpenRouter (Multi-Model)"),
     )
-    ai_provider = models.CharField(max_length=20, choices=AI_PROVIDERS, default='gemini')
+    ai_provider = models.CharField(max_length=20, choices=AI_PROVIDERS, default="gemini")
     gemini_api_key = models.CharField(max_length=255, null=True, blank=True)
     openrouter_api_key = models.CharField(max_length=255, null=True, blank=True)
-    openrouter_model = models.CharField(max_length=100, null=True, blank=True, default='google/gemini-2.0-flash-001')
-    
+    openrouter_model = models.CharField(max_length=100, null=True, blank=True, default="google/gemini-2.0-flash-001")
+
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
@@ -234,26 +276,29 @@ class PlatformSettings(models.Model):
         verbose_name = "Platform Settings"
         verbose_name_plural = "Platform Settings"
 
+
 class DemoRequest(models.Model):
     STATUS_CHOICES = (
-        ('pending', 'Pending Review'),
-        ('approved', 'Approved'),
-        ('rejected', 'Rejected'),
+        ("pending", "Pending Review"),
+        ("approved", "Approved"),
+        ("rejected", "Rejected"),
     )
-    
+
     name = models.CharField(max_length=255)
     email = models.EmailField()
     phone = models.CharField(max_length=20, null=True, blank=True)
     school_name = models.CharField(max_length=255)
     role = models.CharField(max_length=100, null=True, blank=True)
-    
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
-    
+
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+
     # Internal notes
     admin_notes = models.TextField(null=True, blank=True)
     # Using string reference to avoid circular import if User is in different app
-    approved_by = models.ForeignKey('users.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_demos')
-    
+    approved_by = models.ForeignKey(
+        "users.User", on_delete=models.SET_NULL, null=True, blank=True, related_name="approved_demos"
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -262,39 +307,40 @@ class DemoRequest(models.Model):
 
     class Meta:
         indexes = [
-            models.Index(fields=['email']),
-            models.Index(fields=['status']),
-            models.Index(fields=['created_at']),
+            models.Index(fields=["email"]),
+            models.Index(fields=["status"]),
+            models.Index(fields=["created_at"]),
         ]
+
 
 class SupportTicket(models.Model):
     CATEGORY_CHOICES = (
-        ('technical', 'Technical Issue'),
-        ('billing', 'Billing & Subscription'),
-        ('customization', 'Customization Request'),
-        ('other', 'Other'),
+        ("technical", "Technical Issue"),
+        ("billing", "Billing & Subscription"),
+        ("customization", "Customization Request"),
+        ("other", "Other"),
     )
     PRIORITY_CHOICES = (
-        ('low', 'Low'),
-        ('medium', 'Medium'),
-        ('high', 'High'),
-        ('urgent', 'Urgent'),
+        ("low", "Low"),
+        ("medium", "Medium"),
+        ("high", "High"),
+        ("urgent", "Urgent"),
     )
     STATUS_CHOICES = (
-        ('open', 'Open'),
-        ('in_progress', 'In Progress'),
-        ('resolved', 'Resolved'),
-        ('closed', 'Closed'),
+        ("open", "Open"),
+        ("in_progress", "In Progress"),
+        ("resolved", "Resolved"),
+        ("closed", "Closed"),
     )
 
-    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='support_tickets')
-    user = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='created_tickets')
+    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name="support_tickets")
+    user = models.ForeignKey("users.User", on_delete=models.CASCADE, related_name="created_tickets")
     subject = models.CharField(max_length=255)
-    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='technical')
-    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='medium')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default="technical")
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default="medium")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="open")
     description = models.TextField()
-    
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -302,15 +348,16 @@ class SupportTicket(models.Model):
         return f"[{self.status}] {self.subject} ({self.school.name})"
 
     class Meta:
-        ordering = ['-updated_at']
+        ordering = ["-updated_at"]
         indexes = [
-            models.Index(fields=['school', 'status']),
-            models.Index(fields=['created_at']),
+            models.Index(fields=["school", "status"]),
+            models.Index(fields=["created_at"]),
         ]
 
+
 class TicketResponse(models.Model):
-    ticket = models.ForeignKey(SupportTicket, on_delete=models.CASCADE, related_name='responses')
-    user = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='ticket_responses')
+    ticket = models.ForeignKey(SupportTicket, on_delete=models.CASCADE, related_name="responses")
+    user = models.ForeignKey("users.User", on_delete=models.CASCADE, related_name="ticket_responses")
     message = models.TextField()
     is_admin_response = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -319,4 +366,4 @@ class TicketResponse(models.Model):
         return f"Response to {self.ticket.subject} by {self.user.username}"
 
     class Meta:
-        ordering = ['created_at']
+        ordering = ["created_at"]

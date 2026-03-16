@@ -6,22 +6,30 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('schools', '0009_schoolsettings_landing_academic_programs_and_more'),
+        ("schools", "0009_schoolsettings_landing_academic_programs_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='school',
-            name='custom_domain',
-            field=models.CharField(blank=True, help_text="Optional custom domain (e.g. 'portal.vineheritage.com')", max_length=255, null=True, unique=True),
+            model_name="school",
+            name="custom_domain",
+            field=models.CharField(
+                blank=True,
+                help_text="Optional custom domain (e.g. 'portal.vineheritage.com')",
+                max_length=255,
+                null=True,
+                unique=True,
+            ),
         ),
         migrations.AlterField(
-            model_name='school',
-            name='domain',
-            field=models.CharField(blank=True, help_text="Permanent slug/subdomain (e.g. 'vine')", max_length=255, null=True, unique=True),
+            model_name="school",
+            name="domain",
+            field=models.CharField(
+                blank=True, help_text="Permanent slug/subdomain (e.g. 'vine')", max_length=255, null=True, unique=True
+            ),
         ),
         migrations.AddIndex(
-            model_name='school',
-            index=models.Index(fields=['custom_domain'], name='schools_sch_custom__c45f51_idx'),
+            model_name="school",
+            index=models.Index(fields=["custom_domain"], name="schools_sch_custom__c45f51_idx"),
         ),
     ]

@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('schools', '0004_school_contact_person_school_email_school_phone_and_more'),
+        ("schools", "0004_school_contact_person_school_email_school_phone_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='subscriptionplan',
-            name='allowed_modules',
+            model_name="subscriptionplan",
+            name="allowed_modules",
             field=models.JSONField(default=list),
         ),
     ]

@@ -14,32 +14,34 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.contrib import admin
-from django.urls import path, include
+
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
+
+from django.contrib import admin
+from django.urls import include, path
+
 from users.views import CustomTokenObtainPairView
-from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path("admin/", admin.site.urls),
     # Prioritize schools for landing page/public access
-    path('api/schools/', include('schools.urls')),
-    path('api/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('api/users/', include('users.urls')),
-    path('api/', include('academic.urls')),
-    path('api/', include('bursary.urls')),
-    path('api/', include('core.urls')),
-    path('api/learning/', include('learning.urls')),
-    path('api/emails/', include('emails.urls')),
-    
+    path("api/schools/", include("schools.urls")),
+    path("api/token/", CustomTokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("api/users/", include("users.urls")),
+    path("api/", include("academic.urls")),
+    path("api/", include("bursary.urls")),
+    path("api/", include("core.urls")),
+    path("api/learning/", include("learning.urls")),
+    path("api/emails/", include("emails.urls")),
     # API Documentation
-    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
-    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
-    path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
+    path("api/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
 ]
 
 from django.conf import settings
