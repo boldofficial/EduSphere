@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useSchoolStore } from '@/lib/store';
 import {
     LayoutDashboard, School as SchoolIcon, CreditCard, Settings,
@@ -56,11 +56,22 @@ function SidebarItem({ icon: Icon, label, active, onClick }: any) {
     );
 }
 
-export default function SuperAdminDashboard() {
+function DashboardContent() {
     const { currentUser, currentRole, logout, hasHydrated } = useSchoolStore();
     const { addToast } = useToast();
     const router = useRouter();
-    const [activeTab, setActiveTab] = useState<'overview' | 'tenants' | 'financials' | 'plans' | 'governance' | 'broadcasts' | 'modules' | 'settings' | 'templates' | 'logs' | 'demo_requests' | 'support' | 'email_marketing'>('overview');
+    const searchParams = useSearchParams();
+    const pathname = usePathname();
+    
+    const tabParam = searchParams.get('tab') as any;
+    const activeTab = tabParam || 'overview';
+
+    const setActiveTab = (tab: string) => {
+        const params = new URLSearchParams(searchParams.toString());
+        params.set('tab', tab);
+        router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    };
+
     const [searchQuery, setSearchQuery] = useState('');
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
@@ -391,5 +402,17 @@ export default function SuperAdminDashboard() {
                 onCancel={() => setImpersonateTarget(null)}
             />
         </div>
+    );
+}
+
+export default function SuperAdminDashboard() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <div className="animate-spin rounded-full h-12 w-12 border-4 border-brand-600 border-t-transparent"></div>
+            </div>
+        }>
+            <DashboardContent />
+        </Suspense>
     );
 }
