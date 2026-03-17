@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import { Printer, Check, Plus, Trash2, Link, Share2 } from 'lucide-react';
 import { Modal } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
@@ -15,6 +16,7 @@ interface BursaryModalsProps {
     students: Types.Student[];
     fees: Types.FeeStructure[];
     payments: Types.Payment[];
+    paymentOptions?: Types.SchoolPaymentSettings | null;
 
     showPayModal: boolean;
     setShowPayModal: (show: boolean) => void;
@@ -57,7 +59,7 @@ interface LineItem {
 }
 
 export const BursaryModals: React.FC<BursaryModalsProps> = ({
-    settings, classes, students, fees, payments,
+    settings, classes, students, fees, payments, paymentOptions,
     showPayModal, setShowPayModal, showExpenseModal, setShowExpenseModal, showFeeModal, setShowFeeModal,
     receiptPayment, setReceiptPayment, invoiceStudent, setInvoiceStudent,
     selectedStudent, onAddPayment, onAddExpense, onAddFee, addToast,
