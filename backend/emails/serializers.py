@@ -18,8 +18,8 @@ class EmailCampaignSerializer(serializers.ModelSerializer):
 
 
 class EmailLogSerializer(serializers.ModelSerializer):
-    template_name = serializers.CharField(source="template.name", read_only=True)
-    campaign_title = serializers.CharField(source="campaign.title", read_only=True)
+    template_name = serializers.ReadOnlyField(source="template.name")
+    campaign_title = serializers.ReadOnlyField(source="campaign.title")
 
     class Meta:
         model = EmailLog

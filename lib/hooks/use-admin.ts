@@ -80,7 +80,10 @@ export function useAdminSchools() {
         queryKey: queryKeys.adminSchools,
         queryFn: async () => {
             const response = await apiClient.get('schools/list/');
-            return response.data;
+            if (response.data && typeof response.data === 'object' && 'results' in response.data) {
+                return response.data.results;
+            }
+            return Array.isArray(response.data) ? response.data : [];
         },
     });
 }
@@ -90,7 +93,10 @@ export function useAdminPlans() {
         queryKey: queryKeys.adminPlans,
         queryFn: async () => {
             const response = await apiClient.get('schools/plans/');
-            return response.data;
+            if (response.data && typeof response.data === 'object' && 'results' in response.data) {
+                return response.data.results;
+            }
+            return Array.isArray(response.data) ? response.data : [];
         },
     });
 }
