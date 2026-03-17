@@ -79,3 +79,4 @@ dev-output.txt
 *.tsbuildinfo
 tsc_errors_utf8.txt
 scan_lines.py
+.npm-cache/

@@ -294,6 +294,7 @@ export interface AttendanceRecord {
 export interface Attendance extends Entity {
   date: string; // YYYY-MM-DD
   class_id: string;
+
   session: string;
   term: string;
   records: AttendanceRecord[];
@@ -306,6 +307,7 @@ export interface FeeStructure extends Entity {
   session: string;
   term: string;
   is_optional?: boolean;
+  allow_partial_payments?: boolean;
 }
 
 export interface PaymentLineItem {
@@ -317,7 +319,7 @@ export interface Payment extends Entity {
   student_id: string;
   amount: number; // Total amount (sum of all line items)
   date: string;
-  method: 'cash' | 'transfer' | 'pos';
+  method: 'cash' | 'transfer' | 'pos' | 'online';
   lineItems: PaymentLineItem[]; // Individual purpose amounts
   remark?: string;
   session: string;
@@ -325,6 +327,7 @@ export interface Payment extends Entity {
   reference?: string;
   status?: string;
   fee_structure_id?: string;
+  payment_hash?: string;
 }
 
 export interface Expense extends Entity {
@@ -352,6 +355,34 @@ export interface FinancialStats {
     expense_categories: Record<string, number>;
     monthly_trend: { month: string; income: number; expense: number }[];
   };
+}
+
+export type SchoolPaymentMethod = 'cash' | 'bank_transfer' | 'paystack' | 'flutterwave';
+
+export interface SchoolPaymentSettings {
+  enable_cash: boolean;
+  enable_bank_transfer: boolean;
+  enable_paystack: boolean;
+  enable_flutterwave: boolean;
+  default_payment_method: SchoolPaymentMethod;
+  supports_online_payment?: boolean;
+  enabled_methods?: SchoolPaymentMethod[];
+  paystack_public_key?: string;
+  paystack_secret_key?: string;
+  paystack_webhook_secret?: string;
+  has_paystack_secret?: boolean;
+  flutterwave_public_key?: string;
+  flutterwave_secret_key?: string;
+  flutterwave_webhook_secret?: string;
+  has_flutterwave_secret?: boolean;
+  bank_name?: string;
+  bank_account_name?: string;
+  bank_account_number?: string;
+  bank_sort_code?: string;
+  transfer_instructions?: string;
+  require_transfer_proof?: boolean;
+  pass_processing_fee_to_parents?: boolean;
+  updated_at?: string;
 }
 
 // Phase 2: Subject-Teacher Mapping

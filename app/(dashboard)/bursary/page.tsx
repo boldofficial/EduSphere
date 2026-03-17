@@ -3,9 +3,9 @@ import { useMemo, useState } from 'react';
 import { useSchoolStore } from '@/lib/store';
 import { BursaryView } from '@/components/features/BursaryView';
 import { StudentInvoiceView } from '@/components/features/bursary/StudentInvoiceView';
-import { PayrollManagement } from '@/components/features/bursary/PayrollManagement';
 import {
-    useStudents, useClasses, useFees, usePayments, useExpenses, useSettings,
+    useClasses, useFees, useExpenses, useSettings,
+    usePublicPaymentOptions,
     useCreatePayment, useCreateFee, useCreateExpense,
     useDeletePayment, useDeleteFee, useDeleteExpense,
     useUpdateStudent, usePaginatedStudents, usePaginatedPayments
@@ -35,6 +35,7 @@ export default function BursaryPage() {
     const paymentTotalPages = paymentResponse ? Math.ceil(paymentResponse.count / 10) : 0;
     const { data: expenses = [] } = useExpenses();
     const { data: settings = Utils.INITIAL_SETTINGS } = useSettings();
+    const { data: paymentOptions = null } = usePublicPaymentOptions();
 
     const { mutate: addPayment } = useCreatePayment();
     const { mutate: addFee } = useCreateFee();
@@ -85,7 +86,7 @@ export default function BursaryPage() {
     return (
         <BursaryView
             students={students} classes={classes} fees={fees} payments={payments}
-            expenses={expenses} settings={settings}
+            expenses={expenses} settings={settings} paymentOptions={paymentOptions}
             onAddPayment={(p, opt) => addPayment(p, opt)}
             onAddFee={(f, opt) => addFee(f, opt)}
             onAddExpense={(e, opt) => addExpense(e, opt)}

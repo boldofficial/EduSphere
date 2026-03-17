@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { Printer, Check, Plus, Trash2 } from 'lucide-react';
+import { Printer, Check, Plus, Trash2, Link, Share2 } from 'lucide-react';
 import { Modal } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -79,6 +78,7 @@ export const BursaryModals: React.FC<BursaryModalsProps> = ({
     const [feeAmount, setFeeAmount] = useState('');
     const [feeClass, setFeeClass] = useState('');
     const [feeOptional, setFeeOptional] = useState(false);
+    const [feeAllowPartial, setFeeAllowPartial] = useState(false);
 
     // New Discount Form State
     const [discAmount, setDiscAmount] = useState('');
@@ -90,6 +90,7 @@ export const BursaryModals: React.FC<BursaryModalsProps> = ({
     const [discountReason, setDiscountReason] = useState('');
 
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [copiedLink, setCopiedLink] = useState(false);
 
     const addLineItem = () => {
         setLineItems([...lineItems, { purpose: 'tuition', amount: '' }]);
@@ -196,6 +197,7 @@ export const BursaryModals: React.FC<BursaryModalsProps> = ({
             session: settings.current_session,
             term: settings.current_term,
             is_optional: feeOptional,
+            allow_partial_payments: feeAllowPartial,
             created_at: Date.now(),
             updated_at: Date.now()
         } as any, {
@@ -207,6 +209,7 @@ export const BursaryModals: React.FC<BursaryModalsProps> = ({
                 setFeeAmount('');
                 setFeeClass('');
                 setFeeOptional(false);
+                setFeeAllowPartial(false);
             },
             onError: () => {
                 addToast('Failed to add fee structure', 'error');
@@ -504,6 +507,31 @@ export const BursaryModals: React.FC<BursaryModalsProps> = ({
 
                         <div className="flex justify-end gap-2 pt-2 border-t">
                             <Button variant="secondary" onClick={() => { setInvoiceStudent(null); setInvoiceDiscount(''); setDiscountReason(''); }}>Close</Button>
+                            
+                            {(() => {
+                                const studentPayments = payments.filter(p => p.student_id === invoiceStudent.id);
+                                const latestWithHash = [...studentPayments].reverse().find(p => p.payment_hash);
+                                if (latestWithHash) {
+                                    const shareUrl = `${window.location.origin}/pay/${latestWithHash.payment_hash}`;
+                                    return (
+                                        <Button 
+                                            variant="secondary"
+                                            className="border-brand-200 text-brand-700 hover:bg-brand-50"
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(shareUrl);
+                                                setCopiedLink(true);
+                                                setTimeout(() => setCopiedLink(false), 2000);
+                                                addToast('Payment link copied to clipboard', 'success');
+                                            }}
+                                        >
+                                            {copiedLink ? <Check className="h-4 w-4 mr-2" /> : <Link className="h-4 w-4 mr-2" />}
+                                            {copiedLink ? 'Copied!' : 'Copy Link'}
+                                        </Button>
+                                    );
+                                }
+                                return null;
+                            })()}
+
                             <Button onClick={handlePrintInvoice}>
                                 <Printer className="h-4 w-4 mr-2" /> Print
                             </Button>
@@ -550,6 +578,16 @@ export const BursaryModals: React.FC<BursaryModalsProps> = ({
                             className="rounded border-gray-300 text-brand-600 focus:ring-brand-500"
                         />
                         <label htmlFor="feeOptional" className="text-sm text-gray-700">Optional Fee (e.g. Bus, Excursion)</label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <input
+                            type="checkbox"
+                            id="feeAllowPartial"
+                            checked={feeAllowPartial}
+                            onChange={e => setFeeAllowPartial(e.target.checked)}
+                            className="rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                        />
+                        <label htmlFor="feeAllowPartial" className="text-sm text-gray-700">Allow Partial Payments (Installments)</label>
                     </div>
                     <Button type="submit" className="w-full" disabled={isSubmitting}>
                         {isSubmitting ? 'Creating...' : 'Create Fee'}

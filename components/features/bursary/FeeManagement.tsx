@@ -193,7 +193,12 @@ export const FeeManagement: React.FC<FeeManagementProps> = ({
                                     <tbody className="divide-y divide-gray-100">
                                         {applicableFees && applicableFees.map(fee => (
                                             <tr key={fee.id}>
-                                                <td className="px-3 lg:px-4 py-2">{fee.name}</td>
+                                                <td className="px-3 lg:px-4 py-2">
+                                                    {fee.name}
+                                                    {fee.allow_partial_payments && (
+                                                        <span className="ml-2 px-1.5 py-0.5 text-[10px] bg-blue-100 text-blue-700 rounded uppercase font-bold">Installments OK</span>
+                                                    )}
+                                                </td>
                                                 <td className="px-3 lg:px-4 py-2 text-right font-mono">{Utils.formatCurrency(fee.amount)}</td>
                                             </tr>
                                         ))}

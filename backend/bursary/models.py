@@ -1,3 +1,5 @@
+import uuid
+
 from django.db import models
 from django.utils import timezone
 
@@ -13,6 +15,7 @@ class FeeCategory(TenantModel):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     is_optional = models.BooleanField(default=False)  # If true, must be explicitly assigned to student
+    allow_partial_payments = models.BooleanField(default=False)  # If true, parents can pay in installments
 
     def __str__(self):
         return f"{self.name} ({self.school.name})"
@@ -93,6 +96,7 @@ class Payment(TenantModel):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="completed")
 
     gateway_reference = models.CharField(max_length=100, blank=True, null=True)
+    payment_hash = models.UUIDField(default=uuid.uuid4, unique=True, db_index=True)
     verification_data = models.JSONField(null=True, blank=True)  # Data from Paystack/Flutterwave
 
     category = models.ForeignKey(FeeCategory, on_delete=models.SET_NULL, null=True, blank=True)

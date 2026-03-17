@@ -1,3 +1,5 @@
+from django.urls import path
+
 from rest_framework.routers import DefaultRouter
 
 from .views import (
@@ -14,6 +16,8 @@ from .views import (
     StaffSalaryStructureViewSet,
     StudentFeeViewSet,
 )
+from .views_webhooks import PaystackWebhookView
+from .views_public import PublicInvoiceView
 
 router = DefaultRouter()
 router.register(r"fee-categories", FeeCategoryViewSet)
@@ -33,4 +37,7 @@ router.register(r"payrolls", PayrollViewSet)
 
 router.register(r"dashboard", DashboardViewSet, basename="bursary-dashboard")
 
-urlpatterns = router.urls
+urlpatterns = [
+    path("webhooks/paystack/<str:school_domain>/", PaystackWebhookView.as_view(), name="paystack-webhook"),
+    path("public/invoice/<uuid:payment_hash>/", PublicInvoiceView.as_view(), name="public-invoice"),
+] + router.urls
