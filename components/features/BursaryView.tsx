@@ -19,6 +19,7 @@ interface BursaryViewProps {
     payments: Types.Payment[];
     expenses: Types.Expense[];
     settings: Types.Settings;
+    paymentOptions?: Types.SchoolPaymentSettings | null;
     onAddPayment: (p: Types.Payment, options?: any) => void;
     onAddFee: (f: Types.FeeStructure, options?: any) => void;
     onAddExpense: (e: Types.Expense, options?: any) => void;
@@ -41,7 +42,7 @@ interface BursaryViewProps {
 type TabType = 'dashboard' | 'fees' | 'debtors' | 'expenses' | 'structure' | 'scholarships' | 'payroll';
 
 export const BursaryView: React.FC<BursaryViewProps> = ({
-    students, classes, fees, payments, expenses, settings, onAddPayment, onAddFee, onAddExpense, onDeletePayment, onDeleteFee, onDeleteExpense, onUpdateStudent,
+    students, classes, fees, payments, expenses, settings, paymentOptions, onAddPayment, onAddFee, onAddExpense, onDeletePayment, onDeleteFee, onDeleteExpense, onUpdateStudent,
     studentPage, studentTotalPages, onStudentPageChange, paymentPage, paymentTotalPages, onPaymentPageChange,
     selectedClass: selectedClassProp, onClassChange
 }) => {
@@ -176,6 +177,7 @@ export const BursaryView: React.FC<BursaryViewProps> = ({
                 students={students}
                 fees={fees}
                 payments={payments}
+                paymentOptions={paymentOptions}
                 showPayModal={showPayModal}
                 setShowPayModal={setShowPayModal}
                 showExpenseModal={showExpenseModal}

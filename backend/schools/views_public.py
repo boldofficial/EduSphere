@@ -18,9 +18,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from core.models import GlobalActivityLog
+from core.tenant_utils import get_request_school
 
-from .models import School, Subscription, SubscriptionPlan
-from .serializers import RegisterSchoolSerializer, SubscriptionPlanSerializer
+from .models import School, SchoolPaymentConfig, Subscription, SubscriptionPlan
+from .serializers import RegisterSchoolSerializer, SchoolPaymentConfigPublicSerializer, SubscriptionPlanSerializer
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -57,6 +58,21 @@ class VerifySchoolSlugView(APIView):
                 {"exists": True, "name": school.name, "slug": school.domain, "custom_domain": school.custom_domain}
             )
         return Response({"exists": False}, status=404)
+
+
+class PublicSchoolPaymentOptionsView(APIView):
+    """Public/sanitized payment options for a tenant."""
+
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        school = get_request_school(request, allow_super_admin_tenant=True)
+        if not school:
+            return Response({"detail": "School not found for this request context."}, status=404)
+
+        config, _ = SchoolPaymentConfig.objects.get_or_create(school=school)
+        serializer = SchoolPaymentConfigPublicSerializer(config)
+        return Response(serializer.data)
 
 
 class RegisterSchoolView(APIView):

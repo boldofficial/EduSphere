@@ -44,6 +44,8 @@ export const queryKeys = {
     globalSearch: (query: string) => ['global_search', query] as const,
     modules: ['modules'] as const,
     platformSettings: ['platform_settings'] as const,
+    schoolPaymentSettings: ['school_payment_settings'] as const,
+    publicPaymentOptions: ['public_payment_options'] as const,
     emailTemplates: ['email_templates'] as const,
     emailLogs: ['email_logs'] as const,
     supportTickets: ['support_tickets'] as const,
@@ -57,7 +59,7 @@ export const queryKeys = {
 };
 
 // Generic fetcher
-export const fetchAll = async <T>(endpoint: string, params?: Record<string, any>): Promise<T[]> => {
+export const fetchAll = async <T>(endpoint: string, params?: Record<string, unknown>): Promise<T[]> => {
     const response = await apiClient.get(endpoint, { params });
     // Handle paginated DRF responses
     if (response.data && typeof response.data === 'object' && 'results' in response.data) {
@@ -67,7 +69,7 @@ export const fetchAll = async <T>(endpoint: string, params?: Record<string, any>
 };
 
 // Paginated fetcher
-export const fetchPaginated = async <T>(endpoint: string, page = 1, pageSize = 50, extraParams?: Record<string, any>): Promise<Types.PaginatedResponse<T>> => {
+export const fetchPaginated = async <T>(endpoint: string, page = 1, pageSize = 50, extraParams?: Record<string, unknown>): Promise<Types.PaginatedResponse<T>> => {
     const response = await apiClient.get(endpoint, {
         params: { ...extraParams, page, page_size: pageSize }
     });
@@ -82,6 +84,7 @@ export {
     useSystemHealth, useAdminSchools, useAdminPlans, useAdminRevenue,
     useStrategicAnalytics, usePlatformGovernance, usePlatformAnnouncements,
     useGlobalSearch, useModules, usePlatformSettings, useUpdatePlatformSettings,
+    useSchoolPaymentSettings, useUpdateSchoolPaymentSettings, usePublicPaymentOptions,
     useEmailTemplates, useUpdateEmailTemplate, useEmailLogs,
     useSupportTickets, useCreateSupportTicket, useRespondToTicket, useResolveTicket
 } from './use-admin';

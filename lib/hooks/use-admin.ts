@@ -177,6 +177,40 @@ export function usePlatformSettings() {
     });
 }
 
+export function useSchoolPaymentSettings() {
+    return useQuery({
+        queryKey: queryKeys.schoolPaymentSettings,
+        queryFn: async () => {
+            const response = await apiClient.get('schools/payment-settings/');
+            return response.data as Types.SchoolPaymentSettings;
+        },
+    });
+}
+
+export function useUpdateSchoolPaymentSettings() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (settings: Partial<Types.SchoolPaymentSettings>) => {
+            const response = await apiClient.put('schools/payment-settings/', settings);
+            return response.data as Types.SchoolPaymentSettings;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.schoolPaymentSettings });
+            queryClient.invalidateQueries({ queryKey: queryKeys.publicPaymentOptions });
+        },
+    });
+}
+
+export function usePublicPaymentOptions() {
+    return useQuery({
+        queryKey: queryKeys.publicPaymentOptions,
+        queryFn: async () => {
+            const response = await apiClient.get('schools/public/payment-options/');
+            return response.data as Types.SchoolPaymentSettings;
+        },
+    });
+}
+
 export function useUpdatePlatformSettings() {
     const queryClient = useQueryClient();
     return useMutation({

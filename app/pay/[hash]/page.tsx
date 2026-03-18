@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import Script from 'next/script';
 
 interface LineItem {
     purpose: string;
@@ -207,7 +208,7 @@ export default function QuickPayPage({ params }: { params: Promise<{ hash: strin
                 <p className="text-center text-xs text-gray-400 mt-6">Powered by Registra</p>
             </div>
             {/* Paystack Inline Script */}
-            <script src="https://js.paystack.co/v2/inline.js" async />
+            <Script src="https://js.paystack.co/v2/inline.js" strategy="afterInteractive" />
         </div>
     );
 }

@@ -9,6 +9,65 @@ import apiClient from '@/lib/api-client';
 import * as Types from '@/lib/types';
 import { queryKeys, fetchAll, fetchPaginated } from './use-data';
 
+type PaymentApiResponse = Partial<Types.Payment> & {
+    id?: string | number;
+    student?: string | number;
+    student_id?: string | number;
+    method?: string;
+    line_items?: Types.PaymentLineItem[];
+    lineItems?: Types.PaymentLineItem[];
+};
+
+type PaymentPayload = Partial<Types.Payment> & {
+    student?: string | number;
+    method?: string;
+    items_input?: Types.PaymentLineItem[];
+};
+
+const normalizePayment = (payment: PaymentApiResponse): Types.Payment => {
+    const method = payment?.method === 'online' ? 'online' : payment?.method || 'cash';
+    const lineItems = payment?.lineItems || payment?.line_items || [];
+    return {
+        ...payment,
+        id: String(payment?.id ?? ''),
+        student_id: String(payment?.student_id ?? payment?.student ?? ''),
+        amount: Number(payment?.amount ?? 0),
+        date: String(payment?.date ?? ''),
+        method,
+        lineItems,
+        session: String(payment?.session ?? ''),
+        term: String(payment?.term ?? ''),
+        created_at: payment?.created_at ?? '',
+        updated_at: payment?.updated_at ?? '',
+    };
+};
+
+const toBackendPaymentPayload = (item: PaymentPayload) => {
+    const methodMap: Record<string, string> = {
+        cash: 'cash',
+        transfer: 'transfer',
+        bank_transfer: 'transfer',
+        pos: 'pos',
+        online: 'online',
+        paystack: 'online',
+        flutterwave: 'online',
+    };
+    const methodKey = typeof item?.method === 'string' ? item.method : 'cash';
+    const resolvedMethod = methodMap[methodKey] || 'cash';
+
+    return {
+        student: item?.student ?? item?.student_id,
+        amount: item?.amount,
+        date: item?.date,
+        method: resolvedMethod,
+        remark: item?.remark,
+        session: item?.session,
+        term: item?.term,
+        status: item?.status,
+        items_input: item?.items_input || item?.lineItems || [],
+    };
+};
+
 // =============================================
 // FEES
 // =============================================
@@ -57,23 +116,33 @@ export function useDeleteFee() {
 export function usePayments() {
     return useQuery({
         queryKey: queryKeys.payments,
-        queryFn: () => fetchAll<Types.Payment>('payments/'),
+        queryFn: async () => {
+            const rows = await fetchAll<PaymentApiResponse>('payments/');
+            return rows.map(normalizePayment);
+        },
     });
 }
 
 export function usePaginatedPayments(page = 1, pageSize = 50, studentId = '') {
     return useQuery({
         queryKey: [...queryKeys.payments, { page, pageSize, studentId }],
-        queryFn: () => fetchPaginated<Types.Payment>('payments/', page, pageSize, { student: studentId }),
+        queryFn: async () => {
+            const response = await fetchPaginated<PaymentApiResponse>('payments/', page, pageSize, { student: studentId });
+            return {
+                ...response,
+                results: (response?.results || []).map(normalizePayment),
+            };
+        },
     });
 }
 
 export function useCreatePayment() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async (item: Types.Payment) => {
-            const response = await apiClient.post('payments/', item);
-            return response.data;
+        mutationFn: async (item: PaymentPayload) => {
+            const payload = toBackendPaymentPayload(item);
+            const response = await apiClient.post('payments/', payload);
+            return normalizePayment(response.data);
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.payments }); },
     });
@@ -82,9 +151,10 @@ export function useCreatePayment() {
 export function useUpdatePayment() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ id, updates }: { id: string; updates: Partial<Types.Payment> }) => {
-            const response = await apiClient.patch(`payments/${id}/`, updates);
-            return response.data;
+        mutationFn: async ({ id, updates }: { id: string; updates: PaymentPayload }) => {
+            const payload = toBackendPaymentPayload(updates);
+            const response = await apiClient.patch(`payments/${id}/`, payload);
+            return normalizePayment(response.data);
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.payments }); },
     });

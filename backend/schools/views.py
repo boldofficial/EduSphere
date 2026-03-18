@@ -17,6 +17,7 @@ from .views_admin import (
     PlatformSettingsView,
     RecordPaymentView,
     SchoolManagementView,
+    SchoolPaymentSettingsView,
     SchoolRevenueView,
 )
 
@@ -36,6 +37,7 @@ from .views_governance import (
 
 # Public views
 from .views_public import (
+    PublicSchoolPaymentOptionsView,
     PublicPlanListView,
     RegisterSchoolView,
     VerifySchoolSlugView,
@@ -45,9 +47,11 @@ __all__ = [
     "PublicPlanListView",
     "VerifySchoolSlugView",
     "RegisterSchoolView",
+    "PublicSchoolPaymentOptionsView",
     "PlatformModulesView",
     "ModuleToggleView",
     "SchoolManagementView",
+    "SchoolPaymentSettingsView",
     "SchoolRevenueView",
     "RecordPaymentView",
     "PlanManagementView",

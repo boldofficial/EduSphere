@@ -22,10 +22,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from core.pagination import StandardPagination
+from core.tenant_utils import get_request_school
 from core.models import GlobalActivityLog
 
-from .models import PlatformModule, School, SchoolPayment, Subscription, SubscriptionPlan
-from .serializers import SchoolSerializer, SubscriptionPlanSerializer
+from .models import PlatformModule, School, SchoolPayment, SchoolPaymentConfig, Subscription, SubscriptionPlan
+from .serializers import SchoolPaymentConfigAdminSerializer, SchoolSerializer, SubscriptionPlanSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -396,6 +397,38 @@ class PlatformSettingsView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=400)
+
+
+class SchoolPaymentSettingsView(APIView):
+    """Manage per-school payment methods and gateway credentials."""
+
+    permission_classes = [IsAuthenticated]
+
+    def _get_school(self, request):
+        school = get_request_school(request, allow_super_admin_tenant=True)
+        if not school:
+            raise ValidationError({"detail": "School context not found. Provide tenant context."})
+        return school
+
+    def _ensure_can_edit(self, request):
+        if request.user.role not in ["SCHOOL_ADMIN", "SUPER_ADMIN"] and not request.user.is_superuser:
+            raise PermissionDenied("Only school admins can update payment settings.")
+
+    def get(self, request):
+        school = self._get_school(request)
+        config, _ = SchoolPaymentConfig.objects.get_or_create(school=school)
+        serializer = SchoolPaymentConfigAdminSerializer(config)
+        return Response(serializer.data)
+
+    def put(self, request):
+        self._ensure_can_edit(request)
+        school = self._get_school(request)
+        config, _ = SchoolPaymentConfig.objects.get_or_create(school=school)
+        serializer = SchoolPaymentConfigAdminSerializer(config, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save(school=school)
+            return Response(serializer.data)
+        raise ValidationError(serializer.errors)
 
 
 class AdminDemoRequestView(APIView):

@@ -6,13 +6,23 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { useToast } from '@/components/providers/toast-provider';
+import { PaymentSettingsCard } from '@/components/features/settings/PaymentSettingsCard';
 
 interface SettingsViewProps {
     settings: Types.Settings;
-    onUpdate: (s: Types.Settings) => void;
+    onUpdate: (s: Types.Settings) => Promise<unknown>;
+    paymentSettings?: Types.SchoolPaymentSettings | null;
+    onUpdatePaymentSettings?: (s: Partial<Types.SchoolPaymentSettings>) => Promise<unknown>;
+    canManagePaymentSettings?: boolean;
 }
 
-export const SettingsView: React.FC<SettingsViewProps> = ({ settings, onUpdate }) => {
+export const SettingsView: React.FC<SettingsViewProps> = ({
+    settings,
+    onUpdate,
+    paymentSettings,
+    onUpdatePaymentSettings,
+    canManagePaymentSettings = false
+}) => {
     // Ensure all new fields have default values to prevent uncontrolled input errors
     const initializeForm = (s: Types.Settings) => ({
         ...s,
@@ -45,13 +55,42 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, onUpdate }
     });
 
     const [formData, setFormData] = useState<Types.Settings>(initializeForm(settings));
+    const initializePaymentSettings = (s?: Types.SchoolPaymentSettings | null): Types.SchoolPaymentSettings => ({
+        enable_cash: s?.enable_cash ?? true,
+        enable_bank_transfer: s?.enable_bank_transfer ?? true,
+        enable_paystack: s?.enable_paystack ?? false,
+        enable_flutterwave: s?.enable_flutterwave ?? false,
+        default_payment_method: s?.default_payment_method ?? 'bank_transfer',
+        supports_online_payment: s?.supports_online_payment ?? false,
+        enabled_methods: s?.enabled_methods ?? ['cash', 'bank_transfer'],
+        paystack_public_key: s?.paystack_public_key ?? '',
+        paystack_secret_key: '',
+        paystack_webhook_secret: '',
+        has_paystack_secret: s?.has_paystack_secret ?? false,
+        flutterwave_public_key: s?.flutterwave_public_key ?? '',
+        flutterwave_secret_key: '',
+        flutterwave_webhook_secret: '',
+        has_flutterwave_secret: s?.has_flutterwave_secret ?? false,
+        bank_name: s?.bank_name ?? '',
+        bank_account_name: s?.bank_account_name ?? '',
+        bank_account_number: s?.bank_account_number ?? '',
+        bank_sort_code: s?.bank_sort_code ?? '',
+        transfer_instructions: s?.transfer_instructions ?? '',
+        require_transfer_proof: s?.require_transfer_proof ?? true,
+        updated_at: s?.updated_at,
+    });
+    const [paymentForm, setPaymentForm] = useState<Types.SchoolPaymentSettings>(initializePaymentSettings(paymentSettings));
+    const [isSavingPaymentSettings, setIsSavingPaymentSettings] = useState(false);
 
     // Update form data when settings prop changes (e.g. data loaded)
     useEffect(() => {
         setFormData(initializeForm(settings));
     }, [settings]);
+    useEffect(() => {
+        setPaymentForm(initializePaymentSettings(paymentSettings));
+    }, [paymentSettings]);
     const { addToast } = useToast();
-    const handleChange = (field: keyof Types.Settings, value: any) => { setFormData(prev => ({ ...prev, [field]: value })); };
+    const handleChange = (field: keyof Types.Settings, value: unknown) => { setFormData(prev => ({ ...prev, [field]: value })); };
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, field: keyof Types.Settings) => {
         const file = e.target.files?.[0];
         if (file) { const reader = new FileReader(); reader.onloadend = () => { handleChange(field, reader.result as string); }; reader.readAsDataURL(file); }
@@ -63,6 +102,50 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, onUpdate }
             addToast('Settings updated successfully', 'success');
         } catch (error) {
             addToast('Failed to update settings', 'error');
+        }
+    };
+    const handlePaymentSettingsChange = (updates: Partial<Types.SchoolPaymentSettings>) => {
+        setPaymentForm((prev) => {
+            const next = { ...prev, ...updates };
+            const enabledMethods: Types.SchoolPaymentMethod[] = [];
+            if (next.enable_cash) enabledMethods.push('cash');
+            if (next.enable_bank_transfer) enabledMethods.push('bank_transfer');
+            if (next.enable_paystack) enabledMethods.push('paystack');
+            if (next.enable_flutterwave) enabledMethods.push('flutterwave');
+            if (!enabledMethods.includes(next.default_payment_method)) {
+                next.default_payment_method = enabledMethods[0] || 'bank_transfer';
+            }
+            return next;
+        });
+    };
+    const handleSavePaymentSettings = async () => {
+        if (!onUpdatePaymentSettings) return;
+        const hasEnabledMethod = [
+            paymentForm.enable_cash,
+            paymentForm.enable_bank_transfer,
+            paymentForm.enable_paystack,
+            paymentForm.enable_flutterwave,
+        ].some(Boolean);
+        if (!hasEnabledMethod) {
+            addToast('Enable at least one payment method before saving.', 'error');
+            return;
+        }
+        if (paymentForm.enable_paystack && !paymentForm.paystack_public_key?.trim()) {
+            addToast('Paystack public key is required when Paystack is enabled.', 'error');
+            return;
+        }
+        if (paymentForm.enable_flutterwave && !paymentForm.flutterwave_public_key?.trim()) {
+            addToast('Flutterwave public key is required when Flutterwave is enabled.', 'error');
+            return;
+        }
+        try {
+            setIsSavingPaymentSettings(true);
+            await onUpdatePaymentSettings(paymentForm);
+            addToast('Payment settings updated successfully', 'success');
+        } catch (error) {
+            addToast('Failed to update payment settings', 'error');
+        } finally {
+            setIsSavingPaymentSettings(false);
         }
     };
     return (
@@ -166,6 +249,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, onUpdate }
                         <textarea value={formData.invoice_notes || ''} onChange={e => handleChange('invoice_notes', e.target.value)} placeholder="Invoice notes (optional)..." rows={1} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500" />
                     </div>
                 </Card>
+                {paymentSettings && onUpdatePaymentSettings && (
+                    <PaymentSettingsCard
+                        paymentSettings={paymentForm}
+                        onChange={handlePaymentSettingsChange}
+                        onSave={handleSavePaymentSettings}
+                        isSaving={isSavingPaymentSettings}
+                        canManage={canManagePaymentSettings}
+                    />
+                )}
                 <Card title="Domain Management">
                     <div className="space-y-4">
                         <div>
