@@ -1,0 +1,33 @@
+# ============================================
+# LOCAL DEVELOPMENT docker-compose
+# Only runs DB and Redis locally
+# Backend and Frontend run directly (not in Docker)
+# ============================================
+# Usage:
+#   Start:  docker compose -f docker-compose.local.yml up -d
+#   Stop:   docker compose -f docker-compose.local.yml down
+
+version: '3.8'
+services:
+  db:
+    image: 'postgres:15-alpine'
+    container_name: registra_db
+    ports:
+      - '5432:5432'
+    volumes:
+      - 'postgres_data:/var/lib/postgresql/data'
+    environment:
+      POSTGRES_DB: registra_db
+      POSTGRES_USER: registra_admin
+      POSTGRES_PASSWORD: registra_secure_pass_2026
+    restart: always
+
+  redis:
+    image: 'redis:7-alpine'
+    container_name: registra_redis
+    ports:
+      - '6379:6379'
+    restart: always
+
+volumes:
+  postgres_data:
