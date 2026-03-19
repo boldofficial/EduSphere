@@ -1,36 +1,33 @@
 version: '3.8'
-
 services:
   db:
-    image: postgres:15-alpine
+    image: 'postgres:15-alpine'
     container_name: registra_db
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - 'postgres_data:/var/lib/postgresql/data'
     env_file:
       - .env
     restart: always
     networks:
       - coolify
-
   redis:
-    image: redis:7-alpine
+    image: 'redis:7-alpine'
     container_name: registra_redis
     ports:
-      - "6379:6379"
+      - '6379:6379'
     restart: always
     networks:
       - coolify
-
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: registra_backend
     volumes:
-      - static_volume:/app/staticfiles
-      - media_volume:/app/media
+      - 'static_volume:/app/staticfiles'
+      - 'media_volume:/app/media'
     networks:
       - coolify
     env_file:
@@ -40,17 +37,14 @@ services:
       - redis
     restart: always
     labels:
-      - "traefik.enable=true"
-      # Higher priority (1000) for backend to catch API/Admin requests first
-      - "traefik.http.routers.backend.priority=1000"
-      # Rule matches Main domain OR Subdomains AND specific paths using explicit grouped ORs
-      - "traefik.http.routers.backend.rule=(Host(`myregistra.net`) || Host(`www.myregistra.net`) || HostRegexp(`^.+\\.myregistra\\.net$`)) && (PathPrefix(`/api`) || PathPrefix(`/admin`) || PathPrefix(`/django-static`) || PathPrefix(`/media`))"
-      - "traefik.http.routers.backend.entrypoints=https"
-      - "traefik.http.routers.backend.tls=true"
-      - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
-      - "traefik.http.services.backend.loadbalancer.server.port=8000"
-      - "traefik.docker.network=coolify"
-
+      - traefik.enable=true
+      - traefik.http.routers.backend.priority=1000
+      - 'traefik.http.routers.backend.rule=(Host(`myregistra.net`) || Host(`www.myregistra.net`) || HostRegexp(`^.+\.myregistra\.net$`)) && (PathPrefix(`/api`) || PathPrefix(`/admin`) || PathPrefix(`/django-static`) || PathPrefix(`/media`))'
+      - traefik.http.routers.backend.entrypoints=https
+      - traefik.http.routers.backend.tls=true
+      - traefik.http.routers.backend.tls.certresolver=letsencrypt
+      - traefik.http.services.backend.loadbalancer.server.port=8000
+      - traefik.docker.network=coolify
   frontend:
     build:
       context: .
@@ -64,32 +58,27 @@ services:
     networks:
       - coolify
     environment:
-      - DJANGO_API_URL=http://backend:8000
+      - 'DJANGO_API_URL=http://backend:8000'
     labels:
-      - "traefik.enable=true"
-
-      # 1. High Priority (2000): Protect Next.js Auth & Proxy routes from being stolen by Backend
-      - "traefik.http.routers.frontend-auth.priority=2000"
-      - "traefik.http.routers.frontend-auth.rule=(Host(`myregistra.net`) || Host(`www.myregistra.net`) || HostRegexp(`^.+\\.myregistra\\.net$`)) && (PathPrefix(`/api/auth`) || PathPrefix(`/api/proxy`))"
-      - "traefik.http.routers.frontend-auth.entrypoints=https"
-      - "traefik.http.routers.frontend-auth.tls=true"
-      - "traefik.http.routers.frontend-auth.tls.certresolver=letsencrypt"
-
-      # 2. Low Priority (100): Catch-all for the UI
-      - "traefik.http.routers.frontend.priority=100"
-      - "traefik.http.routers.frontend.rule=Host(`myregistra.net`) || Host(`www.myregistra.net`) || HostRegexp(`^.+\\.myregistra\\.net$`)"
-      - "traefik.http.routers.frontend.entrypoints=https"
-      - "traefik.http.routers.frontend.tls=true"
-      - "traefik.http.routers.frontend.tls.certresolver=letsencrypt"
-      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
-      - "traefik.docker.network=coolify"
-
+      - traefik.enable=true
+      - traefik.http.routers.frontend-auth.priority=2000
+      - 'traefik.http.routers.frontend-auth.rule=(Host(`myregistra.net`) || Host(`www.myregistra.net`) || HostRegexp(`^.+\.myregistra\.net$`)) && (PathPrefix(`/api/auth`) || PathPrefix(`/api/proxy`))'
+      - traefik.http.routers.frontend-auth.entrypoints=https
+      - traefik.http.routers.frontend-auth.tls=true
+      - traefik.http.routers.frontend-auth.tls.certresolver=letsencrypt
+      - traefik.http.routers.frontend.priority=100
+      - 'traefik.http.routers.frontend.rule=Host(`myregistra.net`) || Host(`www.myregistra.net`) || HostRegexp(`^.+\.myregistra\.net$`)'
+      - traefik.http.routers.frontend.entrypoints=https
+      - traefik.http.routers.frontend.tls=true
+      - traefik.http.routers.frontend.tls.certresolver=letsencrypt
+      - traefik.http.services.frontend.loadbalancer.server.port=3000
+      - traefik.docker.network=coolify
   celery_worker:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: registra_worker
-    command: celery -A config worker -l info
+    command: 'celery -A config worker -l info'
     env_file:
       - .env
     depends_on:
@@ -98,13 +87,12 @@ services:
     restart: always
     networks:
       - coolify
-
   celery_beat:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: registra_beat
-    command: celery -A config beat -l info
+    command: 'celery -A config beat -l info'
     env_file:
       - .env
     depends_on:
@@ -113,29 +101,25 @@ services:
     restart: always
     networks:
       - coolify
-
   nginx:
     build:
       context: ./nginx
       dockerfile: Dockerfile
     container_name: registra_nginx
     volumes:
-      - static_volume:/app/staticfiles
-      - media_volume:/app/media
+      - 'static_volume:/app/staticfiles'
+      - 'media_volume:/app/media'
     networks:
       - coolify
     depends_on:
       - frontend
     restart: always
-
 volumes:
-  postgres_data:
-  static_volume:
-  media_volume:
-  certbot_etc:
-  certbot_var:
-
-
+  postgres_data: null
+  static_volume: null
+  media_volume: null
+  certbot_etc: null
+  certbot_var: null
 networks:
   coolify:
     external: true
