@@ -56,6 +56,13 @@ class DiscussionMessage(models.Model):
 
 ## Status Tracker [/]
 
+### Environment & Tools
+- [x] Configure `package.json` with correct `.venv` path and port 8000
+- [x] Migrate `requirements.txt` to `pyproject.toml` for `uv` workspace
+- [x] Add missing `drf-spectacular-sidecar` to dependencies
+- [x] Delete legacy `requirements.txt`
+- [/] Verify backend connectivity (waiting for `uv sync` retry)
+
 ### Backend Implementation
 - [ ] Create `DiscussionThread` and `DiscussionMessage` models in `lms/models.py`
 - [ ] Create serializers in `lms/serializers.py`
