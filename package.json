@@ -21,7 +21,7 @@
     "db:sync": "bash scripts/sync-prod-to-local.sh",
     "db:shell": "docker exec -it registra_db psql -U registra_admin -d registra_db",
 
-    "local": "npm run docker:up && npm run dev"
+    "local": "npm run docker:up && (cd backend && ./.venv/bin/python manage.py runserver &) && npm run dev"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.958.0",
