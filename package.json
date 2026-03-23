@@ -10,7 +10,18 @@
     "lint:fix": "next lint --fix",
     "check-types": "tsc --noEmit",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,css,md}\" --ignore-path .gitignore",
-    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,css,md}\" --ignore-path .gitignore"
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,css,md}\" --ignore-path .gitignore",
+
+    "docker:up": "docker compose -f docker-compose.local.yml up -d",
+    "docker:down": "docker compose -f docker-compose.local.yml down",
+    "docker:reset": "docker compose -f docker-compose.local.yml down -v",
+    "docker:logs": "docker compose -f docker-compose.local.yml logs -f",
+    "docker:ps": "docker compose -f docker-compose.local.yml ps",
+
+    "db:sync": "bash scripts/sync-prod-to-local.sh",
+    "db:shell": "docker exec -it registra_db psql -U registra_admin -d registra_db",
+
+    "local": "npm run docker:up && npm run dev"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.958.0",
