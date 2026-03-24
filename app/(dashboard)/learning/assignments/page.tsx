@@ -7,6 +7,7 @@ import { Plus, ArrowLeft, ClipboardCheck } from 'lucide-react';
 import { useAssignments } from '@/lib/hooks/use-data';
 import { CreateAssignmentModal } from '@/components/features/learning/LearningModals';
 import { SubmissionGradingView } from '@/components/features/learning/SubmissionGradingView';
+import { AssignmentDetailView } from '@/components/features/learning/AssignmentDetailView';
 import { useSchoolStore } from '@/lib/store';
 
 export default function AssignmentsPage() {
@@ -14,6 +15,7 @@ export default function AssignmentsPage() {
     const isStudent = currentRole === 'student';
     const { data: assignments = [], isLoading } = useAssignments();
     const [gradingAssignment, setGradingAssignment] = useState<any | null>(null);
+    const [selectedAssignment, setSelectedAssignment] = useState<any | null>(null);
 
     if (gradingAssignment) {
         return (
@@ -32,6 +34,18 @@ export default function AssignmentsPage() {
                     assignmentId={gradingAssignment.id}
                     assignmentTitle={gradingAssignment.title}
                     maxPoints={gradingAssignment.points}
+                />
+            </div>
+        );
+    }
+
+    if (selectedAssignment) {
+        return (
+            <div className="p-6">
+                <AssignmentDetailView
+                    assignment={selectedAssignment}
+                    onBack={() => setSelectedAssignment(null)}
+                    isStudent={isStudent}
                 />
             </div>
         );
@@ -79,14 +93,14 @@ export default function AssignmentsPage() {
                                 </div>
                             </div>
                             <div className="p-4 bg-gray-50 border-t rounded-b-xl flex gap-2">
-                                {isStudent ? (
-                                    <Button
-                                        className="flex-1 text-xs gap-2"
-                                        variant="outline"
-                                    >
-                                        View Details
-                                    </Button>
-                                ) : (
+                                <Button
+                                    className="flex-1 text-xs gap-2"
+                                    variant="outline"
+                                    onClick={() => setSelectedAssignment(assignment)}
+                                >
+                                    View Details
+                                </Button>
+                                {!isStudent && (
                                     <Button
                                         className="flex-1 text-xs gap-2"
                                         onClick={() => setGradingAssignment(assignment)}
