@@ -83,17 +83,17 @@ export default function LearningCenterPage() {
                     </div>
                 )}
 
-                {/* Digital Library Placeholder */}
-                <div className="cursor-not-allowed opacity-60 h-full">
-                    <Card title="Digital Library" className="h-full">
+                {/* Lessons & Materials Module Card */}
+                <div onClick={() => router.push('/learning/lessons')} className="cursor-pointer h-full">
+                    <Card title="Lessons & Materials" className="hover:shadow-lg transition-all group h-full">
                         <div className="flex flex-col gap-4">
                             <div className="flex items-center gap-3">
-                                <div className="p-3 rounded-lg bg-yellow-100 text-yellow-600">
+                                <div className="p-3 rounded-lg bg-yellow-100 text-yellow-600 group-hover:bg-yellow-600 group-hover:text-white transition-colors">
                                     <BookOpen className="w-6 h-6" />
                                 </div>
-                                <p className="text-sm text-gray-500">Coming Soon: Access books and resources.</p>
+                                <p className="text-sm text-gray-500">Access classroom notes, study guides, and lesson materials.</p>
                             </div>
-                            <Button variant="ghost" disabled className="w-full mt-2">Coming Soon</Button>
+                            <Button variant="outline" className="w-full mt-2">Open Materials</Button>
                         </div>
                     </Card>
                 </div>
