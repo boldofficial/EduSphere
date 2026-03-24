@@ -101,6 +101,7 @@ INSTALLED_APPS = [
     "academic",
     "bursary",
     "learning",
+    "lms",
     "emails",
 ]
 

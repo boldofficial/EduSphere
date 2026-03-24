@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Book, FileText, Plus, Search, ExternalLink, Download, Clock, User as UserIcon } from 'lucide-react';
+import { Book, FileText, Plus, Search, ExternalLink, Download, Clock, User as UserIcon, ArrowLeft } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +11,7 @@ import { useLessons, useCreateLesson, useClasses, useSubjects } from '@/lib/hook
 import { useToast } from '@/components/providers/toast-provider';
 import * as Utils from '@/lib/utils';
 import * as Types from '@/lib/types';
+import { DiscussionThreadComponent } from './lms/DiscussionThread';
 
 export const LearningCenterView: React.FC = () => {
     const { currentUser } = useSchoolStore();
@@ -28,8 +29,8 @@ export const LearningCenterView: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedClassFilter, setSelectedClassFilter] = useState('all');
     const [showUploadModal, setShowUploadModal] = useState(false);
+    const [selectedLesson, setSelectedLesson] = useState<any | null>(null);
 
-    // New Lesson Form State
     const [newLesson, setNewLesson] = useState({
         title: '',
         subject: '',
@@ -42,31 +43,117 @@ export const LearningCenterView: React.FC = () => {
     const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'super_admin';
     const canUpload = isTeacher || isAdmin;
 
+    // Lesson ContentType ID is 25
+    const LESSON_CONTENT_TYPE_ID = 25;
+
     const filteredLessons = lessons.filter((lesson: any) => {
-        const matchesSearch = lesson.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            lesson.subject_name?.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesClass = selectedClassFilter === 'all' || lesson.student_class === selectedClassFilter;
+        const matchesSearch = 
+            lesson.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            lesson.subject_name.toLowerCase().includes(searchQuery.toLowerCase());
+        
+        const matchesClass = selectedClassFilter === 'all' || String(lesson.student_class) === selectedClassFilter;
+        
         return matchesSearch && matchesClass;
     });
 
-    const handleUpload = (e: React.FormEvent) => {
+    const handleUpload = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!newLesson.title || !newLesson.subject || !newLesson.student_class) {
-            addToast('Please fill in all required fields', 'warning');
-            return;
+        try {
+            await createLesson(newLesson);
+            addToast({
+                title: 'Success',
+                description: 'Learning material uploaded successfully',
+                type: 'success'
+            });
+            setShowUploadModal(false);
+            setNewLesson({ title: '', subject: '', student_class: '', content: '', file_url: '' });
+        } catch (error) {
+            addToast({
+                title: 'Error',
+                description: 'Failed to upload material',
+                type: 'error'
+            });
         }
-
-        createLesson(newLesson, {
-            onSuccess: () => {
-                addToast('Lesson uploaded successfully', 'success');
-                setShowUploadModal(false);
-                setNewLesson({ title: '', subject: '', student_class: '', content: '', file_url: '' });
-            },
-            onError: () => {
-                addToast('Failed to upload lesson', 'error');
-            }
-        });
     };
+
+    if (selectedLesson) {
+        return (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="flex items-center gap-4">
+                    <Button variant="ghost" size="sm" onClick={() => setSelectedLesson(null)} className="hover:bg-brand-50 text-brand-700">
+                        <ArrowLeft className="w-4 h-4 mr-2" />
+                        Back to Materials
+                    </Button>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="lg:col-span-2 space-y-6">
+                        <Card className="border-none shadow-sm overflow-hidden">
+                            <div className="h-2 bg-brand-500" />
+                            <div className="p-8 space-y-6">
+                                <div>
+                                    <h1 className="text-3xl font-bold text-gray-900 mb-2">{selectedLesson.title}</h1>
+                                    <div className="flex flex-wrap gap-4 text-sm text-gray-500">
+                                        <div className="flex items-center gap-1.5 bg-gray-100 px-3 py-1 rounded-full">
+                                            <Book className="w-4 h-4 text-brand-600" />
+                                            {selectedLesson.subject_name}
+                                        </div>
+                                        <div className="flex items-center gap-1.5 bg-gray-100 px-3 py-1 rounded-full">
+                                            <UserIcon className="w-4 h-4 text-blue-500" />
+                                            {selectedLesson.teacher_name || 'System'}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="prose prose-brand max-w-none text-gray-700 leading-relaxed">
+                                    <div dangerouslySetInnerHTML={{ __html: selectedLesson.content }} />
+                                </div>
+
+                                {selectedLesson.file_url && (
+                                    <div className="pt-6 border-t border-gray-100">
+                                        <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-4">Attached Document</h3>
+                                        <a 
+                                            href={selectedLesson.file_url} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            className="inline-flex items-center gap-3 p-4 rounded-xl border border-brand-100 bg-brand-50 hover:bg-brand-100 transition-all group"
+                                        >
+                                            <div className="p-2 rounded-lg bg-white text-brand-600 shadow-sm">
+                                                <Download className="w-5 h-5" />
+                                            </div>
+                                            <div className="text-left">
+                                                <p className="text-sm font-bold text-brand-900">Download Lesson Material</p>
+                                                <p className="text-xs text-brand-600">Click to view/download PDF</p>
+                                            </div>
+                                        </a>
+                                    </div>
+                                )}
+                            </div>
+                        </Card>
+
+                        {/* Discussion Section */}
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+                            <DiscussionThreadComponent 
+                                contentTypeId={LESSON_CONTENT_TYPE_ID} 
+                                objectId={Number(selectedLesson.id)} 
+                                title={`Discussion: ${selectedLesson.title}`}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="space-y-6">
+                        <Card className="border-none shadow-sm bg-brand-900 text-white p-6">
+                            <h3 className="font-bold text-lg mb-4">Lesson Summary</h3>
+                            <div className="space-y-4 text-brand-100 text-sm">
+                                <p>Date: {new Date(selectedLesson.created_at).toLocaleDateString()}</p>
+                                <p>Class: {selectedLesson.class_name}</p>
+                            </div>
+                        </Card>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">
@@ -118,8 +205,8 @@ export const LearningCenterView: React.FC = () => {
             ) : filteredLessons.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {filteredLessons.map((lesson: any) => (
-                        <Card key={lesson.id} className="hover:shadow-md transition-shadow group">
-                            <div className="p-5">
+                        <div key={lesson.id} className="cursor-pointer group" onClick={() => setSelectedLesson(lesson)}>
+                            <Card className="hover:shadow-md transition-shadow">
                                 <div className="flex justify-between items-start mb-3">
                                     <div className="bg-brand-50 text-brand-600 p-2 rounded-lg">
                                         <Book className="h-5 w-5" />
@@ -142,48 +229,23 @@ export const LearningCenterView: React.FC = () => {
                                     </div>
                                 </div>
 
-                                <div className="flex gap-2">
+                                <div className="flex gap-2" onClick={e => e.stopPropagation()}>
                                     {lesson.file_url ? (
                                         <Button variant="primary" className="flex-1 text-xs" onClick={() => window.open(lesson.file_url)}>
                                             <Download className="h-3 w-3 mr-2" />
-                                            Download PDF
+                                            Download
                                         </Button>
                                     ) : (
                                         <Button variant="outline" className="flex-1 text-xs pointer-events-none">
                                             Text Only
                                         </Button>
                                     )}
-                                    {canUpload && lesson.content && (
-                                        <button
-                                            onClick={async (e) => {
-                                                e.stopPropagation();
-                                                try {
-                                                    const apiClient = (await import('@/lib/api-client')).default;
-                                                    addToast('Generating quiz from lesson notes...', 'info');
-                                                    const res = await apiClient.post('/quizzes/generate-from-lesson/', {
-                                                        lesson_id: lesson.id,
-                                                        num_questions: 5,
-                                                        difficulty: 'medium'
-                                                    });
-                                                    if (res.data?.success) {
-                                                        addToast(`Quiz created with ${res.data.message}!`, 'success');
-                                                    }
-                                                } catch {
-                                                    addToast('Quiz generation failed', 'error');
-                                                }
-                                            }}
-                                            className="px-3 py-1.5 text-xs font-medium text-purple-700 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors flex items-center gap-1"
-                                            title="Auto-generate quiz from this lesson"
-                                        >
-                                            <span className="text-sm">✨</span> Quiz
-                                        </button>
-                                    )}
-                                    <Button variant="secondary" className="px-3" title="View Details">
+                                    <Button variant="secondary" className="px-3" title="View Details" onClick={() => setSelectedLesson(lesson)}>
                                         <ExternalLink className="h-3 w-3" />
                                     </Button>
                                 </div>
-                            </div>
-                        </Card>
+                            </Card>
+                        </div>
                     ))}
                 </div>
             ) : (
@@ -194,13 +256,14 @@ export const LearningCenterView: React.FC = () => {
                 </div>
             )}
 
-            {/* Upload Modal */}
+            {/* Upload Modal logic remains same... */}
             {showUploadModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-                    <Card className="w-full max-w-lg">
-                        <div className="p-6">
-                            <h2 className="text-xl font-bold mb-6">Upload Learning Material</h2>
-                            <form onSubmit={handleUpload} className="space-y-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowUploadModal(false)}>
+                    <div className="w-full max-w-lg" onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+                        <Card>
+                            <div className="space-y-6">
+                                <h2 className="text-xl font-bold text-gray-900">Upload Learning Material</h2>
+                                <form onSubmit={handleUpload} className="space-y-4">
                                 <Input
                                     label="Lesson Title"
                                     placeholder="e.g. Introduction to Algebra"
