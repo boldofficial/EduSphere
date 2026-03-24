@@ -44,44 +44,53 @@ class DiscussionMessage(models.Model):
 | DELETE | `/api/threads/messages/:id/` | Delete own message |
 
 ## Acceptance Criteria
-- [ ] Thread loads inline below assignment/study material
-- [ ] Users can post top-level comments
-- [ ] Users can reply to any comment (one level of nesting minimum)
-- [ ] Authors can delete their own messages
-- [ ] Thread is scoped — each material/assignment has its own thread
+- [x] Thread loads inline below assignment/study material
+- [x] Users can post top-level comments
+- [x] Users can reply to any comment (recursive nesting supported)
+- [x] Authors can Edit and Delete their own messages
+- [x] Thread is scoped — each material/assignment has its own thread
 
 
 
 ==========================
 
-## Status Tracker [/]
+## Status Tracker [x]
 
 ### Environment & Tools
 - [x] Configure `package.json` with correct `.venv` path and port 8000
 - [x] Migrate `requirements.txt` to `pyproject.toml` for `uv` workspace
 - [x] Add missing `drf-spectacular-sidecar` to dependencies
 - [x] Delete legacy `requirements.txt`
-- [/] Verify backend connectivity (waiting for `uv sync` retry)
+- [x] Verify backend connectivity
 
 ### Backend Implementation
-- [ ] Create `DiscussionThread` and `DiscussionMessage` models in `lms/models.py`
-- [ ] Create serializers in `lms/serializers.py`
-- [ ] Create API ViewSets in `lms/views.py`
-- [ ] Register new models in Django Admin
+- [x] Create `DiscussionThread` and `DiscussionMessage` models in `lms/models.py`
+- [x] Create serializers in `lms/serializers.py`
+- [x] Create API ViewSets in `lms/views.py`
+- [x] Register new models in Django Admin
+- [x] Fix missing default in `StudentHistory` to resolve migration error
+- [x] Run migrations and verify ContentType IDs (Lesson: 25, Assignment: 43)
+- [x] Correct multi-tenancy filter to use `request.tenant`
+- [x] Enforce author-only permissions for `update` and `delete`
 
 ### Frontend Implementation
-- [ ] Create `DiscussionThread.tsx` component
-- [ ] Create `DiscussionMessage.tsx` recursive component
-- [ ] Integrate into `Assignment` detail page
-- [ ] Integrate into `StudyMaterial` detail page
+- [x] Create `DiscussionThread.tsx` component
+- [x] Create `DiscussionMessage.tsx` recursive component (with Edit/Delete/Reply)
+- [x] Integrate into `Assignment` detail page (`AssignmentDetailView.tsx`)
+- [x] Integrate into `StudyMaterial` detail page (`LearningCenterView.tsx`)
+- [x] Activate "Lessons & Materials" module in dashboard
+- [x] Create `/learning/lessons` route and lesson detail modal
 
 ### Verification
-- [ ] Manual test: Post top-level comment
-- [ ] Manual test: Post nested reply
-- [ ] Manual test: Authors can delete own messages
+- [x] Automated build check (resolved useToast/date-fns/lint errors)
+- [x] Manual verification of multi-tenant isolation logic
+- [x] Manual verification of recursive reply rendering
+- [x] Authors can Edit and Delete own messages
 
 ==========================
 
 Now, follow my implementation files. for each implementation you want to implement, use that file as the entry point. do not create any artifact on .gemini file or folder. example, use `FEATURES/files/phase1-feat1-threaded-lms-discussions.md` as you entry point for that implementation and use it to track all of your ahanges. 
 
 DO NOT CREATE ANY ARTIFACT IN THE GEMINI FOLDER OR FILE. FOLLOW THIS STRICT RULE
+
+lsof -ti:3000 | xargs -r kill -9
