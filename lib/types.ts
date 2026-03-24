@@ -622,6 +622,25 @@ export interface StudentAnswer extends Entity {
   is_graded: boolean;
 }
 
+// =============================================
+// LMS DISCUSSION MODULE
+// =============================================
+
+export interface DiscussionThread extends Entity {
+  content_type: number;
+  object_id: number;
+  messages: DiscussionMessage[];
+}
+
+export interface DiscussionMessage extends Entity {
+  thread: number;
+  author: number;
+  author_name: string;
+  parent: number | null;
+  body: string;
+  replies: DiscussionMessage[];
+}
+
 
 export interface TicketResponse extends Omit<Entity, 'created_at' | 'updated_at'> {
   username: string;
