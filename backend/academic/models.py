@@ -169,7 +169,7 @@ class StudentHistory(TenantModel):
         ("reactivation", "Reactivation"),
     ]
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name="history")
-    event_type = models.CharField(max_length=50, choices=EVENT_CHOICES)
+    event_type = models.CharField(max_length=50, choices=EVENT_CHOICES, default="promotion")
     session = models.CharField(max_length=50)  # e.g., "2024/2025"
     student_class = models.ForeignKey(Class, on_delete=models.SET_NULL, null=True, blank=True)
     remarks = models.TextField(blank=True)
