@@ -64,8 +64,17 @@ def generate_remark(student, trend):
 | GET | `/api/grades/trends/?student_id=` | Get trend data for a student |
 | GET | `/api/grades/trends/class/?class_id=` | Get trends for entire class |
 
+## Status: Completed (Phase 1, Feature 2)
+
+- [x] Trend fields (`performance_trend`, `ai_performance_remark`) added to `ReportCard` model.
+- [x] Automated trend computation implemented in `ReportCard.calculate_trend`.
+- [x] Multi-model AI fallback logic (Gemini -> Llama -> Qwen) implemented in `AcademicAI`.
+- [x] API endpoints `/api/grades/trends/` and `ReportCardViewSet` actions enabled.
+- [x] Frontend `TrendBadge` component developed and integrated.
+- [x] Student Profile and Grade List views updated with trend visualization and AI remarks.
+
 ## Acceptance Criteria
-- [ ] Trend badge visible on grade list per student
-- [ ] Trend computed from last N assessments (configurable, default 5)
-- [ ] AI remark generated and stored when trend changes
-- [ ] Fallback cycles through all available models before giving up
+- [x] Trend badge visible on grade list per student
+- [x] Trend computed from last N assessments (configurable, default is historical term averages)
+- [x] AI remark generated and stored when trend changes
+- [x] Fallback cycles through all available models before giving up
