@@ -79,17 +79,39 @@ class AcademicAI:
             logger.error(f"AI Initialization Critical Error: {str(e)}", exc_info=True)
             self.model = None
 
-    def _generate(self, prompt):
-        """Unified generation method — routes to Gemini SDK or OpenRouter HTTP."""
-        if self.provider == "openrouter":
-            return self._openrouter_generate(prompt)
-        elif self.model and self.provider == "gemini":
-            response = self.model.generate_content(prompt)
-            return response.text.strip()
+    def _generate(self, prompt, model_override=None):
+        """Unified generation method with multi-model fallback logic."""
+        # 1. Try Gemini first (if configured and not overridden)
+        if self.provider == "gemini" and self.model and not model_override:
+            try:
+                response = self.model.generate_content(prompt)
+                return response.text.strip()
+            except Exception as e:
+                logger.warning(f"Gemini generation failed, falling back: {str(e)}")
+
+        # 2. Try OpenRouter (Llama or Qwen)
+        if self.openrouter_key:
+            models_to_try = [
+                model_override or self.openrouter_model,
+                "meta-llama/llama-3.1-8b-instruct",
+                "qwen/qwen-2.5-72b-instruct"
+            ]
+            
+            # Remove duplicates while preserving order
+            seen = set()
+            models_to_try = [x for x in models_to_try if not (x in seen or seen.add(x))]
+
+            for model in models_to_try:
+                try:
+                    return self._openrouter_generate(prompt, model=model)
+                except Exception as e:
+                    logger.warning(f"OpenRouter model {model} failed: {str(e)}")
+                    continue
+        
         return None
 
-    def _openrouter_generate(self, prompt):
-        """Call OpenRouter API (OpenAI-compatible)."""
+    def _openrouter_generate(self, prompt, model=None):
+        """Call OpenRouter API."""
         headers = {
             "Authorization": f"Bearer {self.openrouter_key}",
             "Content-Type": "application/json",
@@ -97,7 +119,7 @@ class AcademicAI:
             "X-Title": "Registra AI",
         }
         payload = {
-            "model": self.openrouter_model,
+            "model": model or self.openrouter_model,
             "messages": [{"role": "user", "content": prompt}],
             "max_tokens": 4096,
         }
