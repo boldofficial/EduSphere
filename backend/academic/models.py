@@ -227,6 +227,15 @@ class ReportCard(TenantModel):
     total_score = models.FloatField(default=0.0)
     teacher_remark = models.TextField(blank=True)
     head_teacher_remark = models.TextField(blank=True)
+    ai_performance_remark = models.TextField(blank=True, help_text="AI-generated analysis of student performance")
+    
+    # Performance Trend
+    TREND_CHOICES = [
+        ("improving", "Improving"),
+        ("declining", "Declining"),
+        ("stable", "Stable"),
+    ]
+    performance_trend = models.CharField(max_length=20, choices=TREND_CHOICES, default="stable")
 
     # Enhanced Fields
     affective = models.JSONField(default=dict, blank=True)  # e.g. {"Punctuality": 5, "Honesty": 4}
@@ -266,8 +275,33 @@ class ReportCard(TenantModel):
         else:
             self.total_score = 0
             self.average = 0
+        
+        # Calculate trend based on historical data
+        self.calculate_trend(save=False)
+        
         if save:
             self.save()
+
+    def calculate_trend(self, save=True):
+        """
+        Calculates performance trend based on historical term averages.
+        """
+        from .utils import compute_performance_trend
+        
+        # Fetch historical reports for this student in this school
+        # Ordering by created_at is a safe proxy for chronological order of terms
+        past_reports = ReportCard.objects.filter(
+            student=self.student,
+            school=self.school
+        ).exclude(id=self.id).order_by("created_at")
+        
+        averages = [r.average for r in past_reports]
+        averages.append(self.average)
+        
+        self.performance_trend = compute_performance_trend(averages)
+        
+        if save:
+            self.save(update_fields=["performance_trend"])
 
     @classmethod
     def calculate_positions(cls, school, student_class, session, term):
