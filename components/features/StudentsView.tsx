@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Plus, Search, User, Edit, Trash2, UserCheck, Zap, AlertTriangle, GraduationCap, Library } from 'lucide-react';
 import * as Types from '@/lib/types';
 import * as Utils from '@/lib/utils';
+import { TrendBadge } from './grading/TrendBadge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -224,6 +225,7 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                                         <span className={`px-2 py-0.5 rounded-lg bg-${accentColor}-100 text-${accentColor}-700 text-[11px] font-bold tracking-tight border border-${accentColor}-200`}>
                                             {s.student_no}
                                         </span>
+                                        <TrendBadge trend={s.performance_trend} showText={false} />
                                         {attendanceLow && (
                                             <div className="h-2 w-2 rounded-full bg-amber-500" title="Low Attendance" />
                                         )}
