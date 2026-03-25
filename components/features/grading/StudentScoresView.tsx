@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { ClipboardList, Award, TrendingUp, BookOpen, Lock, Clock } from 'lucide-react';
+import { ClipboardList, Award, TrendingUp, BookOpen, Lock, Clock, Sparkles } from 'lucide-react';
+import { TrendBadge } from './TrendBadge';
 import * as Types from '@/lib/types';
 import * as Utils from '@/lib/utils';
 import { Card } from '@/components/ui/card';
@@ -97,7 +98,10 @@ export const StudentScoresView: React.FC<StudentScoresViewProps> = ({
                             <TrendingUp className="h-5 w-5" />
                         </div>
                         <div>
-                            <p className="text-3xl font-bold">{myScore?.average?.toFixed(1) || '0'}%</p>
+                            <div className="flex items-center gap-2">
+                                <p className="text-3xl font-bold">{myScore?.average?.toFixed(1) || '0'}%</p>
+                                <TrendBadge trend={myScore?.performance_trend} showText={false} />
+                            </div>
                             <p className="text-xs text-white/80">Term Average</p>
                         </div>
                     </div>
@@ -199,23 +203,41 @@ export const StudentScoresView: React.FC<StudentScoresViewProps> = ({
                 )}
             </Card>
 
-            {/* Teacher's Remarks */}
-            {myScore && (myScore.teacher_remark || myScore.head_teacher_remark) && (
+            {/* Remarks */}
+            {myScore && (myScore.teacher_remark || myScore.head_teacher_remark || myScore.ai_performance_remark) && (
                 <Card className="p-6">
-                    <h2 className="text-lg font-bold text-gray-900 mb-4">Remarks</h2>
+                    <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                        <Sparkles className="h-5 w-5 text-brand-500" />
+                        Performance Analysis & Remarks
+                    </h2>
                     <div className="space-y-4">
-                        {myScore.teacher_remark && (
-                            <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
-                                <p className="text-xs font-bold text-blue-600 uppercase mb-1">Class Teacher's Remark</p>
-                                <p className="text-gray-700">{myScore.teacher_remark}</p>
+                        {myScore.ai_performance_remark && (
+                            <div className="p-4 bg-brand-50 rounded-lg border border-brand-100 relative overflow-hidden">
+                                <div className="absolute top-0 right-0 p-2 opacity-10">
+                                    <Sparkles className="h-12 w-12 text-brand-500" />
+                                </div>
+                                <p className="text-xs font-bold text-brand-600 uppercase mb-1 flex items-center gap-1">
+                                    <Sparkles className="h-3 w-3" />
+                                    AI Performance Analysis
+                                </p>
+                                <p className="text-gray-700 relative z-10">{myScore.ai_performance_remark}</p>
                             </div>
                         )}
-                        {myScore.head_teacher_remark && (
-                            <div className="p-4 bg-purple-50 rounded-lg border border-purple-100">
-                                <p className="text-xs font-bold text-purple-600 uppercase mb-1">Principal's Remark</p>
-                                <p className="text-gray-700">{myScore.head_teacher_remark}</p>
-                            </div>
-                        )}
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {myScore.teacher_remark && (
+                                <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                                    <p className="text-xs font-bold text-blue-600 uppercase mb-1">Class Teacher's Remark</p>
+                                    <p className="text-gray-700">{myScore.teacher_remark}</p>
+                                </div>
+                            )}
+                            {myScore.head_teacher_remark && (
+                                <div className="p-4 bg-purple-50 rounded-lg border border-purple-100">
+                                    <p className="text-xs font-bold text-purple-600 uppercase mb-1">Principal's Remark</p>
+                                    <p className="text-gray-700">{myScore.head_teacher_remark}</p>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </Card>
             )}
