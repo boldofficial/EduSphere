@@ -414,7 +414,20 @@ class ReportCardViewSet(TenantViewSet):
             else:
                 remark = f"A good performance overall by {report_card.student.names}. Consistent effort will lead to even better results."
 
+        # Save to the new field
+        report_card.ai_performance_remark = remark
+        report_card.save(update_fields=["ai_performance_remark"])
+
         return Response({"suggestion": remark, "data": performance_data})
+
+    @action(detail=True, methods=["post"], url_path="compute-trend")
+    def compute_trend(self, request, pk=None):
+        """
+        Manually trigger performance trend computation for a student.
+        """
+        report_card = self.get_object()
+        report_card.calculate_trend(save=True)
+        return Response({"success": True, "trend": report_card.performance_trend})
 
     @action(detail=False, methods=["post"], url_path="recalculate-positions")
     def recalculate_positions(self, request):
@@ -615,6 +628,60 @@ class AITimetableGenerateView(APIView):
                 TimetableEntry.objects.bulk_create(entries_to_create)
 
         return Response({"success": True, "message": "Timetable generated successfully"})
+
+
+class GradeTrendView(APIView):
+    """
+    Dedicated API for student and class performance trends.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        student_id = request.query_params.get("student_id")
+        class_id = request.query_params.get("class_id")
+        school = get_request_school(request)
+
+        if not school:
+            return Response({"error": "No school context found"}, status=400)
+
+        if student_id:
+            try:
+                student = Student.objects.get(id=student_id, school=school)
+                reports = ReportCard.objects.filter(student=student, school=school).order_by("created_at")
+                
+                return Response({
+                    "student_id": student.id,
+                    "student_name": student.names,
+                    "trend": student.performance_trend,
+                    "history": [
+                        {
+                            "id": r.id,
+                            "session": r.session,
+                            "term": r.term,
+                            "average": r.average,
+                            "trend": r.performance_trend
+                        } for r in reports
+                    ]
+                })
+            except Student.DoesNotExist:
+                return Response({"error": "Student not found"}, status=404)
+
+        if class_id:
+            try:
+                student_class = Class.objects.get(id=class_id, school=school)
+                students = Student.objects.filter(current_class=student_class, school=school)
+                
+                return Response([
+                    {
+                        "student_id": s.id,
+                        "student_name": s.names,
+                        "trend": s.performance_trend
+                    } for s in students
+                ])
+            except Class.DoesNotExist:
+                return Response({"error": "Class not found"}, status=404)
+
+        return Response({"error": "student_id or class_id required"}, status=400)
 
 
 class AdmissionIntakeViewSet(TenantViewSet):
