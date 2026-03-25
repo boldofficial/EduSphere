@@ -225,6 +225,7 @@ class StudentSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=False)
 
     passport_url = Base64ImageField(required=False, allow_null=True)
+    performance_trend = serializers.SerializerMethodField()
 
     class Meta:
         model = Student
@@ -246,6 +247,7 @@ class StudentSerializer(serializers.ModelSerializer):
             "discounts",
             "password",
             "status",
+            "performance_trend",
             "created_at",
             "updated_at",
         ]
@@ -261,6 +263,14 @@ class StudentSerializer(serializers.ModelSerializer):
         if instance.passport_url:
             ret["passport_url"] = get_media_url(instance.passport_url)
         return ret
+
+    def get_performance_trend(self, obj):
+        from .models import ReportCard
+        # Fetch the latest report card for this student to get their most recent trend
+        latest_report = ReportCard.objects.filter(student=obj).order_by('-created_at').first()
+        if latest_report:
+            return latest_report.performance_trend
+        return "stable"
 
     def to_internal_value(self, data):
         data = data.copy()
@@ -429,6 +439,8 @@ class ReportCardSerializer(serializers.ModelSerializer):
             "is_passed",
             "passed_at",
             "passed_by",
+            "performance_trend",
+            "ai_performance_remark",
             "rows",
             "grading_scheme",
             "grading_scheme_details",

@@ -9,6 +9,24 @@ from schools.models import SchoolSettings
 from .models import GradingScheme, ReportCard, Student, Subject
 
 
+def compute_performance_trend(averages: list[float]) -> str:
+    """
+    Computes performance trend (improving/declining/stable) across assessments.
+    Expects averages ordered by time (oldest to newest).
+    """
+    if len(averages) < 2:
+        return "stable"
+    
+    # Simple delta between latest and first in series
+    delta = averages[-1] - averages[0]
+    
+    if delta >= 5:
+        return "improving"
+    elif delta <= -5:
+        return "declining"
+    return "stable"
+
+
 class BroadsheetPDFGenerator:
     def __init__(self, school, student_class, session, term):
         self.school = school

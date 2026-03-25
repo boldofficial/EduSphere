@@ -12,6 +12,7 @@ from .views import (
     AttendanceRecordViewSet,
     AttendanceSessionViewSet,
     BroadsheetView,
+    GradeTrendView,
     ClassViewSet,
     ConductEntryViewSet,
     GlobalSearchView,
@@ -67,5 +68,6 @@ urlpatterns = [
     path("timetables/magic-generate/", views.AITimetableGenerateView.as_view(), name="magic-generate"),
     path("predictive-insights/", views.AIPredictiveInsightsView.as_view(), name="predictive-insights"),
     path("ai-lesson-plan/", views.AILessonPlanView.as_view(), name="ai-lesson-plan"),
+    path("grades/trends/", views.GradeTrendView.as_view(), name="grade-trends"),
     path("", include(router.urls)),
 ]

@@ -60,19 +60,11 @@ export const LearningCenterView: React.FC = () => {
         e.preventDefault();
         try {
             await createLesson(newLesson);
-            addToast({
-                title: 'Success',
-                description: 'Learning material uploaded successfully',
-                type: 'success'
-            });
+            addToast('Learning material uploaded successfully', 'success');
             setShowUploadModal(false);
             setNewLesson({ title: '', subject: '', student_class: '', content: '', file_url: '' });
         } catch (error) {
-            addToast({
-                title: 'Error',
-                description: 'Failed to upload material',
-                type: 'error'
-            });
+            addToast('Failed to upload material', 'error');
         }
     };
 
@@ -313,6 +305,7 @@ export const LearningCenterView: React.FC = () => {
                             </form>
                         </div>
                     </Card>
+                    </div>
                 </div>
             )}
         </div>

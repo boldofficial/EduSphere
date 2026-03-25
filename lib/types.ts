@@ -221,6 +221,7 @@ export interface Student extends Entity {
   assigned_fees?: string[]; // IDs of optional fees assigned to this student
   discounts?: StudentDiscount[]; // Applied discounts/scholarships
   assigned_subjects?: string[]; // List of subject names
+  performance_trend?: 'improving' | 'declining' | 'stable';
 }
 
 export interface StudentDiscount {
@@ -283,6 +284,8 @@ export interface Score extends Entity {
 
   grading_scheme?: string;
   grading_scheme_details?: GradingScheme;
+  performance_trend?: 'improving' | 'declining' | 'stable';
+  ai_performance_remark?: string;
 }
 
 export interface AttendanceRecord {
@@ -562,6 +565,8 @@ export interface Assignment extends Entity {
   due_date: string;
   points: number;
   attachment_url?: string;
+  video_url?: string;
+  image_url?: string;
   teacher_name?: string;
   subject_name?: string;
 }
