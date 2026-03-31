@@ -607,15 +607,24 @@ export interface QuestionOption extends Entity {
   is_correct: boolean;
 }
 
+export interface ExamViolation extends Entity {
+  attempt: string | number;
+  count: number;
+  timestamp: string;
+  auto_submitted: boolean;
+}
+
 export interface Attempt extends Entity {
   quiz: string;
   student: string;
   start_time: string;
+  submit_time?: string;
   end_time?: string;
   total_score: number;
   is_completed: boolean;
   answers: StudentAnswer[];
   student_name?: string;
+  violations?: ExamViolation[];
 }
 
 export interface StudentAnswer extends Entity {
