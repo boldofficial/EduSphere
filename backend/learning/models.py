@@ -85,6 +85,14 @@ class Attempt(TenantModel):
     submit_time = models.DateTimeField(null=True, blank=True)
     total_score = models.FloatField(default=0.0)
 
+    @property
+    def violation_count(self):
+        return self.violations.count()
+
+    @property
+    def is_violated(self):
+        return self.violations.filter(auto_submitted=True).exists()
+
     class Meta:
         unique_together = ("quiz", "student")
 
@@ -95,3 +103,16 @@ class StudentAnswer(TenantModel):
     selected_option = models.ForeignKey(Option, on_delete=models.SET_NULL, null=True, blank=True)
     text_answer = models.TextField(blank=True)
     score = models.FloatField(default=0.0)
+
+
+class ExamViolation(TenantModel):
+    attempt = models.ForeignKey(Attempt, related_name="violations", on_delete=models.CASCADE)
+    count = models.PositiveIntegerField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+    auto_submitted = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["-timestamp"]
+
+    def __str__(self):
+        return f"Violation (Count: {self.count}) for {self.attempt}"
