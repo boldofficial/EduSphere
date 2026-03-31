@@ -7,13 +7,12 @@
 #   Start:  docker compose -f docker-compose.local.yml up -d
 #   Stop:   docker compose -f docker-compose.local.yml down
 
-version: '3.8'
 services:
   db:
     image: 'postgres:15-alpine'
     container_name: registra_db
     ports:
-      - '5432:5432'
+      - '5436:5432'
     volumes:
       - 'postgres_data:/var/lib/postgresql/data'
     environment:
@@ -26,7 +25,7 @@ services:
     image: 'redis:7-alpine'
     container_name: registra_redis
     ports:
-      - '6379:6379'
+      - '6381:6379'
     restart: always
 
 volumes:
