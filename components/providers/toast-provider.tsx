@@ -5,7 +5,7 @@ import { X, CheckCircle, XCircle, AlertTriangle, Info } from 'lucide-react';
 import * as Types from '@/lib/types';
 
 interface ToastContextType {
-    addToast: (message: string, type: Types.ToastType) => void;
+    addToast: (message: string, type: Types.ToastType, duration?: number) => void;
 }
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
@@ -18,11 +18,11 @@ export const useToast = () => {
     return context;
 };
 
-const ToastItem = ({ id, message, type, onClose }: { id: string; message: string; type: Types.ToastType; onClose: (id: string) => void }) => {
+const ToastItem = ({ id, message, type, duration = 4000, onClose }: { id: string; message: string; type: Types.ToastType; duration?: number; onClose: (id: string) => void }) => {
     useEffect(() => {
-        const timer = setTimeout(() => onClose(id), 4000);
+        const timer = setTimeout(() => onClose(id), duration);
         return () => clearTimeout(timer);
-    }, [id, onClose]);
+    }, [id, onClose, duration]);
 
     const icons = {
         success: <CheckCircle className="h-5 w-5 text-green-500" />,
@@ -52,11 +52,11 @@ const ToastItem = ({ id, message, type, onClose }: { id: string; message: string
 };
 
 export const ToastProvider = ({ children }: { children?: React.ReactNode }) => {
-    const [toasts, setToasts] = useState<Types.ToastNotification[]>([]);
+    const [toasts, setToasts] = useState<(Types.ToastNotification & { duration?: number })[]>([]);
 
-    const addToast = (message: string, type: Types.ToastType) => {
+    const addToast = (message: string, type: Types.ToastType, duration?: number) => {
         const id = Math.random().toString(36).substring(2, 9);
-        setToasts((prev) => [...prev, { id, message, type }]);
+        setToasts((prev) => [...prev, { id, message, type, duration }]);
     };
 
     const removeToast = (id: string) => {
