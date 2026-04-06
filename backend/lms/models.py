@@ -10,6 +10,12 @@ class DiscussionThread(TenantModel):
     content_object = GenericForeignKey("content_type", "object_id")
 
     class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["school", "content_type", "object_id"],
+                name="unique_thread_per_resource"
+            )
+        ]
         indexes = [
             models.Index(fields=["content_type", "object_id"]),
         ]

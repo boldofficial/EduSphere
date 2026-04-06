@@ -11,12 +11,16 @@ import { useQuestions } from '@/lib/hooks/use-data';
 import { CreateQuestionModal } from '@/components/features/learning/LearningModals';
 import { Badge } from '@/components/ui/badge';
 import { QuizResultsView } from '@/components/features/learning/QuizResultsView';
+import { TakeQuizView } from '@/components/features/learning/TakeQuizView';
+import { useSchoolStore } from '@/lib/store';
 
 export default function QuizEditorPage() {
     const params = useParams();
     const router = useRouter();
     const quizId = params.id as string;
     const queryClient = useQueryClient();
+    const { currentRole } = useSchoolStore();
+    const isStudent = currentRole === 'student';
     const [activeTab, setActiveTab] = useState<'questions' | 'results'>('questions');
 
     // Fetch quiz details
@@ -42,6 +46,10 @@ export default function QuizEditorPage() {
 
     if (quizLoading) return <div className="p-8">Loading Quiz...</div>;
     if (!quiz) return <div className="p-8">Quiz not found</div>;
+
+    if (isStudent) {
+        return <TakeQuizView quiz={quiz} />;
+    }
 
     return (
         <div className="p-6 space-y-6 max-w-5xl mx-auto">
