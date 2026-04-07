@@ -37,6 +37,7 @@ from core.pagination import LargePagination, StandardPagination
 from core.tenant_utils import get_request_school
 
 from .models import (
+    AcademicTerm,
     Admission,
     AdmissionIntake,
     AttendanceRecord,
@@ -60,6 +61,7 @@ from .models import (
     TimetableEntry,
 )
 from .serializers import (
+    AcademicTermSerializer,
     AdmissionIntakeSerializer,
     AdmissionSerializer,
     AttendanceRecordSerializer,
@@ -132,6 +134,7 @@ class TenantViewSet(CachingMixin, viewsets.ModelViewSet):
         else:
             raise PermissionDenied("School context not found.")
         self.invalidate_cache()
+
 
     def perform_update(self, serializer):
         instance = serializer.instance
@@ -1354,3 +1357,8 @@ class AILessonPlanView(APIView):
             return Response({"plan": plan, "message": "Lesson plan generated successfully."})
         else:
             return Response({"error": "AI lesson plan generation failed. Check your API key."}, status=500)
+
+
+class AcademicTermViewSet(TenantViewSet):
+    queryset = AcademicTerm.objects.all()
+    serializer_class = AcademicTermSerializer
