@@ -269,3 +269,40 @@ export function useDeleteScholarship() {
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.scholarships }); },
     });
 }
+
+// =============================================
+// REVENUE FORECASTING (Phase 2)
+// =============================================
+
+export function useAcademicTerms() {
+    return useQuery({
+        queryKey: queryKeys.academicTerms,
+        queryFn: () => fetchAll<Types.AcademicTerm>('academic/academic-terms/'),
+    });
+}
+
+export function useRevenueSummary(termId?: string) {
+    return useQuery({
+        queryKey: queryKeys.revenueSummary(termId),
+        queryFn: async () => {
+            const response = await apiClient.get('bursary/dashboard/revenue-summary/', {
+                params: { term_id: termId }
+            });
+            return response.data as Types.RevenueSummary;
+        },
+        enabled: true, // Always load something, backend defaults to current if termId is missing
+    });
+}
+
+export function useRevenueChart(termId?: string) {
+    return useQuery({
+        queryKey: queryKeys.revenueForecast(termId),
+        queryFn: async () => {
+            const response = await apiClient.get('bursary/dashboard/revenue-chart/', {
+                params: { term_id: termId }
+            });
+            return response.data as Types.RevenueChartData;
+        },
+        enabled: true,
+    });
+}
