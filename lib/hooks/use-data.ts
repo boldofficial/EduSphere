@@ -55,6 +55,9 @@ export const queryKeys = {
     quizzes: ['quizzes'] as const,
     questions: ['questions'] as const,
     submissions: ['submissions'] as const,
+    academicTerms: ['academic_terms'] as const,
+    revenueSummary: (termId?: string) => ['revenue_summary', termId] as const,
+    revenueForecast: (termId?: string) => ['revenue_forecast', termId] as const,
     bursaryDashboard: (session: string, term: string) => ['bursary', 'dashboard', session, term] as const,
 };
 
