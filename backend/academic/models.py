@@ -562,3 +562,25 @@ class Admission(TenantModel):
 
     def __str__(self):
         return f"{self.child_name} - {self.intake.name if self.intake else 'No Intake'}"
+
+
+class AcademicTerm(TenantModel):
+    """
+    Specific academic periods with start and end dates.
+    Essential for fee collection forecasting and term-based analytics.
+    """
+    session = models.CharField(max_length=50) # e.g. "2025/2026"
+    name = models.CharField(max_length=50)    # e.g. "First Term"
+    start_date = models.DateField()
+    end_date = models.DateField()
+    is_current = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = "Academic Term"
+        verbose_name_plural = "Academic Terms"
+        unique_together = ("school", "session", "name")
+        ordering = ["-start_date"]
+
+    def __str__(self):
+        return f"{self.name} {self.session} ({self.school.name})"
+

@@ -3,8 +3,10 @@ from rest_framework.routers import DefaultRouter
 
 from . import views
 from .views import (
+    AcademicTermViewSet,
     AdmissionIntakeViewSet,
     AdmissionViewSet,
+
     AIInsightsView,
     AILessonPlanView,
     AIPredictiveInsightsView,
@@ -56,7 +58,9 @@ router.register(r"timetables", views.TimetableViewSet, basename="timetables")
 router.register(r"timetable-entries", TimetableEntryViewSet, basename="timetable-entries")
 router.register(r"admission-intakes", AdmissionIntakeViewSet, basename="admission-intakes")
 router.register(r"admissions", AdmissionViewSet, basename="admissions")
+router.register(r"academic-terms", AcademicTermViewSet, basename="academic-terms")
 router.register(r"grading-schemes", views.GradingSchemeViewSet, basename="grading-schemes")
+
 router.register(r"grade-ranges", views.GradeRangeViewSet, basename="grade-ranges")
 router.register(r"subject_teachers", views.SubjectTeacherViewSet, basename="subject_teachers")
 router.register(r"broadsheet", views.BroadsheetView, basename="broadsheet")

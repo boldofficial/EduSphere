@@ -43,6 +43,14 @@ export interface SubscriptionPlan extends Entity {
   custom_domain_enabled: boolean;
 }
 
+export interface AcademicTerm extends Entity {
+  session: string;
+  name: string;
+  start_date: string;
+  end_date: string;
+  is_current: boolean;
+}
+
 export interface Settings extends Entity {
   school_name: string;
   school_address: string;
@@ -98,6 +106,8 @@ export interface Settings extends Entity {
   bank_account_number: string;
   bank_sort_code: string;
   invoice_notes: string; // Custom notes on invoice
+  academic_terms?: AcademicTerm[];
+
   invoice_due_days: number; // Days until payment is due
 
   // Domain & Subscription
@@ -733,3 +743,28 @@ export interface PayrollEntry extends Entity {
   };
   is_paid: boolean;
 }
+
+export interface RevenueSummary {
+  term: {
+    id: number;
+    name: string;
+    session: string;
+    start_date: string;
+    end_date: string;
+  };
+  expected: number;
+  collected: number;
+  outstanding: number;
+  forecast: number;
+  collection_rate: number;
+  days_elapsed: number;
+  days_total: number;
+}
+
+export interface RevenueChartData {
+  labels: string[];
+  expected: number[];
+  collected: (number | null)[];
+  forecast: number[];
+}
+

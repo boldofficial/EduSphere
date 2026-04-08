@@ -23,13 +23,18 @@ def get_request_school(request, allow_super_admin_tenant=True):
         return getattr(user, "school", None)
 
     user_school = getattr(user, "school", None)
-    if not user_school:
-        raise PermissionDenied("Authenticated user is not assigned to a school.")
+    
+    # If the user has a school assigned, it MUST match the tenant context
+    if user_school:
+        if tenant_school and tenant_school != user_school:
+            raise PermissionDenied("Tenant context mismatch for authenticated user.")
+        return user_school
 
-    if tenant_school and tenant_school != user_school:
-        raise PermissionDenied("Tenant context mismatch for authenticated user.")
+    # If the user has no school assigned but we are on a valid tenant domain, use it
+    if tenant_school:
+        return tenant_school
 
-    return user_school
+    raise PermissionDenied("Authenticated user is not assigned to a school.")
 
 
 def ensure_object_school(obj, school, label="resource"):

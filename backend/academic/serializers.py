@@ -9,6 +9,7 @@ from core.tenant_utils import get_request_school
 from users.models import User
 
 from .models import (
+    AcademicTerm,
     Admission,
     AdmissionIntake,
     AttendanceRecord,
@@ -678,3 +679,11 @@ class AdmissionSerializer(serializers.ModelSerializer):
         model = Admission
         fields = "__all__"
         read_only_fields = ("school", "reviewed_at", "reviewed_by")
+
+
+class AcademicTermSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AcademicTerm
+        fields = "__all__"
+        read_only_fields = ("school",)
+
