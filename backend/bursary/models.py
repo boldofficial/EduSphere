@@ -289,3 +289,24 @@ class PayrollEntry(TenantModel):
 
     def __str__(self):
         return f"{self.staff.name} - {self.payroll.month.strftime('%b %Y')}"
+
+
+class FeeDiscount(TenantModel):
+    """
+    Detailed record of a discount or waiver applied to a student's fee.
+    """
+    DISCOUNT_TYPES = [
+        ("percent", "Percentage"),
+        ("fixed", "Fixed Amount"),
+        ("full_waiver", "Full Waiver"),
+        ("scholarship", "Scholarship"),
+    ]
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name="fee_discounts")
+    student_fee = models.ForeignKey(StudentFee, on_delete=models.CASCADE, related_name="discounts_list")
+    discount_type = models.CharField(max_length=20, choices=DISCOUNT_TYPES)
+    value = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    reason = models.TextField(blank=True)
+    applied_by = models.ForeignKey("users.User", on_delete=models.SET_NULL, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.get_discount_type_display()} - {self.student.names} ({self.value})"

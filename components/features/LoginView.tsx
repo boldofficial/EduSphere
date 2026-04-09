@@ -100,7 +100,7 @@ export const LoginView = () => {
 
             const loadPublicBranding = async () => {
                 try {
-                    const res = await fetch('/api/proxy/public-settings/', {
+                    const res = await fetch('/api/proxy/core/public-settings/', {
                         headers: { 'x-tenant-id': tenantId },
                         cache: 'no-store',
                     });
@@ -280,7 +280,7 @@ export const LoginView = () => {
         setForgotError('');
         setIsLoading(true);
         try {
-            const res = await fetch('/api/proxy/students/forgot-password/', {
+            const res = await fetch('/api/proxy/users/password-reset-request/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ student_no: forgotStudentNo.trim(), email: forgotEmail.trim() })
@@ -317,24 +317,24 @@ export const LoginView = () => {
 
             {/* Left Side: Form */}
             <div className={`flex-1 flex flex-col justify-center px-6 md:px-16 xl:px-24 py-12 relative z-10 ${isSystemRoot ? 'items-center' : 'lg:w-1/2 bg-white'}`}>
-                <div className={`mb-10 ${isSystemRoot ? 'text-center' : ''}`}>
+                <div className="mb-10 w-full flex justify-start">
                     <div
                         className="inline-block cursor-pointer transition-transform active:scale-95"
                         onClick={handleLogoClick}
                     >
                         {!isSystemRoot ? (
                             <div className="flex items-center gap-3">
-                                <img src={publicBranding.logo_media || "/logo.png"} alt={publicBranding.school_name || "Registra"} className="h-10 w-auto object-contain" />
+                                <img src={publicBranding.logo_media || "/footer-logo.png"} alt={publicBranding.school_name || "Registra"} className="h-10 w-auto object-contain" />
                                 <span className="text-xl font-bold text-gray-900">{publicBranding.school_name || "Registra"}</span>
                             </div>
                         ) : (
-                            <img src="/logo.png" alt="Registra" className="h-20 w-auto object-contain brightness-110 contrast-110 drop-shadow-lg" />
+                            <img src="/footer-logo.png" alt="Registra" className="h-10 w-auto object-contain brightness-110 contrast-110 drop-shadow-lg" />
                         )}
                     </div>
                 </div>
 
                 {(isSystemRoot && selectedRole !== 'super_admin') ? null : (
-                    <div className={`mb-6 ${isSystemRoot ? 'text-center' : ''}`}>
+                    <div className="mb-6 w-full text-left">
                         <h1 className={`text-2xl font-bold mb-1 ${isSystemRoot ? 'text-white' : 'text-gray-900'}`}>Sign in</h1>
                         <p className={`text-sm ${isSystemRoot ? 'text-brand-100/70' : 'text-gray-500'}`}>
                             Enter your {selectedRole === 'student' ? 'student number' : 'email'} and password to access account.

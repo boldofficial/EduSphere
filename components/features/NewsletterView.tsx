@@ -161,7 +161,7 @@ export const NewsletterView: React.FC = () => {
                                 try {
                                     const apiClient = (await import('@/lib/api-client')).default;
                                     addToast('Generating newsletter with AI...', 'info');
-                                    const res = await apiClient.post('/newsletters/ai-generate/', { period: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) });
+                                    const res = await apiClient.post('core/newsletters/ai-generate/', { period: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) });
                                     if (res.data?.content) {
                                         setTitle(res.data.title || 'AI Newsletter');
                                         setDescription(res.data.content);

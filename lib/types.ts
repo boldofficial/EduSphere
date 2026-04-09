@@ -320,6 +320,7 @@ export interface FeeStructure extends Entity {
   session: string;
   term: string;
   is_optional?: boolean;
+  active?: boolean;
   allow_partial_payments?: boolean;
 }
 
@@ -766,5 +767,23 @@ export interface RevenueChartData {
   expected: number[];
   collected: (number | null)[];
   forecast: number[];
+}
+
+export interface BulkDiscountPreview {
+  count: number;
+  total_impact: number;
+  students: {
+    id: string;
+    names: string;
+    student_no: string;
+    class: string;
+    potential_discount: number;
+  }[];
+}
+
+export interface BulkDiscountResult {
+  success: boolean;
+  message: string;
+  count: number;
 }
 

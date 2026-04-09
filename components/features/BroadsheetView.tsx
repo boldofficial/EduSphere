@@ -53,7 +53,7 @@ export const BroadsheetView: React.FC<BroadsheetViewProps> = ({ students, classe
         if (!selectedClass) return;
         setIsExporting(true);
         try {
-            const response = await apiClient.get(`classes/${selectedClass}/export-broadsheet-pdf/`, {
+            const response = await apiClient.get(`academic/classes/${selectedClass}/export-broadsheet-pdf/`, {
                 params: {
                     session: settings.current_session,
                     term: settings.current_term

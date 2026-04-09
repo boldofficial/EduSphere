@@ -32,7 +32,7 @@ export async function generateMetadata(): Promise<Metadata> {
     let schoolTagline = 'The operating system for modern schools';
 
     try {
-        const res = await fetch(`${DJANGO_API_URL}/api/public-settings/`, {
+        const res = await fetch(`${DJANGO_API_URL}/api/core/public-settings/`, {
             headers: { 'X-Tenant-ID': tenantId },
             next: { revalidate: 3600 }
         });

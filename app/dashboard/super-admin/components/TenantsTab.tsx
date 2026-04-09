@@ -77,9 +77,9 @@ export function TenantsTab({ schools, plans, onImpersonate, onEdit, onDataChange
         setIsProcessing(true);
         try {
             if (pendingAction.action === 'delete') {
-                await apiClient.delete(`/schools/manage/${pendingAction.schoolId}/`);
+                await apiClient.delete(`schools/manage/${pendingAction.schoolId}/`);
             } else {
-                await apiClient.patch(`/schools/manage/${pendingAction.schoolId}/`, { action: pendingAction.action });
+                await apiClient.patch(`schools/manage/${pendingAction.schoolId}/`, { action: pendingAction.action });
             }
             await onDataChanged?.();
             addToast(`School ${ACTION_PAST_TENSE[pendingAction.action]} successfully`, 'success');
@@ -102,7 +102,7 @@ export function TenantsTab({ schools, plans, onImpersonate, onEdit, onDataChange
         e.preventDefault();
         setIsProcessing(true);
         try {
-            await apiClient.post('/schools/payments/record/', {
+            await apiClient.post('schools/payments/record/', {
                 school_id: selectedSchool.id,
                 amount,
                 reference

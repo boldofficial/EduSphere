@@ -59,7 +59,7 @@ export function BroadcastsTab({ announcements = [], onBroadcastChanged }: any) {
         e.preventDefault();
         setIsProcessing(true);
         try {
-            await apiClient.post('/schools/governance/', { title, message, priority });
+            await apiClient.post('schools/governance/', { title, message, priority });
             addToast('Announcement broadcasted successfully!', 'success');
             setTitle('');
             setMessage('');

@@ -8,6 +8,7 @@ from .models import (
     AdmissionPackage,
     Expense,
     FeeCategory,
+    FeeDiscount,
     FeeItem,
     Payment,
     PaymentLineItem,
@@ -375,3 +376,20 @@ class PayrollSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ("school", "approved_by", "approved_at", "paid_at")
+
+
+class FeeDiscountSerializer(serializers.ModelSerializer):
+    student_name = serializers.CharField(source="student.names", read_only=True)
+    fee_category_name = serializers.CharField(source="student_fee.fee_item.category.name", read_only=True)
+
+    class Meta:
+        model = FeeDiscount
+        fields = "__all__"
+        read_only_fields = ("school", "applied_at")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        school = _school_from_request(self)
+        if school:
+            self.fields["student"].queryset = Student.objects.filter(school=school)
+            self.fields["student_fee"].queryset = StudentFee.objects.filter(school=school)
