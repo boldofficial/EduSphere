@@ -40,7 +40,7 @@ function OverviewContent() {
                 health={healthData} 
                 strategic={strategicData} 
                 governance={governanceData} 
-                onImpersonate={(userId) => {
+                onImpersonate={(userId: string) => {
                     // Impersonation is handled via ConfirmActionModal in the Layout
                     // We can either pass it down or handle it via a shared store/context
                 }}
