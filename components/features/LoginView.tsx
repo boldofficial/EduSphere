@@ -100,7 +100,7 @@ export const LoginView = () => {
 
             const loadPublicBranding = async () => {
                 try {
-                    const res = await fetch('/api/proxy/public-settings/', {
+                    const res = await fetch('/api/proxy/core/public-settings/', {
                         headers: { 'x-tenant-id': tenantId },
                         cache: 'no-store',
                     });
@@ -280,7 +280,7 @@ export const LoginView = () => {
         setForgotError('');
         setIsLoading(true);
         try {
-            const res = await fetch('/api/proxy/students/forgot-password/', {
+            const res = await fetch('/api/proxy/users/password-reset-request/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ student_no: forgotStudentNo.trim(), email: forgotEmail.trim() })

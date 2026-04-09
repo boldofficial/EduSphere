@@ -149,7 +149,7 @@ export const GradingView: React.FC<GradingViewProps> = ({
         }
 
         try {
-            const res = await apiClient.post(`/reports/${score.id}/suggest-remark/`);
+            const res = await apiClient.post(`academic/reports/${score.id}/suggest-remark/`);
             if (res.data?.suggestion) {
                 handleScoreFieldChange(studentId, 'teacher_remark', res.data.suggestion);
                 addToast('AI Remark generated successfully!', 'success');

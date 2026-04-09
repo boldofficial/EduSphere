@@ -15,7 +15,7 @@ function usePeriods() {
     return useQuery({
         queryKey: ['periods', 'v2'],
         queryFn: async () => {
-            const res = await apiClient.get('/periods/');
+            const res = await apiClient.get('academic/periods/');
             return (res.data.results || res.data) as Types.Period[];
         }
     });
@@ -97,7 +97,7 @@ export const TimetableBuilder = () => {
     const handleAIGenerate = async () => {
         setIsGenerating(true);
         try {
-            const res = await apiClient.post('/timetables/magic-generate/');
+            const res = await apiClient.post('academic/timetables/magic-generate/');
             addToast(res.data.message || 'Timetable generated successfully!', 'success');
             window.location.reload();
         } catch (error: any) {
@@ -113,7 +113,7 @@ export const TimetableBuilder = () => {
         if (!activeTimetable) return;
         setIsGenerating(true); // Reuse loading state
         try {
-            await apiClient.patch(`/timetables/${activeTimetable.id}/`, { is_active: true });
+            await apiClient.patch(`academic/timetables/${activeTimetable.id}/`, { is_active: true });
             addToast('Timetable published and set as active!', 'success');
         } catch (error) {
             console.error('Publishing Failed:', error);
@@ -140,7 +140,7 @@ export const TimetableBuilder = () => {
             const handleSetupDefaults = async () => {
                 setIsSettingUp(true);
                 try {
-                    await apiClient.post('/periods/setup-defaults/');
+                    await apiClient.post('academic/periods/setup-defaults/');
                     window.location.reload();
                 } catch (error) {
                     console.error('Failed to setup default periods:', error);
@@ -215,7 +215,7 @@ export const TimetableBuilder = () => {
                 <h3 className="font-bold text-yellow-800">No Timetable Found</h3>
                 <p className="text-yellow-600 mb-4">This class doesn't have an active timetable yet.</p>
                 {!isStudent && (
-                    <Button onClick={() => apiClient.post('/timetables/', {
+                    <Button onClick={() => apiClient.post('academic/timetables/', {
                         title: 'General Timetable',
                         student_class: selectedClassId,
                         is_active: true

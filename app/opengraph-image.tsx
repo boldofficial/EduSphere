@@ -36,7 +36,7 @@ export default async function Image() {
     };
 
     try {
-        const res = await fetch(`${DJANGO_API_URL}/api/settings/`, {
+        const res = await fetch(`${DJANGO_API_URL}/api/core/settings/`, {
             headers: {
                 'X-Tenant-ID': tenantId
             },

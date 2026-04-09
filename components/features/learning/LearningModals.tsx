@@ -36,7 +36,7 @@ export function CreateAssignmentModal({ children }: CreateAssignmentModalProps) 
 
     const mutation = useMutation({
         mutationFn: async (data: any) => {
-            const res = await apiClient.post('/learning/assignments/', data);
+            const res = await apiClient.post('learning/assignments/', data);
             return res.data;
         },
         onSuccess: () => {
@@ -207,7 +207,7 @@ export function CreateQuizModal({ children }: CreateQuizModalProps) {
 
     const mutation = useMutation({
         mutationFn: async (data: any) => {
-            const res = await apiClient.post('/learning/quizzes/', data);
+            const res = await apiClient.post('learning/quizzes/', data);
             return res.data;
         },
         onSuccess: () => {
@@ -343,7 +343,7 @@ export function CreateQuestionModal({ quizId, onSuccess, children }: CreateQuest
     const mutation = useMutation({
         mutationFn: async (data: any) => {
             const payload = { ...data, quiz: quizId };
-            const res = await apiClient.post('/learning/questions/', payload);
+            const res = await apiClient.post('learning/questions/', payload);
             return res.data;
         },
         onSuccess: () => {
