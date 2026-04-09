@@ -14,9 +14,9 @@ export default function AdmissionsPage() {
     useEffect(() => {
         const load = async () => {
             const [admData, intakeData, classData] = await Promise.all([
-                DataService.fetchAll<Types.Admission>('admissions'),
-                DataService.fetchAll<any>('admission-intakes'),
-                DataService.fetchAll<any>('classes')
+                DataService.fetchAll<Types.Admission>('academic/admissions'),
+                DataService.fetchAll<any>('academic/admission-intakes'),
+                DataService.fetchAll<any>('academic/classes')
             ]);
             setAdmissions(admData);
             setIntakes(intakeData);
@@ -31,7 +31,7 @@ export default function AdmissionsPage() {
         setAdmissions(prev => prev.map(a => a.id === updatedAdmission.id ? updatedAdmission : a));
 
         // Persist to server
-        await DataService.updateItem('admissions', updatedAdmission.id, updatedAdmission);
+        await DataService.updateItem('academic/admissions', updatedAdmission.id, updatedAdmission);
     };
 
     if (!isLoaded) {

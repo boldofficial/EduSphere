@@ -44,14 +44,14 @@ export default async function DashboardPage() {
     if (currentRole === 'super_admin' || currentRole === 'admin' || currentRole === 'staff') {
         try {
             const results = await Promise.all([
-                fetchServer('/students/').catch(() => []),
-                fetchServer('/teachers/').catch(() => []),
-                fetchServer('/staff/').catch(() => []),
-                fetchServer('/payments/').catch(() => []),
-                fetchServer('/expenses/').catch(() => []),
-                fetchServer('/fees/').catch(() => []),
-                fetchServer('/classes/').catch(() => []),
-                fetchServer('/settings/').catch(() => Utils.INITIAL_SETTINGS),
+                fetchServer('/academic/students/').catch(() => []),
+                fetchServer('/academic/teachers/').catch(() => []),
+                fetchServer('/academic/staff/').catch(() => []),
+                fetchServer('/bursary/payments/').catch(() => []),
+                fetchServer('/bursary/expenses/').catch(() => []),
+                fetchServer('/bursary/fees/').catch(() => []),
+                fetchServer('/academic/classes/').catch(() => []),
+                fetchServer('/core/settings/').catch(() => Utils.INITIAL_SETTINGS),
                 fetchServer('/schools/announcements/').catch(() => []),
                 // Super Admin specific fetches
                 currentRole === 'super_admin' ? fetchServer('/schools/management/').catch(() => []) : Promise.resolve([]),
@@ -89,9 +89,9 @@ export default async function DashboardPage() {
         // Teachers need classes, students...
         try {
             const results = await Promise.all([
-                fetchServer('/classes/').catch(() => []),
-                fetchServer('/students/').catch(() => []), // Should probably filter by teacher on backend
-                fetchServer('/settings/').catch(() => Utils.INITIAL_SETTINGS),
+                fetchServer('/academic/classes/').catch(() => []),
+                fetchServer('/academic/students/').catch(() => []), // Should probably filter by teacher on backend
+                fetchServer('/core/settings/').catch(() => Utils.INITIAL_SETTINGS),
             ]);
             classes = normalize(results[0]);
             students = normalize(results[1]);
@@ -103,7 +103,7 @@ export default async function DashboardPage() {
         // Students/Parents
         try {
             [settings] = await Promise.all([
-                fetchServer('/settings/').catch(() => Utils.INITIAL_SETTINGS),
+                fetchServer('/core/settings/').catch(() => Utils.INITIAL_SETTINGS),
             ]);
         } catch (error) {
             console.error('Error fetching student data:', error);
