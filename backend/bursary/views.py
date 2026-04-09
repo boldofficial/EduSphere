@@ -24,7 +24,9 @@ from .models import (
     Scholarship,
     StaffSalaryStructure,
     StudentFee,
+    FeeDiscount,
 )
+from .services import apply_bulk_discount, preview_bulk_discount
 from .serializers import (
     AdmissionPackageSerializer,
     ExpenseSerializer,
@@ -38,6 +40,7 @@ from .serializers import (
     ScholarshipSerializer,
     StaffSalaryStructureSerializer,
     StudentFeeSerializer,
+    FeeDiscountSerializer,
 )
 
 
@@ -598,3 +601,66 @@ class DashboardViewSet(viewsets.ViewSet):
             "collected": collected_points,
             "forecast": forecast_points
         })
+
+
+class DiscountViewSet(TenantViewSet):
+    queryset = FeeDiscount.objects.all()
+    serializer_class = FeeDiscountSerializer
+    pagination_class = StandardPagination
+
+    @action(detail=False, methods=["post"], url_path="bulk")
+    def apply_bulk(self, request):
+        """
+        Apply bulk discount.
+        """
+        scope = request.data.get("scope")
+        fee_item_id = request.data.get("fee_item")
+        discount_type = request.data.get("discount_type")
+        value = request.data.get("value", 0)
+        reason = request.data.get("reason", "")
+        override = request.data.get("override", False)
+
+        school = get_request_school(request)
+        if not school:
+            return Response({"error": "School context not found"}, status=400)
+
+        count = apply_bulk_discount(
+            school=school,
+            scope=scope,
+            fee_item_id=fee_item_id,
+            discount_type=discount_type,
+            value=value,
+            reason=reason,
+            applied_by=request.user,
+            override=override
+        )
+
+        return Response({
+            "success": True,
+            "message": f"Successfully applied discounts to {count} students",
+            "count": count
+        })
+
+    @action(detail=False, methods=["post"], url_path="preview")
+    def preview(self, request):
+        """
+        Preview financial impact of bulk discount.
+        """
+        scope = request.data.get("scope")
+        fee_item_id = request.data.get("fee_item")
+        discount_type = request.data.get("discount_type")
+        value = request.data.get("value", 0)
+
+        school = get_request_school(request)
+        if not school:
+            return Response({"error": "School context not found"}, status=400)
+
+        preview_data = preview_bulk_discount(
+            school=school,
+            scope=scope,
+            fee_item_id=fee_item_id,
+            discount_type=discount_type,
+            value=value
+        )
+
+        return Response(preview_data)

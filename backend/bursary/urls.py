@@ -15,6 +15,7 @@ from .views import (
     ScholarshipViewSet,
     StaffSalaryStructureViewSet,
     StudentFeeViewSet,
+    DiscountViewSet,
 )
 from .views_webhooks import PaystackWebhookView
 from .views_public import PublicInvoiceView
@@ -28,6 +29,7 @@ router.register(r"student-fees", StudentFeeViewSet)
 router.register(r"payments", PaymentViewSet)
 router.register(r"expenses", ExpenseViewSet)
 router.register(r"admission-packages", AdmissionPackageViewSet)
+router.register(r"discounts", DiscountViewSet)
 
 # Payroll
 router.register(r"salary-allowances", SalaryAllowanceViewSet)
