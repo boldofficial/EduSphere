@@ -165,7 +165,7 @@ function DashboardContent() {
         setIsTogglingMaintenance(true);
         try {
             const nextMode = !isMaintenanceMode;
-            await apiClient.post('/schools/maintenance/', { action: nextMode ? 'on' : 'off' });
+            await apiClient.post('schools/maintenance/', { action: nextMode ? 'on' : 'off' });
             setIsMaintenanceMode(nextMode);
             addToast(`Maintenance mode turned ${nextMode ? 'ON' : 'OFF'}`, 'success');
         } catch (error) {
@@ -176,7 +176,7 @@ function DashboardContent() {
 
     const handleUpdateSchool = async (id: number, data: any) => {
         try {
-            await apiClient.put(`/schools/manage/${id}/`, data);
+            await apiClient.put(`schools/manage/${id}/`, data);
             await Promise.all([refetchSchools(), refetchRevenue(), refetchStrategicAnalytics()]);
             addToast('School details updated successfully', 'success');
         } catch (error) {

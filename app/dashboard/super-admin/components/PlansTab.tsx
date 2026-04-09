@@ -61,10 +61,10 @@ export function PlansTab({ plans, modules = [], onPlansChanged }: any) {
 
         try {
             if (editingPlan) {
-                await apiClient.put(`/schools/plans/manage/${editingPlan.id}/`, payload);
+                await apiClient.put(`schools/plans/manage/${editingPlan.id}/`, payload);
                 addToast('Plan updated successfully', 'success');
             } else {
-                await apiClient.post('/schools/plans/manage/', payload);
+                await apiClient.post('schools/plans/manage/', payload);
                 addToast('Plan created successfully', 'success');
             }
             setModalOpen(false);
@@ -81,7 +81,7 @@ export function PlansTab({ plans, modules = [], onPlansChanged }: any) {
 
         setIsProcessing(true);
         try {
-            await apiClient.delete(`/schools/plans/manage/${pendingDeleteId}/`);
+            await apiClient.delete(`schools/plans/manage/${pendingDeleteId}/`);
             addToast('Plan deleted successfully', 'success');
             setPendingDeleteId(null);
             await onPlansChanged?.();
