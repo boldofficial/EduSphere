@@ -41,20 +41,18 @@ async function apiRequest(endpoint: string, options: RequestInit = {}) {
 
 export async function fetchSettings(): Promise<Types.Settings> {
     try {
-        // Placeholder for Django API: GET /settings/
-        // For now, return defaults since backend isn't ready
-        devLog('[DataService] Fetching settings (Placeholder)');
-        return INITIAL_SETTINGS;
+        const response = await apiClient.get('core/settings/');
+        return response.data;
     } catch (err) {
-        console.error('[DataService] Unexpected error fetching settings:', err);
+        console.warn('[DataService] Failed to fetch settings, using defaults', err);
         return INITIAL_SETTINGS;
     }
 }
 
 export async function updateSettings(settings: Types.Settings): Promise<Types.Settings> {
     try {
-        devLog('[DataService] Updating settings (Placeholder)');
-        return settings;
+        const response = await apiClient.put('core/settings/', settings);
+        return response.data;
     } catch (err) {
         console.error('[DataService] Unexpected error updating settings:', err);
         throw err;
@@ -110,7 +108,7 @@ export async function deleteItem(table: string, id: string | number): Promise<vo
  */
 export async function convertAdmissionToStudent(admissionId: string | number, data: any) {
     try {
-        const response = await apiClient.post(`admissions/${admissionId}/convert-to-student/`, data);
+        const response = await apiClient.post(`academic/admissions/${admissionId}/convert-to-student/`, data);
         return response.data;
     } catch (err) {
         console.error(`[DataService] Failed to convert admission ${admissionId}:`, err);

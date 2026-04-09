@@ -15,7 +15,7 @@ import { queryKeys, fetchAll, fetchPaginated } from './use-data';
 export function useScores() {
     return useQuery({
         queryKey: queryKeys.scores,
-        queryFn: () => fetchAll<Types.Score>('reports/'),
+        queryFn: () => fetchAll<Types.Score>('academic/reports/'),
     });
 }
 
@@ -23,7 +23,7 @@ export function useCreateScore() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (item: Types.Score) => {
-            const response = await apiClient.post('reports/', item);
+            const response = await apiClient.post('academic/reports/', item);
             return response.data;
         },
         onMutate: async (newItem) => {
@@ -52,7 +52,7 @@ export function useUpdateScore() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async ({ id, updates }: { id: string; updates: Partial<Types.Score> }) => {
-            const response = await apiClient.patch(`/reports/${id}/`, updates);
+            const response = await apiClient.patch(`academic/reports/${id}/`, updates);
             return response.data;
         },
         onMutate: async ({ id, updates }) => {
@@ -88,7 +88,7 @@ export function useDeleteScore() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (id: string) => {
-            await apiClient.delete(`scores/${id}/`);
+            await apiClient.delete(`academic/scores/${id}/`);
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.scores }); },
     });
@@ -100,14 +100,14 @@ export function useDeleteScore() {
 export function useAttendance(filters?: { class_id?: string; date?: string }) {
     return useQuery({
         queryKey: [...queryKeys.attendance, filters],
-        queryFn: () => fetchAll<Types.Attendance>('attendance-sessions/', filters),
+        queryFn: () => fetchAll<Types.Attendance>('academic/attendance-sessions/', filters),
     });
 }
 
 export function usePaginatedAttendance(page = 1, pageSize = 50, filters?: { class_id?: string; date?: string }) {
     return useQuery({
         queryKey: [...queryKeys.attendance, { page, pageSize, ...filters }],
-        queryFn: () => fetchPaginated<any>('attendance-sessions/', page, pageSize, filters),
+        queryFn: () => fetchPaginated<any>('academic/attendance-sessions/', page, pageSize, filters),
     });
 }
 
@@ -115,7 +115,7 @@ export function useCreateAttendance() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (item: Types.Attendance) => {
-            const response = await apiClient.post('attendance-sessions/', item);
+            const response = await apiClient.post('academic/attendance-sessions/', item);
             return response.data;
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.attendance }); },
@@ -126,7 +126,7 @@ export function useUpdateAttendance() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async ({ id, updates }: { id: string; updates: Partial<Types.Attendance> }) => {
-            const response = await apiClient.patch(`attendance-sessions/${id}/`, updates);
+            const response = await apiClient.patch(`academic/attendance-sessions/${id}/`, updates);
             return response.data;
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.attendance }); },
@@ -137,7 +137,7 @@ export function useDeleteAttendance() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (id: string) => {
-            await apiClient.delete(`attendance-sessions/${id}/`);
+            await apiClient.delete(`academic/attendance-sessions/${id}/`);
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.attendance }); },
     });

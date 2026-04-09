@@ -59,6 +59,7 @@ export const queryKeys = {
     revenueSummary: (termId?: string) => ['revenue_summary', termId] as const,
     revenueForecast: (termId?: string) => ['revenue_forecast', termId] as const,
     bursaryDashboard: (session: string, term: string) => ['bursary', 'dashboard', session, term] as const,
+    activityLogs: (action?: string) => ['activity_logs', action] as const,
 };
 
 // Generic fetcher
@@ -89,7 +90,8 @@ export {
     useGlobalSearch, useModules, usePlatformSettings, useUpdatePlatformSettings,
     useSchoolPaymentSettings, useUpdateSchoolPaymentSettings, usePublicPaymentOptions,
     useEmailTemplates, useUpdateEmailTemplate, useEmailLogs,
-    useSupportTickets, useCreateSupportTicket, useRespondToTicket, useResolveTicket
+    useSupportTickets, useCreateSupportTicket, useRespondToTicket, useResolveTicket,
+    useActivityLogs
 } from './use-admin';
 
 export {
