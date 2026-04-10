@@ -1,11 +1,16 @@
 import logging
+import os
 
 from django.http import JsonResponse
 from django.utils.deprecation import MiddlewareMixin
 
 from schools.models import School
+from core.security_utils import sanitize_log_data
 
 logger = logging.getLogger(__name__)
+
+SENSITIVE_QUERY_PARAMS = ['password', 'token', 'secret', 'api_key', 'key']
+SENSITIVE_HEADERS = ['authorization', 'x-api-key', 'x-auth-token']
 
 
 class TenantMiddleware(MiddlewareMixin):
@@ -89,22 +94,23 @@ class AuditLogMiddleware:
             user = request.user if request.user.is_authenticated and not force_anonymous else None
             school = getattr(request, "tenant", None)
 
-            # Don't log if we can't identify context and it's 200 OK (noise)
             if not user and response.status_code < 400:
                 return
+
+            metadata = {
+                "path": request.path,
+                "method": request.method,
+                "status": response.status_code,
+                "ip": self.get_client_ip(request),
+            }
+            metadata = sanitize_log_data(metadata)
 
             GlobalActivityLog.objects.create(
                 action="RECORDS_MUTATED" if response.status_code < 400 else "ACCESS_DENIED",
                 school=school,
                 user=user,
                 description=f"{request.method} request to {request.path}",
-                metadata={
-                    "path": request.path,
-                    "method": request.method,
-                    "status": response.status_code,
-                    "ip": self.get_client_ip(request),
-                    # explicitly NO body logging for auth
-                },
+                metadata=metadata,
             )
         except Exception as e:
             logger.error(f"Audit log error: {e}")
