@@ -156,6 +156,19 @@ class Student(TenantModel):
         constraints = [models.UniqueConstraint(fields=["school", "student_no"], name="unique_student_no_per_school")]
 
 
+class StudentGroup(TenantModel):
+    """
+    Custom groupings for students (e.g. Sports Teams, Hostels, Scholarship cohorts).
+    Used for bulk discounts and targeted messaging.
+    """
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    students = models.ManyToManyField(Student, related_name="groups")
+
+    def __str__(self):
+        return f"{self.name} ({self.school.name})"
+
+
 class StudentHistory(TenantModel):
     """
     Historical snapshots of a student's academic journey (e.g., Promotion, Graduation).
