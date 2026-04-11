@@ -1,5 +1,22 @@
-import React, { useState } from 'react';
-import { Plus, Search, User, Edit, Trash2, UserCheck, Zap, AlertTriangle, GraduationCap, Library } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import {
+    Plus,
+    Search,
+    User,
+    Edit,
+    Trash2,
+    UserCheck,
+    Zap,
+    AlertTriangle,
+    GraduationCap,
+    Library,
+    Eye,
+    Wallet,
+    CalendarCheck,
+    MessageSquare,
+    Printer,
+    TrendingDown
+} from 'lucide-react';
 import * as Types from '@/lib/types';
 import * as Utils from '@/lib/utils';
 import { TrendBadge } from './grading/TrendBadge';
@@ -10,7 +27,8 @@ import { Select } from '@/components/ui/select';
 import { Modal } from '@/components/ui/modal';
 import { PhotoUpload } from '@/components/ui/photo-upload';
 import { useToast } from '@/components/providers/toast-provider';
-import { useAutoPromoteStudents, useSettings } from '@/lib/hooks/use-data';
+import { useAutoPromoteStudents, useSettings, usePayments, useFees, useAttendance } from '@/lib/hooks/use-data';
+import { AcademicProgressChart } from './grading/AcademicProgressChart';
 
 interface StudentsViewProps {
     students: Types.Student[];
@@ -34,7 +52,11 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
     students, classes, onAdd, onUpdate, onDelete, onSearchChange, onFilterClassChange, isLoading = false, scores = []
 }) => {
     const [showModal, setShowModal] = useState(false);
+    const [showDetailsModal, setShowDetailsModal] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
+    const [selectedStudent, setSelectedStudent] = useState<Types.Student | null>(null);
+    const [detailsSession, setDetailsSession] = useState('');
+    const [detailsTerm, setDetailsTerm] = useState('');
     const [filterClass, setFilterClass] = useState('all');
     const [search, setSearch] = useState('');
     const [isSaving, setIsSaving] = useState(false);
@@ -45,6 +67,9 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
     const [formData, setFormData] = useState<Partial<Types.Student>>({});
     const { addToast } = useToast();
     const { data: settings } = useSettings();
+    const { data: payments = [] } = usePayments({ include_all_periods: true });
+    const { data: fees = [] } = useFees({ include_all_periods: true });
+    const { data: attendance = [] } = useAttendance({ include_all_periods: true });
     const autoPromoteMutation = useAutoPromoteStudents();
 
     React.useEffect(() => {
@@ -77,6 +102,13 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
         });
         setEditingId(null);
         setShowModal(true);
+    };
+
+    const handleViewDetails = (student: Types.Student) => {
+        setSelectedStudent(student);
+        setDetailsSession(settings?.current_session || '');
+        setDetailsTerm(settings?.current_term || '');
+        setShowDetailsModal(true);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -142,6 +174,101 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
             const matchesSearch = s.names.toLowerCase().includes(search.toLowerCase()) || s.student_no.toLowerCase().includes(search.toLowerCase());
             return matchesClass && matchesSearch;
         });
+
+    const activeDetailsSession = detailsSession || settings?.current_session || '';
+    const activeDetailsTerm = detailsTerm || settings?.current_term || '';
+
+    const availableDetailSessions = useMemo(() => {
+        if (!selectedStudent) return settings?.current_session ? [settings.current_session] : [];
+
+        const sessions = new Set<string>();
+        scores.filter(sc => sc.student_id === selectedStudent.id).forEach(sc => sessions.add(sc.session));
+        payments.filter(p => p.student_id === selectedStudent.id).forEach(p => sessions.add(p.session));
+        attendance.filter(a => a.class_id === selectedStudent.class_id).forEach(a => sessions.add(a.session));
+        if (settings?.current_session) sessions.add(settings.current_session);
+
+        return Array.from(sessions).sort().reverse();
+    }, [selectedStudent, scores, payments, attendance, settings?.current_session]);
+
+    const availableDetailTerms = settings?.terms?.length ? settings.terms : ['First Term', 'Second Term', 'Third Term'];
+
+    const detailScore = useMemo(() => {
+        if (!selectedStudent) return undefined;
+        return scores.find(
+            sc =>
+                sc.student_id === selectedStudent.id &&
+                sc.session === activeDetailsSession &&
+                sc.term === activeDetailsTerm,
+        );
+    }, [selectedStudent, scores, activeDetailsSession, activeDetailsTerm]);
+
+    const detailPosition = useMemo(() => {
+        if (!selectedStudent || !detailScore) return null;
+        return Utils.getStudentPosition(selectedStudent.id, students, scores, activeDetailsSession, activeDetailsTerm);
+    }, [selectedStudent, detailScore, students, scores, activeDetailsSession, activeDetailsTerm]);
+
+    const detailAttendance = useMemo(() => {
+        if (!selectedStudent) {
+            return { total: 0, present: 0, late: 0, absent: 0, rate: 0, lastMarkedDate: '' };
+        }
+
+        const sessions = attendance.filter(
+            a =>
+                a.class_id === selectedStudent.class_id &&
+                a.session === activeDetailsSession &&
+                a.term === activeDetailsTerm,
+        );
+
+        const statuses = sessions.map(s => s.records.find(r => r.student_id === selectedStudent.id)?.status || 'absent');
+        const total = statuses.length;
+        const present = statuses.filter(st => st === 'present').length;
+        const late = statuses.filter(st => st === 'late').length;
+        const absent = statuses.filter(st => st === 'absent').length;
+        const rate = total > 0 ? Math.round(((present + late) / total) * 100) : 0;
+        const lastMarkedDate = sessions.length ? [...sessions].sort((a, b) => b.date.localeCompare(a.date))[0].date : '';
+
+        return { total, present, late, absent, rate, lastMarkedDate };
+    }, [selectedStudent, attendance, activeDetailsSession, activeDetailsTerm]);
+
+    const detailFinance = useMemo(() => {
+        if (!selectedStudent) return null;
+        return Utils.getStudentBalance(selectedStudent, fees, payments, activeDetailsSession, activeDetailsTerm);
+    }, [selectedStudent, fees, payments, activeDetailsSession, activeDetailsTerm]);
+
+    const detailPayments = useMemo(() => {
+        if (!selectedStudent) return [];
+        return payments
+            .filter(
+                p =>
+                    p.student_id === selectedStudent.id &&
+                    p.session === activeDetailsSession &&
+                    p.term === activeDetailsTerm,
+            )
+            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+            .slice(0, 5);
+    }, [selectedStudent, payments, activeDetailsSession, activeDetailsTerm]);
+
+    const detailSubjectAnalysis = useMemo(() => {
+        if (!detailScore?.rows?.length) return { strengths: [], risks: [] };
+        const sorted = [...detailScore.rows].sort((a, b) => b.total - a.total);
+        return {
+            strengths: sorted.slice(0, 3),
+            risks: sorted.slice(-3).filter(row => row.total < 55),
+        };
+    }, [detailScore]);
+
+    const detailWarnings = useMemo(() => {
+        if (!selectedStudent) return [];
+        const warnings: string[] = [];
+        if (!selectedStudent.dob) warnings.push('Date of birth is missing.');
+        if (!selectedStudent.parent_phone) warnings.push('Parent phone is missing.');
+        if (!selectedStudent.parent_email) warnings.push('Parent email is missing.');
+        if (!selectedStudent.address) warnings.push('Address is missing.');
+        if (!selectedStudent.passport_url) warnings.push('Passport photo is missing.');
+        if (!(selectedStudent as any).password) warnings.push('Portal password has not been set.');
+        if (!selectedStudent.class_id) warnings.push('Class assignment is missing.');
+        return warnings;
+    }, [selectedStudent]);
 
     return (
         <div className="space-y-6">
@@ -246,6 +373,13 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                                             </span>
                                         </div>
                                         <div className="flex gap-1">
+                                            <button
+                                                onClick={() => handleViewDetails(s)}
+                                                className={`p-1.5 hover:bg-${accentColor}-50 rounded-lg text-gray-400 hover:text-${accentColor}-600 transition-colors`}
+                                                title="View full details"
+                                            >
+                                                <Eye className="h-4 w-4" />
+                                            </button>
                                             <button
                                                 onClick={() => handleEdit(s)}
                                                 className={`p-1.5 hover:bg-${accentColor}-50 rounded-lg text-gray-400 hover:text-${accentColor}-600 transition-colors`}
@@ -368,6 +502,209 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                         {isSaving ? 'Saving...' : (editingId ? 'Update Record' : 'Complete Registration')}
                     </Button>
                 </form>
+            </Modal>
+
+            <Modal
+                isOpen={showDetailsModal}
+                onClose={() => setShowDetailsModal(false)}
+                title="Student Full Details"
+            >
+                {selectedStudent && (
+                    <div className="space-y-5">
+                        <div className="flex flex-col gap-3 rounded-xl border border-gray-100 bg-gray-50 p-4 md:flex-row md:items-center md:justify-between">
+                            <div className="flex items-center gap-4">
+                                <div className="h-16 w-16 rounded-xl overflow-hidden bg-white border border-gray-200 flex items-center justify-center">
+                                    {getPassportUrl(selectedStudent) ? (
+                                        <img src={getPassportUrl(selectedStudent) || ''} alt={selectedStudent.names} className="h-full w-full object-cover" />
+                                    ) : (
+                                        <User className="h-8 w-8 text-gray-300" />
+                                    )}
+                                </div>
+                                <div className="min-w-0">
+                                    <h3 className="text-lg font-bold text-gray-900">{selectedStudent.names}</h3>
+                                    <p className="text-sm text-gray-500">{selectedStudent.student_no}</p>
+                                    <p className="text-xs text-gray-500">
+                                        {classes.find(c => c.id === selectedStudent.class_id)?.name || 'Unknown Class'} | {selectedStudent.gender}
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex gap-2">
+                                <Select value={activeDetailsSession} onChange={e => setDetailsSession(e.target.value)}>
+                                    {availableDetailSessions.map(s => (
+                                        <option key={s} value={s}>{s}</option>
+                                    ))}
+                                </Select>
+                                <Select value={activeDetailsTerm} onChange={e => setDetailsTerm(e.target.value)}>
+                                    {availableDetailTerms.map((t: string) => (
+                                        <option key={t} value={t}>{t}</option>
+                                    ))}
+                                </Select>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
+                            <div className="rounded-lg bg-brand-50 p-3 border border-brand-100">
+                                <p className="text-[10px] uppercase font-bold text-brand-600">Average</p>
+                                <p className="text-base font-bold text-brand-800">{detailScore ? `${(detailScore.average || 0).toFixed(1)}%` : '--'}</p>
+                            </div>
+                            <div className="rounded-lg bg-indigo-50 p-3 border border-indigo-100">
+                                <p className="text-[10px] uppercase font-bold text-indigo-600">Position</p>
+                                <p className="text-base font-bold text-indigo-800">{detailPosition ? Utils.ordinalSuffix(detailPosition) : '--'}</p>
+                            </div>
+                            <div className="rounded-lg bg-emerald-50 p-3 border border-emerald-100">
+                                <p className="text-[10px] uppercase font-bold text-emerald-600">Attendance</p>
+                                <p className="text-base font-bold text-emerald-800">{detailAttendance.total ? `${detailAttendance.rate}%` : '--'}</p>
+                            </div>
+                            <div className="rounded-lg bg-rose-50 p-3 border border-rose-100">
+                                <p className="text-[10px] uppercase font-bold text-rose-600">Outstanding</p>
+                                <p className="text-base font-bold text-rose-800">
+                                    {detailFinance ? Utils.formatCurrency(detailFinance.balance) : '--'}
+                                </p>
+                            </div>
+                            <div className="rounded-lg bg-amber-50 p-3 border border-amber-100">
+                                <p className="text-[10px] uppercase font-bold text-amber-600">Data Alerts</p>
+                                <p className="text-base font-bold text-amber-800">{detailWarnings.length}</p>
+                            </div>
+                        </div>
+
+                        <div className="flex flex-wrap gap-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                    handleEdit(selectedStudent);
+                                    setShowDetailsModal(false);
+                                }}
+                            >
+                                <Edit className="h-4 w-4 mr-1" /> Edit Profile
+                            </Button>
+                            <Button variant="secondary" size="sm" onClick={() => window.location.assign('/grading')}>
+                                <GraduationCap className="h-4 w-4 mr-1" /> Open Grading
+                            </Button>
+                            <Button variant="secondary" size="sm" onClick={() => window.location.assign('/bursary')}>
+                                <Wallet className="h-4 w-4 mr-1" /> Open Bursary
+                            </Button>
+                            <Button variant="secondary" size="sm" onClick={() => window.location.assign('/attendance')}>
+                                <CalendarCheck className="h-4 w-4 mr-1" /> Open Attendance
+                            </Button>
+                            <Button variant="secondary" size="sm" onClick={() => window.print()}>
+                                <Printer className="h-4 w-4 mr-1" /> Print
+                            </Button>
+                            <Button variant="secondary" size="sm" onClick={() => window.location.assign('/messages')}>
+                                <MessageSquare className="h-4 w-4 mr-1" /> Message Parent
+                            </Button>
+                        </div>
+
+                        {selectedStudent && (
+                            <AcademicProgressChart scores={scores} studentId={selectedStudent.id} />
+                        )}
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="rounded-xl border border-gray-100 p-4">
+                                <p className="mb-3 text-xs font-bold uppercase tracking-wide text-gray-500">Student Profile</p>
+                                <div className="space-y-2 text-sm">
+                                    <p><span className="font-semibold text-gray-700">Full Name:</span> {selectedStudent.names || '-'}</p>
+                                    <p><span className="font-semibold text-gray-700">Admission No:</span> {selectedStudent.student_no || '-'}</p>
+                                    <p><span className="font-semibold text-gray-700">Gender:</span> {selectedStudent.gender || '-'}</p>
+                                    <p><span className="font-semibold text-gray-700">Date of Birth:</span> {selectedStudent.dob || '-'}</p>
+                                    <p><span className="font-semibold text-gray-700">Class:</span> {classes.find(c => c.id === selectedStudent.class_id)?.name || '-'}</p>
+                                    <p><span className="font-semibold text-gray-700">Status:</span> {(selectedStudent as any).status || 'active'}</p>
+                                </div>
+                            </div>
+
+                            <div className="rounded-xl border border-gray-100 p-4">
+                                <p className="mb-3 text-xs font-bold uppercase tracking-wide text-gray-500">Parent / Guardian</p>
+                                <div className="space-y-2 text-sm">
+                                    <p><span className="font-semibold text-gray-700">Parent Name:</span> {selectedStudent.parent_name || '-'}</p>
+                                    <p><span className="font-semibold text-gray-700">Parent Email:</span> {selectedStudent.parent_email || '-'}</p>
+                                    <p><span className="font-semibold text-gray-700">Parent Phone:</span> {selectedStudent.parent_phone || '-'}</p>
+                                    <p><span className="font-semibold text-gray-700">Address:</span> {selectedStudent.address || '-'}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="rounded-xl border border-gray-100 p-4">
+                                <p className="mb-3 text-xs font-bold uppercase tracking-wide text-gray-500">Subject Strengths & Risk</p>
+                                <div className="space-y-2">
+                                    <p className="text-xs font-semibold text-emerald-700">Top Subjects</p>
+                                    {detailSubjectAnalysis.strengths.length > 0 ? detailSubjectAnalysis.strengths.map(row => (
+                                        <div key={`${row.subject}-top`} className="flex items-center justify-between rounded-md bg-emerald-50 px-3 py-2 text-sm">
+                                            <span>{row.subject}</span>
+                                            <span className="font-bold">{row.total}%</span>
+                                        </div>
+                                    )) : <p className="text-xs text-gray-500">No score data for this period.</p>}
+
+                                    <p className="text-xs font-semibold text-rose-700 mt-3">Needs Attention</p>
+                                    {detailSubjectAnalysis.risks.length > 0 ? detailSubjectAnalysis.risks.map(row => (
+                                        <div key={`${row.subject}-risk`} className="flex items-center justify-between rounded-md bg-rose-50 px-3 py-2 text-sm">
+                                            <span>{row.subject}</span>
+                                            <span className="font-bold">{row.total}%</span>
+                                        </div>
+                                    )) : <p className="text-xs text-gray-500">No immediate risk subjects in this period.</p>}
+                                </div>
+                            </div>
+
+                            <div className="rounded-xl border border-gray-100 p-4">
+                                <p className="mb-3 text-xs font-bold uppercase tracking-wide text-gray-500">Attendance Intelligence</p>
+                                <div className="grid grid-cols-2 gap-2 text-sm">
+                                    <div className="rounded-md bg-gray-50 p-2"><span className="text-xs text-gray-500">Days</span><p className="font-bold">{detailAttendance.total}</p></div>
+                                    <div className="rounded-md bg-emerald-50 p-2"><span className="text-xs text-emerald-600">Present</span><p className="font-bold text-emerald-700">{detailAttendance.present}</p></div>
+                                    <div className="rounded-md bg-amber-50 p-2"><span className="text-xs text-amber-600">Late</span><p className="font-bold text-amber-700">{detailAttendance.late}</p></div>
+                                    <div className="rounded-md bg-rose-50 p-2"><span className="text-xs text-rose-600">Absent</span><p className="font-bold text-rose-700">{detailAttendance.absent}</p></div>
+                                </div>
+                                <div className="mt-3 text-xs text-gray-600">
+                                    Rate: <span className="font-bold">{detailAttendance.rate}%</span>
+                                    {detailAttendance.lastMarkedDate && (
+                                        <span> | Last marked: {detailAttendance.lastMarkedDate}</span>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="rounded-xl border border-gray-100 p-4">
+                                <p className="mb-3 text-xs font-bold uppercase tracking-wide text-gray-500">Finance Snapshot</p>
+                                <div className="space-y-2 text-sm">
+                                    <p><span className="font-semibold text-gray-700">Total Bill:</span> {detailFinance ? Utils.formatCurrency(detailFinance.totalBill) : '--'}</p>
+                                    <p><span className="font-semibold text-gray-700">Total Paid:</span> {detailFinance ? Utils.formatCurrency(detailFinance.totalPaid) : '--'}</p>
+                                    <p><span className="font-semibold text-gray-700">Outstanding:</span> {detailFinance ? Utils.formatCurrency(detailFinance.balance) : '--'}</p>
+                                </div>
+                                <div className="mt-3 space-y-1">
+                                    {detailPayments.length > 0 ? detailPayments.map(p => (
+                                        <div key={p.id} className="flex items-center justify-between rounded-md bg-gray-50 px-3 py-2 text-xs">
+                                            <span>{p.date}</span>
+                                            <span className="font-semibold">{Utils.formatCurrency(p.amount)}</span>
+                                        </div>
+                                    )) : <p className="text-xs text-gray-500">No payments recorded for selected period.</p>}
+                                </div>
+                            </div>
+
+                            <div className="rounded-xl border border-gray-100 p-4">
+                                <p className="mb-3 text-xs font-bold uppercase tracking-wide text-gray-500">Assignments & Access</p>
+                                <div className="space-y-2 text-sm">
+                                    <p><span className="font-semibold text-gray-700">Assigned Subjects:</span> {(selectedStudent.assigned_subjects && selectedStudent.assigned_subjects.length > 0) ? selectedStudent.assigned_subjects.join(', ') : 'Using class defaults'}</p>
+                                    <p><span className="font-semibold text-gray-700">Portal Username:</span> {selectedStudent.student_no || '-'}</p>
+                                    <p><span className="font-semibold text-gray-700">Portal Password:</span> {(selectedStudent as any).password ? 'Set' : 'Not set'}</p>
+                                    <p><span className="font-semibold text-gray-700">Report Status:</span> {detailScore?.is_passed ? 'Published' : 'Pending'}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {detailWarnings.length > 0 && (
+                            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+                                <p className="mb-2 text-xs font-bold uppercase tracking-wide text-amber-700 flex items-center gap-2">
+                                    <TrendingDown className="h-4 w-4" /> Data Quality Warnings
+                                </p>
+                                <ul className="list-disc list-inside space-y-1 text-sm text-amber-900">
+                                    {detailWarnings.map(w => (
+                                        <li key={w}>{w}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+                    </div>
+                )}
             </Modal>
 
             <Modal isOpen={showPromoteModal} onClose={() => setShowPromoteModal(false)} title="Promotion Autopilot">

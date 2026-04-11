@@ -27,16 +27,16 @@ export const SubjectTeacherManager: React.FC = () => {
     const { mutate: addSubjectTeacher } = useCreateSubjectTeacher();
     const { mutate: removeSubjectTeacher } = useDeleteSubjectTeacher();
 
-    const [selectedClass, setSelectedClass] = useState(classes[0]?.id || '');
+    const [selectedClass, setSelectedClass] = useState(String(classes[0]?.id || ''));
     const [selectedTeacher, setSelectedTeacher] = useState('');
     const [selectedSubject, setSelectedSubject] = useState('');
 
-    const currentClass = classes.find(c => c.id === selectedClass);
+    const currentClass = classes.find(c => Utils.sameId(c.id, selectedClass));
     const classSubjects = Utils.getSubjectsForClass(currentClass);
 
     // Get assignments for current class
     const classAssignments = subjectTeachers.filter(
-        st => st.class_id === selectedClass && st.session === settings.current_session
+        st => Utils.sameId(st.class_id, selectedClass) && st.session === settings.current_session
     );
 
     const handleAddAssignment = () => {
@@ -205,11 +205,11 @@ export const SubjectTeacherManager: React.FC = () => {
                             return (
                                 <div
                                     key={cls.id}
-                                    className={`p-3 rounded-lg border cursor-pointer transition-colors ${selectedClass === cls.id
+                                    className={`p-3 rounded-lg border cursor-pointer transition-colors ${Utils.sameId(selectedClass, cls.id)
                                         ? 'bg-brand-50 border-brand-200'
                                         : 'bg-gray-50 hover:bg-gray-100'
                                         }`}
-                                    onClick={() => setSelectedClass(cls.id)}
+                                    onClick={() => setSelectedClass(String(cls.id))}
                                 >
                                     <p className="font-medium text-gray-900">{cls.name}</p>
                                     <div className="flex items-center justify-between mt-2">

@@ -9,6 +9,7 @@ import {
     XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from '@/components/ui/charts';
 import * as Types from '@/lib/types';
+import * as Utils from '@/lib/utils';
 import { Card } from '@/components/ui/card';
 import { Select } from '@/components/ui/select';
 
@@ -22,11 +23,11 @@ interface TermComparisonViewProps {
 export const TermComparisonView: React.FC<TermComparisonViewProps> = ({
     students, classes, scores, settings
 }) => {
-    const [selectedClass, setSelectedClass] = useState(classes[0]?.id || '');
+    const [selectedClass, setSelectedClass] = useState(String(classes[0]?.id || ''));
     const [selectedStudent, setSelectedStudent] = useState('');
     const [compareMode, setCompareMode] = useState<'student' | 'class'>('student');
 
-    const activeStudents = students.filter(s => s.class_id === selectedClass);
+    const activeStudents = students.filter(s => Utils.sameId(s.class_id, selectedClass));
     const terms = settings.terms || ['First Term', 'Second Term', 'Third Term'];
 
     // Calculate student performance across terms
@@ -50,7 +51,7 @@ export const TermComparisonView: React.FC<TermComparisonViewProps> = ({
 
     // Calculate class average across terms
     const classTermData = useMemo(() => {
-        const classStudents = students.filter(s => s.class_id === selectedClass);
+        const classStudents = students.filter(s => Utils.sameId(s.class_id, selectedClass));
 
         return terms.map(term => {
             const termScores = classStudents.map(student => {

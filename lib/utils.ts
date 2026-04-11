@@ -2,10 +2,12 @@
 import { ScoreRow, Settings, Class, Subject, Student, Teacher, Staff, FeeStructure, Payment, Score, Attendance } from './types';
 
 export const calculateGrade = (total: number) => {
-  if (total >= 75) return { grade: 'A', comment: 'Excellent' };
-  if (total >= 65) return { grade: 'B', comment: 'Very Good' };
-  if (total >= 50) return { grade: 'C', comment: 'Good' };
-  if (total >= 40) return { grade: 'D', comment: 'Fair' };
+  if (total >= 90) return { grade: 'A*', comment: 'Outstanding' };
+  if (total >= 80) return { grade: 'A', comment: 'Excellent' };
+  if (total >= 70) return { grade: 'B', comment: 'Very Good' };
+  if (total >= 60) return { grade: 'C', comment: 'Good' };
+  if (total >= 50) return { grade: 'D', comment: 'Satisfactory' };
+  if (total >= 40) return { grade: 'E', comment: 'Pass' };
   return { grade: 'F', comment: 'Fail' };
 };
 
@@ -14,6 +16,9 @@ export const generateId = () => crypto.randomUUID();
 export const getCurrentTimestamp = () => Date.now();
 
 export const getTodayString = () => new Date().toISOString().split('T')[0];
+
+export const sameId = (a: string | number | null | undefined, b: string | number | null | undefined) =>
+  String(a ?? '') === String(b ?? '');
 
 // --- STORAGE KEYS ---
 export const STORAGE_KEYS = {
@@ -270,6 +275,7 @@ export const INITIAL_SETTINGS: Settings = {
 
 export const getSubjectsForClass = (cls: Class | undefined) => {
   if (!cls) return [];
+  if (cls.report_mode === 'early_years') return PRESET_PRESCHOOL_SUBJECTS;
   if (cls.subjects && cls.subjects.length > 0) return cls.subjects;
 
   const lowerName = cls.name.toLowerCase();
@@ -297,6 +303,25 @@ export const PRESET_CLASSES = [
   'SSS 2 Science', 'SSS 2 Art', 'SSS 2 Commerce',
   'SSS 3 Science', 'SSS 3 Art', 'SSS 3 Commerce'
 ];
+
+export const EARLY_YEARS_LEARNING_AREAS = [
+  'Communication & Language',
+  'Literacy',
+  'Numeracy',
+  'Understanding the World',
+  'Physical Development',
+  'Personal, Social & Emotional Development',
+  'Creative Expression',
+];
+
+export const isEarlyYearsClass = (cls?: Class) => {
+  if (!cls) return false;
+  if (cls.report_mode === 'early_years') return true;
+  const category = (cls.category || '').toLowerCase();
+  if (category === 'nursery') return true;
+  const lowerName = (cls.name || '').toLowerCase();
+  return lowerName.includes('play') || lowerName.includes('reception') || lowerName.includes('nursery') || lowerName.includes('kinder');
+};
 
 export const DOMAINS_AFFECTIVE = [
   'Punctuality', 'Attentiveness', 'Neatness', 'Honesty', 'Self Control', 'Politeness', 'Leadership'

@@ -24,6 +24,12 @@ type PaymentPayload = Partial<Types.Payment> & {
     items_input?: Types.PaymentLineItem[];
 };
 
+export interface BursaryPeriodFilters extends Record<string, unknown> {
+    session?: string;
+    term?: string;
+    include_all_periods?: boolean;
+}
+
 const normalizePayment = (payment: PaymentApiResponse): Types.Payment => {
     const method = payment?.method === 'online' ? 'online' : payment?.method || 'cash';
     const lineItems = payment?.lineItems || payment?.line_items || [];
@@ -71,10 +77,10 @@ const toBackendPaymentPayload = (item: PaymentPayload) => {
 // =============================================
 // FEES
 // =============================================
-export function useFees() {
+export function useFees(filters?: BursaryPeriodFilters) {
     return useQuery({
-        queryKey: queryKeys.fees,
-        queryFn: () => fetchAll<Types.FeeStructure>('fees/'),
+        queryKey: [...queryKeys.fees, filters || {}],
+        queryFn: () => fetchAll<Types.FeeStructure>('fees/', filters),
     });
 }
 
@@ -113,21 +119,39 @@ export function useDeleteFee() {
 // =============================================
 // PAYMENTS
 // =============================================
-export function usePayments() {
+export interface PaymentFilters extends BursaryPeriodFilters {
+    student?: string;
+}
+
+export function usePayments(filters?: PaymentFilters) {
     return useQuery({
-        queryKey: queryKeys.payments,
+        queryKey: [...queryKeys.payments, filters || {}],
         queryFn: async () => {
-            const rows = await fetchAll<PaymentApiResponse>('payments/');
+            const rows = await fetchAll<PaymentApiResponse>('payments/', filters);
             return rows.map(normalizePayment);
         },
     });
 }
 
-export function usePaginatedPayments(page = 1, pageSize = 50, studentId = '') {
+export function usePaginatedPayments(
+    page = 1,
+    pageSize = 50,
+    studentOrFilters: string | (BursaryPeriodFilters & { studentId?: string }) = '',
+) {
+    const filters =
+        typeof studentOrFilters === 'string'
+            ? { studentId: studentOrFilters }
+            : (studentOrFilters || {});
+
     return useQuery({
-        queryKey: [...queryKeys.payments, { page, pageSize, studentId }],
+        queryKey: [...queryKeys.payments, { page, pageSize, ...filters }],
         queryFn: async () => {
-            const response = await fetchPaginated<PaymentApiResponse>('payments/', page, pageSize, { student: studentId });
+            const response = await fetchPaginated<PaymentApiResponse>('payments/', page, pageSize, {
+                student: filters.studentId,
+                session: filters.session,
+                term: filters.term,
+                include_all_periods: filters.include_all_periods,
+            });
             return {
                 ...response,
                 results: (response?.results || []).map(normalizePayment),
@@ -189,10 +213,10 @@ export function useFinancialStats(session: string, term: string, enabled = true)
 // =============================================
 // EXPENSES
 // =============================================
-export function useExpenses() {
+export function useExpenses(filters?: BursaryPeriodFilters) {
     return useQuery({
-        queryKey: queryKeys.expenses,
-        queryFn: () => fetchAll<Types.Expense>('expenses/'),
+        queryKey: [...queryKeys.expenses, filters || {}],
+        queryFn: () => fetchAll<Types.Expense>('expenses/', filters),
     });
 }
 

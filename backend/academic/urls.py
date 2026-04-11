@@ -3,6 +3,7 @@ from rest_framework.routers import DefaultRouter
 
 from . import views
 from .views import (
+    AcademicDataMigrationViewSet,
     AdmissionIntakeViewSet,
     AdmissionViewSet,
     AIInsightsView,
@@ -32,7 +33,6 @@ from .views import (
     TimetableEntryViewSet,
     TimetableViewSet,
 )
-from .views_migration import AcademicDataMigrationViewSet
 
 router = DefaultRouter()
 router.register(r"subjects", views.SubjectViewSet)

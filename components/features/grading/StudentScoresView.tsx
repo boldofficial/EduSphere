@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ClipboardList, Award, TrendingUp, BookOpen, Lock, Clock, Sparkles } from 'lucide-react';
 import { TrendBadge } from './TrendBadge';
+import { ReportCardPDF } from './ReportCardPDF';
 import * as Types from '@/lib/types';
 import * as Utils from '@/lib/utils';
 import { Card } from '@/components/ui/card';
@@ -18,14 +19,40 @@ interface StudentScoresViewProps {
 export const StudentScoresView: React.FC<StudentScoresViewProps> = ({
     student, students, currentClass, scores, settings
 }) => {
-    // Get current term scores
+    const [selectedSession, setSelectedSession] = useState('');
+    const [selectedTerm, setSelectedTerm] = useState('');
+
+    useEffect(() => {
+        if (!selectedSession && settings.current_session) setSelectedSession(settings.current_session);
+        if (!selectedTerm && settings.current_term) setSelectedTerm(settings.current_term);
+    }, [settings.current_session, settings.current_term, selectedSession, selectedTerm]);
+
+    const availableSessions = useMemo(() => {
+        const sessions = new Set(scores.filter(s => s.student_id === student.id).map(s => s.session));
+        if (settings.current_session) sessions.add(settings.current_session);
+        return Array.from(sessions).sort().reverse();
+    }, [scores, settings.current_session, student.id]);
+
+    const availableTerms = settings.terms?.length ? settings.terms : ['First Term', 'Second Term', 'Third Term'];
+    const targetSession = selectedSession || settings.current_session;
+    const targetTerm = selectedTerm || settings.current_term;
+    const isEarlyYears = Utils.isEarlyYearsClass(currentClass);
+
+    // Get selected term scores
     const myScore = useMemo(() => {
         return scores.find(s =>
             s.student_id === student.id &&
-            s.session === settings.current_session &&
-            s.term === settings.current_term
+            s.session === targetSession &&
+            s.term === targetTerm
         );
-    }, [scores, student.id, settings]);
+    }, [scores, student.id, targetSession, targetTerm]);
+    const earlySecurePercent = useMemo(() => {
+        if (!isEarlyYears || !myScore) return 0;
+        const observations = myScore.early_years_observations || [];
+        if (observations.length === 0) return 0;
+        const secure = observations.filter(item => item.status === 'Secure').length;
+        return (secure / observations.length) * 100;
+    }, [isEarlyYears, myScore]);
 
     // Check if report card is published
     const isPublished = myScore?.is_passed ?? false;
@@ -33,25 +60,24 @@ export const StudentScoresView: React.FC<StudentScoresViewProps> = ({
     // Calculate position
     const position = useMemo(() => {
         if (!myScore || !isPublished) return null;
-        return Utils.getStudentPosition(student.id, students, scores, settings.current_session, settings.current_term);
-    }, [student.id, students, scores, settings, myScore, isPublished]);
+        return Utils.getStudentPosition(student.id, students, scores, targetSession, targetTerm);
+    }, [student.id, students, scores, targetSession, targetTerm, myScore, isPublished]);
 
     const totalInClass = useMemo(() => {
-        return students.filter(s => s.class_id === student.class_id).length;
+        return students.filter(s => Utils.sameId(s.class_id, student.class_id)).length;
     }, [students, student.class_id]);
 
-    const classSubjects = Utils.getSubjectsForClass(currentClass);
-
     const getGradeColor = (grade: string) => {
-        switch (grade) {
-            case 'A': return 'bg-green-100 text-green-700';
-            case 'B': return 'bg-blue-100 text-blue-700';
-            case 'C': return 'bg-yellow-100 text-yellow-700';
-            case 'D': return 'bg-orange-100 text-orange-700';
-            case 'E':
-            case 'F': return 'bg-red-100 text-red-700';
-            default: return 'bg-gray-100 text-gray-700';
-        }
+        const gradeColors: Record<string, string> = {
+            'A*': 'bg-purple-100 text-purple-700',
+            'A': 'bg-green-100 text-green-700',
+            'B': 'bg-blue-100 text-blue-700',
+            'C': 'bg-amber-100 text-amber-700',
+            'D': 'bg-orange-100 text-orange-700',
+            'E': 'bg-red-100 text-red-700',
+            'F': 'bg-red-200 text-red-800',
+        };
+        return gradeColors[grade] || 'bg-gray-100 text-gray-700';
     };
 
     // Show locked message if results are not published
@@ -60,7 +86,7 @@ export const StudentScoresView: React.FC<StudentScoresViewProps> = ({
             <div className="space-y-6">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900">My Academic Scores</h1>
-                    <p className="text-gray-500">View your scores for {settings.current_term} - {settings.current_session}</p>
+                    <p className="text-gray-500">View your scores for {targetTerm} - {targetSession}</p>
                 </div>
 
                 <Card className="p-12 text-center">
@@ -70,7 +96,7 @@ export const StudentScoresView: React.FC<StudentScoresViewProps> = ({
                         </div>
                         <h2 className="text-xl font-bold text-gray-900 mb-2">Results Not Yet Published</h2>
                         <p className="text-gray-500 mb-6">
-                            Your results for {settings.current_term} ({settings.current_session}) have not been released yet. 
+                            Your results for {targetTerm} ({targetSession}) have not been released yet.
                             Please check back later or contact your school administration.
                         </p>
                         <div className="flex items-center justify-center gap-2 text-sm text-gray-400">
@@ -85,9 +111,44 @@ export const StudentScoresView: React.FC<StudentScoresViewProps> = ({
 
     return (
         <div className="space-y-6">
-            <div>
-                <h1 className="text-2xl font-bold text-gray-900">My Academic Scores</h1>
-                <p className="text-gray-500">View your scores for {settings.current_term} - {settings.current_session}</p>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h1 className="text-2xl font-bold text-gray-900">My Academic Scores</h1>
+                    <p className="text-gray-500">View your scores for {targetTerm} - {targetSession}</p>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-2">
+                    <select
+                        value={targetSession}
+                        onChange={(e) => setSelectedSession(e.target.value)}
+                        className="rounded-lg border border-gray-200 px-3 py-2 text-sm font-semibold text-gray-700"
+                    >
+                        {availableSessions.map(session => (
+                            <option key={session} value={session}>{session}</option>
+                        ))}
+                    </select>
+                    <select
+                        value={targetTerm}
+                        onChange={(e) => setSelectedTerm(e.target.value)}
+                        className="rounded-lg border border-gray-200 px-3 py-2 text-sm font-semibold text-gray-700"
+                    >
+                        {availableTerms.map(term => (
+                            <option key={term} value={term}>{term}</option>
+                        ))}
+                    </select>
+                </div>
+                {myScore?.id && (
+                    <ReportCardPDF
+                        reportId={myScore.id}
+                        session={targetSession}
+                        term={targetTerm}
+                        studentName={student?.names}
+                        schoolName={settings.school_name}
+                        variant="secondary"
+                        label="Download Published Report"
+                        successMessage="Published report card downloaded successfully"
+                        className="w-full sm:w-auto"
+                    />
+                )}
             </div>
 
             {/* Summary Cards */}
@@ -99,10 +160,10 @@ export const StudentScoresView: React.FC<StudentScoresViewProps> = ({
                         </div>
                         <div>
                             <div className="flex items-center gap-2">
-                                <p className="text-3xl font-bold">{myScore?.average?.toFixed(1) || '0'}%</p>
+                                <p className="text-3xl font-bold">{isEarlyYears ? earlySecurePercent.toFixed(1) : (myScore?.average?.toFixed(1) || '0')}%</p>
                                 <TrendBadge trend={myScore?.performance_trend} showText={false} />
                             </div>
-                            <p className="text-xs text-white/80">Term Average</p>
+                            <p className="text-xs text-white/80">{isEarlyYears ? 'Secure Development' : 'Term Average'}</p>
                         </div>
                     </div>
                 </Card>
@@ -125,8 +186,10 @@ export const StudentScoresView: React.FC<StudentScoresViewProps> = ({
                             <BookOpen className="h-5 w-5 text-purple-600" />
                         </div>
                         <div>
-                            <p className="text-2xl font-bold text-gray-900">{myScore?.rows?.length || 0}</p>
-                            <p className="text-xs text-gray-500">Subjects</p>
+                            <p className="text-2xl font-bold text-gray-900">
+                                {isEarlyYears ? (myScore?.early_years_observations?.length || 0) : (myScore?.rows?.length || 0)}
+                            </p>
+                            <p className="text-xs text-gray-500">{isEarlyYears ? 'Learning Areas' : 'Subjects'}</p>
                         </div>
                     </div>
                 </Card>
@@ -148,10 +211,50 @@ export const StudentScoresView: React.FC<StudentScoresViewProps> = ({
             <Card className="p-6">
                 <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
                     <ClipboardList className="h-5 w-5 text-brand-500" />
-                    Subject Scores
+                    {isEarlyYears ? 'Learning & Development' : 'Subject Scores'}
                 </h2>
 
-                {myScore && myScore.rows.length > 0 ? (
+                {isEarlyYears && myScore ? (
+                    <div className="overflow-x-auto">
+                        <table className="w-full">
+                            <thead>
+                                <tr className="border-b-2 border-gray-200">
+                                    <th className="text-left py-3 px-4 font-bold text-gray-700">Learning Area</th>
+                                    <th className="text-center py-3 px-4 font-bold text-gray-700">Status</th>
+                                    <th className="text-left py-3 px-4 font-bold text-gray-700">Observation</th>
+                                    <th className="text-left py-3 px-4 font-bold text-gray-700">Next Step</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {(myScore.early_years_observations || []).map((row, i) => (
+                                    <tr key={`${row.area}-${i}`} className="border-b border-gray-100 hover:bg-gray-50">
+                                        <td className="py-3 px-4 font-medium text-gray-900">{row.area}</td>
+                                        <td className="py-3 px-4 text-center">
+                                            <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                                                row.status === 'Secure'
+                                                    ? 'bg-emerald-100 text-emerald-700'
+                                                    : row.status === 'Developing'
+                                                        ? 'bg-amber-100 text-amber-700'
+                                                        : 'bg-rose-100 text-rose-700'
+                                            }`}>
+                                                {row.status}
+                                            </span>
+                                        </td>
+                                        <td className="py-3 px-4 text-gray-600">{row.comment || '-'}</td>
+                                        <td className="py-3 px-4 text-gray-600">{row.next_step || '-'}</td>
+                                    </tr>
+                                ))}
+                                {(myScore.early_years_observations || []).length === 0 && (
+                                    <tr>
+                                        <td className="py-8 px-4 text-center text-gray-500" colSpan={4}>
+                                            No early-years observations available for this term yet.
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                ) : myScore && myScore.rows.length > 0 ? (
                     <div className="overflow-x-auto">
                         <table className="w-full">
                             <thead>
@@ -227,13 +330,13 @@ export const StudentScoresView: React.FC<StudentScoresViewProps> = ({
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {myScore.teacher_remark && (
                                 <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
-                                    <p className="text-xs font-bold text-blue-600 uppercase mb-1">Class Teacher's Remark</p>
+                                    <p className="text-xs font-bold text-blue-600 uppercase mb-1">Class Teacher&apos;s Remark</p>
                                     <p className="text-gray-700">{myScore.teacher_remark}</p>
                                 </div>
                             )}
                             {myScore.head_teacher_remark && (
                                 <div className="p-4 bg-purple-50 rounded-lg border border-purple-100">
-                                    <p className="text-xs font-bold text-purple-600 uppercase mb-1">Principal's Remark</p>
+                                    <p className="text-xs font-bold text-purple-600 uppercase mb-1">Principal&apos;s Remark</p>
                                     <p className="text-gray-700">{myScore.head_teacher_remark}</p>
                                 </div>
                             )}

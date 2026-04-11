@@ -100,13 +100,17 @@ export async function POST(request: NextRequest) {
 
         // Try to determine if it's a connection error
         const isConnectionError = error?.code === 'ECONNREFUSED' || error?.message?.includes('fetch failed');
+        const isProd = process.env.NODE_ENV === 'production';
 
-        return NextResponse.json({
+        const payload: Record<string, unknown> = {
             error: isConnectionError ? 'Backend Connection Error' : 'Internal Server Error',
-            details: error?.message,
-            code: error?.code,
-            django_url: process.env.DJANGO_API_URL,
-            timestamp: new Date().toISOString()
-        }, { status: 500 });
+        };
+        if (!isProd) {
+            payload.details = error?.message;
+            payload.code = error?.code;
+            payload.timestamp = new Date().toISOString();
+        }
+
+        return NextResponse.json(payload, { status: 500 });
     }
 }

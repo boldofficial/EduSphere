@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
     CreditCard, FileText, Printer,
-    CheckCircle2, Clock, AlertCircle
+    CheckCircle2, AlertCircle
 } from 'lucide-react';
 import * as Types from '@/lib/types';
 import * as Utils from '@/lib/utils';
@@ -26,23 +26,51 @@ export const StudentInvoiceView: React.FC<StudentInvoiceViewProps> = ({
     payments,
     settings
 }) => {
+    const [selectedSession, setSelectedSession] = useState('');
+    const [selectedTerm, setSelectedTerm] = useState('');
+
+    useEffect(() => {
+        if (!selectedSession && settings.current_session) setSelectedSession(settings.current_session);
+        if (!selectedTerm && settings.current_term) setSelectedTerm(settings.current_term);
+    }, [settings.current_session, settings.current_term, selectedSession, selectedTerm]);
+
+    const availableSessions = useMemo(() => {
+        const sessions = new Set<string>();
+        fees.forEach(f => sessions.add(f.session));
+        payments.filter(p => p.student_id === student.id).forEach(p => sessions.add(p.session));
+        if (settings.current_session) sessions.add(settings.current_session);
+        return Array.from(sessions).sort().reverse();
+    }, [fees, payments, settings.current_session, student.id]);
+
+    const availableTerms = settings.terms?.length ? settings.terms : ['First Term', 'Second Term', 'Third Term'];
+    const targetSession = selectedSession || settings.current_session;
+    const targetTerm = selectedTerm || settings.current_term;
+    const scopedSettings = useMemo(
+        () => ({
+            ...settings,
+            current_session: targetSession,
+            current_term: targetTerm,
+        }),
+        [settings, targetSession, targetTerm],
+    );
+
     // Calculate totals
     const { totalBill, totalPaid, balance } = Utils.getStudentBalance(
-        student, fees, payments, settings.current_session, settings.current_term
+        student, fees, payments, targetSession, targetTerm
     );
 
     // Get student's fees
     const studentFees = fees.filter(f =>
-        f.session === settings.current_session &&
-        f.term === settings.current_term &&
+        f.session === targetSession &&
+        f.term === targetTerm &&
         (f.class_id === null || f.class_id === student.class_id)
     );
 
     // Get student's payments
     const studentPayments = payments.filter(p =>
         p.student_id === student.id &&
-        p.session === settings.current_session &&
-        p.term === settings.current_term
+        p.session === targetSession &&
+        p.term === targetTerm
     ).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     const handlePrint = () => {
@@ -70,7 +98,7 @@ export const StudentInvoiceView: React.FC<StudentInvoiceViewProps> = ({
                     cls={cls}
                     fees={studentFees}
                     payments={studentPayments}
-                    settings={settings}
+                    settings={scopedSettings}
                 />
             );
 
@@ -92,9 +120,31 @@ export const StudentInvoiceView: React.FC<StudentInvoiceViewProps> = ({
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Fee Statement</h1>
-                    <div className="flex items-center gap-2 mt-1">
-                        <span className="px-2.5 py-0.5 rounded-lg bg-indigo-50 text-indigo-700 text-[10px] font-bold uppercase tracking-wider border border-indigo-100">{settings.current_term}</span>
-                        <span className="text-xs text-gray-400 font-medium">{settings.current_session}</span>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-2">
+                        <div className="flex items-center gap-2">
+                            <span className="px-2.5 py-0.5 rounded-lg bg-indigo-50 text-indigo-700 text-[10px] font-bold uppercase tracking-wider border border-indigo-100">{targetTerm}</span>
+                            <span className="text-xs text-gray-400 font-medium">{targetSession}</span>
+                        </div>
+                        <div className="flex gap-2">
+                            <select
+                                value={targetSession}
+                                onChange={(e) => setSelectedSession(e.target.value)}
+                                className="rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-semibold text-gray-700"
+                            >
+                                {availableSessions.map(session => (
+                                    <option key={session} value={session}>{session}</option>
+                                ))}
+                            </select>
+                            <select
+                                value={targetTerm}
+                                onChange={(e) => setSelectedTerm(e.target.value)}
+                                className="rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-semibold text-gray-700"
+                            >
+                                {availableTerms.map(term => (
+                                    <option key={term} value={term}>{term}</option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
                 </div>
                 <div className="flex gap-2">
@@ -306,7 +356,7 @@ export const StudentInvoiceView: React.FC<StudentInvoiceViewProps> = ({
                     cls={cls}
                     fees={studentFees}
                     payments={studentPayments}
-                    settings={settings}
+                    settings={scopedSettings}
                 />
             </div>
         </div>

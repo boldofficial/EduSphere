@@ -1,4 +1,6 @@
 from django.utils import timezone
+from django.db.models import Case, DecimalField, ExpressionWrapper, F, Sum, Value, When
+from django.db.models.functions import Coalesce
 from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
@@ -7,6 +9,7 @@ from rest_framework.response import Response
 from academic.models import Teacher
 from core.pagination import LargePagination, StandardPagination
 from core.tenant_utils import get_request_school
+from schools.models import SchoolSettings
 from users.models import User
 
 from .models import (
@@ -38,6 +41,61 @@ from .serializers import (
     StaffSalaryStructureSerializer,
     StudentFeeSerializer,
 )
+
+
+def calculate_expected_revenue(school, session=None, term=None):
+    """
+    Calculate net expected revenue from assigned fees, accounting for discounts
+    and scholarships.
+    """
+    filters = {"school": school}
+    if session:
+        filters["fee_item__session"] = session
+    if term:
+        filters["fee_item__term"] = term
+
+    money_field = DecimalField(max_digits=12, decimal_places=2)
+    scholarship_discount = Case(
+        When(
+            scholarship__benefit_type="percentage",
+            then=ExpressionWrapper(F("fee_item__amount") * F("scholarship__value") / Value(100), output_field=money_field),
+        ),
+        When(scholarship__benefit_type="fixed", then=F("scholarship__value")),
+        default=Value(0),
+        output_field=money_field,
+    )
+    net_due = ExpressionWrapper(F("fee_item__amount") - F("discount_amount") - scholarship_discount, output_field=money_field)
+
+    return (
+        StudentFee.objects.filter(**filters).aggregate(total=Coalesce(Sum(net_due), Value(0), output_field=money_field))[
+            "total"
+        ]
+        or 0
+    )
+
+
+def _is_truthy(value):
+    if value is None:
+        return False
+    return str(value).strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _resolve_period_filters(request, school):
+    """
+    Resolve period filters from query params.
+    Defaults to school's current session/term unless include_all_periods=true.
+    """
+    session = request.query_params.get("session")
+    term = request.query_params.get("term")
+    include_all_periods = _is_truthy(request.query_params.get("include_all_periods"))
+
+    if not include_all_periods and school:
+        settings_obj = SchoolSettings.objects.filter(school=school).only("current_session", "current_term").first()
+        if settings_obj:
+            session = session or settings_obj.current_session
+            term = term or settings_obj.current_term
+
+    return session, term
 
 
 class TenantViewSet(viewsets.ModelViewSet):
@@ -115,6 +173,20 @@ class FeeItemViewSet(TenantViewSet):
     pagination_class = StandardPagination
     permission_classes = [permissions.IsAuthenticated, IsAdminOrReadOnly]
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        school = get_request_school(self.request)
+        session, term = _resolve_period_filters(self.request, school)
+        class_id = self.request.query_params.get("class_id")
+
+        if session:
+            qs = qs.filter(session=session)
+        if term:
+            qs = qs.filter(term=term)
+        if class_id:
+            qs = qs.filter(target_class_id=class_id)
+        return qs
+
 
 class StudentFeeViewSet(TenantViewSet):
     queryset = StudentFee.objects.select_related("student", "fee_item").all()
@@ -137,8 +209,21 @@ class PaymentViewSet(TenantViewSet):
     def get_queryset(self):
         qs = super().get_queryset()
         user = self.request.user
+        school = get_request_school(self.request)
+        session, term = _resolve_period_filters(self.request, school)
+        student_id = self.request.query_params.get("student")
+
         if user.role == "STUDENT" and hasattr(user, "student_profile"):
             qs = qs.filter(student=user.student_profile)
+        elif user.role == "PARENT":
+            qs = qs.filter(student__parent_email=user.email)
+
+        if student_id:
+            qs = qs.filter(student_id=student_id)
+        if session:
+            qs = qs.filter(session=session)
+        if term:
+            qs = qs.filter(term=term)
         return qs
 
 
@@ -147,6 +232,16 @@ class ExpenseViewSet(TenantViewSet):
     serializer_class = ExpenseSerializer
     pagination_class = StandardPagination
     permission_classes = [permissions.IsAuthenticated, IsAdminOrReadOnly]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        school = get_request_school(self.request)
+        session, term = _resolve_period_filters(self.request, school)
+        if session:
+            qs = qs.filter(session=session)
+        if term:
+            qs = qs.filter(term=term)
+        return qs
 
 
 class AdmissionPackageViewSet(TenantViewSet):
@@ -332,16 +427,24 @@ class DashboardViewSet(viewsets.ViewSet):
         if not school:
             return Response({"error": "School context not found"}, status=400)
 
-        # Simple aggregated stats
-        from django.db.models import Sum
+        session, term = _resolve_period_filters(request, school)
 
-        expected_fees = StudentFee.objects.filter(school=school).aggregate(Sum("amount"))["amount__sum"] or 0
-        total_collected = Payment.objects.filter(school=school).aggregate(Sum("amount"))["amount__sum"] or 0
-        total_expenses = Expense.objects.filter(school=school).aggregate(Sum("amount"))["amount__sum"] or 0
+        # Simple aggregated stats
+        expected_fees = calculate_expected_revenue(school, session=session, term=term)
+        financial_filters = {"school": school}
+        if session:
+            financial_filters["session"] = session
+        if term:
+            financial_filters["term"] = term
+
+        total_collected = Payment.objects.filter(**financial_filters).aggregate(Sum("amount"))["amount__sum"] or 0
+        total_expenses = Expense.objects.filter(**financial_filters).aggregate(Sum("amount"))["amount__sum"] or 0
 
         # Payroll stats
         total_payroll = (
-            Payroll.objects.filter(school=school, status="paid").aggregate(Sum("total_wage_bill"))["total_wage_bill"]
+            Payroll.objects.filter(school=school, status="paid").aggregate(
+                total=Coalesce(Sum("total_wage_bill"), Value(0), output_field=DecimalField())
+            )["total"]
             or 0
         )
 
@@ -349,8 +452,8 @@ class DashboardViewSet(viewsets.ViewSet):
         outstanding = expected_fees - total_collected
 
         # Recent activity
-        recent_payments = Payment.objects.filter(school=school).order_by("-date")[:5]
-        recent_expenses = Expense.objects.filter(school=school).order_by("-date")[:5]
+        recent_payments = Payment.objects.filter(**financial_filters).order_by("-date")[:5]
+        recent_expenses = Expense.objects.filter(**financial_filters).order_by("-date")[:5]
 
         data = {
             "expected_revenue": expected_fees,
@@ -371,8 +474,7 @@ class DashboardViewSet(viewsets.ViewSet):
         if not school:
             return Response({"error": "School context not found"}, status=400)
 
-        session = request.query_params.get("session")
-        term = request.query_params.get("term")
+        session, term = _resolve_period_filters(request, school)
 
         # Filter by session/term if provided
         filters = {"school": school}
@@ -381,24 +483,16 @@ class DashboardViewSet(viewsets.ViewSet):
         if term:
             filters["term"] = term
 
-        from django.db.models import Sum
-
-        # Note: session/term filtering for expected_revenue relies on FeeItem
-        expected_fees = (
-            StudentFee.objects.filter(
-                fee_item__school=school,
-                fee_item__session=session if session else timezone.now().year,
-                fee_item__term=term if term else "",
-            ).aggregate(Sum("amount"))["amount__sum"]
-            or 0
-        )
+        expected_fees = calculate_expected_revenue(school, session=session, term=term)
 
         total_collected = Payment.objects.filter(**filters).aggregate(Sum("amount"))["amount__sum"] or 0
         total_expenses = Expense.objects.filter(**filters).aggregate(Sum("amount"))["amount__sum"] or 0
 
         # Payroll stats (approximate based on session/term as payroll is monthly)
         total_payroll = (
-            Payroll.objects.filter(school=school, status="paid").aggregate(Sum("total_wage_bill"))["total_wage_bill"]
+            Payroll.objects.filter(school=school, status="paid").aggregate(
+                total=Coalesce(Sum("total_wage_bill"), Value(0), output_field=DecimalField())
+            )["total"]
             or 0
         )
 

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
     Briefcase,
     ClipboardList,
@@ -24,10 +24,28 @@ export const StaffDashboardView = () => {
     const { currentUser } = useSchoolStore();
     const { data: staff = [] } = useStaff();
     const { data: settings = Utils.INITIAL_SETTINGS } = useSettings();
-    const { data: expenses = [] } = useExpenses();
-    const { data: payments = [] } = usePayments();
+    const { data: expenses = [] } = useExpenses({ include_all_periods: true });
+    const { data: payments = [] } = usePayments({ include_all_periods: true });
     const { data: announcements = [] } = useAnnouncements();
     const { data: students = [] } = useStudents();
+    const [selectedSession, setSelectedSession] = useState('');
+    const [selectedTerm, setSelectedTerm] = useState('');
+
+    useEffect(() => {
+        if (!selectedSession && settings.current_session) setSelectedSession(settings.current_session);
+        if (!selectedTerm && settings.current_term) setSelectedTerm(settings.current_term);
+    }, [settings.current_session, settings.current_term, selectedSession, selectedTerm]);
+
+    const targetSession = selectedSession || settings.current_session;
+    const targetTerm = selectedTerm || settings.current_term;
+    const availableSessions = useMemo(() => {
+        const sessions = new Set<string>();
+        expenses.forEach(e => sessions.add(e.session));
+        payments.forEach(p => sessions.add(p.session));
+        if (settings.current_session) sessions.add(settings.current_session);
+        return Array.from(sessions).sort().reverse();
+    }, [expenses, payments, settings.current_session]);
+    const availableTerms = settings.terms?.length ? settings.terms : ['First Term', 'Second Term', 'Third Term'];
 
     // Get current staff member profile
     const myProfile = useMemo(() => {
@@ -40,17 +58,17 @@ export const StaffDashboardView = () => {
     // Recent activity - expenses from current term
     const currentTermExpenses = useMemo(() =>
         expenses
-            .filter(e => e.session === settings.current_session && e.term === settings.current_term)
+            .filter(e => e.session === targetSession && e.term === targetTerm)
             .slice(0, 5),
-        [expenses, settings]
+        [expenses, targetSession, targetTerm]
     );
 
     // Recent payments from current term
     const currentTermPayments = useMemo(() =>
         payments
-            .filter(p => p.session === settings.current_session && p.term === settings.current_term)
+            .filter(p => p.session === targetSession && p.term === targetTerm)
             .slice(0, 5),
-        [payments, settings]
+        [payments, targetSession, targetTerm]
     );
 
     // Recent announcements
@@ -63,7 +81,7 @@ export const StaffDashboardView = () => {
 
     // Calculate totals for current term
     const totalExpensesThisTerm = currentTermExpenses.reduce((acc, e) => acc + e.amount, 0);
-    const totalPaymentsThisTerm = payments.filter(p => p.session === settings.current_session && p.term === settings.current_term).reduce((acc, p) => acc + p.amount, 0);
+    const totalPaymentsThisTerm = currentTermPayments.reduce((acc, p) => acc + p.amount, 0);
 
     return (
         <div className="space-y-8">
@@ -74,8 +92,28 @@ export const StaffDashboardView = () => {
                         Operations Dashboard
                     </h1>
                     <p className="text-gray-500 font-medium">
-                        {myProfile ? `Welcome, ${myProfile.name}` : 'Non-Teaching Staff Portal'} | {settings.current_term}, {settings.current_session}
+                        {myProfile ? `Welcome, ${myProfile.name}` : 'Non-Teaching Staff Portal'} | {targetTerm}, {targetSession}
                     </p>
+                    <div className="mt-2 flex gap-2">
+                        <select
+                            value={targetSession}
+                            onChange={(e) => setSelectedSession(e.target.value)}
+                            className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700"
+                        >
+                            {availableSessions.map(session => (
+                                <option key={session} value={session}>{session}</option>
+                            ))}
+                        </select>
+                        <select
+                            value={targetTerm}
+                            onChange={(e) => setSelectedTerm(e.target.value)}
+                            className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700"
+                        >
+                            {availableTerms.map((term: string) => (
+                                <option key={term} value={term}>{term}</option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
                 <div className="flex gap-3">
                     <div className="bg-white px-4 py-2 rounded-xl shadow-sm border flex items-center gap-2">

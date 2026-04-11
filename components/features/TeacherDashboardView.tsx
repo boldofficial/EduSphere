@@ -113,20 +113,42 @@ export const TeacherDashboardView = () => {
     // Attendance State
     const [selectedClassAtt, setSelectedClassAtt] = useState('');
     const [dateAtt, setDateAtt] = useState(Utils.getTodayString());
+    const [selectedSession, setSelectedSession] = useState('');
+    const [selectedTerm, setSelectedTerm] = useState('');
     const [activeTab, setActiveTab] = useState<'overview' | 'subjects' | 'students' | 'grading' | 'attendance'>('overview');
 
     // Data Hooks
     const { data: students = [] } = useStudents();
     const { data: classes = [] } = useClasses();
     const { data: teachers = [] } = useTeachers();
-    const { data: scores = [] } = useScores();
+    const { data: scores = [] } = useScores({ include_all_periods: true });
     const { data: subjectTeachers = [] } = useSubjectTeachers();
     const { data: settings = Utils.INITIAL_SETTINGS } = useSettings();
+
+    const targetSession = selectedSession || settings.current_session;
+    const targetTerm = selectedTerm || settings.current_term;
+    const periodSettings = useMemo(
+        () => ({
+            ...settings,
+            current_session: targetSession,
+            current_term: targetTerm,
+        }),
+        [settings, targetSession, targetTerm],
+    );
+
+    const availableSessions = useMemo(() => {
+        const sessions = new Set(subjectTeachers.map(s => s.session));
+        if (settings.current_session) sessions.add(settings.current_session);
+        return Array.from(sessions).sort().reverse();
+    }, [subjectTeachers, settings.current_session]);
+    const availableTerms = settings.terms?.length ? settings.terms : ['First Term', 'Second Term', 'Third Term'];
 
     // Filtered Attendance Hook
     const { data: attendance = [], isLoading: attendanceLoading } = useAttendance({
         class_id: selectedClassAtt,
-        date: dateAtt
+        date: dateAtt,
+        session: targetSession,
+        term: targetTerm,
     });
 
     // Mutations
@@ -158,8 +180,8 @@ export const TeacherDashboardView = () => {
     const myTeacherProfile = teachers.find(t => t.email === currentUser?.email) || teachers[0] || { id: 'teacher_1', name: 'Demo Teacher' };
 
     const myAssignments = useMemo(() =>
-        subjectTeachers.filter(st => String(st.teacher_id) === String(myTeacherProfile.id) && st.session === settings.current_session),
-        [subjectTeachers, myTeacherProfile.id, settings.current_session]
+        subjectTeachers.filter(st => String(st.teacher_id) === String(myTeacherProfile.id) && st.session === targetSession),
+        [subjectTeachers, myTeacherProfile.id, targetSession]
     );
 
     const myClassIds = useMemo(() => {
@@ -187,6 +209,11 @@ export const TeacherDashboardView = () => {
         }
     }, [myClasses, selectedClassAtt]);
 
+    useEffect(() => {
+        if (!selectedSession && settings.current_session) setSelectedSession(settings.current_session);
+        if (!selectedTerm && settings.current_term) setSelectedTerm(settings.current_term);
+    }, [settings.current_session, settings.current_term, selectedSession, selectedTerm]);
+
     const stats = [
         { label: 'My Subjects', value: myAssignments.length.toString(), icon: BookOpen, color: 'bg-blue-500' },
         { label: 'Total Students', value: myStudents.length.toString(), icon: Users, color: 'bg-indigo-500' },
@@ -200,6 +227,26 @@ export const TeacherDashboardView = () => {
                 <div>
                     <h1 className="text-3xl font-black text-gray-900 uppercase">Teacher Dashboard</h1>
                     <p className="text-gray-500 font-medium">Welcome, <span className="text-brand-600">{myTeacherProfile.name}</span></p>
+                    <div className="mt-2 flex gap-2">
+                        <select
+                            value={targetSession}
+                            onChange={(e) => setSelectedSession(e.target.value)}
+                            className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700"
+                        >
+                            {availableSessions.map(session => (
+                                <option key={session} value={session}>{session}</option>
+                            ))}
+                        </select>
+                        <select
+                            value={targetTerm}
+                            onChange={(e) => setSelectedTerm(e.target.value)}
+                            className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700"
+                        >
+                            {availableTerms.map((term: string) => (
+                                <option key={term} value={term}>{term}</option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
                 <div className="flex bg-white p-1 rounded-xl shadow-sm border overflow-x-auto">
                     {[
@@ -311,7 +358,7 @@ export const TeacherDashboardView = () => {
                         classes={myClasses}
                         students={myStudents}
                         scores={scores}
-                        settings={settings}
+                        settings={periodSettings}
                         onUpsertScore={handleUpsertScore}
                     />
                 ) : (
@@ -326,7 +373,7 @@ export const TeacherDashboardView = () => {
                         classes={myClasses}
                         students={myStudents.filter(s => String(s.class_id) === String(selectedClassAtt))}
                         attendance={attendance}
-                        settings={settings}
+                        settings={periodSettings}
                         onSave={handleUpsertAttendance}
                         selectedClass={selectedClassAtt}
                         setSelectedClass={setSelectedClassAtt}

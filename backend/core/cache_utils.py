@@ -3,11 +3,15 @@ Caching utilities for improving API performance
 """
 
 import hashlib
+import logging
 from functools import wraps
 
 from django.core.cache import cache
 from django.utils.decorators import method_decorator
+from rest_framework.response import Response
 from rest_framework.decorators import action
+
+logger = logging.getLogger(__name__)
 
 
 class CacheKeyBuilder:
@@ -67,9 +71,7 @@ def cache_list_endpoint(timeout=300):
             # Try to get from cache
             cached_response = cache.get(cache_key)
             if cached_response is not None:
-                # Manually paginate the cached response
-                page = request.query_params.get("page", 1)
-                return func(self, request, *args, **kwargs)
+                return Response(cached_response)
 
             # Call the actual endpoint
             response = func(self, request, *args, **kwargs)
@@ -106,7 +108,7 @@ def invalidate_model_cache(model_name):
             # But in LocMem, this is only for this process
             pass
     except Exception as e:
-        print(f"Cache invalidation error: {e}")
+        logger.warning("Cache invalidation error: %s", e)
 
 
 class CachingMixin:

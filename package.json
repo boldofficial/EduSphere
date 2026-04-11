@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --webpack",
-    "build": "next build --webpack",
+    "dev": "next dev",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
@@ -13,15 +13,14 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,css,md}\" --ignore-path .gitignore",
     "docker:up": "docker compose -f docker-compose.local.yml up -d",
     "docker:down": "docker compose -f docker-compose.local.yml down",
-    
     "docker:reset": "docker compose -f docker-compose.local.yml down -v",
     "docker:logs": "docker compose -f docker-compose.local.yml logs -f",
     "docker:ps": "docker compose -f docker-compose.local.yml ps",
-
     "db:sync": "bash scripts/sync-prod-to-local.sh",
     "db:shell": "docker exec -it registra_db psql -U registra_admin -d registra_db",
-
     "backend": "cd backend && .venv/bin/python3 manage.py runserver 127.0.0.1:8001",
+    "backend:win": "cd backend && python manage.py runserver 127.0.0.1:8001",
+    "test:backend": "powershell -ExecutionPolicy Bypass -File backend/scripts/test-backend.ps1",
     "local": "npm run docker:up && npm run dev"
   },
   "dependencies": {

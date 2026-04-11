@@ -6,7 +6,7 @@ import * as Utils from '@/lib/utils';
 export default function BroadsheetPage() {
     const { data: students = [] } = useStudents();
     const { data: classes = [] } = useClasses();
-    const { data: scores = [] } = useScores();
+    const { data: scores = [] } = useScores({ include_all_periods: true });
     const { data: settings = Utils.INITIAL_SETTINGS } = useSettings();
 
     return <BroadsheetView students={students} classes={classes} scores={scores} settings={settings} />;

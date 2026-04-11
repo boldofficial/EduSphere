@@ -1,4 +1,5 @@
 import logging
+import os
 
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -208,6 +209,10 @@ class DemoLoginView(APIView):
     throttle_classes = [AuthRateThrottle]
 
     def post(self, request):
+        demo_login_enabled = os.environ.get("ENABLE_DEMO_LOGIN", "False").lower() in ("true", "1", "yes")
+        if not demo_login_enabled:
+            return Response({"detail": "Demo login is disabled."}, status=403)
+
         role_type = request.data.get("role", "admin")  # admin, teacher, bursar
 
         username_map = {

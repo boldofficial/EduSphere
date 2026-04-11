@@ -21,7 +21,7 @@ export const PromotionManager: React.FC = () => {
     // Data Hooks
     const { data: students = [] } = useStudents();
     const { data: classes = [] } = useClasses();
-    const { data: scores = [] } = useScores();
+    const { data: scores = [] } = useScores({ include_all_periods: true });
     const { data: settings = Utils.INITIAL_SETTINGS } = useSettings();
 
     // Mutations
@@ -30,18 +30,18 @@ export const PromotionManager: React.FC = () => {
     const { mutate: bulkPromote } = useBulkPromoteStudents();
     const setSettings = (newSettings: Types.Settings) => updateSettings(newSettings); // Adapter for state setter style
 
-    const [selectedClass, setSelectedClass] = useState(classes[0]?.id || '');
+    const [selectedClass, setSelectedClass] = useState(String(classes[0]?.id || ''));
     const [localThreshold, setLocalThreshold] = useState(settings.promotion_threshold);
     const [promotionResults, setPromotionResults] = useState<Map<string, string | null>>(new Map());
     const [isProcessing, setIsProcessing] = useState(false);
 
-    const currentClass = classes.find(c => c.id === selectedClass);
+    const currentClass = classes.find(c => Utils.sameId(c.id, selectedClass));
     const nextClass = classes.find((c, i) => {
-        const currentIndex = classes.findIndex(cl => cl.id === selectedClass);
+        const currentIndex = classes.findIndex(cl => Utils.sameId(cl.id, selectedClass));
         return i === currentIndex + 1;
     });
 
-    const activeStudents = students.filter((s: Types.Student) => s.class_id === selectedClass);
+    const activeStudents = students.filter((s: Types.Student) => Utils.sameId(s.class_id, selectedClass));
 
     // Calculate student averages for promotion eligibility
     const studentStats = useMemo(() => {

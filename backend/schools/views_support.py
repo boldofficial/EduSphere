@@ -13,14 +13,18 @@ class SupportTicketViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         if user.role == "SUPER_ADMIN":
-            return SupportTicket.objects.all().prefetch_related("responses", "responses__user", "school", "user")
+            return (
+                SupportTicket.objects.all()
+                .select_related("school", "user")
+                .prefetch_related("responses", "responses__user")
+            )
 
         if not user.school:
             return SupportTicket.objects.none()
 
         # School admins only see their own school's tickets
-        return SupportTicket.objects.filter(school=user.school).prefetch_related(
-            "responses", "responses__user", "school", "user"
+        return SupportTicket.objects.filter(school=user.school).select_related("school", "user").prefetch_related(
+            "responses", "responses__user"
         )
 
     def perform_create(self, serializer):

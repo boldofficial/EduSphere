@@ -29,10 +29,10 @@ export const AnalyticsView: React.FC = () => {
     const { data: settings = Utils.INITIAL_SETTINGS } = useSettings();
     const { data: students = [] } = useStudents();
     const { data: classes = [] } = useClasses();
-    const { data: scores = [] } = useScores();
-    const { data: attendance = [] } = useAttendance();
-    const { data: payments = [] } = usePayments();
-    const { data: expenses = [] } = useExpenses();
+    const { data: scores = [] } = useScores({ include_all_periods: true });
+    const { data: attendance = [] } = useAttendance({ include_all_periods: true });
+    const { data: payments = [] } = usePayments({ include_all_periods: true });
+    const { data: expenses = [] } = useExpenses({ include_all_periods: true });
     const { data: fees = [] } = useFees();
     const [activeTab, setActiveTab] = useState<'performance' | 'financial' | 'attendance'>('performance');
     const [selectedSession, setSelectedSession] = useState(settings.current_session);

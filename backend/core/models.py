@@ -17,9 +17,13 @@ class GlobalActivityLog(models.Model):
         ("SCHOOL_DELETED", "School Deleted"),
         ("SCHOOL_SUSPENDED", "School Suspended"),
         ("SCHOOL_ACTIVATED", "School Activated"),
+        ("MODULE_TOGGLED", "Module Toggled"),
+        ("SUBSCRIPTION_UPDATED", "Subscription Updated"),
         ("RECORDS_MUTATED", "Records Mutated"),
+        ("ACCESS_DENIED", "Access Denied"),
         ("SECURITY_ALERT", "Security Alert"),
         ("EXPORT_DATA", "Export Data"),
+        ("PAYMENT_CONFIRMED", "Payment Confirmed"),
         ("LOGIN", "User Login"),
         ("LOGOUT", "User Logout"),
     )

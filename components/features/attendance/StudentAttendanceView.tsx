@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Calendar, CheckCircle, XCircle, Clock, TrendingUp } from 'lucide-react';
 import * as Types from '@/lib/types';
 import { Card } from '@/components/ui/card';
@@ -14,13 +14,35 @@ interface StudentAttendanceViewProps {
 export const StudentAttendanceView: React.FC<StudentAttendanceViewProps> = ({
     student, attendance, settings
 }) => {
-    // Filter attendance records for this student's class in the current term
+    const [selectedSession, setSelectedSession] = useState('');
+    const [selectedTerm, setSelectedTerm] = useState('');
+
+    useEffect(() => {
+        if (!selectedSession && settings.current_session) setSelectedSession(settings.current_session);
+        if (!selectedTerm && settings.current_term) setSelectedTerm(settings.current_term);
+    }, [settings.current_session, settings.current_term, selectedSession, selectedTerm]);
+
+    const availableSessions = useMemo(() => {
+        const sessions = new Set(
+            attendance
+                .filter(a => a.class_id === student.class_id)
+                .map(a => a.session),
+        );
+        if (settings.current_session) sessions.add(settings.current_session);
+        return Array.from(sessions).sort().reverse();
+    }, [attendance, student.class_id, settings.current_session]);
+
+    const availableTerms = settings.terms?.length ? settings.terms : ['First Term', 'Second Term', 'Third Term'];
+    const targetSession = selectedSession || settings.current_session;
+    const targetTerm = selectedTerm || settings.current_term;
+
+    // Filter attendance records for this student's class in selected term
     const myAttendance = useMemo(() => {
         return attendance
             .filter(a =>
                 a.class_id === student.class_id &&
-                a.session === settings.current_session &&
-                a.term === settings.current_term
+                a.session === targetSession &&
+                a.term === targetTerm
             )
             .sort((a, b) => b.date.localeCompare(a.date))
             .map(a => {
@@ -31,7 +53,7 @@ export const StudentAttendanceView: React.FC<StudentAttendanceViewProps> = ({
                     remark: record?.remark
                 };
             });
-    }, [attendance, student.id, student.class_id, settings]);
+    }, [attendance, student.id, student.class_id, targetSession, targetTerm]);
 
     // Calculate attendance stats
     const stats = useMemo(() => {
@@ -66,7 +88,29 @@ export const StudentAttendanceView: React.FC<StudentAttendanceViewProps> = ({
         <div className="space-y-6">
             <div>
                 <h1 className="text-2xl font-bold text-gray-900">My Attendance</h1>
-                <p className="text-gray-500">View your attendance records for {settings.current_term} - {settings.current_session}</p>
+                <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <p className="text-gray-500">View your attendance records for {targetTerm} - {targetSession}</p>
+                    <div className="flex gap-2">
+                        <select
+                            value={targetSession}
+                            onChange={(e) => setSelectedSession(e.target.value)}
+                            className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700"
+                        >
+                            {availableSessions.map(session => (
+                                <option key={session} value={session}>{session}</option>
+                            ))}
+                        </select>
+                        <select
+                            value={targetTerm}
+                            onChange={(e) => setSelectedTerm(e.target.value)}
+                            className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700"
+                        >
+                            {availableTerms.map(term => (
+                                <option key={term} value={term}>{term}</option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
             </div>
 
             {/* Attendance Stats */}

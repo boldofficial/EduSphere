@@ -22,11 +22,11 @@ export const DataManagementView: React.FC = () => {
     const { data: teachers = [] } = useTeachers();
     const { data: staff = [] } = useStaff();
     const { data: classes = [] } = useClasses();
-    const { data: scores = [] } = useScores();
-    const { data: fees = [] } = useFees();
-    const { data: payments = [] } = usePayments();
-    const { data: expenses = [] } = useExpenses();
-    const { data: attendance = [] } = useAttendance();
+    const { data: scores = [] } = useScores({ include_all_periods: true });
+    const { data: fees = [] } = useFees({ include_all_periods: true });
+    const { data: payments = [] } = usePayments({ include_all_periods: true });
+    const { data: expenses = [] } = useExpenses({ include_all_periods: true });
+    const { data: attendance = [] } = useAttendance({ include_all_periods: true });
 
     const handleExport = () => {
         // Export from store (which is synced with database)

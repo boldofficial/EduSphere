@@ -385,16 +385,24 @@ class ReportCardViewSet(TenantViewSet):
             "name": report_card.student.names,
             "scores": [{"subject": s.subject.name, "score": s.total} for s in scores],
             "conduct": list(
-                ConductEntry.objects.filter(
-                    student=report_card.student, session=report_card.session, term=report_card.term
-                ).values("category", "observations", "points")
+                ConductEntry.objects.filter(student=report_card.student, school=report_card.school)
+                .order_by("-date")[:20]
+                .values("trait", "score", "remark", "date")
             ),
             "attendance": {
                 "present": AttendanceRecord.objects.filter(
-                    student=report_card.student, session=report_card.session, term=report_card.term, status="PRESENT"
+                    student=report_card.student,
+                    school=report_card.school,
+                    attendance_session__session=report_card.session,
+                    attendance_session__term=report_card.term,
+                    status="present",
                 ).count(),
                 "absent": AttendanceRecord.objects.filter(
-                    student=report_card.student, session=report_card.session, term=report_card.term, status="ABSENT"
+                    student=report_card.student,
+                    school=report_card.school,
+                    attendance_session__session=report_card.session,
+                    attendance_session__term=report_card.term,
+                    status="absent",
                 ).count(),
             },
         }
@@ -720,7 +728,9 @@ class AdmissionViewSet(TenantViewSet):
         class_id = request.data.get("class_id")
         password = request.data.get("password")
         if not password:
-            password = os.environ.get("STUDENT_DEFAULT_PASSWORD", "changeme")
+            password = os.environ.get("STUDENT_DEFAULT_PASSWORD")
+        if not password:
+            return Response({"error": "password is required or STUDENT_DEFAULT_PASSWORD must be configured"}, status=400)
 
         if not student_no or not class_id:
             return Response({"error": "student_no and class_id are required"}, status=400)
@@ -822,7 +832,7 @@ class StudentAchievementViewSet(TenantViewSet):
 
 
 class SubjectScoreViewSet(TenantViewSet):
-    queryset = SubjectScore.objects.select_related("student", "subject", "school").all()
+    queryset = SubjectScore.objects.select_related("report_card__student", "subject", "school").all()
     serializer_class = SubjectScoreSerializer
     pagination_class = StandardPagination
 
@@ -830,7 +840,7 @@ class SubjectScoreViewSet(TenantViewSet):
         qs = super().get_queryset()
         user = self.request.user
         if user.role == "STUDENT" and hasattr(user, "student_profile"):
-            qs = qs.filter(student=user.student_profile)
+            qs = qs.filter(report_card__student=user.student_profile)
         return qs
 
 
@@ -1058,9 +1068,14 @@ class BroadsheetView(viewsets.ViewSet):
             return Response({"error": "class_id, session, and term are required"}, status=400)
 
         scores = (
-            SubjectScore.objects.filter(school=school, student__current_class_id=class_id, session=session, term=term)
-            .select_related("student", "subject")
-            .order_by("student__names", "subject__name")
+            SubjectScore.objects.filter(
+                school=school,
+                report_card__student__current_class_id=class_id,
+                report_card__session=session,
+                report_card__term=term,
+            )
+            .select_related("report_card__student", "subject")
+            .order_by("report_card__student__names", "subject__name")
         )
 
         # Pivot: { student_id: { name, subjects: { subject_name: { ca, exam, total } }, grand_total } }
@@ -1068,23 +1083,24 @@ class BroadsheetView(viewsets.ViewSet):
         all_subjects = set()
 
         for score in scores:
-            sid = str(score.student_id)
+            student = score.report_card.student
+            sid = str(student.id)
             subject_name = score.subject.name
             all_subjects.add(subject_name)
 
             if sid not in broadsheet:
                 broadsheet[sid] = {
                     "student_id": sid,
-                    "student_name": score.student.names if hasattr(score.student, "names") else str(score.student),
-                    "student_no": getattr(score.student, "student_no", ""),
+                    "student_name": student.names if hasattr(student, "names") else str(student),
+                    "student_no": getattr(student, "student_no", ""),
                     "subjects": {},
                     "grand_total": 0,
                 }
 
-            total = float(score.ca_score or 0) + float(score.exam_score or 0)
+            total = float(score.total or 0)
             broadsheet[sid]["subjects"][subject_name] = {
-                "ca": float(score.ca_score or 0),
-                "exam": float(score.exam_score or 0),
+                "ca": float((score.ca1 or 0) + (score.ca2 or 0)),
+                "exam": float(score.exam or 0),
                 "total": total,
                 "grade": getattr(score, "grade", ""),
             }

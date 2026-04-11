@@ -10,7 +10,7 @@ import { PaymentSettingsCard } from '@/components/features/settings/PaymentSetti
 
 interface SettingsViewProps {
     settings: Types.Settings;
-    onUpdate: (s: Types.Settings) => Promise<unknown>;
+    onUpdate: (s: any) => Promise<unknown>;
     paymentSettings?: Types.SchoolPaymentSettings | null;
     onUpdatePaymentSettings?: (s: Partial<Types.SchoolPaymentSettings>) => Promise<unknown>;
     canManagePaymentSettings?: boolean;
@@ -82,6 +82,98 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     const [paymentForm, setPaymentForm] = useState<Types.SchoolPaymentSettings>(initializePaymentSettings(paymentSettings));
     const [isSavingPaymentSettings, setIsSavingPaymentSettings] = useState(false);
 
+    const normalizeDateForApi = (value?: string | null): string | undefined => {
+        const trimmed = (value || '').trim();
+        if (!trimmed) return undefined;
+
+        if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+            return trimmed;
+        }
+
+        const parsed = new Date(trimmed);
+        if (Number.isNaN(parsed.getTime())) {
+            return undefined;
+        }
+
+        return parsed.toISOString().slice(0, 10);
+    };
+
+    const formatApiError = (error: any): string => {
+        const data = error?.response?.data;
+        if (typeof data?.detail === 'string') return data.detail;
+        if (typeof data?.error === 'string') return data.error;
+        if (typeof error?.message === 'string' && error.message) return error.message;
+
+        if (data && typeof data === 'object') {
+            const firstEntry = Object.entries(data)[0];
+            if (firstEntry) {
+                const [field, value] = firstEntry;
+                if (Array.isArray(value) && value.length > 0) {
+                    return `${field}: ${String(value[0])}`;
+                }
+                if (typeof value === 'string') {
+                    return `${field}: ${value}`;
+                }
+            }
+        }
+
+        return 'Failed to update settings';
+    };
+
+    const buildSettingsPayload = (data: Types.Settings) => {
+        const normalizedNextTermBegins = normalizeDateForApi(data.next_term_begins);
+
+        return {
+        school_name: data.school_name,
+        school_address: data.school_address,
+        school_email: data.school_email,
+        school_phone: data.school_phone,
+        school_tagline: data.school_tagline,
+        current_session: data.current_session,
+        current_term: data.current_term,
+        ...(normalizedNextTermBegins ? { next_term_begins: normalizedNextTermBegins } : {}),
+        class_teacher_label: data.class_teacher_label,
+        head_teacher_label: data.head_teacher_label,
+        report_font_family: data.report_font_family,
+        report_scale: data.report_scale,
+        show_position: data.show_position,
+        show_skills: data.show_skills,
+        tiled_watermark: data.tiled_watermark,
+        logo_media: data.logo_media,
+        watermark_media: data.watermark_media,
+        director_name: data.director_name,
+        director_signature: data.director_signature,
+        head_of_school_name: data.head_of_school_name,
+        head_of_school_signature: data.head_of_school_signature,
+        show_bank_details: data.show_bank_details,
+        bank_name: data.bank_name,
+        bank_account_name: data.bank_account_name,
+        bank_account_number: data.bank_account_number,
+        bank_sort_code: data.bank_sort_code,
+        invoice_notes: data.invoice_notes,
+        invoice_due_days: data.invoice_due_days,
+        promotion_threshold: data.promotion_threshold,
+        promotion_rules: data.promotion_rules,
+        custom_domain: data.custom_domain?.trim() ? data.custom_domain.trim() : null,
+        subjects_global: data.subjects_global,
+        terms_list: data.terms,
+        role_permissions: data.role_permissions,
+        landing_hero_title: data.landing_hero_title,
+        landing_hero_subtitle: data.landing_hero_subtitle,
+        landing_features: data.landing_features,
+        landing_hero_image: data.landing_hero_image,
+        landing_about_text: data.landing_about_text,
+        landing_gallery_images: data.landing_gallery_images,
+        landing_primary_color: data.landing_primary_color,
+        landing_show_stats: data.landing_show_stats,
+        landing_cta_text: data.landing_cta_text,
+        landing_core_values: data.landing_core_values,
+        landing_academic_programs: data.landing_academic_programs,
+        landing_testimonials: data.landing_testimonials,
+        landing_stats_config: data.landing_stats_config,
+        };
+    };
+
     // Update form data when settings prop changes (e.g. data loaded)
     useEffect(() => {
         setFormData(initializeForm(settings));
@@ -98,10 +190,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await onUpdate({ ...formData, updated_at: Date.now() });
+            await onUpdate(buildSettingsPayload(formData));
             addToast('Settings updated successfully', 'success');
         } catch (error) {
-            addToast('Failed to update settings', 'error');
+            addToast(formatApiError(error), 'error');
         }
     };
     const handlePaymentSettingsChange = (updates: Partial<Types.SchoolPaymentSettings>) => {

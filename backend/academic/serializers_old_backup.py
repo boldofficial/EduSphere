@@ -555,10 +555,11 @@ class ReportCardSerializer(serializers.ModelSerializer):
                 score_obj = existing_scores.pop(subject_name)
                 for attr, value in score_item.items():
                     setattr(score_obj, attr, value)
-                score_obj.save()
+                score_obj.save(skip_report_update=True)
             else:
                 subject, _ = Subject.objects.get_or_create(name=subject_name, school=school)
-                SubjectScore.objects.create(report_card=report_card, school=school, subject=subject, **score_item)
+                new_score = SubjectScore(report_card=report_card, school=school, subject=subject, **score_item)
+                new_score.save(skip_report_update=True)
 
         # Delete scores for subjects no longer in the report card (if they exist in DB but not in current update)
         for remaining_score in existing_scores.values():

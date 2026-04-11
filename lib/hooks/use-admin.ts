@@ -31,7 +31,7 @@ export function useSettings() {
 export function useUpdateSettings() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async (settings: Types.Settings) => {
+        mutationFn: async (settings: any) => {
             const response = await apiClient.put('settings/', settings);
             return response.data;
         },
