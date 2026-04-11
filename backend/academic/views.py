@@ -52,6 +52,7 @@ from .models import (
     SchoolEvent,
     Student,
     StudentAchievement,
+    StudentGroup,
     StudentHistory,
     Subject,
     SubjectScore,
@@ -75,6 +76,7 @@ from .serializers import (
     ReportCardSerializer,
     SchoolEventSerializer,
     StudentAchievementSerializer,
+    StudentGroupSerializer,
     StudentHistorySerializer,
     StudentSerializer,
     SubjectScoreSerializer,
@@ -318,6 +320,12 @@ class StudentViewSet(TenantViewSet):
         task = promote_students_task.delay(school.id, session, term)
 
         return Response({"message": "Automated promotion task started.", "task_id": task.id}, status=202)
+
+
+class StudentGroupViewSet(TenantViewSet):
+    queryset = StudentGroup.objects.prefetch_related("students").all()
+    serializer_class = StudentGroupSerializer
+    pagination_class = StandardPagination
 
 
 class ReportCardViewSet(TenantViewSet):
