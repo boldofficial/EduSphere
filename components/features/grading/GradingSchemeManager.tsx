@@ -15,7 +15,7 @@ function useGradingSchemes() {
     return useQuery({
         queryKey: ['grading-schemes'],
         queryFn: async () => {
-            const res = await apiClient.get('/grading-schemes/');
+            const res = await apiClient.get('academic/grading-schemes/');
             return (res.data.results || res.data) as Types.GradingScheme[];
         }
     });
@@ -32,7 +32,7 @@ export const GradingSchemeManager = () => {
     // Mutations
     const createMutation = useMutation({
         mutationFn: async (data: Partial<Types.GradingScheme>) => {
-            await apiClient.post('/grading-schemes/', data);
+            await apiClient.post('academic/grading-schemes/', data);
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['grading-schemes'] });
@@ -43,7 +43,7 @@ export const GradingSchemeManager = () => {
 
     const updateMutation = useMutation({
         mutationFn: async ({ id, data }: { id: string, data: Partial<Types.GradingScheme> }) => {
-            await apiClient.patch(`/grading-schemes/${id}/`, data);
+            await apiClient.patch(`academic/grading-schemes/${id}/`, data);
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['grading-schemes'] });
@@ -54,7 +54,7 @@ export const GradingSchemeManager = () => {
 
     const deleteMutation = useMutation({
         mutationFn: async (id: string) => {
-            await apiClient.delete(`/grading-schemes/${id}/`);
+            await apiClient.delete(`academic/grading-schemes/${id}/`);
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['grading-schemes'] });

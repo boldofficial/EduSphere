@@ -6,14 +6,31 @@ interface TabsContextValue {
 }
 const TabsContext = React.createContext<TabsContextValue | undefined>(undefined);
 
-const Tabs = React.forwardRef<
-    HTMLDivElement,
-    React.HTMLAttributes<HTMLDivElement> & { value: string; onValueChange: (val: string) => void }
->(({ className, value, onValueChange, ...props }, ref) => (
-    <TabsContext.Provider value={{ value, onValueChange }}>
-        <div ref={ref} className={className} {...props} />
-    </TabsContext.Provider>
-))
+interface TabsProps extends React.HTMLAttributes<HTMLDivElement> {
+    value?: string;
+    defaultValue?: string;
+    onValueChange?: (value: string) => void;
+}
+
+const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(
+    ({ className, value: controlledValue, defaultValue, onValueChange, ...props }, ref) => {
+        const [uncontrolledValue, setUncontrolledValue] = React.useState(defaultValue || "");
+        const value = controlledValue !== undefined ? controlledValue : uncontrolledValue;
+
+        const handleValueChange = React.useCallback((val: string) => {
+            if (controlledValue === undefined) {
+                setUncontrolledValue(val);
+            }
+            onValueChange?.(val);
+        }, [controlledValue, onValueChange]);
+
+        return (
+            <TabsContext.Provider value={{ value, onValueChange: handleValueChange }}>
+                <div ref={ref} className={className} {...props} />
+            </TabsContext.Provider>
+        )
+    }
+)
 Tabs.displayName = "Tabs"
 
 const TabsList = React.forwardRef<

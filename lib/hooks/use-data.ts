@@ -51,11 +51,17 @@ export const queryKeys = {
     supportTickets: ['support_tickets'] as const,
     me: ['me'] as const,
     scholarships: ['scholarships'] as const,
+    studentGroups: ['student_groups'] as const,
+    studentAchievements: ['student_achievements'] as const,
     assignments: ['assignments'] as const,
     quizzes: ['quizzes'] as const,
     questions: ['questions'] as const,
     submissions: ['submissions'] as const,
+    academicTerms: ['academic_terms'] as const,
+    revenueSummary: (termId?: string) => ['revenue_summary', termId] as const,
+    revenueForecast: (termId?: string) => ['revenue_forecast', termId] as const,
     bursaryDashboard: (session: string, term: string) => ['bursary', 'dashboard', session, term] as const,
+    activityLogs: (action?: string) => ['activity_logs', action] as const,
 };
 
 // Generic fetcher
@@ -86,7 +92,8 @@ export {
     useGlobalSearch, useModules, usePlatformSettings, useUpdatePlatformSettings,
     useSchoolPaymentSettings, useUpdateSchoolPaymentSettings, usePublicPaymentOptions,
     useEmailTemplates, useUpdateEmailTemplate, useEmailLogs,
-    useSupportTickets, useCreateSupportTicket, useRespondToTicket, useResolveTicket
+    useSupportTickets, useCreateSupportTicket, useRespondToTicket, useResolveTicket,
+    useActivityLogs
 } from './use-admin';
 
 export {
@@ -94,6 +101,7 @@ export {
     useStudents, usePaginatedStudents, useCreateStudent, useUpdateStudent, useDeleteStudent,
     useBulkPromoteStudents, useAutoPromoteStudents,
     useStudentHistory, useStudentAchievements,
+    useStudentGroups, useCreateStudentGroup, useUpdateStudentGroup, useDeleteStudentGroup,
     useLessons, useCreateLesson,
     useConductEntries, useCreateConductEntry,
     useTeachers, useCreateTeacher, useUpdateTeacher, useDeleteTeacher,
@@ -108,6 +116,7 @@ export {
     useFinancialStats,
     useExpenses, useCreateExpense, useUpdateExpense, useDeleteExpense,
     useScholarships, useCreateScholarship, useUpdateScholarship, useDeleteScholarship,
+    usePreviewBulkDiscount, useApplyBulkDiscount,
 } from './use-bursary';
 
 export {

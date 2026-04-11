@@ -14,6 +14,7 @@
     "docker:up": "docker compose -f docker-compose.local.yml up -d",
     "docker:down": "docker compose -f docker-compose.local.yml down",
     "docker:reset": "docker compose -f docker-compose.local.yml down -v",
+    "deploy:update": "bash scripts/deploy-updates.sh",
     "docker:logs": "docker compose -f docker-compose.local.yml logs -f",
     "docker:ps": "docker compose -f docker-compose.local.yml ps",
     "db:sync": "bash scripts/sync-prod-to-local.sh",

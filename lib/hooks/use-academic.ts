@@ -15,7 +15,7 @@ import { queryKeys, fetchAll, fetchPaginated } from './use-data';
 export function useClasses(enabled = true) {
     return useQuery({
         queryKey: queryKeys.classes,
-        queryFn: () => fetchAll<Types.Class>('/classes/'),
+        queryFn: () => fetchAll<Types.Class>('academic/classes/'),
         enabled,
     });
 }
@@ -24,7 +24,7 @@ export function useCreateClass() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (newClass: Types.Class) => {
-            const response = await apiClient.post('/classes/', newClass);
+            const response = await apiClient.post('academic/classes/', newClass);
             return response.data;
         },
         onSuccess: () => {
@@ -37,7 +37,7 @@ export function useUpdateClass() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async ({ id, updates }: { id: string; updates: Partial<Types.Class> }) => {
-            const response = await apiClient.patch(`classes/${id}/`, updates);
+            const response = await apiClient.patch(`academic/classes/${id}/`, updates);
             return response.data;
         },
         onSuccess: () => {
@@ -50,7 +50,7 @@ export function useDeleteClass() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (id: string) => {
-            await apiClient.delete(`classes/${id}/`);
+            await apiClient.delete(`academic/classes/${id}/`);
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.classes });
@@ -64,7 +64,7 @@ export function useDeleteClass() {
 export function useStudents(enabled = true) {
     return useQuery({
         queryKey: queryKeys.students,
-        queryFn: () => fetchAll<Types.Student>('students/'),
+        queryFn: () => fetchAll<Types.Student>('academic/students/'),
         enabled,
     });
 }
@@ -72,7 +72,7 @@ export function useStudents(enabled = true) {
 export function usePaginatedStudents(page = 1, pageSize = 50, search = '', classId = '', enabled = true) {
     return useQuery({
         queryKey: [...queryKeys.students, { page, pageSize, search, classId }],
-        queryFn: () => fetchPaginated<Types.Student>('students/', page, pageSize, { search, class: classId }),
+        queryFn: () => fetchPaginated<Types.Student>('academic/students/', page, pageSize, { search, class: classId }),
         enabled,
     });
 }
@@ -81,7 +81,7 @@ export function useCreateStudent() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (student: Types.Student) => {
-            const response = await apiClient.post('students/', student);
+            const response = await apiClient.post('academic/students/', student);
             return response.data;
         },
         onSuccess: () => {
@@ -94,7 +94,7 @@ export function useUpdateStudent() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async ({ id, updates }: { id: string; updates: Partial<Types.Student> }) => {
-            const response = await apiClient.patch(`students/${id}/`, updates);
+            const response = await apiClient.patch(`academic/students/${id}/`, updates);
             return response.data;
         },
         onSuccess: () => {
@@ -107,7 +107,7 @@ export function useDeleteStudent() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (id: string) => {
-            await apiClient.delete(`students/${id}/`);
+            await apiClient.delete(`academic/students/${id}/`);
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.students });
@@ -119,7 +119,7 @@ export function useBulkPromoteStudents() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (promotions: Record<string, string>) => {
-            const response = await apiClient.post('students/bulk-promote/', { promotions });
+            const response = await apiClient.post('academic/students/bulk-promote/', { promotions });
             return response.data;
         },
         onSuccess: () => {
@@ -131,7 +131,7 @@ export function useBulkPromoteStudents() {
 export function useAutoPromoteStudents() {
     return useMutation({
         mutationFn: async (data: { session: string; term: string }) => {
-            const response = await apiClient.post('students/trigger-auto-promotion/', data);
+            const response = await apiClient.post('academic/students/trigger-auto-promotion/', data);
             return response.data;
         },
     });
@@ -143,7 +143,7 @@ export function useAutoPromoteStudents() {
 export function useStudentHistory(studentId?: string) {
     return useQuery({
         queryKey: ['student_history', studentId],
-        queryFn: () => fetchAll<any>('students/history/', { student: studentId }),
+        queryFn: () => fetchAll<any>('academic/students/history/', { student: studentId }),
         enabled: !!studentId,
     });
 }
@@ -151,8 +151,56 @@ export function useStudentHistory(studentId?: string) {
 export function useStudentAchievements(studentId?: string) {
     return useQuery({
         queryKey: ['student_achievements', studentId],
-        queryFn: () => fetchAll<any>('students/achievements/', { student: studentId }),
+        queryFn: () => fetchAll<any>('academic/students/achievements/', { student: studentId }),
         enabled: !!studentId,
+    });
+}
+
+// =============================================
+// STUDENT GROUPS
+// =============================================
+export function useStudentGroups() {
+    return useQuery({
+        queryKey: ['student_groups'],
+        queryFn: () => fetchAll<any>('academic/student-groups/'),
+    });
+}
+
+export function useCreateStudentGroup() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (group: any) => {
+            const response = await apiClient.post('academic/student-groups/', group);
+            return response.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['student_groups'] });
+        },
+    });
+}
+
+export function useUpdateStudentGroup() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ id, updates }: { id: string; updates: any }) => {
+            const response = await apiClient.patch(`academic/student-groups/${id}/`, updates);
+            return response.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['student_groups'] });
+        },
+    });
+}
+
+export function useDeleteStudentGroup() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (id: string) => {
+            await apiClient.delete(`academic/student-groups/${id}/`);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['student_groups'] });
+        },
     });
 }
 
@@ -162,7 +210,7 @@ export function useStudentAchievements(studentId?: string) {
 export function useLessons() {
     return useQuery({
         queryKey: ['lessons'],
-        queryFn: () => fetchAll<any>('lessons/'),
+        queryFn: () => fetchAll<any>('academic/lessons/'),
     });
 }
 
@@ -170,7 +218,7 @@ export function useCreateLesson() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (lesson: any) => {
-            const response = await apiClient.post('lessons/', lesson);
+            const response = await apiClient.post('academic/lessons/', lesson);
             return response.data;
         },
         onSuccess: () => {
@@ -185,7 +233,7 @@ export function useCreateLesson() {
 export function useConductEntries() {
     return useQuery({
         queryKey: ['conduct_entries'],
-        queryFn: () => fetchAll<any>('conduct-entries/'),
+        queryFn: () => fetchAll<any>('academic/conduct-entries/'),
     });
 }
 
@@ -193,7 +241,7 @@ export function useCreateConductEntry() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (entry: any) => {
-            const response = await apiClient.post('conduct-entries/', entry);
+            const response = await apiClient.post('academic/conduct-entries/', entry);
             return response.data;
         },
         onSuccess: () => {
@@ -208,7 +256,7 @@ export function useCreateConductEntry() {
 export function useTeachers(enabled = true) {
     return useQuery({
         queryKey: queryKeys.teachers,
-        queryFn: () => fetchAll<Types.Teacher>('teachers/'),
+        queryFn: () => fetchAll<Types.Teacher>('academic/teachers/'),
         enabled,
     });
 }
@@ -217,7 +265,7 @@ export function useCreateTeacher() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (teacher: Types.Teacher) => {
-            const response = await apiClient.post('teachers/', teacher);
+            const response = await apiClient.post('academic/teachers/', teacher);
             return response.data;
         },
         onSuccess: () => {
@@ -230,7 +278,7 @@ export function useUpdateTeacher() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async ({ id, updates }: { id: string; updates: Partial<Types.Teacher> }) => {
-            const response = await apiClient.patch(`teachers/${id}/`, updates);
+            const response = await apiClient.patch(`academic/teachers/${id}/`, updates);
             return response.data;
         },
         onSuccess: () => {
@@ -243,7 +291,7 @@ export function useDeleteTeacher() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (id: string) => {
-            await apiClient.delete(`teachers/${id}/`);
+            await apiClient.delete(`academic/teachers/${id}/`);
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.teachers });
@@ -257,14 +305,14 @@ export function useDeleteTeacher() {
 export function useStaff() {
     return useQuery({
         queryKey: queryKeys.staff,
-        queryFn: () => fetchAll<Types.Staff>('staff/'),
+        queryFn: () => fetchAll<Types.Staff>('academic/staff/'),
     });
 }
 
 export function useAllStaff() {
     return useQuery({
         queryKey: ['all_staff'],
-        queryFn: () => fetchAll<Types.Teacher | Types.Staff>('teachers/?all=true'),
+        queryFn: () => fetchAll<Types.Teacher | Types.Staff>('academic/teachers/?all=true'),
     });
 }
 
@@ -272,7 +320,7 @@ export function useCreateStaff() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (item: Types.Staff) => {
-            const response = await apiClient.post('staff/', item);
+            const response = await apiClient.post('academic/staff/', item);
             return response.data;
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.staff }); },
@@ -283,7 +331,7 @@ export function useUpdateStaff() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async ({ id, updates }: { id: string; updates: Partial<Types.Staff> }) => {
-            const response = await apiClient.patch(`staff/${id}/`, updates);
+            const response = await apiClient.patch(`academic/staff/${id}/`, updates);
             return response.data;
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.staff }); },
@@ -294,7 +342,7 @@ export function useDeleteStaff() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (id: string) => {
-            await apiClient.delete(`staff/${id}/`);
+            await apiClient.delete(`academic/staff/${id}/`);
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.staff }); },
     });
@@ -306,7 +354,7 @@ export function useDeleteStaff() {
 export function useSubjects() {
     return useQuery({
         queryKey: queryKeys.subjects,
-        queryFn: () => fetchAll<Types.Subject>('subjects/'),
+        queryFn: () => fetchAll<Types.Subject>('academic/subjects/'),
     });
 }
 
@@ -314,7 +362,7 @@ export function useCreateSubject() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (item: Types.Subject) => {
-            const response = await apiClient.post('subjects/', item);
+            const response = await apiClient.post('academic/subjects/', item);
             return response.data;
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.subjects }); },
@@ -327,7 +375,7 @@ export function useCreateSubject() {
 export function useSubjectTeachers() {
     return useQuery({
         queryKey: queryKeys.subjectTeachers,
-        queryFn: () => fetchAll<Types.SubjectTeacher>('subject_teachers/'),
+        queryFn: () => fetchAll<Types.SubjectTeacher>('academic/subject_teachers/'),
     });
 }
 
@@ -335,7 +383,7 @@ export function useCreateSubjectTeacher() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (item: Types.SubjectTeacher) => {
-            const response = await apiClient.post('subject_teachers/', item);
+            const response = await apiClient.post('academic/subject_teachers/', item);
             return response.data;
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.subjectTeachers }); },
@@ -346,7 +394,7 @@ export function useDeleteSubjectTeacher() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (id: string) => {
-            await apiClient.delete(`subject_teachers/${id}/`);
+            await apiClient.delete(`academic/subject_teachers/${id}/`);
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.subjectTeachers }); },
     });
@@ -359,7 +407,7 @@ export function useAcademicGlobalSearch(query: string, enabled = false) {
     return useQuery({
         queryKey: ['academic_global_search', query],
         queryFn: async () => {
-            const response = await apiClient.get('/global-search/', { params: { q: query } });
+            const response = await apiClient.get('academic/global-search/', { params: { q: query } });
             return response.data;
         },
         enabled: enabled && query.length >= 2,

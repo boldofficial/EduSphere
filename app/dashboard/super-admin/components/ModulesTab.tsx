@@ -13,7 +13,7 @@ export function ModulesTab({ modules = [], onModulesChanged }: { modules: any[];
         setTogglingId(moduleId);
         try {
             const action = currentStatus ? 'off' : 'on';
-            await apiClient.post('/schools/modules/toggle/', { module_id: moduleId, action });
+            await apiClient.post('schools/modules/toggle/', { module_id: moduleId, action });
             await onModulesChanged?.();
             addToast(`Module turned ${action.toUpperCase()} successfully`, 'success');
         } catch (error) {

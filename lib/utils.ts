@@ -270,7 +270,8 @@ export const INITIAL_SETTINGS: Settings = {
   bank_account_number: '0123456789',
   bank_sort_code: '',
   invoice_notes: 'Please ensure payment is made before the due date to avoid late fees.',
-  invoice_due_days: 14
+  invoice_due_days: 14,
+  currency_symbol: 'NGN'
 };
 
 export const getSubjectsForClass = (cls: Class | undefined) => {
@@ -498,4 +499,15 @@ export function formatDate(date: string | number | Date, formatStr: string = 'PP
   }
 
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+export function formatDateTime(date: string | number | Date) {
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return String(date);
+  return d.toLocaleString('en-US', { 
+    month: 'short', 
+    day: 'numeric', 
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
 }

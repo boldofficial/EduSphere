@@ -9,7 +9,7 @@
 # --- CONFIG ---
 SERVER_IP="72.62.160.70"
 SERVER_USER="root"
-PROD_CONTAINER="db-rckswgkwswcck0gokswk0s8s-102936283131"
+PROD_CONTAINER="db-rckswgkwswcck0gokswk0s8s-120054959616"
 DB_NAME="registra_db"
 DB_USER="registra_admin"
 BACKUP_FILE="$HOME/registra_backup.sql"
@@ -20,7 +20,7 @@ COMPOSE_FILE="docker-compose.local.yml"
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 RED='\033[0;31m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
 echo ""
 echo "============================================"
@@ -29,7 +29,7 @@ echo "============================================"
 echo ""
 
 # --- STEP 1: Dump production database ---
-echo -e "${YELLOW}[1/5] Dumping production database from server...${NC}"
+echo -e "${YELLOW}[1/6] Dumping production database from server...${NC}"
 ssh ${SERVER_USER}@${SERVER_IP} "docker exec ${PROD_CONTAINER} pg_dump -U ${DB_USER} -d ${DB_NAME} > /root/${DB_NAME}_backup.sql"
 if [ $? -ne 0 ]; then
   echo -e "${RED}❌ Failed to dump production database. Check your SSH access.${NC}"
@@ -39,7 +39,7 @@ echo -e "${GREEN}✅ Production dump created on server.${NC}"
 
 # --- STEP 2: Download dump to local machine ---
 echo ""
-echo -e "${YELLOW}[2/5] Downloading backup to local machine...${NC}"
+echo -e "${YELLOW}[2/6] Downloading backup to local machine...${NC}"
 scp ${SERVER_USER}@${SERVER_IP}:/root/${DB_NAME}_backup.sql ${BACKUP_FILE}
 if [ $? -ne 0 ]; then
   echo -e "${RED}❌ Failed to download backup. Check your SSH access.${NC}"
@@ -47,9 +47,18 @@ if [ $? -ne 0 ]; then
 fi
 echo -e "${GREEN}✅ Backup downloaded to ${BACKUP_FILE}${NC}"
 
-# --- STEP 3: Stop and remove local containers + volumes ---
+# --- STEP 3: Cleanup backup file from server ---
 echo ""
-echo -e "${YELLOW}[3/5] Resetting local Docker containers and volumes...${NC}"
+echo -e "${YELLOW}[3/6] Cleaning up backup file from server...${NC}"
+ssh ${SERVER_USER}@${SERVER_IP} "rm /root/${DB_NAME}_backup.sql"
+if [ $? -ne 0 ]; then
+  echo -e "${RED}⚠️  Warning: Failed to delete backup from server. Please remove it manually.${NC}"
+fi
+echo -e "${GREEN}✅ Server backup file removed.${NC}"
+
+# --- STEP 4: Stop and remove local containers + volumes ---
+echo ""
+echo -e "${YELLOW}[4/6] Resetting local Docker containers and volumes...${NC}"
 docker compose -f ${COMPOSE_FILE} down -v
 if [ $? -ne 0 ]; then
   echo -e "${RED}❌ Failed to stop local containers.${NC}"
@@ -57,9 +66,9 @@ if [ $? -ne 0 ]; then
 fi
 echo -e "${GREEN}✅ Local containers stopped and volumes cleared.${NC}"
 
-# --- STEP 4: Start fresh local containers ---
+# --- STEP 5: Start fresh local containers ---
 echo ""
-echo -e "${YELLOW}[4/5] Starting fresh local containers...${NC}"
+echo -e "${YELLOW}[5/6] Starting fresh local containers...${NC}"
 docker compose -f ${COMPOSE_FILE} up -d
 if [ $? -ne 0 ]; then
   echo -e "${RED}❌ Failed to start local containers.${NC}"
@@ -67,12 +76,15 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "⏳ Waiting for PostgreSQL to be ready..."
-sleep 8
-echo -e "${GREEN}✅ Local containers started.${NC}"
+until docker exec ${LOCAL_CONTAINER} pg_isready -U ${DB_USER} > /dev/null 2>&1; do
+  echo "   still waiting..."
+  sleep 2
+done
+echo -e "${GREEN}✅ PostgreSQL is ready.${NC}"
 
-# --- STEP 5: Restore backup into local DB ---
+# --- STEP 6: Restore backup into local DB ---
 echo ""
-echo -e "${YELLOW}[5/5] Restoring production data into local database...${NC}"
+echo -e "${YELLOW}[6/6] Restoring production data into local database...${NC}"
 cat ${BACKUP_FILE} | docker exec -i ${LOCAL_CONTAINER} psql -U ${DB_USER} -d ${DB_NAME} > /dev/null 2>&1
 if [ $? -ne 0 ]; then
   echo -e "${RED}❌ Failed to restore backup.${NC}"
@@ -87,7 +99,7 @@ echo -e "${GREEN}🎉 All done! Local DB is synced with production.${NC}"
 echo ""
 echo "  DBeaver Local Connection:"
 echo "  Host:     localhost"
-echo "  Port:     5432"
+echo "  Port:     5436"
 echo "  Database: ${DB_NAME}"
 echo "  Username: ${DB_USER}"
 echo "============================================"

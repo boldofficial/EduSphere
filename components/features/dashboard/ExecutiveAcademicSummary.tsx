@@ -30,7 +30,7 @@ export const ExecutiveAcademicSummary: React.FC = () => {
         const fetchInsights = async () => {
             setLoading(true);
             try {
-                const res = await apiClient.get('/ai-insights/', {
+                const res = await apiClient.get('academic/ai-insights/', {
                     params: {
                         session: settings.current_session,
                         term: settings.current_term

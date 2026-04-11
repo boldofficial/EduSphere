@@ -9,10 +9,13 @@ from rest_framework.response import Response
 from core.pagination import LargePagination, StandardPagination
 from core.tenant_utils import get_request_school
 
-from .models import Assignment, Attempt, Option, Question, Quiz, StudentAnswer, Submission
+from django.conf import settings
+
+from .models import Assignment, Attempt, ExamViolation, Option, Question, Quiz, StudentAnswer, Submission
 from .serializers import (
     AssignmentSerializer,
     AttemptSerializer,
+    ExamViolationSerializer,
     QuestionSerializer,
     QuizSerializer,
     StudentAnswerSerializer,
@@ -194,6 +197,41 @@ class QuizViewSet(LearningTenantViewSet):
         )
 
     @action(detail=True, methods=["post"])
+    def start_attempt(self, request, pk=None):
+        """Starts a new attempt for a quiz or returns existing if not submitted."""
+        quiz = self.get_object()
+        student = getattr(request.user, "student_profile", None)
+
+        if not student:
+            return Response({"detail": "Only students can start quiz attempts"}, status=status.HTTP_403_FORBIDDEN)
+
+        # Ensure correct school context
+        if student.school != quiz.school:
+            return Response({"detail": "Access denied"}, status=status.HTTP_403_FORBIDDEN)
+
+        # Check for existing attempt
+        attempt = Attempt.objects.filter(quiz=quiz, student=student).first()
+
+        if attempt:
+            if attempt.submit_time:
+                return Response({"detail": "You have already submitted this quiz."}, status=status.HTTP_400_BAD_REQUEST)
+            # Resume existing
+            from .serializers import AttemptSerializer
+            serializer = AttemptSerializer(attempt)
+            return Response(serializer.data)
+
+        # Create new
+        attempt = Attempt.objects.create(
+            school=quiz.school,
+            quiz=quiz,
+            student=student,
+            start_time=timezone.now()
+        )
+        from .serializers import AttemptSerializer
+        serializer = AttemptSerializer(attempt)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["post"])
     def submit(self, request, pk=None):
         """Submit an attempt for a quiz"""
         quiz = self.get_object()
@@ -205,17 +243,21 @@ class QuizViewSet(LearningTenantViewSet):
         if student.school != quiz.school:
             return Response({"detail": "Cross-tenant quiz access denied"}, status=status.HTTP_403_FORBIDDEN)
 
-        # Check if quiz has already been attempted
-        if Attempt.objects.filter(quiz=quiz, student=student).exists():
-            return Response({"detail": "You have already submitted this quiz"}, status=status.HTTP_400_BAD_REQUEST)
+        # Find existing attempt or create one (though it should be created by start_attempt)
+        attempt, created = Attempt.objects.get_or_create(
+            school=quiz.school, 
+            quiz=quiz, 
+            student=student,
+            defaults={'start_time': timezone.now()}
+        )
 
-        answers_data = request.data.get("answers", [])
-        if not answers_data:
-            return Response({"detail": "No answers provided"}, status=status.HTTP_400_BAD_REQUEST)
+        if attempt.submit_time and not created:
+             return Response({"detail": "You have already submitted this quiz"}, status=status.HTTP_400_BAD_REQUEST)
 
-        total_score = 0
+        attempt.submit_time = timezone.now()
 
-        attempt = Attempt.objects.create(school=quiz.school, quiz=quiz, student=student, submit_time=timezone.now())
+        # Clear previous answers if any (to prevent duplicates on re-submit/resume)
+        attempt.answers.all().delete()
 
         errors = []
         for ans in answers_data:
@@ -320,3 +362,45 @@ class AttemptViewSet(LearningTenantViewSet):
             attempt.save()
 
         return Response({"success": True, "evaluations": results, "new_total_score": attempt.total_score})
+
+    @action(detail=True, methods=["post", "get"])
+    def violations(self, request, pk=None):
+        """Log or retrieve tab-switch violations for a specific attempt."""
+        attempt = self.get_object()
+
+        if request.method == "GET":
+            # For teachers/admins to view violation logs for this attempt
+            violations = attempt.violations.all().order_by("-timestamp")
+            serializer = ExamViolationSerializer(violations, many=True, context={'request': request})
+            return Response(serializer.data)
+
+        # POST logic: Student logging a violation
+        count = request.data.get("count", 1)  # Usually frontend tracks the count and sends it
+        
+        # Save violation
+        violation = ExamViolation.objects.create(
+            school=attempt.school,
+            attempt=attempt,
+            count=count,
+        )
+
+        max_violations = getattr(settings, 'CBT_MAX_VIOLATIONS', 3)
+        auto_submit = False
+
+        # Check threshold
+        if count >= max_violations and not attempt.submit_time:
+            # Force submission
+            attempt.submit_time = timezone.now()
+            # Calculate score using existing answers just in case
+            attempt.total_score = sum(a.score for a in attempt.answers.all())
+            attempt.save()
+            
+            violation.auto_submitted = True
+            violation.save()
+            auto_submit = True
+
+        return Response({
+            "success": True,
+            "auto_submitted": auto_submit,
+            "message": "Violation logged securely."
+        }, status=status.HTTP_201_CREATED)

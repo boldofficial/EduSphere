@@ -16,7 +16,7 @@ export function useSalaryAllowances() {
     return useQuery({
         queryKey: payrollKeys.allowances(),
         queryFn: async () => {
-            const res = await apiClient.get<Types.PaginatedResponse<Types.SalaryAllowance>>('salary-allowances/');
+            const res = await apiClient.get<Types.PaginatedResponse<Types.SalaryAllowance>>('bursary/salary-allowances/');
             return res.data.results;
         }
     });
@@ -25,7 +25,7 @@ export function useSalaryAllowances() {
 export function useCreateAllowance() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (data: Partial<Types.SalaryAllowance>) => apiClient.post('salary-allowances/', data),
+        mutationFn: (data: Partial<Types.SalaryAllowance>) => apiClient.post('bursary/salary-allowances/', data),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: payrollKeys.allowances() })
     });
 }
@@ -35,7 +35,7 @@ export function useSalaryDeductions() {
     return useQuery({
         queryKey: payrollKeys.deductions(),
         queryFn: async () => {
-            const res = await apiClient.get<Types.PaginatedResponse<Types.SalaryDeduction>>('salary-deductions/');
+            const res = await apiClient.get<Types.PaginatedResponse<Types.SalaryDeduction>>('bursary/salary-deductions/');
             return res.data.results;
         }
     });
@@ -44,7 +44,7 @@ export function useSalaryDeductions() {
 export function useCreateDeduction() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (data: Partial<Types.SalaryDeduction>) => apiClient.post('salary-deductions/', data),
+        mutationFn: (data: Partial<Types.SalaryDeduction>) => apiClient.post('bursary/salary-deductions/', data),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: payrollKeys.deductions() })
     });
 }
@@ -55,7 +55,7 @@ export function useStaffSalaryStructure(staffId: string | number) {
         queryKey: payrollKeys.structures(staffId),
         queryFn: async () => {
             // Custom action to get by staff_id
-            const res = await apiClient.get<Types.StaffSalaryStructure>(`salary-structures/by_staff/?staff_id=${staffId}`);
+            const res = await apiClient.get<Types.StaffSalaryStructure>(`bursary/salary-structures/by_staff/?staff_id=${staffId}`);
             return res.data;
         },
         enabled: !!staffId
@@ -66,7 +66,7 @@ export function useUpdateSalaryStructure() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: ({ id, data }: { id: string | number, data: Partial<Types.StaffSalaryStructure> }) =>
-            apiClient.patch(`salary-structures/${id}/`, data),
+            apiClient.patch(`bursary/salary-structures/${id}/`, data),
         onSuccess: (_, variables) => {
             // We might not know the staffId from the response easily depending on backend,
             // but we can invalidate all structures or try to be specific if we passed staffId in context
@@ -80,7 +80,7 @@ export function usePayrolls() {
     return useQuery({
         queryKey: payrollKeys.payrolls(),
         queryFn: async () => {
-            const res = await apiClient.get<Types.PaginatedResponse<Types.Payroll>>('payrolls/');
+            const res = await apiClient.get<Types.PaginatedResponse<Types.Payroll>>('bursary/payrolls/');
             return res.data.results;
         }
     });
@@ -89,7 +89,7 @@ export function usePayrolls() {
 export function useGeneratePayroll() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (month: string) => apiClient.post('payrolls/generate/', { month }),
+        mutationFn: (month: string) => apiClient.post('bursary/payrolls/generate/', { month }),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: payrollKeys.payrolls() })
     });
 }
@@ -97,7 +97,7 @@ export function useGeneratePayroll() {
 export function useApprovePayroll() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (id: string | number) => apiClient.post(`payrolls/${id}/approve/`),
+        mutationFn: (id: string | number) => apiClient.post(`bursary/payrolls/${id}/approve/`),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: payrollKeys.payrolls() })
     });
 }
@@ -106,7 +106,7 @@ export function useMarkPayrollPaid() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: ({ id, createExpense }: { id: string | number, createExpense: boolean }) =>
-            apiClient.post(`payrolls/${id}/mark_paid/`, { create_expense: createExpense }),
+            apiClient.post(`bursary/payrolls/${id}/mark_paid/`, { create_expense: createExpense }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: payrollKeys.payrolls() });
             queryClient.invalidateQueries({ queryKey: ['expenses'] }); // Also update expenses
@@ -117,7 +117,7 @@ export function useMarkPayrollPaid() {
 export function useDeletePayroll() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (id: string | number) => apiClient.delete(`payrolls/${id}/`),
+        mutationFn: (id: string | number) => apiClient.delete(`bursary/payrolls/${id}/`),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: payrollKeys.payrolls() })
     });
 }

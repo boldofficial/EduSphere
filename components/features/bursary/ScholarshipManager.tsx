@@ -8,7 +8,34 @@ import * as Utils from '@/lib/utils';
 import { useScholarships, useCreateScholarship, useUpdateScholarship, useDeleteScholarship } from '@/lib/hooks/use-data';
 import { useToast } from '@/components/providers/toast-provider';
 
+import { BulkDiscountManager } from './BulkDiscountManager';
+
 export const ScholarshipManager: React.FC = () => {
+    const [view, setView] = useState<'list' | 'bulk'>('list');
+
+    return (
+        <div className="space-y-6">
+            <div className="flex gap-4 border-b pb-4">
+                <button
+                    onClick={() => setView('list')}
+                    className={`pb-2 px-1 text-sm font-bold transition-all border-b-2 ${view === 'list' ? 'border-brand-600 text-brand-600' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+                >
+                    Scholarship Definitions
+                </button>
+                <button
+                    onClick={() => setView('bulk')}
+                    className={`pb-2 px-1 text-sm font-bold transition-all border-b-2 ${view === 'bulk' ? 'border-brand-600 text-brand-600' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+                >
+                    Bulk Application
+                </button>
+            </div>
+
+            {view === 'list' ? <SimpleScholarshipList /> : <BulkDiscountManager />}
+        </div>
+    );
+};
+
+const SimpleScholarshipList: React.FC = () => {
     const { data: scholarships, isLoading } = useScholarships();
     const createScholarship = useCreateScholarship();
     const updateScholarship = useUpdateScholarship();

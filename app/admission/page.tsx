@@ -38,7 +38,7 @@ const AdmissionPage = () => {
         const loadInitialData = async () => {
             const [dbSettings, activeIntakes] = await Promise.all([
                 DataService.fetchSettings(),
-                DataService.fetchAll<any>('admission-intakes', { is_active: true })
+                DataService.fetchAll<any>('academic/admission-intakes', { is_active: true })
             ]);
 
             if (dbSettings) setSettings(dbSettings);
@@ -120,7 +120,7 @@ const AdmissionPage = () => {
                 ...formData,
                 selected_package_items: Array.from(selectedFees)
             };
-            await DataService.createItem('admissions', payload);
+            await DataService.createItem('academic/admissions', payload);
 
             setIsSubmitting(false);
             setIsSubmitted(true);

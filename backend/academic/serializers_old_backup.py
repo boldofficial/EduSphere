@@ -9,6 +9,7 @@ from core.tenant_utils import get_request_school
 from users.models import User
 
 from .models import (
+    AcademicTerm,
     Admission,
     AdmissionIntake,
     AttendanceRecord,
@@ -23,6 +24,7 @@ from .models import (
     SchoolEvent,
     Student,
     StudentAchievement,
+    StudentGroup,
     StudentHistory,
     Subject,
     SubjectScore,
@@ -226,6 +228,7 @@ class StudentSerializer(serializers.ModelSerializer):
 
     passport_url = Base64ImageField(required=False, allow_null=True)
     performance_trend = serializers.SerializerMethodField()
+    current_class_name = serializers.CharField(source="current_class.name", read_only=True)
 
     class Meta:
         model = Student
@@ -236,6 +239,7 @@ class StudentSerializer(serializers.ModelSerializer):
             "names",
             "gender",
             "current_class",
+            "current_class_name",
             "class_id",
             "dob",
             "parent_name",
@@ -381,6 +385,15 @@ class StudentSerializer(serializers.ModelSerializer):
         except Exception as e:
             logger.exception(f"Student update failed: {str(e)}")
             raise e
+
+
+class StudentGroupSerializer(serializers.ModelSerializer):
+    student_count = serializers.IntegerField(source="students.count", read_only=True)
+
+    class Meta:
+        model = StudentGroup
+        fields = ["id", "name", "description", "students", "student_count"]
+        read_only_fields = ("school",)
 
 
 class StudentHistorySerializer(serializers.ModelSerializer):
@@ -679,3 +692,11 @@ class AdmissionSerializer(serializers.ModelSerializer):
         model = Admission
         fields = "__all__"
         read_only_fields = ("school", "reviewed_at", "reviewed_by")
+
+
+class AcademicTermSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AcademicTerm
+        fields = "__all__"
+        read_only_fields = ("school",)
+

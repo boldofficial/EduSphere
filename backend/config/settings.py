@@ -553,3 +553,10 @@ if not EMAIL_HOST_USER or not EMAIL_HOST_PASSWORD:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
     if DEBUG:
         print("WARNING: SMTP credentials not set. Emails will be printed to console.")
+
+# =============================================================================
+# CBT CONFIGURATION
+# =============================================================================
+CBT_MAX_VIOLATIONS = 3          # auto-submit threshold
+CBT_VIOLATION_WARN = True       # show warning overlay
+CBT_LOCK_ON_EXCEED = False      # lock vs auto-submit

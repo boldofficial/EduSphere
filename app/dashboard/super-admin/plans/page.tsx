@@ -1,0 +1,33 @@
+'use client';
+
+import React, { Suspense } from 'react';
+import { useAdminPlans, useModules, useAdminSchools } from '@/lib/hooks/use-data';
+import { PlansTab } from '../components/PlansTab';
+
+function PlansContent() {
+    const { data: plans = [], refetch: refetchPlans } = useAdminPlans();
+    const { data: modules = [] } = useModules();
+    const { refetch: refetchSchools } = useAdminSchools();
+
+    const handlePlansChanged = async () => {
+        await Promise.all([refetchPlans(), refetchSchools()]);
+    };
+
+    return (
+        <div className="space-y-6">
+            <div className="mb-8">
+                <h1 className="text-3xl font-black text-gray-900 tracking-tight">Plans & Pricing</h1>
+                <p className="text-gray-500 mt-1 font-medium">Configure subscription tiers, limits, and pricing structures.</p>
+            </div>
+            <PlansTab plans={plans} modules={modules} onPlansChanged={handlePlansChanged} />
+        </div>
+    );
+}
+
+export default function PlansPage() {
+    return (
+        <Suspense fallback={<div className="animate-spin rounded-full h-12 w-12 border-4 border-brand-600 border-t-transparent mx-auto mt-20"></div>}>
+            <PlansContent />
+        </Suspense>
+    );
+}

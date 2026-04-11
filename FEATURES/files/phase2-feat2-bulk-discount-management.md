@@ -73,9 +73,22 @@ def apply_bulk_discount(scope, fee_assignment_id, discount_type, value, reason, 
 | GET | `/api/finance/discounts/preview/` | Preview affected students + total impact |
 | GET | `/api/finance/discounts/?student_id=` | List discounts for a student |
 
+## Progress Tracking
+
+- [x] Implement `FeeDiscount` model in `backend/bursary/models.py`
+- [x] Implement `apply_bulk_discount` service in `backend/bursary/services.py`
+- [x] Implement `preview_bulk_discount` logic
+- [x] Create API endpoints in `backend/bursary/views.py` (`DiscountViewSet`)
+- [x] Register API routes in `backend/bursary/urls.py`
+- [x] Add Audit logging for bulk actions
+- [x] Implement Frontend UI (Scope selection, Preview modal, Apply action)
+
 ## Acceptance Criteria
-- [ ] Admin can select class or custom group as target scope
-- [ ] Preview step shows list of affected students and net discount impact
-- [ ] Bulk create applies discount to all students in scope atomically
-- [ ] Audit log records who applied the discount, when, and to how many students
-- [ ] Existing individual discounts are not overwritten without explicit override flag
+- [x] Admin can select class or custom group as target scope
+- [x] Preview step shows list of affected students and net discount impact
+- [x] Bulk create applies discount to all students in scope atomically (Backend done)
+- [x] Audit log records who applied the discount, when, and to how many students (Backend done)
+
+Now, follow my implementation files. for each implementation you want to implement, use that file as the entry point. do not create any artifact on .gemini file or folder. example, use `FEATURES/files/phase2-feat2-bulk-discount-management.md` as you entry point for that implementation and use it to track all of your ahanges. 
+
+DO NOT CREATE ANY ARTIFACT IN THE GEMINI FOLDER OR FILE. FOLLOW THIS STRICT RULE

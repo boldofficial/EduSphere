@@ -11,6 +11,7 @@ from .views import (
     SchoolAnnouncementViewSet,
     SchoolMessageViewSet,
     SettingsView,
+    GlobalActivityLogViewSet,
 )
 
 router = DefaultRouter()
@@ -19,6 +20,7 @@ router.register(r"messages", SchoolMessageViewSet, basename="message")
 router.register(r"notifications", NotificationViewSet, basename="notification")
 router.register(r"announcements", SchoolAnnouncementViewSet, basename="announcement")
 router.register(r"newsletters", NewsletterViewSet, basename="newsletter")
+router.register(r"activity-logs", GlobalActivityLogViewSet, basename="activity-log")
 
 urlpatterns = [
     path("settings/", SettingsView.as_view(), name="settings"),

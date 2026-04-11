@@ -3,7 +3,7 @@ from rest_framework import serializers
 from academic.models import Class, Student, Subject, Teacher
 from core.tenant_utils import get_request_school
 
-from .models import Assignment, Attempt, Option, Question, Quiz, StudentAnswer, Submission
+from .models import Assignment, Attempt, ExamViolation, Option, Question, Quiz, StudentAnswer, Submission
 
 
 def _school_from_request(serializer):
@@ -212,12 +212,35 @@ class StudentAnswerSerializer(serializers.ModelSerializer):
         read_only_fields = ("school",)
 
 
+class ExamViolationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ExamViolation
+        fields = ["id", "attempt", "count", "timestamp", "auto_submitted", "school"]
+        read_only_fields = ("school", "timestamp", "auto_submitted")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        school = _school_from_request(self)
+        if school:
+            self.fields["attempt"].queryset = Attempt.objects.filter(school=school)
+
+    def validate(self, attrs):
+        school = attrs.get("school") or _school_from_request(self)
+        attempt = attrs.get("attempt")
+        if school and attempt and attempt.school != school:
+            raise serializers.ValidationError({"attempt": "Attempt must belong to your school."})
+        return attrs
+
+
 class AttemptSerializer(serializers.ModelSerializer):
     answers = StudentAnswerSerializer(many=True, read_only=True)
 
     class Meta:
         model = Attempt
-        fields = ["id", "quiz", "student", "start_time", "submit_time", "total_score", "answers", "school"]
+        fields = [
+            "id", "quiz", "student", "start_time", "submit_time", 
+            "total_score", "answers", "school", "violation_count", "is_violated"
+        ]
         read_only_fields = ("school",)
 
     def __init__(self, *args, **kwargs):

@@ -78,3 +78,25 @@ export function useAIGradeQuizTheory() {
         }
     });
 }
+
+export function useLogViolation() {
+    return useMutation({
+        mutationFn: async ({ attemptId, count }: { attemptId: string | number, count: number }) => {
+            const res = await apiClient.post(`learning/attempts/${attemptId}/violations/`, { count });
+            return res.data;
+        }
+    });
+}
+
+export function useSubmitAttempt() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ quizId, answers }: { quizId: string | number, answers: any[] }) => {
+            const res = await apiClient.post(`learning/quizzes/${quizId}/submit/`, { answers });
+            return res.data;
+        },
+        onSuccess: (_, variables) => {
+            queryClient.invalidateQueries({ queryKey: ['attempts', variables.quizId] });
+        }
+    });
+}
