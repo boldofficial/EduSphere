@@ -18,7 +18,8 @@ def resolve_scope(school, scope):
         return Student.objects.filter(school=school, current_class_id__in=ids, status="active")
     elif scope_type == "all":
         return Student.objects.filter(school=school, status="active")
-    # Additional group logic can be added here
+    elif scope_type == "group":
+        return Student.objects.filter(school=school, groups__id__in=ids, status="active").distinct()
     return Student.objects.none()
 
 def apply_bulk_discount(school, scope, fee_item_id, discount_type, value, reason, applied_by, override=False):
