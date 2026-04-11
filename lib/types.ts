@@ -109,6 +109,7 @@ export interface Settings extends Entity {
   academic_terms?: AcademicTerm[];
 
   invoice_due_days: number; // Days until payment is due
+  currency_symbol: string;
 
   // Domain & Subscription
   domain?: string;
@@ -232,6 +233,15 @@ export interface Student extends Entity {
   discounts?: StudentDiscount[]; // Applied discounts/scholarships
   assigned_subjects?: string[]; // List of subject names
   performance_trend?: 'improving' | 'declining' | 'stable';
+  groups?: string[]; // IDs of groups this student belongs to
+  current_class_name?: string;
+}
+
+export interface StudentGroup extends Entity {
+  name: string;
+  description: string;
+  students: string[]; // List of student IDs
+  student_count: number;
 }
 
 export interface StudentDiscount {
@@ -322,6 +332,7 @@ export interface FeeStructure extends Entity {
   is_optional?: boolean;
   active?: boolean;
   allow_partial_payments?: boolean;
+  category?: string;
 }
 
 export interface PaymentLineItem {
