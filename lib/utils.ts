@@ -265,7 +265,8 @@ export const INITIAL_SETTINGS: Settings = {
   bank_account_number: '0123456789',
   bank_sort_code: '',
   invoice_notes: 'Please ensure payment is made before the due date to avoid late fees.',
-  invoice_due_days: 14
+  invoice_due_days: 14,
+  currency_symbol: 'NGN'
 };
 
 export const getSubjectsForClass = (cls: Class | undefined) => {
