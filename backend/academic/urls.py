@@ -25,6 +25,7 @@ from .views import (
     ReportCardViewSet,
     SchoolEventViewSet,
     StudentAchievementViewSet,
+    StudentGroupViewSet,
     StudentHistoryViewSet,
     StudentViewSet,
     SubjectScoreViewSet,
@@ -44,6 +45,7 @@ router.register(r"staff", views.TeacherViewSet, basename="staff")
 router.register(r"students", views.StudentViewSet)
 router.register(r"student-history", views.StudentHistoryViewSet, basename="student-history")
 router.register(r"student-achievements", views.StudentAchievementViewSet, basename="student-achievements")
+router.register(r"student-groups", views.StudentGroupViewSet, basename="student-groups")
 router.register(r"reports", views.ReportCardViewSet)
 router.register(r"scores", views.SubjectScoreViewSet)
 router.register(r"attendance-sessions", views.AttendanceSessionViewSet)
