@@ -51,6 +51,8 @@ export const queryKeys = {
     supportTickets: ['support_tickets'] as const,
     me: ['me'] as const,
     scholarships: ['scholarships'] as const,
+    studentGroups: ['student_groups'] as const,
+    studentAchievements: ['student_achievements'] as const,
     assignments: ['assignments'] as const,
     quizzes: ['quizzes'] as const,
     questions: ['questions'] as const,
@@ -99,6 +101,7 @@ export {
     useStudents, usePaginatedStudents, useCreateStudent, useUpdateStudent, useDeleteStudent,
     useBulkPromoteStudents, useAutoPromoteStudents,
     useStudentHistory, useStudentAchievements,
+    useStudentGroups, useCreateStudentGroup, useUpdateStudentGroup, useDeleteStudentGroup,
     useLessons, useCreateLesson,
     useConductEntries, useCreateConductEntry,
     useTeachers, useCreateTeacher, useUpdateTeacher, useDeleteTeacher,
@@ -113,6 +116,7 @@ export {
     useFinancialStats,
     useExpenses, useCreateExpense, useUpdateExpense, useDeleteExpense,
     useScholarships, useCreateScholarship, useUpdateScholarship, useDeleteScholarship,
+    usePreviewBulkDiscount, useApplyBulkDiscount,
 } from './use-bursary';
 
 export {

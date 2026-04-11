@@ -157,6 +157,54 @@ export function useStudentAchievements(studentId?: string) {
 }
 
 // =============================================
+// STUDENT GROUPS
+// =============================================
+export function useStudentGroups() {
+    return useQuery({
+        queryKey: ['student_groups'],
+        queryFn: () => fetchAll<any>('academic/student-groups/'),
+    });
+}
+
+export function useCreateStudentGroup() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (group: any) => {
+            const response = await apiClient.post('academic/student-groups/', group);
+            return response.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['student_groups'] });
+        },
+    });
+}
+
+export function useUpdateStudentGroup() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ id, updates }: { id: string; updates: any }) => {
+            const response = await apiClient.patch(`academic/student-groups/${id}/`, updates);
+            return response.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['student_groups'] });
+        },
+    });
+}
+
+export function useDeleteStudentGroup() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (id: string) => {
+            await apiClient.delete(`academic/student-groups/${id}/`);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['student_groups'] });
+        },
+    });
+}
+
+// =============================================
 // LESSONS
 // =============================================
 export function useLessons() {
