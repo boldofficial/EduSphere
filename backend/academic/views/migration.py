@@ -1,3 +1,5 @@
+"""Data migration ViewSet — CSV import/export for students."""
+
 import csv
 import io
 
@@ -7,7 +9,7 @@ from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from .serializers import StudentSerializer
+from ..serializers import StudentSerializer
 
 
 class AcademicDataMigrationViewSet(viewsets.ViewSet):
@@ -80,7 +82,7 @@ class AcademicDataMigrationViewSet(viewsets.ViewSet):
 
             results = {"success_count": 0, "error_count": 0, "errors": []}
 
-            from .models import Class
+            from ..models import Class
 
             # Cache classes for faster lookup: { "jss 1": <Class Obj>, "jss1": <Class Obj> }
             # We normalize keys to lowercase for fuzzy matching
@@ -168,52 +170,7 @@ class AcademicDataMigrationViewSet(viewsets.ViewSet):
         ]
         writer.writerow(headers)
 
-        from .models import Student
-
-        if request.user.is_authenticated and hasattr(request.user, "school"):
-            students = Student.objects.filter(school=request.user.school).select_related("current_class")
-            for s in students:
-                writer.writerow(
-                    [
-                        s.student_no,
-                        s.names,
-                        s.gender,
-                        s.dob,
-                        s.current_class.name if s.current_class else "",
-                        s.parent_name,
-                        s.parent_email,
-                        s.parent_phone,
-                        s.address,
-                        s.status,
-                    ]
-                )
-
-        return response
-
-    @action(detail=False, methods=["get"], url_path="export-students")
-    def export_students(self, request):
-        """
-        Export all students for the current tenant to CSV.
-        """
-        response = HttpResponse(content_type="text/csv")
-        response["Content-Disposition"] = 'attachment; filename="student_data_export.csv"'
-
-        writer = csv.writer(response)
-        headers = [
-            "student_no",
-            "names",
-            "gender",
-            "date_of_birth",
-            "class_name",
-            "parent_name",
-            "parent_email",
-            "parent_phone",
-            "address",
-            "status",
-        ]
-        writer.writerow(headers)
-
-        from .models import Student
+        from ..models import Student
 
         students = Student.objects.filter(school=request.user.school).select_related("current_class")
 

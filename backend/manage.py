@@ -7,13 +7,15 @@ import sys
 
 def main():
     """Run administrative tasks."""
-    # Load .env.local from project root (one level up from backend)
+    # Load .env.local from project root (one level up from backend) unless explicitly disabled.
     from pathlib import Path
 
     import dotenv
 
     BASE_DIR = Path(__file__).resolve().parent.parent
-    dotenv.load_dotenv(os.path.join(BASE_DIR, ".env.local"))
+    skip_dotenv = os.environ.get("DJANGO_SKIP_DOTENV", "False").lower() in ("true", "1", "yes")
+    if not skip_dotenv:
+        dotenv.load_dotenv(os.path.join(BASE_DIR, ".env.local"))
 
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
     try:

@@ -1,12 +1,14 @@
 'use client';
 
 import React from 'react';
-import { BadgeCheck, Receipt, Download, Clock, Printer, X } from 'lucide-react';
+import { BadgeCheck, Receipt, Eye, Clock } from 'lucide-react';
 import Link from 'next/link';
 import * as Types from '@/lib/types';
+import { ReportCardPDF } from '@/components/features/grading/ReportCardPDF';
 
 interface StudentProfileHeaderProps {
     student: any;
+    settings: Types.Settings;
     selectedSession: string;
     setSelectedSession: (s: string) => void;
     availableSessions: string[];
@@ -20,6 +22,7 @@ interface StudentProfileHeaderProps {
 
 export const StudentProfileHeader: React.FC<StudentProfileHeaderProps> = ({
     student,
+    settings,
     selectedSession, setSelectedSession, availableSessions,
     selectedTerm, setSelectedTerm, availableTerms,
     isResultPublished, myScore,
@@ -80,15 +83,28 @@ export const StudentProfileHeader: React.FC<StudentProfileHeaderProps> = ({
                         </button>
                     </Link>
                     {isResultPublished ? (
-                        <button
-                            onClick={() => {
-                                if (myScore) setShowReportCard(true);
-                            }}
-                            className="w-full sm:w-auto bg-brand-600 hover:bg-brand-700 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-brand-200 transition-all text-sm"
-                        >
-                            <Download size={16} />
-                            Report Card
-                        </button>
+                        <>
+                            <button
+                                onClick={() => {
+                                    if (myScore) setShowReportCard(true);
+                                }}
+                                className="w-full sm:w-auto bg-brand-600 hover:bg-brand-700 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-brand-200 transition-all text-sm"
+                            >
+                                <Eye size={16} />
+                                View Report Card
+                            </button>
+                            <ReportCardPDF
+                                reportId={myScore?.id}
+                                session={selectedSession}
+                                term={selectedTerm}
+                                studentName={student?.names}
+                                schoolName={settings.school_name}
+                                variant="secondary"
+                                label="Download PDF"
+                                successMessage="Report card downloaded successfully"
+                                className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-bold text-sm"
+                            />
+                        </>
                     ) : (
                         <button
                             disabled

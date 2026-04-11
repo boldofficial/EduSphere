@@ -24,6 +24,12 @@ type PaymentPayload = Partial<Types.Payment> & {
     items_input?: Types.PaymentLineItem[];
 };
 
+export interface BursaryPeriodFilters extends Record<string, unknown> {
+    session?: string;
+    term?: string;
+    include_all_periods?: boolean;
+}
+
 const normalizePayment = (payment: PaymentApiResponse): Types.Payment => {
     const method = payment?.method === 'online' ? 'online' : payment?.method || 'cash';
     const lineItems = payment?.lineItems || payment?.line_items || [];
@@ -71,10 +77,10 @@ const toBackendPaymentPayload = (item: PaymentPayload) => {
 // =============================================
 // FEES
 // =============================================
-export function useFees() {
+export function useFees(filters?: BursaryPeriodFilters) {
     return useQuery({
-        queryKey: queryKeys.fees,
-        queryFn: () => fetchAll<Types.FeeStructure>('bursary/fees/'),
+        queryKey: [...queryKeys.fees, filters || {}],
+        queryFn: () => fetchAll<Types.FeeStructure>('fees/', filters),
     });
 }
 
@@ -82,7 +88,7 @@ export function useCreateFee() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (item: Types.FeeStructure) => {
-            const response = await apiClient.post('bursary/fees/', item);
+            const response = await apiClient.post('fees/', item);
             return response.data;
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.fees }); },
@@ -93,7 +99,7 @@ export function useUpdateFee() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async ({ id, updates }: { id: string; updates: Partial<Types.FeeStructure> }) => {
-            const response = await apiClient.patch(`bursary/fees/${id}/`, updates);
+            const response = await apiClient.patch(`fees/${id}/`, updates);
             return response.data;
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.fees }); },
@@ -104,7 +110,7 @@ export function useDeleteFee() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (id: string) => {
-            await apiClient.delete(`bursary/fees/${id}/`);
+            await apiClient.delete(`fees/${id}/`);
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.fees }); },
     });
@@ -113,21 +119,39 @@ export function useDeleteFee() {
 // =============================================
 // PAYMENTS
 // =============================================
-export function usePayments() {
+export interface PaymentFilters extends BursaryPeriodFilters {
+    student?: string;
+}
+
+export function usePayments(filters?: PaymentFilters) {
     return useQuery({
-        queryKey: queryKeys.payments,
+        queryKey: [...queryKeys.payments, filters || {}],
         queryFn: async () => {
-            const rows = await fetchAll<PaymentApiResponse>('bursary/payments/');
+            const rows = await fetchAll<PaymentApiResponse>('payments/', filters);
             return rows.map(normalizePayment);
         },
     });
 }
 
-export function usePaginatedPayments(page = 1, pageSize = 50, studentId = '') {
+export function usePaginatedPayments(
+    page = 1,
+    pageSize = 50,
+    studentOrFilters: string | (BursaryPeriodFilters & { studentId?: string }) = '',
+) {
+    const filters =
+        typeof studentOrFilters === 'string'
+            ? { studentId: studentOrFilters }
+            : (studentOrFilters || {});
+
     return useQuery({
-        queryKey: [...queryKeys.payments, { page, pageSize, studentId }],
+        queryKey: [...queryKeys.payments, { page, pageSize, ...filters }],
         queryFn: async () => {
-            const response = await fetchPaginated<PaymentApiResponse>('bursary/payments/', page, pageSize, { student: studentId });
+            const response = await fetchPaginated<PaymentApiResponse>('payments/', page, pageSize, {
+                student: filters.studentId,
+                session: filters.session,
+                term: filters.term,
+                include_all_periods: filters.include_all_periods,
+            });
             return {
                 ...response,
                 results: (response?.results || []).map(normalizePayment),
@@ -141,7 +165,7 @@ export function useCreatePayment() {
     return useMutation({
         mutationFn: async (item: PaymentPayload) => {
             const payload = toBackendPaymentPayload(item);
-            const response = await apiClient.post('bursary/payments/', payload);
+            const response = await apiClient.post('payments/', payload);
             return normalizePayment(response.data);
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.payments }); },
@@ -153,7 +177,7 @@ export function useUpdatePayment() {
     return useMutation({
         mutationFn: async ({ id, updates }: { id: string; updates: PaymentPayload }) => {
             const payload = toBackendPaymentPayload(updates);
-            const response = await apiClient.patch(`bursary/payments/${id}/`, payload);
+            const response = await apiClient.patch(`payments/${id}/`, payload);
             return normalizePayment(response.data);
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.payments }); },
@@ -164,7 +188,7 @@ export function useDeletePayment() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (id: string) => {
-            await apiClient.delete(`bursary/payments/${id}/`);
+            await apiClient.delete(`payments/${id}/`);
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.payments }); },
     });
@@ -177,7 +201,7 @@ export function useFinancialStats(session: string, term: string, enabled = true)
     return useQuery({
         queryKey: queryKeys.bursaryDashboard(session, term),
         queryFn: async () => {
-            const response = await apiClient.get('bursary/dashboard/financial-stats/', {
+            const response = await apiClient.get('dashboard/financial-stats/', {
                 params: { session, term }
             });
             return response.data as Types.FinancialStats;
@@ -189,10 +213,10 @@ export function useFinancialStats(session: string, term: string, enabled = true)
 // =============================================
 // EXPENSES
 // =============================================
-export function useExpenses() {
+export function useExpenses(filters?: BursaryPeriodFilters) {
     return useQuery({
-        queryKey: queryKeys.expenses,
-        queryFn: () => fetchAll<Types.Expense>('bursary/expenses/'),
+        queryKey: [...queryKeys.expenses, filters || {}],
+        queryFn: () => fetchAll<Types.Expense>('expenses/', filters),
     });
 }
 
@@ -200,7 +224,7 @@ export function useCreateExpense() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (item: Types.Expense) => {
-            const response = await apiClient.post('bursary/expenses/', item);
+            const response = await apiClient.post('expenses/', item);
             return response.data;
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.expenses }); },
@@ -211,7 +235,7 @@ export function useUpdateExpense() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async ({ id, updates }: { id: string; updates: Partial<Types.Expense> }) => {
-            const response = await apiClient.patch(`bursary/expenses/${id}/`, updates);
+            const response = await apiClient.patch(`expenses/${id}/`, updates);
             return response.data;
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.expenses }); },
@@ -222,7 +246,7 @@ export function useDeleteExpense() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (id: string) => {
-            await apiClient.delete(`bursary/expenses/${id}/`);
+            await apiClient.delete(`expenses/${id}/`);
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.expenses }); },
     });
@@ -234,7 +258,7 @@ export function useDeleteExpense() {
 export function useScholarships() {
     return useQuery({
         queryKey: queryKeys.scholarships,
-        queryFn: () => fetchAll<Types.Scholarship>('bursary/scholarships/'),
+        queryFn: () => fetchAll<Types.Scholarship>('scholarships/'),
     });
 }
 
@@ -242,7 +266,7 @@ export function useCreateScholarship() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (item: Types.Scholarship) => {
-            const response = await apiClient.post('bursary/scholarships/', item);
+            const response = await apiClient.post('scholarships/', item);
             return response.data;
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.scholarships }); },
@@ -253,7 +277,7 @@ export function useUpdateScholarship() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async ({ id, updates }: { id: string; updates: Partial<Types.Scholarship> }) => {
-            const response = await apiClient.patch(`bursary/scholarships/${id}/`, updates);
+            const response = await apiClient.patch(`scholarships/${id}/`, updates);
             return response.data;
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.scholarships }); },
@@ -264,84 +288,8 @@ export function useDeleteScholarship() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (id: string) => {
-            await apiClient.delete(`bursary/scholarships/${id}/`);
+            await apiClient.delete(`scholarships/${id}/`);
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.scholarships }); },
-    });
-}
-
-// =============================================
-// REVENUE FORECASTING (Phase 2)
-// =============================================
-
-export function useAcademicTerms() {
-    return useQuery({
-        queryKey: queryKeys.academicTerms,
-        queryFn: () => fetchAll<Types.AcademicTerm>('academic/academic-terms/'),
-    });
-}
-
-export function useRevenueSummary(termId?: string) {
-    return useQuery({
-        queryKey: queryKeys.revenueSummary(termId),
-        queryFn: async () => {
-            const response = await apiClient.get('bursary/dashboard/revenue-summary/', {
-                params: { term_id: termId }
-            });
-            return response.data as Types.RevenueSummary;
-        },
-        enabled: true, // Always load something, backend defaults to current if termId is missing
-    });
-}
-
-export function useRevenueChart(termId?: string) {
-    return useQuery({
-        queryKey: queryKeys.revenueForecast(termId),
-        queryFn: async () => {
-            const response = await apiClient.get('bursary/dashboard/revenue-chart/', {
-                params: { term_id: termId }
-            });
-            return response.data as Types.RevenueChartData;
-        },
-        enabled: true,
-    });
-}
-
-// =============================================
-// BULK DISCOUNTS (Phase 2)
-// =============================================
-
-export function usePreviewBulkDiscount() {
-    return useMutation({
-        mutationFn: async (payload: {
-            scope: { type: string; ids: string[] };
-            fee_item: string;
-            discount_type: string;
-            value: number;
-        }) => {
-            const response = await apiClient.post('bursary/discounts/preview/', payload);
-            return response.data;
-        },
-    });
-}
-
-export function useApplyBulkDiscount() {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: async (payload: {
-            scope: { type: string; ids: string[] };
-            fee_item: string;
-            discount_type: string;
-            value: number;
-            reason: string;
-            override: boolean;
-        }) => {
-            const response = await apiClient.post('bursary/discounts/bulk/', payload);
-            return response.data;
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: queryKeys.fees });
-            queryClient.invalidateQueries({ queryKey: queryKeys.payments });
-        },
     });
 }

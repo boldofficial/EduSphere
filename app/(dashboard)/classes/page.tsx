@@ -34,7 +34,7 @@ export default function ClassesPage() {
         <ClassesView
             classes={classes}
             teachers={teachers}
-            onUpdate={(cls) => updateClassMutation.mutate({ id: cls.id, updates: cls })}
+            onUpdate={async (cls) => { await updateClassMutation.mutateAsync({ id: cls.id, updates: cls }); }}
             onCreate={async (cls) => { await createClassMutation.mutateAsync(cls); }}
             onDelete={async (id) => { await deleteClassMutation.mutateAsync(id); }}
         />

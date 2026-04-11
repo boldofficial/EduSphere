@@ -16,6 +16,7 @@ import {
     useAnnouncements, useEvents
 } from '@/lib/hooks/use-data';
 import { ReportCardTemplate } from './grading/ReportCardTemplate';
+import { ReportCardPDF } from './grading/ReportCardPDF';
 import * as Utils from '@/lib/utils';
 import * as Types from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -37,10 +38,10 @@ export const StudentDashboardView = () => {
     const { data: classes = [] } = useClasses();
     const { data: teachers = [] } = useTeachers();
     const { data: settings = Utils.INITIAL_SETTINGS } = useSettings();
-    const { data: payments = [] } = usePayments();
-    const { data: fees = [] } = useFees();
-    const { data: scores = [] } = useScores();
-    const { data: attendance = [] } = useAttendance();
+    const { data: payments = [] } = usePayments({ include_all_periods: true });
+    const { data: fees = [] } = useFees({ include_all_periods: true });
+    const { data: scores = [] } = useScores({ include_all_periods: true });
+    const { data: attendance = [] } = useAttendance({ include_all_periods: true });
     const { data: announcements = [] } = useAnnouncements();
     const { data: events = [] } = useEvents();
 
@@ -74,11 +75,6 @@ export const StudentDashboardView = () => {
     const classTeacher = teachers.find((t: Types.Teacher) => String(t.id) === String(currentClass?.class_teacher_id));
     const classmates = students.filter((s: Types.Student) => s.class_id === student.class_id);
 
-    // Calculations
-    const totalBilled = fees.filter(f => f.class_id === student.class_id || !f.class_id).reduce((acc, f) => acc + f.amount, 0);
-    const totalPaid = payments.filter(p => p.student_id === student.id).reduce((acc, p) => acc + p.amount, 0);
-    const balance = totalBilled - totalPaid;
-
     const availableSessions = useMemo(() => {
         const sessions = new Set(scores.filter(s => s.student_id === student.id).map(s => s.session));
         if (settings.current_session) sessions.add(settings.current_session);
@@ -88,27 +84,48 @@ export const StudentDashboardView = () => {
     const availableTerms = ['First Term', 'Second Term', 'Third Term'];
     const targetSession = selectedSession || settings.current_session;
     const targetTerm = selectedTerm || settings.current_term;
+    const scopedSettings = useMemo(
+        () => ({
+            ...settings,
+            current_session: targetSession,
+            current_term: targetTerm,
+        }),
+        [settings, targetSession, targetTerm],
+    );
     const myScore = scores.find(s => s.student_id === student.id && s.session === targetSession && s.term === targetTerm);
     const isResultPublished = myScore?.is_passed ?? false;
     const average = myScore?.average || 0;
+    const myHistoryScores = useMemo(
+        () => scores.filter(s => s.student_id === student.id),
+        [scores, student.id]
+    );
 
     const previousTermData = useMemo(() => {
         const terms = settings.terms || ['First Term', 'Second Term', 'Third Term'];
-        const currentTermIndex = terms.indexOf(settings.current_term);
+        const currentTermIndex = terms.indexOf(targetTerm);
         let prevTerm = currentTermIndex > 0 ? terms[currentTermIndex - 1] : terms[terms.length - 1];
-        let prevSession = currentTermIndex > 0 ? settings.current_session :
-            (parseInt(settings.current_session.split('/')[0]) - 1) + '/' + (parseInt(settings.current_session.split('/')[1]) - 1);
+        let prevSession = currentTermIndex > 0 ? targetSession :
+            (parseInt(targetSession.split('/')[0]) - 1) + '/' + (parseInt(targetSession.split('/')[1]) - 1);
 
-        const prevScore = scores.find(s => s.student_id === student.id && s.term === prevTerm && (s.session === settings.current_session || s.session === prevSession));
+        const prevScore = scores.find(s => s.student_id === student.id && s.term === prevTerm && (s.session === targetSession || s.session === prevSession));
         return {
             average: prevScore?.average || null,
             position: prevScore ? Utils.getStudentPosition(student.id, students, scores, prevScore.session, prevScore.term) : null,
             attendance: prevScore?.attendance_present && prevScore?.attendance_total ? Math.round((prevScore.attendance_present / prevScore.attendance_total) * 100) : null
         };
-    }, [scores, student.id, students, settings]);
+    }, [scores, student.id, students, settings.terms, targetSession, targetTerm]);
 
-    const position = useMemo(() => isResultPublished ? Utils.getStudentPosition(student.id, students, scores, settings.current_session, settings.current_term) : null, [student.id, students, scores, settings, isResultPublished]);
+    const position = useMemo(() => isResultPublished ? Utils.getStudentPosition(student.id, students, scores, targetSession, targetTerm) : null, [student.id, students, scores, targetSession, targetTerm, isResultPublished]);
     const myAttendance = myScore?.attendance_present && myScore?.attendance_total ? Math.round((myScore.attendance_present / myScore.attendance_total) * 100) : 0;
+    const { balance } = useMemo(
+        () => Utils.getStudentBalance(student, fees, payments, targetSession, targetTerm),
+        [student, fees, payments, targetSession, targetTerm],
+    );
+
+    const periodPayments = useMemo(
+        () => payments.filter(p => p.student_id === student.id && p.session === targetSession && p.term === targetTerm),
+        [payments, student.id, targetSession, targetTerm],
+    );
 
     const stats = [
         { label: 'Term Average', value: isResultPublished ? `${average.toFixed(1)}%` : '--', icon: TrendingUp, color: 'bg-green-500', trend: previousTermData.average !== null ? average - previousTermData.average : null, trendSuffix: '%' },
@@ -118,9 +135,9 @@ export const StudentDashboardView = () => {
     ];
 
     const recentAttendance = useMemo(() => attendance
-        .filter(a => a.class_id === student.class_id && a.session === settings.current_session && a.term === settings.current_term)
+        .filter(a => a.class_id === student.class_id && a.session === targetSession && a.term === targetTerm)
         .sort((a, b) => b.date.localeCompare(a.date)).slice(0, 7)
-        .map(a => ({ date: a.date, status: a.records.find(r => r.student_id === student.id)?.status || 'absent' })), [attendance, student.id, student.class_id, settings]);
+        .map(a => ({ date: a.date, status: a.records.find(r => r.student_id === student.id)?.status || 'absent' })), [attendance, student.id, student.class_id, targetSession, targetTerm]);
 
     const eventsData = useMemo(() => {
         const today = new Date().toISOString().split('T')[0];
@@ -150,12 +167,30 @@ export const StudentDashboardView = () => {
                     <div className="w-full max-w-5xl flex justify-between items-center mb-6 text-white no-print">
                         <h2 className="text-2xl font-bold">Report Card Preview</h2>
                         <div className="flex gap-4">
+                            <ReportCardPDF
+                                reportId={myScore?.id}
+                                session={targetSession}
+                                term={targetTerm}
+                                studentName={student?.names}
+                                schoolName={scopedSettings.school_name}
+                                variant="secondary"
+                                label="Download PDF"
+                                successMessage="Report card downloaded successfully"
+                                className="text-sm font-semibold"
+                            />
                             <Button onClick={() => window.print()} variant="secondary" className="flex gap-2"><Printer size={16} /> Print</Button>
                             <Button onClick={() => setShowReportCard(false)} variant="danger" className="flex gap-2"><X size={16} /> Close</Button>
                         </div>
                     </div>
                     <div className="w-full max-w-4xl bg-white rounded-xl shadow-2xl overflow-hidden mb-12">
-                        <ReportCardTemplate student={student} currentClass={currentClass} score={myScore} settings={settings} subjects={classSubjects} />
+                        <ReportCardTemplate
+                            student={student}
+                            currentClass={currentClass}
+                            score={myScore}
+                            settings={scopedSettings}
+                            subjects={classSubjects}
+                            historyScores={myHistoryScores}
+                        />
                     </div>
                 </div>
             </div>
@@ -166,6 +201,7 @@ export const StudentDashboardView = () => {
         <div className="space-y-6 lg:space-y-8 bg-white min-h-screen rounded-2xl p-6 lg:p-8 border border-gray-100 shadow-sm">
             <StudentProfileHeader
                 student={student}
+                settings={scopedSettings}
                 selectedSession={targetSession}
                 setSelectedSession={setSelectedSession}
                 availableSessions={availableSessions}
@@ -193,7 +229,7 @@ export const StudentDashboardView = () => {
 
                     <StudentFeedWidgets
                         announcements={myAnnouncements}
-                        payments={payments}
+                        payments={periodPayments}
                         studentId={student.id}
                     />
                 </div>
@@ -206,7 +242,7 @@ export const StudentDashboardView = () => {
                         classSubjects={classSubjects}
                         recentAttendance={recentAttendance}
                         upcomingEvents={eventsData.upcoming}
-                        nextTermBegins={settings.next_term_begins}
+                        nextTermBegins={scopedSettings.next_term_begins}
                     />
 
                     <StudentJourney studentId={student.id} />

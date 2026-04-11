@@ -81,7 +81,7 @@ class RegisterSchoolView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        print(f"!!! Hits RegisterSchoolView POST: {request.data.get('email')}")
+        logger.info("School registration request received.")
         serializer = RegisterSchoolSerializer(data=request.data)
         if not serializer.is_valid():
             logger.error(f"Registration validation failed: {serializer.errors}")

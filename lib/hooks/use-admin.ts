@@ -18,7 +18,7 @@ export function useSettings() {
         queryKey: queryKeys.settings,
         queryFn: async () => {
             try {
-                const response = await apiClient.get('core/settings/');
+                const response = await apiClient.get('settings/');
                 return response.data;
             } catch (error) {
                 console.warn('Failed to fetch settings, using defaults', error);
@@ -31,8 +31,8 @@ export function useSettings() {
 export function useUpdateSettings() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async (settings: Types.Settings) => {
-            const response = await apiClient.put('core/settings/', settings);
+        mutationFn: async (settings: any) => {
+            const response = await apiClient.put('settings/', settings);
             return response.data;
         },
         onSuccess: () => {
@@ -45,7 +45,7 @@ export function usePublicStats() {
     return useQuery({
         queryKey: queryKeys.publicStats,
         queryFn: async () => {
-            const response = await apiClient.get('core/public-stats/');
+            const response = await apiClient.get('public-stats/');
             return response.data;
         },
     });
@@ -315,20 +315,6 @@ export function useResolveTicket() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.supportTickets });
-        },
-    });
-}
-
-export function useActivityLogs(action?: string) {
-    return useQuery({
-        queryKey: queryKeys.activityLogs(action),
-        queryFn: async () => {
-            const url = action ? `core/activity-logs/?action=${action}` : 'core/activity-logs/';
-            const response = await apiClient.get(url);
-            if (response.data && typeof response.data === 'object' && 'results' in response.data) {
-                return response.data.results;
-            }
-            return Array.isArray(response.data) ? response.data : [];
         },
     });
 }

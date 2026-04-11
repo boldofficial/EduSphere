@@ -20,6 +20,21 @@ services:
     restart: always
     networks:
       - coolify
+  pgbouncer:
+    image: edoburu/pgbouncer
+    container_name: registra_pgbouncer
+    environment:
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - MAX_CLIENT_CONN=200
+      - DEFAULT_POOL_SIZE=25
+      - MIN_POOL_SIZE=5
+      - POOL_MODE=transaction
+      - AUTH_TYPE=trust
+    depends_on:
+      - db
+    networks:
+      - coolify
+    restart: always
   backend:
     build:
       context: ./backend
@@ -35,6 +50,9 @@ services:
     depends_on:
       - db
       - redis
+      - pgbouncer
+    environment:
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@pgbouncer:6432/${POSTGRES_DB}
     restart: always
     labels:
       - traefik.enable=true
@@ -84,6 +102,9 @@ services:
     depends_on:
       - db
       - redis
+      - pgbouncer
+    environment:
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@pgbouncer:6432/${POSTGRES_DB}
     restart: always
     networks:
       - coolify
@@ -98,6 +119,9 @@ services:
     depends_on:
       - db
       - redis
+      - pgbouncer
+    environment:
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@pgbouncer:6432/${POSTGRES_DB}
     restart: always
     networks:
       - coolify

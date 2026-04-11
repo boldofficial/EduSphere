@@ -8,15 +8,18 @@ import {
     usePublicPaymentOptions,
     useCreatePayment, useCreateFee, useCreateExpense,
     useDeletePayment, useDeleteFee, useDeleteExpense,
-    useUpdateStudent, usePaginatedStudents, usePaginatedPayments
+    useUpdateStudent, usePaginatedStudents, usePaginatedPayments, useStudents
 } from '@/lib/hooks/use-data';
 import * as Utils from '@/lib/utils';
 import * as Types from '@/lib/types';
 
 export default function BursaryPage() {
     const { currentRole, currentUser } = useSchoolStore();
+    const isStudentOrParent = currentRole === 'student' || currentRole === 'parent';
 
     const { data: classes = [] } = useClasses();
+    const { data: settings = Utils.INITIAL_SETTINGS } = useSettings();
+    const { data: linkedStudents = [] } = useStudents(isStudentOrParent);
     const [studentPage, setStudentPage] = useState(1);
     const [selectedClassId, setSelectedClassId] = useState('');
 
@@ -27,14 +30,42 @@ export default function BursaryPage() {
     const students = studentResponse?.results || [];
     const studentTotalPages = studentResponse ? Math.ceil(studentResponse.count / 50) : 0;
 
-    const { data: fees = [] } = useFees();
+    const student = useMemo(() => {
+        if (!isStudentOrParent) return null;
+
+        const profileId = currentUser?.profile_id || currentUser?.student_id;
+        if (profileId) {
+            const byId = linkedStudents.find((s: Types.Student) => s.id === profileId);
+            if (byId) return byId;
+        }
+
+        if (currentRole === 'parent' && currentUser?.email) {
+            const byParentEmail = linkedStudents.find((s: Types.Student) => s.parent_email === currentUser.email);
+            if (byParentEmail) return byParentEmail;
+        }
+
+        return linkedStudents[0] || null;
+    }, [isStudentOrParent, currentRole, currentUser, linkedStudents]);
+
+    const { data: fees = [] } = useFees(isStudentOrParent ? { include_all_periods: true } : undefined);
 
     const [paymentPage, setPaymentPage] = useState(1);
-    const { data: paymentResponse } = usePaginatedPayments(paymentPage, 10, currentUser?.student_id || '');
+    const { data: paymentResponse } = usePaginatedPayments(
+        paymentPage,
+        10,
+        isStudentOrParent
+            ? {
+                studentId: student?.id || currentUser?.student_id || '',
+                include_all_periods: true,
+            }
+            : {
+                session: settings.current_session,
+                term: settings.current_term,
+            },
+    );
     const payments = paymentResponse?.results || [];
     const paymentTotalPages = paymentResponse ? Math.ceil(paymentResponse.count / 10) : 0;
     const { data: expenses = [] } = useExpenses();
-    const { data: settings = Utils.INITIAL_SETTINGS } = useSettings();
     const { data: paymentOptions = null } = usePublicPaymentOptions();
 
     const { mutate: addPayment } = useCreatePayment();
@@ -44,27 +75,6 @@ export default function BursaryPage() {
     const { mutate: deleteFee } = useDeleteFee();
     const { mutate: deleteExpense } = useDeleteExpense();
     const { mutate: updateStudent } = useUpdateStudent();
-
-    // For students/parents, show simplified invoice view
-    const isStudentOrParent = currentRole === 'student' || currentRole === 'parent';
-
-    // Get the student for student/parent roles
-    const student = useMemo(() => {
-        if (!isStudentOrParent) return null;
-
-        // Use profile_id (the specific Student ID) first, then fallback to student_id
-        const profileId = currentUser?.profile_id || currentUser?.student_id;
-
-        if (profileId) {
-            // Check if student is in the current page results
-            const foundInList = students.find((s: Types.Student) => s.id === profileId);
-            if (foundInList) return foundInList;
-        }
-
-        // If not found in list, we might need to fetch it specifically or rely on mock/null
-        // Since we are in the student's own view, being unauthenticated or unprofiled is the edge case
-        return students[0] || null;
-    }, [isStudentOrParent, currentUser, students]);
 
     const studentClass = useMemo(() => {
         if (!student) return undefined;
@@ -81,6 +91,10 @@ export default function BursaryPage() {
                 settings={settings}
             />
         );
+    }
+
+    if (isStudentOrParent && !student) {
+        return <div className="p-8 text-center text-gray-500">No linked student profile found.</div>;
     }
 
     return (

@@ -215,6 +215,10 @@ class ReportCardPDFGenerator:
         styles = self._get_styles()
         elements = []
         student = report.student
+        is_early_years = (
+            bool(report.student_class)
+            and getattr(report.student_class, "report_mode", "numeric") == "early_years"
+        )
 
         # 1. Header Section
         logo = self._get_image(self.settings.logo_media, width=1.2 * inch) if self.settings else None
@@ -270,48 +274,100 @@ class ReportCardPDFGenerator:
         elements.append(bio_table)
         elements.append(Spacer(1, 0.2 * inch))
 
-        # 3. Scores Table
-        score_header = ["Subject", "CA1", "CA2", "Exam", "Total", "Grade", "Remark"]
-        score_data = [score_header]
+        # 3. Academic/Learning Table
+        if is_early_years:
+            observation_header = ["Learning Area", "Development Level", "Observation", "Next Step"]
+            observation_rows = [observation_header]
+            observations = report.early_years_observations or []
 
-        scores = report.scores.all().select_related("subject")
-        for s in scores:
-            score_data.append([s.subject.name, s.ca1, s.ca2, s.exam, s.total, s.grade, s.comment])
+            for item in observations:
+                area = item.get("area") or "-"
+                status = item.get("status") or "-"
+                comment = item.get("comment") or "-"
+                next_step = item.get("next_step") or "-"
+                observation_rows.append([area, status, comment, next_step])
 
-        score_table = Table(
-            score_data, colWidths=[2 * inch, 0.6 * inch, 0.6 * inch, 0.6 * inch, 0.6 * inch, 0.6 * inch, 1.4 * inch]
-        )
-        score_table.setStyle(
-            TableStyle(
-                [
-                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1e293b")),
-                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
-                    ("ALIGN", (1, 0), (-1, -1), "CENTER"),
-                    ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
-                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                    ("FONTSIZE", (0, 0), (-1, 0), 9),
-                    ("FONTSIZE", (0, 1), (-1, -1), 8),
-                    ("BOTTOMPADDING", (0, 0), (-1, 0), 8),
-                    ("TOPPADDING", (0, 0), (-1, -1), 6),
-                ]
+            if len(observation_rows) == 1:
+                observation_rows.append(
+                    ["General Development", "Developing", "Observation pending.", "Continue guided classroom activities."]
+                )
+
+            observation_table = Table(
+                observation_rows,
+                colWidths=[1.4 * inch, 1.0 * inch, 2.2 * inch, 1.4 * inch],
             )
-        )
-        elements.append(score_table)
-        elements.append(Spacer(1, 0.2 * inch))
+            observation_table.setStyle(
+                TableStyle(
+                    [
+                        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#0f766e")),
+                        ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+                        ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#94a3b8")),
+                        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                        ("FONTSIZE", (0, 0), (-1, 0), 8.5),
+                        ("FONTSIZE", (0, 1), (-1, -1), 8),
+                        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f0fdfa")]),
+                    ]
+                )
+            )
+            elements.append(observation_table)
+            elements.append(Spacer(1, 0.2 * inch))
+
+            summary_data = [
+                [
+                    f"ATTENDANCE: {report.attendance_present}/{report.attendance_total}",
+                    f"CLASS: {report.student_class.name if report.student_class else 'N/A'}",
+                    f"SESSION/TERM: {report.session} {report.term}",
+                ],
+                [
+                    "REPORT TYPE: EARLY YEARS NARRATIVE",
+                    "",
+                    "OUTCOME: DEVELOPMENT TRACKED",
+                ],
+            ]
+        else:
+            score_header = ["Subject", "CA1", "CA2", "Exam", "Total", "Grade", "Remark"]
+            score_data = [score_header]
+
+            scores = report.scores.all().select_related("subject")
+            for s in scores:
+                score_data.append([s.subject.name, s.ca1, s.ca2, s.exam, s.total, s.grade, s.comment])
+
+            score_table = Table(
+                score_data, colWidths=[2 * inch, 0.6 * inch, 0.6 * inch, 0.6 * inch, 0.6 * inch, 0.6 * inch, 1.4 * inch]
+            )
+            score_table.setStyle(
+                TableStyle(
+                    [
+                        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1e293b")),
+                        ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+                        ("ALIGN", (1, 0), (-1, -1), "CENTER"),
+                        ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
+                        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                        ("FONTSIZE", (0, 0), (-1, 0), 9),
+                        ("FONTSIZE", (0, 1), (-1, -1), 8),
+                        ("BOTTOMPADDING", (0, 0), (-1, 0), 8),
+                        ("TOPPADDING", (0, 0), (-1, -1), 6),
+                    ]
+                )
+            )
+            elements.append(score_table)
+            elements.append(Spacer(1, 0.2 * inch))
+
+            summary_data = [
+                [
+                    f"TOTAL SCORE: {report.total_score}",
+                    f"AVERAGE: {report.average:.1f}%",
+                    f"POSITION: {report.position if report.position else 'N/A'}",
+                ],
+                [
+                    f"ATTENDANCE: {report.attendance_present}/{report.attendance_total}",
+                    "",
+                    f"OUTCOME: {'PASS' if report.average >= (self.settings.promotion_threshold if self.settings else 40) else 'FAIL'}",
+                ],
+            ]
 
         # 4. Summary & Attendance
-        summary_data = [
-            [
-                f"TOTAL SCORE: {report.total_score}",
-                f"AVERAGE: {report.average:.1f}%",
-                f"POSITION: {report.position if report.position else 'N/A'}",
-            ],
-            [
-                f"ATTENDANCE: {report.attendance_present}/{report.attendance_total}",
-                "",
-                f"OUTCOME: {'PASS' if report.average >= (self.settings.promotion_threshold if self.settings else 40) else 'FAIL'}",
-            ],
-        ]
         summary_table = Table(summary_data, colWidths=[2 * inch, 2 * inch, 2 * inch])
         summary_table.setStyle(
             TableStyle(
@@ -325,6 +381,108 @@ class ReportCardPDFGenerator:
         )
         elements.append(summary_table)
         elements.append(Spacer(1, 0.3 * inch))
+
+        # 4b. Term Progression Table (recent 6 terms)
+        def _term_order(term_name):
+            key = (term_name or "").lower()
+            if "first" in key:
+                return 1
+            if "second" in key:
+                return 2
+            if "third" in key:
+                return 3
+            return 99
+
+        def _session_start(session_name):
+            try:
+                return int(str(session_name).split("/")[0])
+            except Exception:
+                return 0
+
+        history = list(
+            ReportCard.objects.filter(school=self.school, student=student).only(
+                "id",
+                "session",
+                "term",
+                "average",
+                "position",
+                "attendance_present",
+                "attendance_total",
+                "is_passed",
+                "early_years_observations",
+            )
+        )
+        history.sort(key=lambda rc: (_session_start(rc.session), _term_order(rc.term)))
+        history = history[-6:]
+
+        if history:
+            progression_title = ParagraphStyle(
+                "ProgressionTitle",
+                parent=styles["Heading4"],
+                textColor=colors.HexColor("#1e3a8a"),
+                spaceAfter=6,
+                fontName="Helvetica-Bold",
+            )
+            elements.append(Paragraph("TERM PROGRESSION", progression_title))
+
+            progression_data = [["Session", "Term", "Average", "Position", "Attendance", "Growth", "Status"]]
+            for idx, row in enumerate(history):
+                previous = history[idx - 1] if idx > 0 else None
+                growth = "-"
+                if previous is not None:
+                    delta = (row.average or 0) - (previous.average or 0)
+                    growth = f"{delta:+.1f}"
+
+                attendance_pct = "-"
+                if row.attendance_total:
+                    attendance_pct = f"{round((row.attendance_present / row.attendance_total) * 100)}%"
+
+                progression_data.append(
+                    [
+                        row.session,
+                        row.term,
+                        f"{(row.average or 0):.1f}%",
+                        row.position or "-",
+                        attendance_pct,
+                        growth,
+                        "Published" if row.is_passed else "Pending",
+                    ]
+                )
+
+            progression_table = Table(
+                progression_data,
+                colWidths=[0.95 * inch, 0.9 * inch, 0.8 * inch, 0.75 * inch, 0.85 * inch, 0.75 * inch, 0.95 * inch],
+            )
+            progression_style = TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1d4ed8")),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+                    ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                    ("FONTSIZE", (0, 0), (-1, 0), 8),
+                    ("FONTSIZE", (0, 1), (-1, -1), 7.5),
+                    ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#cbd5e1")),
+                    ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f8fafc")]),
+                ]
+            )
+
+            for row_idx, row in enumerate(progression_data[1:], start=1):
+                growth_val = row[5]
+                if isinstance(growth_val, str) and growth_val not in ("-", ""):
+                    if growth_val.startswith("+"):
+                        progression_style.add("TEXTCOLOR", (5, row_idx), (5, row_idx), colors.HexColor("#047857"))
+                    elif growth_val.startswith("-"):
+                        progression_style.add("TEXTCOLOR", (5, row_idx), (5, row_idx), colors.HexColor("#be123c"))
+
+                status_val = row[6]
+                if status_val == "Published":
+                    progression_style.add("TEXTCOLOR", (6, row_idx), (6, row_idx), colors.HexColor("#047857"))
+                else:
+                    progression_style.add("TEXTCOLOR", (6, row_idx), (6, row_idx), colors.HexColor("#b45309"))
+
+            progression_table.setStyle(progression_style)
+            elements.append(progression_table)
+            elements.append(Spacer(1, 0.2 * inch))
 
         # 5. Remarks & Signatures
         remarks_style = ParagraphStyle("Remarks", parent=styles["Normal"], fontSize=9, italic=True)

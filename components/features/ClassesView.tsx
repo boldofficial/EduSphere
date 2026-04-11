@@ -11,7 +11,7 @@ import { useToast } from '@/components/providers/toast-provider';
 interface ClassesViewProps {
     classes: Types.Class[];
     teachers: Types.Teacher[];
-    onUpdate: (c: Types.Class) => void;
+    onUpdate: (c: Types.Class) => Promise<void>;
     onCreate?: (c: Types.Class) => Promise<void>;
     onDelete?: (id: string) => Promise<void>;
 }
@@ -46,7 +46,8 @@ export const ClassesView: React.FC<ClassesViewProps> = ({ classes, teachers, onU
             created_at: Date.now(),
             updated_at: Date.now(),
             name: '',
-            category: '',
+            category: 'Primary',
+            report_mode: 'numeric',
             class_teacher_id: null,
             subjects: []
         } as Types.Class);
@@ -76,7 +77,7 @@ export const ClassesView: React.FC<ClassesViewProps> = ({ classes, teachers, onU
                 }
             } else {
                 try {
-                    onUpdate({ ...editingClass, updated_at: Date.now() });
+                    await onUpdate({ ...editingClass, updated_at: Date.now() });
                     addToast('Class configuration updated', 'success');
                 } catch (error: any) {
                     addToast(`Failed to update class: ${error.message || 'Unknown error'}`, 'error');
@@ -192,6 +193,8 @@ export const ClassesView: React.FC<ClassesViewProps> = ({ classes, teachers, onU
                                     </div>
                                     <div className="border-t pt-4 flex justify-between items-center">
                                         <div className="flex items-center gap-2">
+                                            <span className="text-xs font-medium bg-cyan-50 px-2 py-1 rounded text-cyan-700 border border-cyan-100">{c.category || 'Primary'}</span>
+                                            <span className="text-xs font-medium bg-emerald-50 px-2 py-1 rounded text-emerald-700 border border-emerald-100">{c.report_mode === 'early_years' ? 'Early Years' : c.report_mode === 'hybrid' ? 'Hybrid' : 'Numeric'}</span>
                                             <span className="text-xs font-medium bg-gray-100 px-2 py-1 rounded text-gray-600">{subjectCount} Subjects</span>
                                             {onDelete && (
                                                 <button
@@ -215,7 +218,7 @@ export const ClassesView: React.FC<ClassesViewProps> = ({ classes, teachers, onU
             <Modal isOpen={!!editingClass} onClose={() => setEditingClass(null)} title={isCreating ? "Create New Class" : `Configure ${editingClass?.name}`} size="lg">
                 {editingClass && (
                     <form onSubmit={handleSave} className="space-y-6">
-                        {isCreating && (
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Class Name</label>
                                 <input
@@ -226,11 +229,38 @@ export const ClassesView: React.FC<ClassesViewProps> = ({ classes, teachers, onU
                                     required
                                 />
                             </div>
-                        )}
+                            <Select
+                                label="Class Category"
+                                value={editingClass.category || 'Primary'}
+                                onChange={e => {
+                                    const category = e.target.value;
+                                    const autoMode = category === 'Nursery' ? 'early_years' : (editingClass.report_mode || 'numeric');
+                                    setEditingClass({ ...editingClass, category, report_mode: autoMode });
+                                }}
+                            >
+                                <option value="Nursery">Nursery/Pre-School</option>
+                                <option value="Primary">Primary</option>
+                                <option value="JSS">Junior Secondary (JSS)</option>
+                                <option value="SSS_Science">Senior Secondary (Science)</option>
+                                <option value="SSS_Art">Senior Secondary (Art)</option>
+                                <option value="SSS_Commerce">Senior Secondary (Commerce)</option>
+                                <option value="Other">Other/General</option>
+                            </Select>
+                        </div>
+                        <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                            <Select
+                                label="Report Mode"
+                                value={editingClass.report_mode || 'numeric'}
+                                onChange={e => setEditingClass({ ...editingClass, report_mode: e.target.value as Types.Class['report_mode'] })}
+                            >
+                                <option value="numeric">Numeric Scores</option>
+                                <option value="early_years">Early Years Narrative</option>
+                                <option value="hybrid">Hybrid (Scores + Narrative)</option>
+                            </Select>
+                        </div>
                         <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
                             <Select label="Class Teacher" value={editingClass.class_teacher_id || ''} onChange={e => setEditingClass({ ...editingClass, class_teacher_id: e.target.value || null })}>
                                 <option value="">-- Select Teacher --</option>
-                                <option value="unassigned">No Teacher</option>
                                 {teachers.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                             </Select>
                         </div>

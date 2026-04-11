@@ -108,6 +108,9 @@ class Payment(TenantModel):
 
     class Meta:
         ordering = ["-date", "-created_at"]
+        indexes = [
+            models.Index(fields=["student", "session", "term"]),
+        ]
 
     def __str__(self):
         return f"Recpt#{self.reference} - {self.student.names} - {self.amount}"
@@ -147,6 +150,11 @@ class Expense(TenantModel):
 
     def __str__(self):
         return f"{self.title} - {self.amount}"
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["school", "date"]),
+        ]
 
 
 class AdmissionPackage(TenantModel):

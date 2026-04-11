@@ -157,15 +157,8 @@ class SettingsView(APIView):
         except PermissionDenied:
             raise
         except Exception as e:
-            # Fallback to demo if anything goes wrong during GET
-            return Response(
-                {
-                    "school_name": "Demo School (Emergency Fallback)",
-                    "subscription_status": "active",
-                    "current_session": "2025/2026",
-                    "error_hint": str(e),
-                }
-            )
+            logger.exception("Failed to load school settings: %s", e)
+            return Response({"error": "Failed to load settings"}, status=500)
 
     def put(self, request):
         # Security: Only authenticated admins can update settings

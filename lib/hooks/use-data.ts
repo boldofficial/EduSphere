@@ -122,6 +122,8 @@ export {
 export {
     useScores, useCreateScore, useUpdateScore, useDeleteScore,
     useAttendance, usePaginatedAttendance, useCreateAttendance, useUpdateAttendance, useDeleteAttendance,
+    useBulkImportScores, useBulkImportPreview, useAutoSaveScore, useScoreStatistics,
+    type BulkScoreImportData, type BulkScoreImportPayload, type ScoreStatistics,
 } from './use-scores';
 
 export {

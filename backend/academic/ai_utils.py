@@ -8,10 +8,10 @@ import os
 
 import requests
 
-logger = logging.getLogger(__name__)
-
-
 from django.conf import settings as django_settings
+from core.security_utils import sanitize_ai_prompt
+
+logger = logging.getLogger(__name__)
 
 
 def _get_ai_config():
@@ -54,10 +54,14 @@ def _get_ai_config():
 
 class AcademicAI:
     def __init__(self):
+        self.provider = "gemini"
+        self.model = None
+        self.openrouter_key = ""
+        self.openrouter_model = "google/gemini-2.0-flash-001"
         try:
             config = _get_ai_config()
             self.provider = config["provider"]
-            self.model = None
+            self.openrouter_model = config.get("openrouter_model", "google/gemini-2.0-flash-001")
 
             if self.provider == "openrouter" and config["openrouter_key"]:
                 self.openrouter_key = config["openrouter_key"]
@@ -81,7 +85,16 @@ class AcademicAI:
 
     def _generate(self, prompt, model_override=None):
         """Unified generation method with multi-model fallback logic."""
-        # 1. Try Gemini first (if configured and not overridden)
+        sanitized_prompt = sanitize_ai_prompt(prompt)
+        
+        if sanitized_prompt != prompt:
+            logger.info(f"Prompt sanitized to remove potential injection patterns")
+        
+        prompt = sanitized_prompt
+        
+        if not prompt:
+            logger.warning("Empty prompt after sanitization")
+            return None
         if self.provider == "gemini" and self.model and not model_override:
             try:
                 response = self.model.generate_content(prompt)

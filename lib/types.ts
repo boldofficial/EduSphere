@@ -43,14 +43,6 @@ export interface SubscriptionPlan extends Entity {
   custom_domain_enabled: boolean;
 }
 
-export interface AcademicTerm extends Entity {
-  session: string;
-  name: string;
-  start_date: string;
-  end_date: string;
-  is_current: boolean;
-}
-
 export interface Settings extends Entity {
   school_name: string;
   school_address: string;
@@ -106,10 +98,7 @@ export interface Settings extends Entity {
   bank_account_number: string;
   bank_sort_code: string;
   invoice_notes: string; // Custom notes on invoice
-  academic_terms?: AcademicTerm[];
-
   invoice_due_days: number; // Days until payment is due
-  currency_symbol: string;
 
   // Domain & Subscription
   domain?: string;
@@ -159,6 +148,7 @@ export interface Admission extends Entity {
 export interface Class extends Entity {
   name: string;
   category: string;
+  report_mode?: 'numeric' | 'early_years' | 'hybrid';
   class_teacher_id: string | null;
   subjects: string[] | null;
 }
@@ -181,14 +171,39 @@ export interface Teacher {
   // Financial Data
   basic_salary?: number | string;
   bank_name?: string;
-  account_number?: string;
-  account_name?: string;
+  // Staff Qualifications (Nigerian-specific)
+  qualifications?: StaffQualification[];
+  subjects_specialization?: string[]; // Subjects teacher can teach
+  promotion_letter_date?: string;
+  confirmation_date?: string;
+  // Pension (PFA)
   pfa_name?: string;
   pfa_number?: string;
+  // Tax ID
   tax_id?: string;
+}
 
-  created_at?: string;
-  updated_at?: string;
+// Nigerian staff qualifications
+export interface StaffQualification {
+  id: string;
+  qualification: string; // e.g., "NCE", "BSc", "MEd", "PhD"
+  institution: string;
+  year: number;
+  subject?: string;
+  certificate_url?: string;
+}
+
+// Staff Leave Management
+export interface StaffLeave extends Entity {
+  staff_id: number;
+  leave_type: 'annual' | 'sick' | 'maternity' | 'paternity' | 'casual' | 'unpaid';
+  start_date: string;
+  end_date: string;
+  days: number;
+  reason?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  approved_by?: number;
+  approved_at?: string;
 }
 
 export interface Staff extends Entity {
@@ -206,7 +221,6 @@ export interface Staff extends Entity {
   school?: number;
 
   // Financial Data (shared with Teacher for payroll purposes)
-
   basic_salary?: number | string;
   bank_name?: string;
   account_number?: string;
@@ -214,6 +228,11 @@ export interface Staff extends Entity {
   pfa_name?: string;
   pfa_number?: string;
   tax_id?: string;
+  // Staff Qualifications (Nigerian-specific)
+  qualifications?: StaffQualification[];
+  subjects_specialization?: string[];
+  promotion_letter_date?: string;
+  confirmation_date?: string;
 }
 
 export interface Student extends Entity {
@@ -233,15 +252,21 @@ export interface Student extends Entity {
   discounts?: StudentDiscount[]; // Applied discounts/scholarships
   assigned_subjects?: string[]; // List of subject names
   performance_trend?: 'improving' | 'declining' | 'stable';
-  groups?: string[]; // IDs of groups this student belongs to
-  current_class_name?: string;
-}
-
-export interface StudentGroup extends Entity {
-  name: string;
-  description: string;
-  students: string[]; // List of student IDs
-  student_count: number;
+  // Nigerian-specific fields
+  state_of_origin?: string; // State (e.g., "Lagos")
+  lga?: string; // Local Government Area
+  state_code?: string; // State code (e.g., "LA")
+  parent_alt_phone?: string; // Alternative phone
+  guardian_name?: string; // Alternative guardian
+  guardian_phone?: string; // Guardian phone
+  guardian_relationship?: string; // e.g., "Uncle", "Grandma"
+  // WAEC/NECO registration (for SS3 students)
+  waec_number?: string;
+  waec_pin?: string;
+  neco_number?: string;
+  // Sibling tracking
+  family_id?: string; // Links siblings together
+  sibling_position?: number; // 1st, 2nd, 3rd child in family
 }
 
 export interface StudentDiscount {
@@ -267,13 +292,47 @@ export interface Subject extends Entity {
 
 export interface ScoreRow {
   subject: string;
-  ca1: number; // e.g. Test/HW (20)
-  ca2: number; // e.g. Mid-term (20)
-  exam: number; // (60)
+  ca1: number; // e.g. Test/HW (default 20)
+  ca2: number; // e.g. Mid-term (default 20)
+  exam: number; // Terminal Exam (default 60)
   total: number; // 100
   grade: string; // A-F
   comment: string;
 }
+
+export interface EarlyYearsObservation {
+  area: string;
+  status: 'Emerging' | 'Developing' | 'Secure';
+  comment: string;
+  next_step?: string;
+}
+
+// Nigerian Exam Weight Configuration
+export interface ExamWeightConfig extends Entity {
+  class_id: string;
+  subject?: string; // null = default for all subjects
+  session: string;
+  ca1_max: number; // Default 20
+  ca2_max: number; // Default 20
+  exam_max: number; // Default 60
+  ca1_weight: number; // Percentage (default 20)
+  ca2_weight: number; // Percentage (default 20)
+  exam_weight: number; // Percentage (default 60)
+}
+
+export const DEFAULT_EXAM_WEIGHTS: ExamWeightConfig = {
+  id: '',
+  class_id: '',
+  session: '',
+  ca1_max: 20,
+  ca2_max: 20,
+  exam_max: 60,
+  ca1_weight: 20,
+  ca2_weight: 20,
+  exam_weight: 60,
+  created_at: '',
+  updated_at: '',
+};
 
 export interface Score extends Entity {
   student_id: string;
@@ -292,6 +351,7 @@ export interface Score extends Entity {
   // Enhanced Report Card Fields
   affective: Record<string, number>; // 1-5 Scale
   psychomotor: Record<string, number>; // 1-5 Scale
+  early_years_observations?: EarlyYearsObservation[];
   teacher_remark?: string;
   head_teacher_remark?: string;
   next_term_begins?: string;
@@ -299,8 +359,8 @@ export interface Score extends Entity {
 
   // Report Card Publication Status
   is_passed?: boolean; // Admin must pass/approve report card before student/parent can view
-  passed_at?: number; // Timestamp when report card was passed
-  passed_by?: string; // Admin user ID who passed the report card
+  passed_at?: string | number | null; // Publication timestamp
+  passed_by?: string | number | null; // Admin user ID who passed the report card
 
   grading_scheme?: string;
   grading_scheme_details?: GradingScheme;
@@ -330,10 +390,45 @@ export interface FeeStructure extends Entity {
   session: string;
   term: string;
   is_optional?: boolean;
-  active?: boolean;
   allow_partial_payments?: boolean;
-  category?: string;
+  // Nigerian fee categories
+  category?: FeeCategory;
 }
+
+export type FeeCategory = 
+  | 'tuition'           // School fess
+  | 'uniform'          // Uniform
+  | 'books'            // Textbooks
+  | 'pta'              // Parent-Teacher Association
+  | 'development'      // Development levy
+  | 'medical'          // Medical fee
+  | 'ict'              // ICT fee
+  | 'security'         // Security levy
+  | 'transport'         // Bus/transport
+  | 'feeding'          // Lunch/feeding
+  | 'activity'          // Activity fee
+  | 'exam'             // Exam fee
+  | 'registration'     // Registration
+  | 'card'             // ID card
+  | 'other';          // Other
+
+export const NIGERIAN_FEE_CATEGORIES: { value: FeeCategory; label: string }[] = [
+  { value: 'tuition', label: 'Tuition/School Fee' },
+  { value: 'uniform', label: 'Uniform' },
+  { value: 'books', label: 'Books' },
+  { value: 'pta', label: 'PTA Dues' },
+  { value: 'development', label: 'Development Levy' },
+  { value: 'medical', label: 'Medical Fee' },
+  { value: 'ict', label: 'ICT Fee' },
+  { value: 'security', label: 'Security Levy' },
+  { value: 'transport', label: 'Transport/Bus Fee' },
+  { value: 'feeding', label: 'Feeding Fee' },
+  { value: 'activity', label: 'Activity Fee' },
+  { value: 'exam', label: 'Examination Fee' },
+  { value: 'registration', label: 'Registration Fee' },
+  { value: 'card', label: 'ID Card Fee' },
+  { value: 'other', label: 'Other' },
+];
 
 export interface PaymentLineItem {
   purpose: string;
@@ -353,6 +448,43 @@ export interface Payment extends Entity {
   status?: string;
   fee_structure_id?: string;
   payment_hash?: string;
+  // Nigerian installment tracking
+  payment_plan_id?: string; // Links to installment plan
+  installment_number?: number; // 1st, 2nd, 3rd payment
+  is_partial?: boolean;
+}
+
+// Payment Installment Plan
+export interface PaymentPlan extends Entity {
+  name: string; // e.g., "Term 1 Payment Plan"
+  class_id: string;
+  fee_item_id: string;
+  installments: Installment[];
+  late_fee_percentage?: number; // Penalty for late payment
+  late_fee_grace_days?: number; // Days after due date before penalty
+}
+
+export interface Installment {
+  name: string; // e.g., "First Payment", "Second Payment"
+  due_date: string; // ISO date
+  amount: number; // Absolute amount or percentage
+  percentage?: number; // If using percentage
+  is_mandatory: boolean;
+}
+
+export interface FamilyGroup extends Entity {
+  family_id: string; // Unique family identifier
+  parent_name: string;
+  parent_phone: string;
+  parent_email?: string;
+  students: string[]; // Student IDs in this family
+}
+
+// Sibling Discount Configuration
+export interface SiblingDiscountConfig {
+  second_child_discount: number; // Percentage (e.g., 5 for 5%)
+  third_child_discount: number; // Percentage (e.g., 10 for 10%)
+  fourth_child_discount?: number;
 }
 
 export interface Expense extends Entity {
@@ -629,24 +761,15 @@ export interface QuestionOption extends Entity {
   is_correct: boolean;
 }
 
-export interface ExamViolation extends Entity {
-  attempt: string | number;
-  count: number;
-  timestamp: string;
-  auto_submitted: boolean;
-}
-
 export interface Attempt extends Entity {
   quiz: string;
   student: string;
   start_time: string;
-  submit_time?: string;
   end_time?: string;
   total_score: number;
   is_completed: boolean;
   answers: StudentAnswer[];
   student_name?: string;
-  violations?: ExamViolation[];
 }
 
 export interface StudentAnswer extends Entity {
@@ -756,45 +879,110 @@ export interface PayrollEntry extends Entity {
   is_paid: boolean;
 }
 
-export interface RevenueSummary {
-  term: {
-    id: number;
-    name: string;
-    session: string;
-    start_date: string;
-    end_date: string;
-  };
-  expected: number;
-  collected: number;
-  outstanding: number;
-  forecast: number;
-  collection_rate: number;
-  days_elapsed: number;
-  days_total: number;
+// =============================================
+// PHASE 7: EXAM MANAGEMENT
+// =============================================
+
+export interface Exam extends Entity {
+  title: string;
+  class_id: string;
+  subject: string;
+  session: string;
+  term: string;
+  exam_date: string;
+  duration_minutes: number;
+  total_marks: number;
+  passing_marks: number;
+  status: 'draft' | 'published' | 'completed';
+  instructions?: string;
+  created_by: string;
+  is_terminal: boolean;
 }
 
-export interface RevenueChartData {
-  labels: string[];
-  expected: number[];
-  collected: (number | null)[];
-  forecast: number[];
+export interface ExamScore extends Entity {
+  exam_id: string;
+  student_id: string;
+  score: number;
+  percentile: number;
+  grade: string;
+  submitted_at: string;
+  is_late: boolean;
 }
 
-export interface BulkDiscountPreview {
-  count: number;
-  total_impact: number;
-  students: {
-    id: string;
-    names: string;
-    student_no: string;
-    class: string;
-    potential_discount: number;
-  }[];
+// =============================================
+// WEIGHT CONFIGURATION
+// =============================================
+
+export interface WeightConfig extends Entity {
+  id: string;
+  subject: string;
+  class_id: string;
+  ca1_weight: number;
+  ca2_weight: number;
+  exam_weight: number;
+  session: string;
+  term?: string;
 }
 
-export interface BulkDiscountResult {
-  success: boolean;
-  message: string;
-  count: number;
+// =============================================
+// COURSE CATALOG / SYLLABUS
+// =============================================
+
+export interface Course extends Entity {
+  id: string;
+  class_id: string;
+  subject: string;
+  sessions: TermSession[];
 }
 
+export interface TermSession {
+  term: string;
+  topics: Topic[];
+}
+
+export interface Topic extends Entity {
+  name: string;
+  hours_allocated: number;
+  covered: boolean;
+  covered_date?: string;
+  notes?: string;
+}
+
+// =============================================
+// CUSTOM SKILLS CATEGORIES
+// =============================================
+
+export interface SkillCategory extends Entity {
+  id: string;
+  name: string;
+  description?: string;
+  order: number;
+  is_default: boolean;
+  rating_scale: number;
+  rating_labels?: string[];
+}
+
+// =============================================
+// SCORE IMPORT TEMPLATE
+// =============================================
+
+export interface ScoreImportRow {
+  student_no: string;
+  subject: string;
+  ca1_score: number;
+  ca2_score: number;
+  exam_score: number;
+}
+
+export interface ScoreImportResult {
+  success_count: number;
+  error_count: number;
+  errors: Array<{ row: number; student_no: string; error: string }>;
+  preview: Array<{
+    student_id: string;
+    subject: string;
+    ca1: number;
+    ca2: number;
+    exam: number;
+  }>;
+}

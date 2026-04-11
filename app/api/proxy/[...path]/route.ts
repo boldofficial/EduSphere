@@ -83,6 +83,7 @@ async function handleProxy(request: NextRequest, params: Promise<{ path: string[
         }
 
         const responseText = await response.text();
+        const isProd = process.env.NODE_ENV === 'production';
         let data;
         try {
             data = JSON.parse(responseText || '{}');
@@ -91,8 +92,10 @@ async function handleProxy(request: NextRequest, params: Promise<{ path: string[
             data = {
                 error: 'Invalid response format from backend',
                 status: response.status,
-                raw_preview: responseText.slice(0, 500)
-            };
+            } as any;
+            if (!isProd) {
+                data.raw_preview = responseText.slice(0, 500);
+            }
         }
 
         if (!response.ok) {
@@ -103,6 +106,11 @@ async function handleProxy(request: NextRequest, params: Promise<{ path: string[
 
     } catch (error) {
         console.error(`[PROXY_CRITICAL] System Error [${request.method} ${path}]:`, error);
-        return NextResponse.json({ error: 'Internal Proxy Error', details: (error as Error).message }, { status: 502 });
+        const isProd = process.env.NODE_ENV === 'production';
+        const payload: Record<string, unknown> = { error: 'Internal Proxy Error' };
+        if (!isProd) {
+            payload.details = (error as Error).message;
+        }
+        return NextResponse.json(payload, { status: 502 });
     }
 }

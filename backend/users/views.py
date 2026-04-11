@@ -1,4 +1,5 @@
 import logging
+import os
 
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -14,6 +15,7 @@ logger = logging.getLogger(__name__)
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from emails.tasks import send_email_task
+from core.throttles import AuthRateThrottle
 
 from .models import User
 from .serializers import CustomTokenObtainPairSerializer
@@ -21,6 +23,7 @@ from .serializers import CustomTokenObtainPairSerializer
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
+    throttle_classes = [AuthRateThrottle]
 
 
 def get_user_me_data(user):
@@ -203,8 +206,13 @@ class DemoLoginView(APIView):
     """Magic login for the demo school."""
 
     permission_classes = [AllowAny]
+    throttle_classes = [AuthRateThrottle]
 
     def post(self, request):
+        demo_login_enabled = os.environ.get("ENABLE_DEMO_LOGIN", "False").lower() in ("true", "1", "yes")
+        if not demo_login_enabled:
+            return Response({"detail": "Demo login is disabled."}, status=403)
+
         role_type = request.data.get("role", "admin")  # admin, teacher, bursar
 
         username_map = {
@@ -235,6 +243,7 @@ class PasswordResetRequestView(APIView):
     """
 
     permission_classes = [AllowAny]
+    throttle_classes = [AuthRateThrottle]
 
     def post(self, request):
         email = request.data.get("email")

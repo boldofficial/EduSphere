@@ -3,10 +3,9 @@ from rest_framework.routers import DefaultRouter
 
 from . import views
 from .views import (
-    AcademicTermViewSet,
+    AcademicDataMigrationViewSet,
     AdmissionIntakeViewSet,
     AdmissionViewSet,
-
     AIInsightsView,
     AILessonPlanView,
     AIPredictiveInsightsView,
@@ -25,7 +24,6 @@ from .views import (
     ReportCardViewSet,
     SchoolEventViewSet,
     StudentAchievementViewSet,
-    StudentGroupViewSet,
     StudentHistoryViewSet,
     StudentViewSet,
     SubjectScoreViewSet,
@@ -35,7 +33,6 @@ from .views import (
     TimetableEntryViewSet,
     TimetableViewSet,
 )
-from .views_migration import AcademicDataMigrationViewSet
 
 router = DefaultRouter()
 router.register(r"subjects", views.SubjectViewSet)
@@ -45,7 +42,6 @@ router.register(r"staff", views.TeacherViewSet, basename="staff")
 router.register(r"students", views.StudentViewSet)
 router.register(r"student-history", views.StudentHistoryViewSet, basename="student-history")
 router.register(r"student-achievements", views.StudentAchievementViewSet, basename="student-achievements")
-router.register(r"student-groups", views.StudentGroupViewSet, basename="student-groups")
 router.register(r"reports", views.ReportCardViewSet)
 router.register(r"scores", views.SubjectScoreViewSet)
 router.register(r"attendance-sessions", views.AttendanceSessionViewSet)
@@ -60,9 +56,7 @@ router.register(r"timetables", views.TimetableViewSet, basename="timetables")
 router.register(r"timetable-entries", TimetableEntryViewSet, basename="timetable-entries")
 router.register(r"admission-intakes", AdmissionIntakeViewSet, basename="admission-intakes")
 router.register(r"admissions", AdmissionViewSet, basename="admissions")
-router.register(r"academic-terms", AcademicTermViewSet, basename="academic-terms")
 router.register(r"grading-schemes", views.GradingSchemeViewSet, basename="grading-schemes")
-
 router.register(r"grade-ranges", views.GradeRangeViewSet, basename="grade-ranges")
 router.register(r"subject_teachers", views.SubjectTeacherViewSet, basename="subject_teachers")
 router.register(r"broadsheet", views.BroadsheetView, basename="broadsheet")

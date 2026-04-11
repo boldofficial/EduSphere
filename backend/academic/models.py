@@ -74,8 +74,14 @@ class Class(TenantModel):
         ("SSS_Commerce", "Senior Secondary (Commerce)"),
         ("Other", "Other/General"),
     ]
+    REPORT_MODE_CHOICES = [
+        ("numeric", "Numeric Scores"),
+        ("early_years", "Early Years Narrative"),
+        ("hybrid", "Hybrid (Scores + Narrative)"),
+    ]
     name = models.CharField(max_length=100)
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default="Primary")
+    report_mode = models.CharField(max_length=20, choices=REPORT_MODE_CHOICES, default="numeric")
     class_teacher = models.ForeignKey(Teacher, on_delete=models.SET_NULL, null=True, related_name="classes")
     subjects = models.ManyToManyField(Subject, blank=True)
 
@@ -253,6 +259,11 @@ class ReportCard(TenantModel):
     # Enhanced Fields
     affective = models.JSONField(default=dict, blank=True)  # e.g. {"Punctuality": 5, "Honesty": 4}
     psychomotor = models.JSONField(default=dict, blank=True)  # e.g. {"Sports": 5, "Art": 4}
+    early_years_observations = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Early-years narrative observations per learning area.",
+    )
     attendance_present = models.IntegerField(default=0)
     attendance_total = models.IntegerField(default=0)
     next_term_begins = models.DateField(null=True, blank=True)
@@ -321,11 +332,13 @@ class ReportCard(TenantModel):
         """
         Calculate and update positions for all students in a class for a specific term.
         """
-        reports = cls.objects.filter(school=school, student_class=student_class, session=session, term=term).order_by(
-            "-total_score", "-average"
+        reports = list(
+            cls.objects.filter(school=school, student_class=student_class, session=session, term=term).order_by(
+                "-total_score", "-average"
+            )
         )
 
-        if not reports.exists():
+        if not reports:
             return
 
         # Simple ranking logic (standard competition ranking)
@@ -334,7 +347,8 @@ class ReportCard(TenantModel):
             if i > 0 and (report.total_score < reports[i - 1].total_score):
                 current_rank = i + 1
             report.position = current_rank
-            report.save(update_fields=["position"])
+
+        cls.objects.bulk_update(reports, ["position"])
 
 
 class SubjectScore(TenantModel):
@@ -347,7 +361,13 @@ class SubjectScore(TenantModel):
     grade = models.CharField(max_length=5, blank=True)
     comment = models.CharField(max_length=255, blank=True)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=["report_card", "subject"]),
+        ]
+
     def save(self, *args, **kwargs):
+        skip_report_update = kwargs.pop("skip_report_update", False)
         self.total = self.ca1 + self.ca2 + self.exam
         # Simple grading logic (can be expanded)
         if hasattr(self, "grade") and not self.grade:
@@ -375,7 +395,8 @@ class SubjectScore(TenantModel):
         super().save(*args, **kwargs)
         # Trigger update of parent report card without saving the report card yet
         # (the serializer will save it once at the end)
-        self.report_card.update_totals(save=True)  # Still save by default for single updates outside serializer
+        if not skip_report_update:
+            self.report_card.update_totals(save=True)  # Still save by default for single updates outside serializer
 
     def __str__(self):
         return f"{self.subject.name}: {self.total}"

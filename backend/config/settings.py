@@ -115,6 +115,9 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "core.security_middleware.SecurityHeadersMiddleware",
+    "core.security_middleware.RequestSizeLimitMiddleware",
+    "core.security_middleware.IPAccessControlMiddleware",
     "core.middleware.TenantMiddleware",
     "core.middleware.AuditLogMiddleware",
 ]
@@ -198,6 +201,15 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
+    {
+        "NAME": "core.password_validators.PasswordComplexityValidator",
+        "OPTIONS": {
+            "min_length": 8,
+        },
+    },
+    {
+        "NAME": "core.password_validators.CommonPasswordPatternValidator",
+    },
 ]
 
 
@@ -257,6 +269,11 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {
         "anon": "100/hour",
         "user": "1000/hour",
+        "auth": "5/minute",
+        "login_fail": "10/minute",
+        "api": "100/minute",
+        "burst": "20/minute",
+        "sustained": "500/hour",
     },
     "EXCEPTION_HANDLER": "core.exceptions.custom_exception_handler",
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
@@ -280,9 +297,9 @@ SPECTACULAR_SETTINGS = {
 # =============================================================================
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=int(os.environ.get("JWT_ACCESS_TOKEN_LIFETIME_MINUTES", 60))),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=int(os.environ.get("JWT_ACCESS_TOKEN_LIFETIME_MINUTES", 15))),
     "REFRESH_TOKEN_LIFETIME": timedelta(
-        days=int(os.environ.get("JWT_REFRESH_TOKEN_LIFETIME_DAYS", 1))  # Default to 1 day to match cookie
+        hours=int(os.environ.get("JWT_REFRESH_TOKEN_LIFETIME_HOURS", 24))
     ),
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,

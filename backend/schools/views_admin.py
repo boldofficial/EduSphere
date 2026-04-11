@@ -482,11 +482,12 @@ class AdminDemoRequestView(APIView):
         demo_req.save()
 
         # Send Email
+        demo_password = os.environ.get("DEMO_DEFAULT_PASSWORD")
         context = {
             "name": demo_req.name,
             "school_name": demo_req.school_name,
             "login_url": "https://demo.myregistra.net/login",
-            "password": os.environ.get("DEMO_DEFAULT_PASSWORD", "changeme"),
+            "password": demo_password or "Contact support for your temporary password.",
         }
 
         email_sent = False

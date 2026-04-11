@@ -275,3 +275,76 @@ class SchoolPaymentConfigPublicSerializer(serializers.ModelSerializer):
         if obj.enable_flutterwave:
             methods.append("flutterwave")
         return methods
+
+
+from academic.serializers import Base64ImageField
+from django.db import transaction
+from .models import SchoolSettings
+
+
+class SchoolSettingsSerializer(serializers.ModelSerializer):
+    # School fields (proxied)
+    school_name = serializers.CharField(source="school.name", required=False)
+    school_address = serializers.CharField(source="school.address", required=False, allow_blank=True)
+    school_email = serializers.EmailField(source="school.email", required=False, allow_blank=True)
+    school_phone = serializers.CharField(source="school.phone", required=False, allow_blank=True)
+    custom_domain = serializers.CharField(source="school.custom_domain", required=False, allow_blank=True, allow_null=True)
+    logo_media = Base64ImageField(source="school.logo", required=False, allow_null=True)
+
+    # Media fields
+    watermark_media = Base64ImageField(required=False, allow_null=True)
+    director_signature = Base64ImageField(required=False, allow_null=True)
+    head_of_school_signature = Base64ImageField(required=False, allow_null=True)
+    landing_hero_image = Base64ImageField(required=False, allow_null=True)
+
+    class Meta:
+        model = SchoolSettings
+        fields = "__all__"
+        read_only_fields = ("school",)
+
+    def update(self, instance, validated_data):
+        school_data = validated_data.pop("school", {})
+        school = instance.school
+
+        with transaction.atomic():
+            # Update School model if data is provided
+            if school_data:
+                custom_domain = school_data.get("custom_domain")
+                if isinstance(custom_domain, str):
+                    normalized = custom_domain.strip()
+                    school_data["custom_domain"] = normalized or None
+
+                for attr, value in school_data.items():
+                    setattr(school, attr, value)
+                school.save()
+
+            # Handle landing_gallery_images specifically if they are base64
+            if "landing_gallery_images" in validated_data:
+                images = validated_data["landing_gallery_images"]
+                if isinstance(images, list):
+                    processed = []
+                    field = Base64ImageField()
+                    for img in images:
+                        processed.append(field.to_internal_value(img))
+                    validated_data["landing_gallery_images"] = processed
+
+            # Handle landing_academic_programs images
+            if "landing_academic_programs" in validated_data:
+                programs = validated_data["landing_academic_programs"]
+                if isinstance(programs, list):
+                    field = Base64ImageField()
+                    for p in programs:
+                        if isinstance(p, dict) and p.get("image"):
+                            p["image"] = field.to_internal_value(p["image"])
+
+            # Handle landing_testimonials images
+            if "landing_testimonials" in validated_data:
+                testimonials = validated_data["landing_testimonials"]
+                if isinstance(testimonials, list):
+                    field = Base64ImageField()
+                    for t in testimonials:
+                        if isinstance(t, dict) and t.get("image"):
+                            t["image"] = field.to_internal_value(t["image"])
+
+            # Update the rest
+            return super().update(instance, validated_data)
