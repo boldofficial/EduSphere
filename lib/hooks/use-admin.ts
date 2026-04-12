@@ -318,3 +318,18 @@ export function useResolveTicket() {
         },
     });
 }
+
+export function useActivityLogs(action?: string) {
+    return useQuery({
+        queryKey: queryKeys.activityLogs(action),
+        queryFn: async () => {
+            const response = await apiClient.get('activity-logs/', {
+                params: action ? { action } : undefined,
+            });
+            if (response.data && typeof response.data === 'object' && 'results' in response.data) {
+                return response.data.results;
+            }
+            return Array.isArray(response.data) ? response.data : [];
+        },
+    });
+}

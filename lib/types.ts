@@ -99,6 +99,7 @@ export interface Settings extends Entity {
   bank_sort_code: string;
   invoice_notes: string; // Custom notes on invoice
   invoice_due_days: number; // Days until payment is due
+  currency_symbol?: string;
 
   // Domain & Subscription
   domain?: string;
@@ -171,6 +172,8 @@ export interface Teacher {
   // Financial Data
   basic_salary?: number | string;
   bank_name?: string;
+  account_number?: string;
+  account_name?: string;
   // Staff Qualifications (Nigerian-specific)
   qualifications?: StaffQualification[];
   subjects_specialization?: string[]; // Subjects teacher can teach
@@ -241,6 +244,7 @@ export interface Student extends Entity {
   names: string;
   gender: 'Male' | 'Female';
   class_id: string;
+  current_class_name?: string;
   dob: string; // ISO date string YYYY-MM-DD
   parent_name: string;
   parent_email?: string; // For password recovery
@@ -267,6 +271,13 @@ export interface Student extends Entity {
   // Sibling tracking
   family_id?: string; // Links siblings together
   sibling_position?: number; // 1st, 2nd, 3rd child in family
+}
+
+export interface StudentGroup extends Entity {
+  name: string;
+  description?: string;
+  students?: Array<string | Student>;
+  student_count?: number;
 }
 
 export interface StudentDiscount {
@@ -389,6 +400,7 @@ export interface FeeStructure extends Entity {
   class_id: string | null; // null = All Classes
   session: string;
   term: string;
+  active?: boolean;
   is_optional?: boolean;
   allow_partial_payments?: boolean;
   // Nigerian fee categories

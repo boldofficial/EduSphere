@@ -30,6 +30,33 @@ export interface BursaryPeriodFilters extends Record<string, unknown> {
     include_all_periods?: boolean;
 }
 
+export interface AcademicTermOption {
+    id: string | number;
+    name: string;
+    session: string;
+    start_date?: string;
+    end_date?: string;
+    is_current?: boolean;
+}
+
+export interface RevenueSummaryData {
+    term?: AcademicTermOption;
+    expected: number;
+    collected: number;
+    outstanding: number;
+    forecast: number;
+    collection_rate: number;
+    days_elapsed: number;
+    days_total: number;
+}
+
+export interface RevenueChartData {
+    labels: string[];
+    expected: number[];
+    collected: Array<number | null>;
+    forecast: number[];
+}
+
 const normalizePayment = (payment: PaymentApiResponse): Types.Payment => {
     const method = payment?.method === 'online' ? 'online' : payment?.method || 'cash';
     const lineItems = payment?.lineItems || payment?.line_items || [];
@@ -73,6 +100,15 @@ const toBackendPaymentPayload = (item: PaymentPayload) => {
         items_input: item?.items_input || item?.lineItems || [],
     };
 };
+
+const normalizeTerm = (term: Partial<AcademicTermOption> | null | undefined): AcademicTermOption => ({
+    id: term?.id ?? '',
+    name: term?.name ?? '',
+    session: term?.session ?? '',
+    start_date: term?.start_date,
+    end_date: term?.end_date,
+    is_current: !!term?.is_current,
+});
 
 // =============================================
 // FEES
@@ -210,6 +246,64 @@ export function useFinancialStats(session: string, term: string, enabled = true)
     });
 }
 
+export function useAcademicTerms() {
+    return useQuery({
+        queryKey: queryKeys.academicTerms,
+        queryFn: async (): Promise<AcademicTermOption[]> => {
+            try {
+                const response = await apiClient.get('academic/terms/');
+                const rows =
+                    response.data && typeof response.data === 'object' && 'results' in response.data
+                        ? response.data.results
+                        : Array.isArray(response.data)
+                            ? response.data
+                            : [];
+                if (rows.length > 0) {
+                    return rows.map((term: Partial<AcademicTermOption>) => normalizeTerm(term));
+                }
+            } catch {
+                // Fall back to a single current term from the summary endpoint.
+            }
+
+            try {
+                const summaryResponse = await apiClient.get('dashboard/revenue-summary/');
+                const currentTerm = summaryResponse?.data?.term;
+                if (currentTerm) {
+                    return [normalizeTerm({ ...currentTerm, is_current: true })];
+                }
+            } catch {
+                // Return empty when both endpoints are unavailable.
+            }
+
+            return [];
+        },
+    });
+}
+
+export function useRevenueSummary(termId?: string) {
+    return useQuery({
+        queryKey: queryKeys.revenueSummary(termId),
+        queryFn: async (): Promise<RevenueSummaryData> => {
+            const response = await apiClient.get('dashboard/revenue-summary/', {
+                params: termId ? { term_id: termId } : undefined,
+            });
+            return response.data;
+        },
+    });
+}
+
+export function useRevenueChart(termId?: string) {
+    return useQuery({
+        queryKey: queryKeys.revenueForecast(termId),
+        queryFn: async (): Promise<RevenueChartData> => {
+            const response = await apiClient.get('dashboard/revenue-chart/', {
+                params: termId ? { term_id: termId } : undefined,
+            });
+            return response.data;
+        },
+    });
+}
+
 // =============================================
 // EXPENSES
 // =============================================
@@ -291,5 +385,44 @@ export function useDeleteScholarship() {
             await apiClient.delete(`scholarships/${id}/`);
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.scholarships }); },
+    });
+}
+
+export function usePreviewBulkDiscount() {
+    return useMutation({
+        mutationFn: async (payload: {
+            scope: { type: string; ids: string[] };
+            fee_item: string;
+            discount_type: string;
+            value: number;
+        }) => {
+            const response = await apiClient.post('discounts/preview/', payload);
+            return response.data;
+        },
+    });
+}
+
+export function useApplyBulkDiscount() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (payload: {
+            scope: { type: string; ids: string[] };
+            fee_item: string;
+            discount_type: string;
+            value: number;
+            reason?: string;
+            override?: boolean;
+        }) => {
+            const response = await apiClient.post('discounts/bulk/', payload);
+            return response.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.fees });
+            queryClient.invalidateQueries({ queryKey: queryKeys.payments });
+            queryClient.invalidateQueries({ queryKey: ['bursary', 'dashboard'] });
+            queryClient.invalidateQueries({ queryKey: ['revenue_summary'] });
+            queryClient.invalidateQueries({ queryKey: ['revenue_forecast'] });
+            queryClient.invalidateQueries({ queryKey: ['activity_logs'] });
+        },
     });
 }
