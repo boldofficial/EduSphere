@@ -116,7 +116,7 @@ const normalizeTerm = (term: Partial<AcademicTermOption> | null | undefined): Ac
 export function useFees(filters?: BursaryPeriodFilters) {
     return useQuery({
         queryKey: [...queryKeys.fees, filters || {}],
-        queryFn: () => fetchAll<Types.FeeStructure>('fees/', filters),
+        queryFn: () => fetchAll<Types.FeeStructure>('bursary/fees/', filters),
     });
 }
 
@@ -124,7 +124,7 @@ export function useCreateFee() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (item: Types.FeeStructure) => {
-            const response = await apiClient.post('fees/', item);
+            const response = await apiClient.post('bursary/fees/', item);
             return response.data;
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.fees }); },
@@ -135,7 +135,7 @@ export function useUpdateFee() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async ({ id, updates }: { id: string; updates: Partial<Types.FeeStructure> }) => {
-            const response = await apiClient.patch(`fees/${id}/`, updates);
+            const response = await apiClient.patch(`bursary/fees/${id}/`, updates);
             return response.data;
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.fees }); },
@@ -146,7 +146,7 @@ export function useDeleteFee() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (id: string) => {
-            await apiClient.delete(`fees/${id}/`);
+            await apiClient.delete(`bursary/fees/${id}/`);
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.fees }); },
     });
@@ -163,7 +163,7 @@ export function usePayments(filters?: PaymentFilters) {
     return useQuery({
         queryKey: [...queryKeys.payments, filters || {}],
         queryFn: async () => {
-            const rows = await fetchAll<PaymentApiResponse>('payments/', filters);
+            const rows = await fetchAll<PaymentApiResponse>('bursary/payments/', filters);
             return rows.map(normalizePayment);
         },
     });
@@ -182,7 +182,7 @@ export function usePaginatedPayments(
     return useQuery({
         queryKey: [...queryKeys.payments, { page, pageSize, ...filters }],
         queryFn: async () => {
-            const response = await fetchPaginated<PaymentApiResponse>('payments/', page, pageSize, {
+            const response = await fetchPaginated<PaymentApiResponse>('bursary/payments/', page, pageSize, {
                 student: filters.studentId,
                 session: filters.session,
                 term: filters.term,
@@ -201,7 +201,7 @@ export function useCreatePayment() {
     return useMutation({
         mutationFn: async (item: PaymentPayload) => {
             const payload = toBackendPaymentPayload(item);
-            const response = await apiClient.post('payments/', payload);
+            const response = await apiClient.post('bursary/payments/', payload);
             return normalizePayment(response.data);
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.payments }); },
@@ -213,7 +213,7 @@ export function useUpdatePayment() {
     return useMutation({
         mutationFn: async ({ id, updates }: { id: string; updates: PaymentPayload }) => {
             const payload = toBackendPaymentPayload(updates);
-            const response = await apiClient.patch(`payments/${id}/`, payload);
+            const response = await apiClient.patch(`bursary/payments/${id}/`, payload);
             return normalizePayment(response.data);
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.payments }); },
@@ -224,7 +224,7 @@ export function useDeletePayment() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (id: string) => {
-            await apiClient.delete(`payments/${id}/`);
+            await apiClient.delete(`bursary/payments/${id}/`);
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.payments }); },
     });
@@ -237,7 +237,7 @@ export function useFinancialStats(session: string, term: string, enabled = true)
     return useQuery({
         queryKey: queryKeys.bursaryDashboard(session, term),
         queryFn: async () => {
-            const response = await apiClient.get('dashboard/financial-stats/', {
+            const response = await apiClient.get('bursary/dashboard/financial-stats/', {
                 params: { session, term }
             });
             return response.data as Types.FinancialStats;
@@ -266,7 +266,7 @@ export function useAcademicTerms() {
             }
 
             try {
-                const summaryResponse = await apiClient.get('dashboard/revenue-summary/');
+                const summaryResponse = await apiClient.get('bursary/dashboard/revenue-summary/');
                 const currentTerm = summaryResponse?.data?.term;
                 if (currentTerm) {
                     return [normalizeTerm({ ...currentTerm, is_current: true })];
@@ -284,7 +284,7 @@ export function useRevenueSummary(termId?: string) {
     return useQuery({
         queryKey: queryKeys.revenueSummary(termId),
         queryFn: async (): Promise<RevenueSummaryData> => {
-            const response = await apiClient.get('dashboard/revenue-summary/', {
+            const response = await apiClient.get('bursary/dashboard/revenue-summary/', {
                 params: termId ? { term_id: termId } : undefined,
             });
             return response.data;
@@ -296,7 +296,7 @@ export function useRevenueChart(termId?: string) {
     return useQuery({
         queryKey: queryKeys.revenueForecast(termId),
         queryFn: async (): Promise<RevenueChartData> => {
-            const response = await apiClient.get('dashboard/revenue-chart/', {
+            const response = await apiClient.get('bursary/dashboard/revenue-chart/', {
                 params: termId ? { term_id: termId } : undefined,
             });
             return response.data;
@@ -310,7 +310,7 @@ export function useRevenueChart(termId?: string) {
 export function useExpenses(filters?: BursaryPeriodFilters) {
     return useQuery({
         queryKey: [...queryKeys.expenses, filters || {}],
-        queryFn: () => fetchAll<Types.Expense>('expenses/', filters),
+        queryFn: () => fetchAll<Types.Expense>('bursary/expenses/', filters),
     });
 }
 
@@ -318,7 +318,7 @@ export function useCreateExpense() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (item: Types.Expense) => {
-            const response = await apiClient.post('expenses/', item);
+            const response = await apiClient.post('bursary/expenses/', item);
             return response.data;
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.expenses }); },
@@ -329,7 +329,7 @@ export function useUpdateExpense() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async ({ id, updates }: { id: string; updates: Partial<Types.Expense> }) => {
-            const response = await apiClient.patch(`expenses/${id}/`, updates);
+            const response = await apiClient.patch(`bursary/expenses/${id}/`, updates);
             return response.data;
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.expenses }); },
@@ -340,7 +340,7 @@ export function useDeleteExpense() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (id: string) => {
-            await apiClient.delete(`expenses/${id}/`);
+            await apiClient.delete(`bursary/expenses/${id}/`);
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.expenses }); },
     });
@@ -352,7 +352,7 @@ export function useDeleteExpense() {
 export function useScholarships() {
     return useQuery({
         queryKey: queryKeys.scholarships,
-        queryFn: () => fetchAll<Types.Scholarship>('scholarships/'),
+        queryFn: () => fetchAll<Types.Scholarship>('bursary/scholarships/'),
     });
 }
 
@@ -360,7 +360,7 @@ export function useCreateScholarship() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (item: Types.Scholarship) => {
-            const response = await apiClient.post('scholarships/', item);
+            const response = await apiClient.post('bursary/scholarships/', item);
             return response.data;
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.scholarships }); },
@@ -371,7 +371,7 @@ export function useUpdateScholarship() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async ({ id, updates }: { id: string; updates: Partial<Types.Scholarship> }) => {
-            const response = await apiClient.patch(`scholarships/${id}/`, updates);
+            const response = await apiClient.patch(`bursary/scholarships/${id}/`, updates);
             return response.data;
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.scholarships }); },
@@ -382,7 +382,7 @@ export function useDeleteScholarship() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (id: string) => {
-            await apiClient.delete(`scholarships/${id}/`);
+            await apiClient.delete(`bursary/scholarships/${id}/`);
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.scholarships }); },
     });
@@ -396,7 +396,7 @@ export function usePreviewBulkDiscount() {
             discount_type: string;
             value: number;
         }) => {
-            const response = await apiClient.post('discounts/preview/', payload);
+            const response = await apiClient.post('bursary/discounts/preview/', payload);
             return response.data;
         },
     });
@@ -413,7 +413,7 @@ export function useApplyBulkDiscount() {
             reason?: string;
             override?: boolean;
         }) => {
-            const response = await apiClient.post('discounts/bulk/', payload);
+            const response = await apiClient.post('bursary/discounts/bulk/', payload);
             return response.data;
         },
         onSuccess: () => {
