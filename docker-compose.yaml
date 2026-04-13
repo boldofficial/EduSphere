@@ -29,7 +29,7 @@ services:
       - DEFAULT_POOL_SIZE=25
       - MIN_POOL_SIZE=5
       - POOL_MODE=transaction
-      - AUTH_TYPE=trust
+      - AUTH_TYPE=scram-sha-256
     depends_on:
       - db
     networks:
@@ -52,7 +52,7 @@ services:
       - redis
       - pgbouncer
     environment:
-      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@pgbouncer:5432/${POSTGRES_DB}
     restart: always
     labels:
       - traefik.enable=true
@@ -104,7 +104,7 @@ services:
       - redis
       - pgbouncer
     environment:
-      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@pgbouncer:5432/${POSTGRES_DB}
     restart: always
     networks:
       - coolify
@@ -121,7 +121,7 @@ services:
       - redis
       - pgbouncer
     environment:
-      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@pgbouncer:5432/${POSTGRES_DB}
     restart: always
     networks:
       - coolify
