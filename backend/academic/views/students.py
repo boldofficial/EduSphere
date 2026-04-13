@@ -18,7 +18,11 @@ class StudentViewSet(TenantViewSet):
     pagination_class = LargePagination
 
     def get_queryset(self):
+        import logging
+        logger = logging.getLogger(__name__)
         qs = super().get_queryset()
+        logger.info(f"[StudentViewSet] User={self.request.user}, Tenant={getattr(self.request, 'tenant', 'NONE')}, "
+                     f"UserSchool={getattr(self.request.user, 'school', 'NONE')}, QS count={qs.count()}")
         class_id = self.request.query_params.get("class")
         search = self.request.query_params.get("search")
 

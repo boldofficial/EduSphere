@@ -15,10 +15,15 @@ SENSITIVE_HEADERS = ['authorization', 'x-api-key', 'x-auth-token']
 
 class TenantMiddleware(MiddlewareMixin):
     def process_request(self, request):
+        request.tenant = None
+        request.tenant_id = None
+        
         # 1. Get tenant identifier from header (set by Next.js middleware)
         tenant_domain = request.headers.get("X-Tenant-ID")
 
-        logger.debug(f"Tenant resolution: host={request.get_host()}, header={tenant_domain}")
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"[TenantMW] host={request.get_host()}, X-Tenant-ID={tenant_domain}")
 
         # 2. Fallback for Local Dev / No Header (e.g. direct API calls)
         from django.conf import settings
@@ -44,10 +49,10 @@ class TenantMiddleware(MiddlewareMixin):
 
                 request.tenant = School.objects.filter(Q(domain=tenant_domain) | Q(custom_domain=tenant_domain)).first()
                 if request.tenant:
-                    logger.debug(f"Resolved tenant: {request.tenant.domain}")
+                    logger.info(f"[TenantMW] Resolved tenant: {request.tenant.domain}")
                     request.subdomain = tenant_domain
                 else:
-                    logger.debug(f"No tenant found for domain: {tenant_domain}")
+                    logger.warning(f"[TenantMW] No tenant found for domain: {tenant_domain}")
                     request.subdomain = None
                 # Also set back to tenant_domain for consistency in serializer checks
                 request.tenant_id = tenant_domain
