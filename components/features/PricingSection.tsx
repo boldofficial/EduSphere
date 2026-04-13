@@ -23,7 +23,7 @@ export const PricingSection = () => {
     useEffect(() => {
         const fetchPlans = async () => {
             try {
-                const res = await apiClient.get('schools/plans/');
+                const res = await apiClient.get('schools/plans');
                 setPlans(res.data);
             } catch (err) {
                 console.error("Failed to fetch plans", err);

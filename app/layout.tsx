@@ -6,6 +6,7 @@ import { ToastProvider } from '@/components/providers/toast-provider'
 import QueryProvider from '@/components/providers/query-provider'
 import { PWAProvider } from '@/components/providers/pwa-provider'
 import { AuthProvider } from '@/components/providers/AuthProvider'
+import { resolveTenantFromHost } from '@/lib/tenant-host'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -15,38 +16,29 @@ export async function generateMetadata(): Promise<Metadata> {
     const headersList = await headers();
     const host = headersList.get('host') || '';
     const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'myregistra.net';
-
-    // Derived tenant logic
-    const cleanHost = host.replace(/^www\./, '').split(':')[0];
-    const cleanRoot = rootDomain.replace(/^www\./, '').split(':')[0];
-    const isRoot = cleanHost === cleanRoot;
-
-    let tenantId = 'demo';
-    if (!isRoot && cleanHost.endsWith(`.${cleanRoot}`)) {
-        tenantId = cleanHost.replace(`.${cleanRoot}`, '');
-    } else if (!isRoot && host !== 'localhost' && !host.includes('127.0.0.1')) {
-        tenantId = cleanHost;
-    }
+    const { isRootHost, tenantId } = resolveTenantFromHost(host, rootDomain);
 
     let schoolName = 'Registra';
     let schoolTagline = 'The operating system for modern schools';
 
-    try {
-        const res = await fetch(`${DJANGO_API_URL}/api/core/public-settings/`, {
-            headers: { 'X-Tenant-ID': tenantId },
-            next: { revalidate: 3600 }
-        });
-        if (res.ok) {
-            const data = await res.json();
-            schoolName = data.school_name || 'Registra';
-            schoolTagline = data.school_tagline || 'The operating system for modern schools';
+    if (tenantId) {
+        try {
+            const res = await fetch(`${DJANGO_API_URL}/api/core/public-settings/`, {
+                headers: { 'X-Tenant-ID': tenantId },
+                next: { revalidate: 3600 }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                schoolName = data.school_name || 'Registra';
+                schoolTagline = data.school_tagline || 'The operating system for modern schools';
+            }
+        } catch (e) {
+            // Fallback to defaults
         }
-    } catch (e) {
-        // Fallback to defaults
     }
 
-    const title = isRoot ? 'Registra | The operating system for modern schools' : `${schoolName} | Powered by Registra`;
-    const description = isRoot ? 'The operating system for modern schools. Unified management for students, staff, and academics.' : `${schoolName} - ${schoolTagline}. Manage academics, admissions, and school operations efficiently.`;
+    const title = isRootHost ? 'Registra | The operating system for modern schools' : `${schoolName} | Powered by Registra`;
+    const description = isRootHost ? 'The operating system for modern schools. Unified management for students, staff, and academics.' : `${schoolName} - ${schoolTagline}. Manage academics, admissions, and school operations efficiently.`;
 
     return {
         title: {

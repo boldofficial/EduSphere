@@ -18,7 +18,7 @@ export function useSettings() {
         queryKey: queryKeys.settings,
         queryFn: async () => {
             try {
-                const response = await apiClient.get('settings/');
+                const response = await apiClient.get('core/settings/');
                 return response.data;
             } catch (error) {
                 console.warn('Failed to fetch settings, using defaults', error);
@@ -32,7 +32,7 @@ export function useUpdateSettings() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (settings: any) => {
-            const response = await apiClient.put('settings/', settings);
+            const response = await apiClient.put('core/settings/', settings);
             return response.data;
         },
         onSuccess: () => {
@@ -45,7 +45,7 @@ export function usePublicStats() {
     return useQuery({
         queryKey: queryKeys.publicStats,
         queryFn: async () => {
-            const response = await apiClient.get('public-stats/');
+            const response = await apiClient.get('core/public-stats/');
             return response.data;
         },
     });
@@ -323,7 +323,7 @@ export function useActivityLogs(action?: string) {
     return useQuery({
         queryKey: queryKeys.activityLogs(action),
         queryFn: async () => {
-            const response = await apiClient.get('activity-logs/', {
+            const response = await apiClient.get('core/activity-logs/', {
                 params: action ? { action } : undefined,
             });
             if (response.data && typeof response.data === 'object' && 'results' in response.data) {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { resolveTenantFromHost } from '@/lib/tenant-host';
 
 const DJANGO_API_URL = process.env.DJANGO_API_URL || 'http://127.0.0.1:8000';
 
@@ -41,6 +42,11 @@ async function handleProxy(request: NextRequest, params: Promise<{ path: string[
     const queryString = request.nextUrl.search;
     const fullUrl = url + queryString;
 
+    // Simple logging for debugging
+    if (process.env.NODE_ENV !== 'production') {
+        console.log(`[PROXY] ${request.method} ${path} -> ${fullUrl}`);
+    }
+
     const headers: Record<string, string> = isMedia ? {} : {
         'Content-Type': 'application/json',
     };
@@ -49,14 +55,17 @@ async function handleProxy(request: NextRequest, params: Promise<{ path: string[
         headers['Authorization'] = `Bearer ${accessToken}`;
     }
 
-    // Forward Tenant ID if present (set by Middleware)
-    const tenantId = request.headers.get('x-tenant-id');
+    // Forward Tenant ID from middleware, with host-based fallback.
+    const headerTenantId = request.headers.get('x-tenant-id');
+    const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'myregistra.net';
+    const fallbackTenantId = resolveTenantFromHost(request.headers.get('host') || '', rootDomain).tenantId;
+    const tenantId = headerTenantId || fallbackTenantId;
     if (tenantId && tenantId !== 'null' && tenantId !== 'undefined') {
         headers['X-Tenant-ID'] = tenantId;
     }
 
     try {
-        const bodyText = request.method !== 'GET' && request.method !== 'HEAD' ? await request.text() : undefined;
+        const bodyText = (request.method !== 'GET' && request.method !== 'HEAD') ? await request.text() : undefined;
 
         const response = await fetch(fullUrl, {
             method: request.method,

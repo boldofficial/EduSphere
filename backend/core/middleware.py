@@ -28,7 +28,10 @@ class TenantMiddleware(MiddlewareMixin):
 
         if not tenant_domain:
             host = request.get_host().split(":")[0]
-            if host != root_host and host.endswith(f".{root_host}"):
+            if host.endswith(".localhost"):
+                # Local dev subdomains: meritland.localhost -> meritland
+                tenant_domain = host.replace(".localhost", "")
+            elif host != root_host and host.endswith(f".{root_host}"):
                 tenant_domain = host.replace(f".{root_host}", "")
             elif host != root_host and host != "127.0.0.1" and host != "localhost":
                 # Might be a custom domain

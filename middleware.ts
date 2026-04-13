@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server'
+import { resolveTenantFromHost } from './lib/tenant-host';
 
 
 
@@ -9,27 +10,7 @@ export async function middleware(request: NextRequest) {
     rootDomain = rootDomain.split(':')[0];
 
     // 1. Identify domain and tenant
-    const host = hostname.split(':')[0];
-    const cleanRoot = rootDomain.replace(/^www\./, '');
-    const cleanHost = host.replace(/^www\./, '');
-
-    // It's root if it matches the root domain (ignoring www prefix)
-    const isRoot = cleanHost === cleanRoot;
-
-    // Subdomain mode: Only if it's NOT root and ends with .rootDomain
-    const isSubdomain = !isRoot && host.endsWith(`.${rootDomain}`);
-
-    let tenantId = null;
-    if (isSubdomain) {
-        // Handle www.tenant.domain -> should still be tenant
-        tenantId = cleanHost.replace(`.${cleanRoot}`, '');
-    } else if (!isRoot &&
-        host !== 'localhost' &&
-        !host.includes('127.0.0.1') &&
-        !host.includes('localhost') // Defensive against things like localhost:3001
-    ) {
-        tenantId = host;
-    }
+    const { tenantId } = resolveTenantFromHost(hostname, rootDomain);
 
     const { pathname } = request.nextUrl;
     const accessToken = request.cookies.get('access_token')?.value;

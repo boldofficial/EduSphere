@@ -1,5 +1,6 @@
 import { ImageResponse } from 'next/og'
 import { headers } from 'next/headers'
+import { resolveTenantFromHost } from '@/lib/tenant-host'
 
 export const runtime = 'edge'
 
@@ -16,18 +17,7 @@ export default async function Image() {
     const headersList = await headers();
     const host = headersList.get('host') || '';
     const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'myregistra.net';
-
-    // Derived tenant logic from middleware
-    const cleanHost = host.replace(/^www\./, '').split(':')[0];
-    const cleanRoot = rootDomain.replace(/^www\./, '').split(':')[0];
-    const isRoot = cleanHost === cleanRoot;
-
-    let tenantId = 'demo';
-    if (!isRoot && cleanHost.endsWith(`.${cleanRoot}`)) {
-        tenantId = cleanHost.replace(`.${cleanRoot}`, '');
-    } else if (!isRoot && host !== 'localhost' && !host.includes('127.0.0.1')) {
-        tenantId = cleanHost;
-    }
+    const { tenantId } = resolveTenantFromHost(host, rootDomain);
 
     let schoolData = {
         school_name: 'Registra',
@@ -35,23 +25,25 @@ export default async function Image() {
         logo_media: null as string | null
     };
 
-    try {
-        const res = await fetch(`${DJANGO_API_URL}/api/core/settings/`, {
-            headers: {
-                'X-Tenant-ID': tenantId
-            },
-            next: { revalidate: 3600 } // Cache for 1 hour
-        });
-        if (res.ok) {
-            const data = await res.json();
-            schoolData = {
-                school_name: data.school_name || 'Registra',
-                school_tagline: data.school_tagline || 'Quality Education Management',
-                logo_media: data.logo_media // This is already a full URL from get_media_url
-            };
+    if (tenantId) {
+        try {
+            const res = await fetch(`${DJANGO_API_URL}/api/core/settings/`, {
+                headers: {
+                    'X-Tenant-ID': tenantId
+                },
+                next: { revalidate: 3600 } // Cache for 1 hour
+            });
+            if (res.ok) {
+                const data = await res.json();
+                schoolData = {
+                    school_name: data.school_name || 'Registra',
+                    school_tagline: data.school_tagline || 'Quality Education Management',
+                    logo_media: data.logo_media // This is already a full URL from get_media_url
+                };
+            }
+        } catch (e) {
+            console.error('Failed to fetch school settings for OG image:', e);
         }
-    } catch (e) {
-        console.error('Failed to fetch school settings for OG image:', e);
     }
 
     return new ImageResponse(

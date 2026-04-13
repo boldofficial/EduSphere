@@ -15,6 +15,7 @@ import { StaffLoginForm } from './login/StaffLoginForm';
 import { StudentLoginForm } from './login/StudentLoginForm';
 import { FindSchoolSection } from './login/FindSchoolSection';
 import { ForgotPasswordModal } from './login/ForgotPasswordModal';
+import { resolveTenantFromHost } from '@/lib/tenant-host';
 
 export const LoginView = () => {
     const router = useRouter();
@@ -58,23 +59,12 @@ export const LoginView = () => {
             return { isRoot: true, tenantId: '' };
         }
 
-        const host = window.location.host.split(':')[0].replace(/^www\./, '');
-        const rootDomain = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'myregistra.net').split(':')[0].replace(/^www\./, '');
-
-        const isRoot =
-            host === rootDomain ||
-            host === 'localhost' ||
-            host.includes('127.0.0.1') ||
-            (host.includes('vercel.app') && !host.includes('-'));
-
-        let tenantId = '';
-        if (!isRoot) {
-            tenantId = host.endsWith(`.${rootDomain}`)
-                ? host.replace(`.${rootDomain}`, '')
-                : host;
-        }
-
-        return { isRoot, tenantId };
+        const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'myregistra.net';
+        const resolved = resolveTenantFromHost(window.location.host, rootDomain);
+        return {
+            isRoot: resolved.isRootHost,
+            tenantId: resolved.tenantId || '',
+        };
     };
 
     const handleLogoClick = () => {
@@ -265,9 +255,14 @@ export const LoginView = () => {
             const res = await fetch(`/api/proxy/schools/verify-slug/${searchSlug.trim().toLowerCase()}/`);
             if (!res.ok) throw new Error('School not found. Please check the spelling.');
             const data = await res.json();
-            const rootDomain = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'myregistra.net').split(':')[0];
-            const targetDomain = data.custom_domain || `${data.slug}.${rootDomain}`;
-            window.location.href = `${window.location.protocol}//${targetDomain}/login`;
+            const envRootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || '';
+            const normalizedEnvRoot = envRootDomain.split(':')[0];
+            const currentHost = window.location.hostname;
+            const isLocalDevHost = currentHost === 'localhost' || currentHost.endsWith('.localhost');
+            const effectiveRoot = isLocalDevHost ? 'localhost' : (normalizedEnvRoot || 'myregistra.net');
+            const portSuffix = isLocalDevHost && !data.custom_domain && window.location.port ? `:${window.location.port}` : '';
+            const targetHost = data.custom_domain || `${data.slug}.${effectiveRoot}`;
+            window.location.href = `${window.location.protocol}//${targetHost}${portSuffix}/login`;
         } catch (err: any) {
             setSearchError(err.message);
             setIsSearching(false);

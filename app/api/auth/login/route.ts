@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { getCookieOptions } from '@/lib/auth-utils';
+import { resolveTenantFromHost } from '@/lib/tenant-host';
 
 const DJANGO_API_URL = process.env.DJANGO_API_URL || 'http://127.0.0.1:8000'; // Define strictly for server-side
 
@@ -22,7 +23,10 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
         const { username, password } = body;
 
-        const tenantId = request.headers.get('x-tenant-id');
+        const headerTenantId = request.headers.get('x-tenant-id');
+        const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'myregistra.net';
+        const fallbackTenantId = resolveTenantFromHost(request.headers.get('host') || '', rootDomain).tenantId;
+        const tenantId = headerTenantId || fallbackTenantId;
         const authHeaders: HeadersInit = { 'Content-Type': 'application/json' };
         if (tenantId) {
             authHeaders['X-Tenant-ID'] = tenantId;
