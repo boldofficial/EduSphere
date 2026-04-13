@@ -140,6 +140,31 @@ class ReportCardViewSet(TenantViewSet):
         ).count()
         return Response({"success": True, "message": f"Positions recalculated for {count} students"})
 
+    @action(detail=False, methods=["get"], url_path="verify/(?P<hash>[^/.]+)", permission_classes=[permissions.AllowAny])
+    def verify(self, request, hash=None):
+        """
+        Public verification endpoint to check report card authenticity via hash.
+        """
+        try:
+            instance = ReportCard.objects.select_related("student", "student_class", "school", "student_class__class_teacher").get(verification_hash=hash)
+            
+            # Prepare public verification data
+            data = {
+                "student_name": instance.student.names,
+                "student_no": instance.student.student_no,
+                "class_name": instance.student_class.name if instance.student_class else "N/A",
+                "session": instance.session,
+                "term": instance.term,
+                "average": instance.average,
+                "is_passed": instance.is_passed,
+                "school_name": instance.school.name,
+                "verified_at": instance.updated_at.isoformat() if hasattr(instance, "updated_at") else None,
+                "teacher_name": instance.student_class.class_teacher.name if instance.student_class and instance.student_class.class_teacher else "Internal Authority"
+            }
+            return Response(data)
+        except ReportCard.DoesNotExist:
+            return Response({"error": "Invalid verification hash"}, status=404)
+
 
 class SubjectScoreViewSet(TenantViewSet):
     queryset = SubjectScore.objects.select_related("report_card__student", "report_card__student_class", "subject", "school").all()

@@ -179,6 +179,39 @@ class AcademicAI:
             logger.error(f"AI Remark Generation Error: {str(e)}")
             return None
 
+    def generate_student_intro(self, student_data):
+        """
+        Generates a professional academic introduction for a report card.
+        """
+        if not self.model:
+            return None
+
+        prompt = f"""
+        Act as a professional Academic Dean.
+        Write a 2-3 sentence academic performance outlook for a student named {student_data['name']}.
+        
+        Academic Context:
+        - Class: {student_data['class']}
+        - Scores: {student_data['scores']}
+        - Term Average: {student_data['average']}
+        - Attendance: {student_data['attendance_rate']}%
+        - Trend: {student_data['trend']}
+        
+        Guidelines:
+        1. Summarize the student's overall academic standing this term.
+        2. Mention the performance trend (improving, stable, etc.) in a professional way.
+        3. Make it sound like a formal opening to a school report.
+        4. Do NOT include placeholders like [Student Name]. Use the name provided.
+        
+        Provide only the introduction text.
+        """
+
+        try:
+            return self._generate(prompt)
+        except Exception as e:
+            logger.error(f"AI Intro Generation Error: {str(e)}")
+            return None
+
     def generate_executive_insights(self, school_summary):
         """
         Generates school-wide insights for administrators.

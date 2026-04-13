@@ -249,30 +249,57 @@ class ReportCardPDFGenerator:
         elements.append(header_table)
         elements.append(Spacer(1, 0.2 * inch))
 
-        # 2. Student Bio
+        # 2. Student Bio & Unified Info
+        passport = self._get_image(student.passport_url if hasattr(student, "passport_url") else None, width=1.0 * inch)
+        
+        # Consolidation of ALL student and term info as requested
         bio_data = [
             [
-                Paragraph(f"<b>NAME:</b> {student.names}", styles["Normal"]),
-                Paragraph(f"<b>ADM NO:</b> {student.student_no}", styles["Normal"]),
-            ],
-            [
-                Paragraph(
-                    f"<b>CLASS:</b> {report.student_class.name if report.student_class else 'N/A'}", styles["Normal"]
-                ),
-                Paragraph(f"<b>SESSION/TERM:</b> {report.session} {report.term}", styles["Normal"]),
-            ],
+                passport or "",
+                [
+                    Paragraph(f"<b>NAME:</b> {student.names.upper()}", styles["Normal"]),
+                    Paragraph(f"<b>GENDER:</b> {getattr(student, 'gender', 'N/A')}", styles["Normal"]),
+                    Paragraph(f"<b>CLASS:</b> {report.student_class.name if report.student_class else 'N/A'}", styles["Normal"]),
+                ],
+                [
+                    Paragraph(f"<b>TERM:</b> {report.term}", styles["Normal"]),
+                    Paragraph(f"<b>YEAR:</b> {report.session}", styles["Normal"]),
+                    Paragraph(f"<b>ADM NO:</b> {student.student_no}", styles["Normal"]),
+                ]
+            ]
         ]
-        bio_table = Table(bio_data, colWidths=[3.5 * inch, 2.5 * inch])
+        
+        bio_table = Table(bio_data, colWidths=[1.2 * inch, 2.5 * inch, 2.3 * inch])
         bio_table.setStyle(
             TableStyle(
                 [
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
                     ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
-                    ("PADDING", (0, 0), (-1, -1), 6),
+                    ("BACKGROUND", (0, 0), (-1, -1), colors.whitesmoke),
+                    ("PADDING", (0, 0), (-1, -1), 10),
                 ]
             )
         )
         elements.append(bio_table)
         elements.append(Spacer(1, 0.2 * inch))
+
+        # 2.5 AI Academic Outlook (Intro)
+        ai_intro = report.ai_performance_remark  # We'll use this as the outlook if available
+        # Actually, let's call a specific service or just use the field if populated
+        if ai_intro:
+            intro_style = ParagraphStyle(
+                "AIIntro",
+                parent=styles["Normal"],
+                fontSize=9,
+                textColor=colors.HexColor("#334155"),
+                backColor=colors.HexColor("#f8fafc"),
+                borderPadding=8,
+                borderWidth=1,
+                borderColor=colors.HexColor("#e2e8f0"),
+                borderRadius=4
+            )
+            elements.append(Paragraph(f"<b>ACADEMIC PERFORMANCE OUTLOOK (AI ANALYSIS):</b><br/>{ai_intro}", intro_style))
+            elements.append(Spacer(1, 0.2 * inch))
 
         # 3. Academic/Learning Table
         if is_early_years:
@@ -358,7 +385,7 @@ class ReportCardPDFGenerator:
                 [
                     f"TOTAL SCORE: {report.total_score}",
                     f"AVERAGE: {report.average:.1f}%",
-                    f"POSITION: {report.position if report.position else 'N/A'}",
+                    "", # Position removed as requested
                 ],
                 [
                     f"ATTENDANCE: {report.attendance_present}/{report.attendance_total}",
@@ -485,42 +512,75 @@ class ReportCardPDFGenerator:
             elements.append(Spacer(1, 0.2 * inch))
 
         # 5. Remarks & Signatures
-        remarks_style = ParagraphStyle("Remarks", parent=styles["Normal"], fontSize=9, italic=True)
-        elements.append(
-            Paragraph(f"<b>Class Teacher's Remark:</b> {report.teacher_remark or 'No remark yet.'}", remarks_style)
+        remark_box_style = ParagraphStyle(
+            "RemarkBox",
+            parent=styles["Normal"],
+            fontSize=9,
+            backColor=colors.HexColor("#f1f5f9"),
+            borderPadding=10,
+            borderWidth=0.5,
+            borderColor=colors.HexColor("#cbd5e1"),
+            borderRadius=5,
+            spaceAfter=15
         )
-        elements.append(Spacer(1, 0.1 * inch))
-        elements.append(
-            Paragraph(f"<b>Head Teacher's Remark:</b> {report.head_teacher_remark or 'No remark yet.'}", remarks_style)
-        )
-        elements.append(Spacer(1, 0.4 * inch))
+        
+        elements.append(Paragraph(f"<b>Class Teacher's Remark:</b><br/>{report.teacher_remark or 'Consult class teacher for detailed feedback.'}", remark_box_style))
+        elements.append(Paragraph(f"<b>Head Teacher's Remark:</b><br/>{report.head_teacher_remark or 'Satisfactory performance.'}", remark_box_style))
 
-        # Signatures
+        # Signatures & Verification (QR Code)
         sig_data = []
-        head_sig = self._get_image(self.settings.head_of_school_signature, width=0.8 * inch) if self.settings else None
+        
+        # Get Teacher Signature
+        teacher_sig = None
+        if report.student_class and report.student_class.class_teacher:
+            # We use the signature_url field which we just added
+            teacher_sig = self._get_image(report.student_class.class_teacher.signature_url, width=0.8 * inch)
+            
+        head_sig = self._get_image(self.settings.head_of_school_signature if self.settings else None, width=0.8 * inch)
 
-        sig_cols = [
+        # Generate QR Code for Verification
+        qr_image = self._generate_qr_code(report)
+
+        sig_table_data = [
             [
-                Spacer(1, 0.3 * inch),
-                Paragraph("________________", styles["Normal"]),
-                Paragraph("Class Teacher", styles["Normal"]),
-            ],
-            [
-                head_sig or Spacer(1, 0.3 * inch),
-                Paragraph("________________", styles["Normal"]),
-                Paragraph("Head of School (Stamp)", styles["Normal"]),
-            ],
+                [teacher_sig or Spacer(1, 0.4 * inch), Paragraph("________________", styles["Normal"]), Paragraph("Class Teacher", styles["Normal"])],
+                [qr_image or Spacer(1, 0.8 * inch), Paragraph("<font size='7' color='#64748b'>SCAN TO VERIFY</font>", styles["Normal"])],
+                [head_sig or Spacer(1, 0.4 * inch), Paragraph("________________", styles["Normal"]), Paragraph("Head of School (Stamp)", styles["Normal"])]
+            ]
         ]
 
-        sig_table = Table([[sig_cols[0], sig_cols[1]]], colWidths=[3 * inch, 3 * inch])
+        sig_table = Table(sig_table_data, colWidths=[2 * inch, 2 * inch, 2 * inch])
         sig_table.setStyle(
             TableStyle(
                 [
                     ("ALIGN", (0, 0), (-1, -1), "CENTER"),
                     ("VALIGN", (0, 0), (-1, -1), "BOTTOM"),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
                 ]
             )
         )
         elements.append(sig_table)
 
         return elements
+
+    def _generate_qr_code(self, report):
+        """Generates a QR code for report card verification."""
+        import qrcode
+        from reportlab.platypus import Image
+        
+        # Build verification URL
+        from django.conf import settings as django_settings
+        domain = getattr(django_settings, "ROOT_DOMAIN", "myregistra.net")
+        verify_url = f"https://{domain}/verify/{report.verification_hash}"
+        
+        qr = qrcode.QRCode(version=1, box_size=10, border=0)
+        qr.add_data(verify_url)
+        qr.make(fit=True)
+        img = qr.make_image(fill_color="black", back_color="transparent")
+        
+        # Save to buffer
+        qr_buffer = io.BytesIO()
+        img.save(qr_buffer, format="PNG")
+        qr_buffer.seek(0)
+        
+        return Image(qr_buffer, width=0.8 * inch, height=0.8 * inch)

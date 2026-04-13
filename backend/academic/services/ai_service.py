@@ -116,3 +116,28 @@ class ReportCardAIService:
         report_card.save(update_fields=["ai_performance_remark"])
 
         return remark, performance_data
+
+    @staticmethod
+    def generate_academic_intro(report_card):
+        """
+        Generates a dynamic academic summary intro for the report card.
+        """
+        scores = report_card.scores.all()
+        
+        # Data preparation
+        performance_data = {
+            "name": report_card.student.names,
+            "class": report_card.student_class.name if report_card.student_class else "N/A",
+            "scores": [{"subject": s.subject.name, "score": s.total, "grade": s.grade} for s in scores],
+            "average": report_card.average,
+            "attendance_rate": (report_card.attendance_present / report_card.attendance_total * 100) if report_card.attendance_total > 0 else 0,
+            "trend": report_card.performance_trend
+        }
+
+        try:
+            ai = AcademicAI()
+            intro = ai.generate_student_intro(performance_data)
+            return intro
+        except Exception as e:
+            logger.error(f"AI Intro generation failed: {e}")
+            return f"Academic performance summary for {report_card.student.names} for {report_card.term} {report_card.session}."

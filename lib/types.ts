@@ -166,6 +166,7 @@ export interface Teacher {
   employment_type?: 'FULL_TIME' | 'PART_TIME' | 'CONTRACT';
   role?: string;
   passport_url?: string | null;
+  signature_url?: string | null;
   tasks?: string;
   assigned_modules?: string[]; // IDs
 
@@ -215,7 +216,8 @@ export interface Staff extends Entity {
   role: string; // Job Title (e.g. Bursar)
   tasks: string; // Assigned tasks
   assigned_modules?: string[]; // e.g. ['bursary', 'attendance']
-  passport_url?: string | null; // Base64 image or URL
+  passport_url?: string | null;
+  signature_url?: string | null; // Base64 image or URL
   email: string;
   phone: string;
   address: string;
@@ -250,7 +252,8 @@ export interface Student extends Entity {
   parent_email?: string; // For password recovery
   parent_phone: string;
   address: string;
-  passport_url?: string | null; // Base64 image or URL
+  passport_url?: string | null;
+  signature_url?: string | null; // Base64 image or URL
   password?: string; // Portal login password (set by admin)
   assigned_fees?: string[]; // IDs of optional fees assigned to this student
   discounts?: StudentDiscount[]; // Applied discounts/scholarships

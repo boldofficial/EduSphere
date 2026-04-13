@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from django.utils import timezone
 
@@ -59,6 +60,9 @@ class Teacher(TenantModel):
     role = models.CharField(max_length=255, blank=True, null=True, help_text="Job Title (e.g. Bursar)")
     tasks = models.TextField(blank=True, null=True, help_text="Assigned duties")
     assigned_modules = models.JSONField(default=list, blank=True, help_text="List of module IDs they can access")
+
+    # Verification & Signatures
+    signature_url = models.CharField(max_length=512, blank=True, null=True, help_text="Teacher's digital signature image URL")
 
     def __str__(self):
         return f"{self.name} ({self.school.name}) - {self.staff_type}"
@@ -248,6 +252,9 @@ class ReportCard(TenantModel):
     head_teacher_remark = models.TextField(blank=True)
     ai_performance_remark = models.TextField(blank=True, help_text="AI-generated analysis of student performance")
     
+    # Verification
+    verification_hash = models.UUIDField(default=uuid.uuid4, unique=True, editable=False, db_index=True)
+
     # Performance Trend
     TREND_CHOICES = [
         ("improving", "Improving"),

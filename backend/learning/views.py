@@ -259,7 +259,9 @@ class QuizViewSet(LearningTenantViewSet):
         # Clear previous answers if any (to prevent duplicates on re-submit/resume)
         attempt.answers.all().delete()
 
+        answers_data = request.data.get("answers", [])
         errors = []
+        total_score = 0
         for ans in answers_data:
             question_id = ans.get("question_id")
             option_id = ans.get("selected_option_id")
