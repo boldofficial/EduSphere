@@ -22,12 +22,12 @@ export async function safeJsonParse(request: NextRequest) {
 /**
  * Check rate limit and return error response if exceeded
  */
-export function withRateLimit(
+export async function withRateLimit(
     request: NextRequest,
     config: RateLimitConfig = RATE_LIMITS.default
-): { limited: boolean; response?: NextResponse } {
+): Promise<{ limited: boolean; response?: NextResponse }> {
     const clientId = getClientIdentifier(request)
-    const result = checkRateLimit(clientId, config)
+    const result = await checkRateLimit(clientId, config)
 
     if (!result.success) {
         const retryAfter = Math.ceil((result.resetTime - Date.now()) / 1000)

@@ -1,7 +1,7 @@
 /**
  * Query Client Configuration
  * 
- * Optimized caching strategy for scalability.
+ * Optimized caching strategy for scalability with deduplication.
  */
 
 import { QueryClient } from '@tanstack/react-query';
@@ -12,7 +12,36 @@ export const defaultQueryOptions = {
     retry: 1, // Only retry once on failure
     refetchOnWindowFocus: false, // Don't refetch when window regains focus
     refetchOnReconnect: true, // Refetch when reconnecting
+    dedupe: true, // Deduplicate identical requests
 };
+
+// In-flight query tracking for deduplication
+const inFlightQueries = new Map<string, Promise<unknown>>();
+
+function hashKey(key: readonly string[]): string {
+    return JSON.stringify(key);
+}
+
+export async function deduplicatedQuery<T>(
+    queryKey: readonly string[],
+    queryFn: () => Promise<T>
+): Promise<T> {
+    const key = hashKey(queryKey);
+    
+    // Check if there's already an in-flight query with same key
+    const existing = inFlightQueries.get(key);
+    if (existing) {
+        return existing as Promise<T>;
+    }
+    
+    // Create new query
+    const promise = queryFn().finally(() => {
+        inFlightQueries.delete(key);
+    });
+    
+    inFlightQueries.set(key, promise);
+    return promise;
+}
 
 export const createQueryClient = () => {
     return new QueryClient({

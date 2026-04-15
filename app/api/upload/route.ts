@@ -12,7 +12,7 @@ import { RATE_LIMITS } from '@/lib/rate-limit'
 // POST /api/upload - Upload a file to R2
 export async function POST(request: NextRequest) {
     // Stricter rate limit for uploads
-    const rateCheck = withRateLimit(request, RATE_LIMITS.upload)
+    const rateCheck = await withRateLimit(request, RATE_LIMITS.upload)
     if (rateCheck.limited) return rateCheck.response!
 
     try {

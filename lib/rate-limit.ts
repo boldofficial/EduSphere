@@ -1,46 +1,19 @@
 /**
  * Rate Limiting Utility
  * 
- * Simple in-memory rate limiter for API routes.
- * 
- * IMPORTANT: This implementation works best for single-instance deployments.
- * For production at scale with multiple instances:
- * - Use Redis (Upstash Redis is great for serverless)
- * - Or use Vercel's Edge Config / KV
- * - Or use a dedicated rate limiting service (e.g., Arcjet)
- * 
- * The current implementation is suitable for:
- * - Development
- * - Single-instance production (single Vercel function)
- * - Low-traffic applications
+ * In-memory rate limiter for API routes.
  */
 
-interface RateLimitEntry {
-    count: number;
-    resetTime: number;
-}
+export const RATE_LIMITS = {
+    default: { limit: 100, window: 60000 },
+    auth: { limit: 10, window: 60000 },
+    upload: { limit: 20, window: 60000 },
+    reports: { limit: 10, window: 60000 },
+    sensitive: { limit: 30, window: 60000 },
+    read: { limit: 200, window: 60000 },
+};
 
-// In-memory store (for single instance deployments)
-// For multi-instance deployments, use Redis
-const rateLimitStore = new Map<string, RateLimitEntry>();
-
-// Lazy cleanup on access (serverless-friendly, no setInterval)
-function cleanupExpired(): void {
-    const now = Date.now();
-    // Only cleanup if store is getting large (memory optimization)
-    if (rateLimitStore.size > 1000) {
-        for (const [key, entry] of rateLimitStore.entries()) {
-            if (now > entry.resetTime) {
-                rateLimitStore.delete(key);
-            }
-        }
-    }
-}
-
-export interface RateLimitConfig {
-    maxRequests: number;
-    windowMs: number;
-}
+export type RateLimitConfig = typeof RATE_LIMITS[keyof typeof RATE_LIMITS];
 
 export interface RateLimitResult {
     success: boolean;
@@ -48,76 +21,67 @@ export interface RateLimitResult {
     resetTime: number;
 }
 
-/**
- * Check if a request should be rate limited
- * @param identifier - Unique identifier (IP address, user ID, etc.)
- * @param config - Rate limit configuration
- * @returns RateLimitResult indicating if request is allowed
- */
-export function checkRateLimit(
-    identifier: string,
-    config: RateLimitConfig = { maxRequests: 100, windowMs: 60000 }
-): RateLimitResult {
-    // Lazy cleanup for serverless environments
-    cleanupExpired();
-    
-    const now = Date.now();
-    const entry = rateLimitStore.get(identifier);
+const memoryStore = new Map<string, { count: number; resetTime: number }>();
 
-    // First request or window expired
+export async function checkRateLimit(
+    identifier: string,
+    config: RateLimitConfig = RATE_LIMITS.default
+): Promise<RateLimitResult> {
+    const now = Date.now();
+    const entry = memoryStore.get(identifier);
+
     if (!entry || now > entry.resetTime) {
-        rateLimitStore.set(identifier, {
+        memoryStore.set(identifier, {
             count: 1,
-            resetTime: now + config.windowMs
+            resetTime: now + config.window,
         });
+        
+        if (memoryStore.size > 1000) {
+            for (const [key, val] of memoryStore.entries()) {
+                if (now > val.resetTime) memoryStore.delete(key);
+            }
+        }
+        
         return {
             success: true,
-            remaining: config.maxRequests - 1,
-            resetTime: now + config.windowMs
+            remaining: config.limit - 1,
+            resetTime: now + config.window,
         };
     }
 
-    // Within window
-    if (entry.count < config.maxRequests) {
+    if (entry.count < config.limit) {
         entry.count++;
         return {
             success: true,
-            remaining: config.maxRequests - entry.count,
-            resetTime: entry.resetTime
+            remaining: config.limit - entry.count,
+            resetTime: entry.resetTime,
         };
     }
 
-    // Rate limited
     return {
         success: false,
         remaining: 0,
-        resetTime: entry.resetTime
+        resetTime: entry.resetTime,
     };
 }
 
-/**
- * Get client identifier from request
- * Uses X-Forwarded-For header for proxied requests, falls back to a default
- */
 export function getClientIdentifier(request: Request): string {
+    const userId = request.headers.get('x-user-id');
+    if (userId) return `user:${userId}`;
+    
     const forwarded = request.headers.get('x-forwarded-for');
     const ip = forwarded?.split(',')[0]?.trim() || 'unknown';
-    return ip;
+    return `ip:${ip}`;
 }
 
-/**
- * Rate limit configurations for different endpoints
- */
-export const RATE_LIMITS = {
-    // General API endpoints
-    default: { maxRequests: 100, windowMs: 60000 }, // 100 requests per minute
+export function getRateLimitConfig(endpoint: string): RateLimitConfig {
+    const lower = endpoint.toLowerCase();
     
-    // Auth endpoints (stricter)
-    auth: { maxRequests: 10, windowMs: 60000 }, // 10 login attempts per minute
+    if (lower.includes('/auth/') || lower.includes('/login')) return RATE_LIMITS.auth as RateLimitConfig;
+    if (lower.includes('/upload')) return RATE_LIMITS.upload as RateLimitConfig;
+    if (lower.includes('/report') || lower.includes('/generate')) return RATE_LIMITS.reports as RateLimitConfig;
+    if (lower.includes('/bursary/payment') || lower.includes('/staff')) return RATE_LIMITS.sensitive as RateLimitConfig;
+    if (lower.endsWith('/') || lower.match(/^\/api\/\w+$/)) return RATE_LIMITS.read as RateLimitConfig;
     
-    // Upload endpoints (file uploads are expensive)
-    upload: { maxRequests: 20, windowMs: 60000 }, // 20 uploads per minute
-    
-    // Report generation (CPU intensive)
-    reports: { maxRequests: 10, windowMs: 60000 }, // 10 reports per minute
-} as const;
+    return RATE_LIMITS.default as RateLimitConfig;
+}

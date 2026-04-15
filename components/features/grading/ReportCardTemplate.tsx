@@ -344,13 +344,11 @@ export const ReportCardTemplate: React.FC<ReportCardTemplateProps> = ({
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[10px]">
-                        <span className="font-semibold text-slate-500">TERM</span>
-                        <span className="font-bold" style={{ color: themeDeep }}>{term}</span>
-                        <span className="font-semibold text-slate-500">YEAR</span>
-                        <span className="font-bold" style={{ color: themeDeep }}>{sessionYear}</span>
-                        <span className="font-semibold text-slate-500">ADM NO</span>
-                        <span className="font-bold" style={{ color: themeDeep }}>{student?.student_no || '-'}</span>
+                    <div className="rounded-lg border border-slate-200 bg-[#f8fbff] px-3 py-2 text-right text-[10px]">
+                        <p className="font-extrabold uppercase tracking-[0.14em] text-slate-500">Official Result Slip</p>
+                        <p className="mt-0.5 font-semibold" style={{ color: themeDeep }}>
+                            {term} | {sessionYear}
+                        </p>
                     </div>
                 </div>
             </div>
@@ -358,39 +356,68 @@ export const ReportCardTemplate: React.FC<ReportCardTemplateProps> = ({
             <div className="px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-white" style={{ backgroundColor: themeDeep }}>Student Report Card</div>
 
             <div className="border-b border-slate-200 px-4 py-3">
-                <div className="grid grid-cols-12 gap-3">
-                    <div className="col-span-2">
-                        <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded border border-slate-300 bg-slate-50">
-                            {student?.passport_url ? (
-                                <img src={student.passport_url} alt={student.names} className="h-full w-full object-cover" />
-                            ) : (
-                                <User className="h-8 w-8 text-slate-300" />
-                            )}
+                <div className="rounded-xl border border-slate-200 bg-[#fbfdff] p-3">
+                    <div className="grid grid-cols-12 gap-3">
+                        <div className="col-span-2">
+                            <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded border border-slate-300 bg-slate-50 shadow-sm">
+                                {student?.passport_url ? (
+                                    <img src={student.passport_url} alt={student.names} className="h-full w-full object-cover" />
+                                ) : (
+                                    <User className="h-8 w-8 text-slate-300" />
+                                )}
+                            </div>
                         </div>
-                    </div>
 
-                    <div className="col-span-10 grid grid-cols-2 gap-x-4 gap-y-2 text-[11px]">
-                        <div>
-                            <span className="text-slate-500">Student Name:</span>
-                            <span className="ml-1 font-semibold text-slate-800">{student?.names || '-'}</span>
+                        <div className="col-span-7 grid grid-cols-2 gap-x-4 gap-y-2 text-[11px]">
+                            <div>
+                                <span className="text-slate-500">Student Name:</span>
+                                <span className="ml-1 font-semibold text-slate-800">{student?.names || '-'}</span>
+                            </div>
+                            <div>
+                                <span className="text-slate-500">Class:</span>
+                                <span className="ml-1 font-semibold text-slate-800">{currentClass?.name || '-'}</span>
+                            </div>
+                            <div>
+                                <span className="text-slate-500">Gender:</span>
+                                <span className="ml-1 font-semibold text-slate-800">{student?.gender || '-'}</span>
+                            </div>
+                            <div>
+                                <span className="text-slate-500">Position:</span>
+                                <span className="ml-1 font-semibold text-slate-800">{score?.position ? Utils.ordinalSuffix(score.position) : '-'}</span>
+                            </div>
                         </div>
-                        <div>
-                            <span className="text-slate-500">Class:</span>
-                            <span className="ml-1 font-semibold text-slate-800">{currentClass?.name || '-'}</span>
-                        </div>
-                        <div>
-                            <span className="text-slate-500">Gender:</span>
-                            <span className="ml-1 font-semibold text-slate-800">{student?.gender || '-'}</span>
-                        </div>
-                        <div>
-                            <span className="text-slate-500">Position:</span>
-                            <span className="ml-1 font-semibold text-slate-800">{score?.position ? Utils.ordinalSuffix(score.position) : '-'}</span>
+
+                        <div className="col-span-3 grid grid-cols-1 gap-2 text-[10px]">
+                            <div className="rounded border border-cyan-100 bg-cyan-50 px-2 py-1.5">
+                                <p className="text-[9px] font-bold uppercase tracking-wide text-cyan-700">Term</p>
+                                <p className="font-semibold text-slate-800">{term}</p>
+                            </div>
+                            <div className="rounded border border-indigo-100 bg-indigo-50 px-2 py-1.5">
+                                <p className="text-[9px] font-bold uppercase tracking-wide text-indigo-700">Year</p>
+                                <p className="font-semibold text-slate-800">{sessionYear}</p>
+                            </div>
+                            <div className="rounded border border-amber-100 bg-amber-50 px-2 py-1.5">
+                                <p className="text-[9px] font-bold uppercase tracking-wide text-amber-700">Adm No</p>
+                                <p className="font-semibold text-slate-800">{student?.student_no || '-'}</p>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="mt-3 rounded border p-2 text-[10px] leading-relaxed text-slate-600" style={{ backgroundColor: themeSoft, borderColor: themeSoftBorder }}>
-                    {score?.ai_performance_remark || score?.teacher_remark || 'A commendable termly performance. Continue to build discipline, confidence, and consistency in all learning tasks.'}
+                <div
+                    className="relative mt-3 overflow-hidden rounded-xl border px-3 py-2.5 text-[10px] leading-relaxed text-slate-700"
+                    style={{
+                        borderColor: themeSoftBorder,
+                        background: `linear-gradient(95deg, ${toRgba(themePrimary, 0.12)} 0%, #ffffff 55%)`,
+                    }}
+                >
+                    <div className="absolute -right-4 -top-4 h-16 w-16 rounded-full" style={{ backgroundColor: toRgba(themePrimary, 0.14) }} />
+                    <p className="relative z-10 text-[9px] font-bold uppercase tracking-[0.14em]" style={{ color: themeDeep }}>
+                        Term Summary
+                    </p>
+                    <p className="relative z-10 mt-1 font-medium">
+                        {score?.ai_performance_remark || score?.teacher_remark || 'A commendable termly performance. Continue to build discipline, confidence, and consistency in all learning tasks.'}
+                    </p>
                 </div>
             </div>
 
