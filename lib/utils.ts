@@ -17,8 +17,8 @@ export const getCurrentTimestamp = () => Date.now();
 
 export const getTodayString = () => new Date().toISOString().split('T')[0];
 
-export const getMediaUrl = (url: string | null | undefined): string | null => {
-  if (!url) return null;
+export const getMediaUrl = (url: string | null | undefined): string => {
+  if (!url) return '';
   if (url.startsWith('data:')) return url;
   if (url.startsWith('blob:')) return url;
   if (url.startsWith('/api/proxy')) return url;
@@ -38,7 +38,7 @@ export const getMediaUrl = (url: string | null | undefined): string | null => {
     return '/api/proxy' + path;
   }
 
-  return url;
+  return url || '';
 };
 
 export const sameId = (a: string | number | null | undefined, b: string | number | null | undefined) =>
