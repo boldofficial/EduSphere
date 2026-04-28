@@ -330,7 +330,7 @@ export const ReportCardTemplate: React.FC<ReportCardTemplateProps> = ({
                     <div className="flex items-center gap-3">
                         <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded border border-slate-300 bg-white">
                             {settings?.logo_media ? (
-                                <img src={settings.logo_media} alt="School logo" className="h-full w-full object-contain" />
+                                <img src={Utils.getMediaUrl(settings.logo_media) || ''} alt="School logo" className="h-full w-full object-contain" />
                             ) : (
                                 <School className="h-7 w-7" style={{ color: themePrimary }} />
                             )}
@@ -361,7 +361,7 @@ export const ReportCardTemplate: React.FC<ReportCardTemplateProps> = ({
                         <div className="col-span-2">
                             <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded border border-slate-300 bg-slate-50 shadow-sm">
                                 {student?.passport_url ? (
-                                    <img src={student.passport_url} alt={student.names} className="h-full w-full object-cover" />
+                                    <img src={Utils.getMediaUrl(student.passport_url) || ''} alt={student.names} className="h-full w-full object-cover" />
                                 ) : (
                                     <User className="h-8 w-8 text-slate-300" />
                                 )}
@@ -756,7 +756,7 @@ export const ReportCardTemplate: React.FC<ReportCardTemplateProps> = ({
                     </p>
                     <div className="mt-4 flex items-center justify-end border-t border-dashed border-slate-300 pt-2">
                         {settings?.head_of_school_signature ? (
-                            <img src={settings.head_of_school_signature} alt="Head signature" className="h-8 object-contain" />
+                            <img src={Utils.getMediaUrl(settings.head_of_school_signature) || ''} alt="Head signature" className="h-8 object-contain" />
                         ) : (
                             <span className="text-[9px] text-slate-400">Signature</span>
                         )}

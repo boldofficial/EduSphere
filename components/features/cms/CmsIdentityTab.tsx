@@ -3,6 +3,7 @@
 import React from 'react';
 import { Building, Image as ImageIcon } from 'lucide-react';
 import { Settings } from '@/lib/types';
+import * as Utils from '@/lib/utils';
 
 interface CmsIdentityTabProps {
     localSettings: Settings;
@@ -32,7 +33,7 @@ export const CmsIdentityTab: React.FC<CmsIdentityTabProps> = ({
                     <div className="relative group aspect-square rounded-[2rem] bg-gray-50 border-2 border-dashed border-gray-200 flex flex-col items-center justify-center transition-all hover:border-brand-400 overflow-hidden">
                         {localSettings.logo_media ? (
                             <>
-                                <img src={localSettings.logo_media} className="w-full h-full object-contain p-6" />
+                                <img src={Utils.getMediaUrl(localSettings.logo_media)} className="w-full h-full object-contain p-6" />
                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                     <label className="cursor-pointer p-3 bg-white rounded-full text-brand-600 shadow-xl hover:scale-110 transition-transform">
                                         <ImageIcon size={24} />

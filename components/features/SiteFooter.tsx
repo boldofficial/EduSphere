@@ -1,6 +1,8 @@
 import React from 'react';
 import Link from 'next/link';
-import { GraduationCap, Phone, Mail, MapPin, Facebook, Instagram } from 'lucide-react';
+import { School, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
+import * as Types from '@/lib/types';
+import * as Utils from '@/lib/utils';
 
 interface SiteFooterProps {
     settings: {
@@ -24,16 +26,16 @@ const SiteFooter = ({ settings }: SiteFooterProps) => {
                             {settings.logo_media ? (
                                 <>
                                     <div className="bg-white p-1 rounded-xl">
-                                        <img src={settings.logo_media} alt="Logo" className="h-14 w-14 object-contain" />
+                                        <img src={Utils.getMediaUrl(settings.logo_media) || ''} alt="Logo" className="h-14 w-14 object-contain" />
                                     </div>
                                     <div>
-                                        <h3 className="text-lg font-bold text-white leading-tight">Registra</h3>
+                                        <h3 className="text-lg font-bold text-white leading-tight">{settings.school_name || "Registra"}</h3>
                                         <p className="text-accent-500 text-xs font-bold leading-tight uppercase tracking-wider">The operating system for modern schools.</p>
                                     </div>
                                 </>
                             ) : (
                                 <div className="h-16">
-                                    <img src="/footer-logo.png" alt="Registra" className="h-full w-auto object-contain" />
+                                    <img src={Utils.getMediaUrl(settings.logo_media) || "/footer-logo.png"} alt={settings.school_name || "Registra"} className="h-10 w-auto object-contain" />
                                 </div>
                             )}
                         </div>

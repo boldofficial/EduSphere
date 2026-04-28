@@ -100,12 +100,28 @@ export const PUBLIC_CACHE_PATHS = [
     'schools/public',
 ];
 
+export const CACHEABLE_PATHS = [
+    'academic/classes/',
+    'academic/subjects/',
+    'academic/students/',  // High-read, low-churn
+    'bursary/fees/',
+    'bursary/fee-structures/',
+    'academic/teachers/',
+    'academic/staff/',
+    'learning/lessons/',
+    'announcements/',
+    'calendar/events/',
+];
+
 export function isCacheable(path: string): boolean {
-    return PUBLIC_CACHE_PATHS.some(p => path.includes(p));
+    if (PUBLIC_CACHE_PATHS.some(p => path.includes(p))) return true;
+    if (CACHEABLE_PATHS.some(p => path.includes(p))) return true;
+    return false;
 }
 
 export function getCacheTTL(path: string): CacheTTL {
     if (path.includes('public-stats')) return 'short';
     if (path.includes('public-settings')) return 'medium';
+    if (path.includes('students/') || path.includes('fees/')) return 'long';
     return 'medium';
 }

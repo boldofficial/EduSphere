@@ -3,6 +3,7 @@
 import React from 'react';
 import { Info, Heart, GraduationCap, Plus, Star, Trash2, Image as ImageIcon } from 'lucide-react';
 import { Settings, CoreValue, AcademicProgram } from '@/lib/types';
+import * as Utils from '@/lib/utils';
 
 interface CmsContentTabsProps {
     localSettings: Settings;
@@ -158,7 +159,7 @@ export const CmsContentTabs: React.FC<CmsContentTabsProps> = ({
                                     <div className="relative group overflow-hidden rounded-2xl aspect-square bg-white border border-gray-100 flex items-center justify-center">
                                         {prog.image ? (
                                             <>
-                                                <img src={prog.image} className="w-full h-full object-cover" />
+                                                <img src={Utils.getMediaUrl(prog.image)} className="w-full h-full object-cover" />
                                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                                     <label className="cursor-pointer p-2 bg-white rounded-full text-brand-600 shadow-xl">
                                                         <ImageIcon size={20} />

@@ -2,17 +2,30 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { getCookieOptions } from '@/lib/auth-utils';
 
-const DJANGO_API_URL = process.env.DJANGO_API_URL || 'http://127.0.0.1:8000';
+function getDjangoUrl(): string {
+    const envUrl = process.env.DJANGO_API_URL;
+    if (envUrl) {
+        const url = new URL(envUrl.startsWith('http') ? envUrl : `http://${envUrl}`);
+        return url.origin;
+    }
+    return 'http://127.0.0.1:8001';
+}
+
+const DEMO_TENANT_DOMAIN = process.env.DEMO_TENANT_DOMAIN || 'demo.myregistra.net';
 
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
         const { role } = body;
 
-        // Call the Django backend demo-login endpoint
-        const response = await fetch(`${DJANGO_API_URL}/api/users/demo-login/`, {
+        const demoTenantId = DEMO_TENANT_DOMAIN.split('.')[0];
+
+        const response = await fetch(`${getDjangoUrl()}/api/users/demo-login/`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-Tenant-ID': demoTenantId
+            },
             body: JSON.stringify({ role }),
         });
 
@@ -24,21 +37,17 @@ export async function POST(request: NextRequest) {
         const data = await response.json();
         const { access, refresh, user } = data;
 
-        // Set cookies
         const cookieStore = await cookies();
 
-        // Access Token
         cookieStore.set('access_token', access, getCookieOptions('access'));
 
-        // Refresh Token
         cookieStore.set('refresh_token', refresh, getCookieOptions('refresh'));
 
         return NextResponse.json({ success: true, user });
-    } catch (error: any) {
+    } catch (error) {
         console.error('Demo login error:', error);
         return NextResponse.json({
             error: 'Internal Server Error',
-            details: error?.message
         }, { status: 500 });
     }
 }

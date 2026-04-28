@@ -2,6 +2,7 @@
 
 import React, { useRef } from 'react';
 import { Camera, X, User } from 'lucide-react';
+import * as Utils from '@/lib/utils';
 
 interface PhotoUploadProps {
     value?: string | null;
@@ -70,7 +71,7 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
                 {value ? (
                     <>
                         <img
-                            src={value}
+                            src={Utils.getMediaUrl(value) || ''}
                             alt="Preview"
                             className="h-full w-full object-cover"
                         />

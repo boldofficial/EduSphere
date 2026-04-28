@@ -2,6 +2,7 @@
 
 import React, { useRef, useState } from 'react';
 import { Upload, X, FileText, Image as ImageIcon } from 'lucide-react';
+import * as Utils from '@/lib/utils';
 
 interface FileUploadProps {
     value?: string | null;
@@ -49,7 +50,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
         }
     };
 
-    const isImage = value?.startsWith('data:image/');
+    const isImage = value?.startsWith('data:image/') || (value && /\.(jpg|jpeg|png|webp|gif|svg)$/i.test(value)) || value?.includes('/media/');
 
     return (
         <div className="space-y-2">
@@ -66,7 +67,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
                     <div className="flex items-center gap-3 w-full">
                         {isImage ? (
                             <div className="h-12 w-12 rounded border bg-white overflow-hidden flex-shrink-0">
-                                <img src={value} alt="Preview" className="h-full w-full object-cover" />
+                                <img src={Utils.getMediaUrl(value) || ''} alt="Preview" className="h-full w-full object-cover" />
                             </div>
                         ) : (
                             <div className="h-12 w-12 rounded border bg-white flex items-center justify-center text-brand-600 flex-shrink-0">

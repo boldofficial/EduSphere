@@ -3,7 +3,14 @@ import { cookies } from 'next/headers';
 import { getCookieOptions, getDeleteOptions } from '@/lib/auth-utils';
 import { resolveTenantFromHost } from '@/lib/tenant-host';
 
-const DJANGO_API_URL = process.env.DJANGO_API_URL || 'http://127.0.0.1:8000';
+function getDjangoUrl(): string {
+    const envUrl = process.env.DJANGO_API_URL;
+    if (envUrl) {
+        const url = new URL(envUrl.startsWith('http') ? envUrl : `http://${envUrl}`);
+        return url.origin;
+    }
+    return 'http://127.0.0.1:8001';
+}
 
 /**
  * API Route to refresh the JWT access token using the refresh token stored in cookies.
@@ -11,7 +18,7 @@ const DJANGO_API_URL = process.env.DJANGO_API_URL || 'http://127.0.0.1:8000';
  */
 export async function POST(request: NextRequest) {
     const cookieStore = await cookies();
-    const refreshToken = (await cookieStore).get('refresh_token')?.value;
+    const refreshToken = cookieStore.get('refresh_token')?.value;
 
     if (!refreshToken) {
         return NextResponse.json({ error: 'No refresh token available' }, { status: 401 });
@@ -22,12 +29,12 @@ export async function POST(request: NextRequest) {
         const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'myregistra.net';
         const fallbackTenantId = resolveTenantFromHost(request.headers.get('host') || '', rootDomain).tenantId;
         const tenantId = headerTenantId || fallbackTenantId;
-        const headers: HeadersInit = { 'Content-Type': 'application/json' };
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
         if (tenantId) {
             headers['X-Tenant-ID'] = tenantId;
         }
 
-        const response = await fetch(`${DJANGO_API_URL}/api/token/refresh/`, {
+        const response = await fetch(`${getDjangoUrl()}/api/token/refresh/`, {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({ refresh: refreshToken }),

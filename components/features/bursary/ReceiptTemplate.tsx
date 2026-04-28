@@ -33,7 +33,7 @@ export const ReceiptTemplate: React.FC<ReceiptTemplateProps> = ({ payment, stude
                 <div style={{ textAlign: 'center', marginBottom: '10px', paddingBottom: '8px', borderBottom: '2px solid #1A3A5C' }}>
                     <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
                         {settings.logo_media && (
-                            <img src={settings.logo_media} alt="Logo" style={{ height: '45px', width: '45px', objectFit: 'contain', flexShrink: 0 }} />
+                            <img src={Utils.getMediaUrl(settings.logo_media)} alt="Logo" style={{ height: '45px', width: '45px', objectFit: 'contain', flexShrink: 0 }} />
                         )}
                         <div style={{ textAlign: 'left', minWidth: 0 }}>
                             <div style={{ fontSize: '15px', fontWeight: 800, color: '#1A3A5C', textTransform: 'uppercase', lineHeight: 1.2, wordWrap: 'break-word' }}>
@@ -132,7 +132,7 @@ export const ReceiptTemplate: React.FC<ReceiptTemplateProps> = ({ payment, stude
                         <div style={{ textAlign: 'center', flex: '0 0 auto' }}>
                             <div style={{ width: '120px', borderBottom: '2px solid #333', height: '30px', marginBottom: '3px', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
                                 {settings.head_of_school_signature && (
-                                    <img src={settings.head_of_school_signature} alt="Signature" style={{ height: '28px', objectFit: 'contain' }} />
+                                    <img src={Utils.getMediaUrl(settings.head_of_school_signature)} alt="Signature" style={{ height: '28px', objectFit: 'contain' }} />
                                 )}
                             </div>
                             <p style={{ fontWeight: 600, fontSize: '10px', margin: 0 }}>{settings.head_of_school_name || 'Head of Schools'}</p>

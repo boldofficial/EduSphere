@@ -68,7 +68,7 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '40px', borderBottom: '2px solid #1A3A5C', paddingBottom: '20px' }}>
                     <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
                         {settings.logo_media ? (
-                            <img src={settings.logo_media} alt="School Logo" style={{ height: '80px', width: '80px', objectFit: 'contain' }} />
+                            <img src={Utils.getMediaUrl(settings.logo_media)} alt="School Logo" style={{ height: '80px', width: '80px', objectFit: 'contain' }} />
                         ) : (
                             <div style={{ height: '80px', width: '80px', background: '#f3f4f6', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', fontSize: '10px' }}>Logo</div>
                         )}
@@ -94,7 +94,7 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({
                         <h3 style={{ fontSize: '9pt', color: '#6b7280', textTransform: 'uppercase', margin: '0 0 8px 0', fontWeight: 700, letterSpacing: '0.05em' }}>Bill To</h3>
                         <div style={{ display: 'flex', gap: '12px' }}>
                             {student.passport_url ? (
-                                <img src={student.passport_url} alt={student.names} style={{ width: '60px', height: '60px', borderRadius: '6px', objectFit: 'cover', border: '1px solid #e5e7eb' }} />
+                                <img src={Utils.getMediaUrl(student.passport_url)} alt={student.names} style={{ width: '60px', height: '60px', borderRadius: '6px', objectFit: 'cover', border: '1px solid #e5e7eb' }} />
                             ) : (
                                 <div style={{ width: '60px', height: '60px', borderRadius: '6px', background: '#1A3A5C', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '20pt', fontWeight: 700 }}>
                                     {student.names.charAt(0)}

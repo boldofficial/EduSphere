@@ -17,6 +17,21 @@ function isLocalRootHost(cleanHost: string): boolean {
     return cleanHost === 'localhost' || cleanHost === '127.0.0.1';
 }
 
+const TENANT_ID_REGEX = /^[a-z0-9-]{1,63}$/;
+
+const isValidTenantId = (tenantId: string | null | undefined): boolean => {
+    if (!tenantId || tenantId === 'null' || tenantId === 'undefined') return false;
+    // Allow localhost and standard IPs
+    if (tenantId === 'localhost' || tenantId === '127.0.0.1') return true;
+    // Lenient validation in development
+    if (process.env.NODE_ENV !== 'production') {
+        // Allow any alphanumeric slug
+        if (/^[a-z0-9-]+$/.test(tenantId) && tenantId.length >= 1) return true;
+    }
+    // Stricter in production
+    return TENANT_ID_REGEX.test(tenantId);
+};
+
 /**
  * Resolve tenant identity from a host/root-domain pair.
  * Supports:
@@ -41,7 +56,8 @@ export function resolveTenantFromHost(host: string, rootDomain: string): TenantR
         if (!localSlug || localSlug === 'www') {
             return { cleanHost, cleanRoot, isRootHost: true, tenantId: null };
         }
-        return { cleanHost, cleanRoot, isRootHost: false, tenantId: localSlug };
+        const tenantId = isValidTenantId(localSlug) ? localSlug : null;
+        return { cleanHost, cleanRoot, isRootHost: false, tenantId };
     }
 
     if (cleanRoot && cleanHost.endsWith(`.${cleanRoot}`)) {
@@ -49,9 +65,11 @@ export function resolveTenantFromHost(host: string, rootDomain: string): TenantR
         if (!slug || slug === 'www') {
             return { cleanHost, cleanRoot, isRootHost: true, tenantId: null };
         }
-        return { cleanHost, cleanRoot, isRootHost: false, tenantId: slug };
+        const tenantId = isValidTenantId(slug) ? slug : null;
+        return { cleanHost, cleanRoot, isRootHost: false, tenantId };
     }
 
     // Non-root host that is not a known subdomain pattern => treat as custom domain.
-    return { cleanHost, cleanRoot, isRootHost: false, tenantId: cleanHost };
+    const tenantId = isValidTenantId(cleanHost) ? cleanHost : null;
+    return { cleanHost, cleanRoot, isRootHost: false, tenantId };
 }

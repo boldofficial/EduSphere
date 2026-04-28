@@ -4,7 +4,25 @@ import { resolveTenantFromHost } from '@/lib/tenant-host';
 import { validateRequestBody } from '@/lib/request-validation';
 import { getRateLimitConfig, checkRateLimit, getClientIdentifier } from '@/lib/rate-limit';
 
-const DJANGO_API_URL = process.env.DJANGO_API_URL || 'http://127.0.0.1:8000';
+function getDjangoUrl(): string {
+    const envUrl = process.env.DJANGO_API_URL;
+    const isDev = process.env.NODE_ENV !== 'production';
+    
+    if (envUrl) {
+        // Handle full URLs like http://127.0.0.1:8001
+        if (envUrl.startsWith('http')) {
+            try {
+                const url = new URL(envUrl);
+                return url.origin;
+            } catch {
+                return isDev ? 'http://127.0.0.1:8001' : 'http://127.0.0.1:8000';
+            }
+        }
+        // Handle host:port format like 127.0.0.1:8001
+        return `http://${envUrl}`;
+    }
+    return isDev ? 'http://127.0.0.1:8001' : 'http://127.0.0.1:8000';
+}
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
     return handleProxy(request, params);
@@ -34,12 +52,23 @@ async function handleProxy(request: NextRequest, params: Promise<{ path: string[
     const accessToken = cookieStore.get('access_token')?.value;
 
     const isMedia = pathSegments[0] === 'media';
-    const baseUrl = isMedia ? DJANGO_API_URL : `${DJANGO_API_URL}/api`;
-    const cleanPath = path.endsWith('/') ? path.slice(0, -1) : path;
-    const url = isMedia ? `${baseUrl}/${path}` : `${baseUrl}/${cleanPath}/`;
+    const baseUrl = isMedia ? getDjangoUrl() : `${getDjangoUrl()}/api`;
+    
+    // Build URL cleanly - avoid double slashes
+    let urlPath = path;
+    if (!urlPath.startsWith('/')) urlPath = '/' + urlPath;
+    
+    const url = isMedia 
+        ? baseUrl + urlPath 
+        : baseUrl + urlPath + '/';
 
     const queryString = request.nextUrl.search;
     const fullUrl = url + queryString;
+
+    // Debug media URLs
+    if (isMedia && process.env.NODE_ENV !== 'production') {
+        console.log(`[PROXY_MEDIA] ${request.method} ${path} -> ${fullUrl}`);
+    }
 
     if (process.env.NODE_ENV !== 'production') {
         console.log(`[PROXY] ${request.method} ${path} -> ${fullUrl}`);
@@ -66,9 +95,18 @@ async function handleProxy(request: NextRequest, params: Promise<{ path: string[
     }
 
     const headerTenantId = request.headers.get('x-tenant-id');
-    const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'myregistra.net';
-    const tenantId = headerTenantId || resolveTenantFromHost(request.headers.get('host') || '', rootDomain).tenantId;
-    if (tenantId && tenantId !== 'null' && tenantId !== 'undefined') {
+    const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'localhost';
+    const resolvedTenant = resolveTenantFromHost(request.headers.get('host') || '', rootDomain).tenantId;
+    
+    // Prefer header tenant, fallback to resolved
+    let tenantId: string | undefined;
+    if (headerTenantId && headerTenantId !== 'null' && headerTenantId !== 'undefined') {
+        tenantId = headerTenantId;
+    } else if (resolvedTenant && resolvedTenant !== 'null' && resolvedTenant !== 'undefined') {
+        tenantId = resolvedTenant;
+    }
+    
+    if (tenantId) {
         headers['X-Tenant-ID'] = tenantId;
     }
 
@@ -91,7 +129,7 @@ async function handleProxy(request: NextRequest, params: Promise<{ path: string[
 
         const response = await fetch(fullUrl, {
             method: request.method,
-            headers: headers as any,
+            headers: headers,
             body: bodyText,
             cache: 'no-store',
             signal: AbortSignal.timeout(60000),
@@ -102,12 +140,18 @@ async function handleProxy(request: NextRequest, params: Promise<{ path: string[
         }
 
         if (isMedia) {
-            const blob = await response.blob();
-            const contentType = response.headers.get('Content-Type') || 'application/octet-stream';
-            return new Response(blob, {
-                status: response.status,
-                headers: { 'Content-Type': contentType }
-            });
+            if (response.ok) {
+                const blob = await response.blob();
+                const contentType = response.headers.get('Content-Type') || 'application/octet-stream';
+                console.log(`[PROXY_MEDIA] Success: ${response.status}, size=${blob.size}, type=${contentType}`);
+                return new Response(blob, {
+                    status: response.status,
+                    headers: { 'Content-Type': contentType }
+                });
+            } else {
+                console.error(`[PROXY_MEDIA] Failed: ${response.status} for ${fullUrl}`);
+                return new Response('Media not found', { status: 404 });
+            }
         }
 
         const responseText = await response.text();

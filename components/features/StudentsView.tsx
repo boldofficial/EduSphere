@@ -43,9 +43,8 @@ interface StudentsViewProps {
 }
 
 const getPassportUrl = (student: Types.Student | any): string | null => {
-    if (student.passport_url) return student.passport_url;
-    if (student.passport_media) return student.passport_media;
-    return null;
+    const url = student.passport_url || student.passport_media;
+    return Utils.getMediaUrl(url);
 };
 
 export const StudentsView: React.FC<StudentsViewProps> = ({

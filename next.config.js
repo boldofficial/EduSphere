@@ -3,15 +3,31 @@ const nextConfig = {
     // NOTE: GEMINI_API_KEY is available server-side only via process.env.GEMINI_API_KEY
     // Do NOT expose it to the client via the `env` config block.
 
-    // Security headers for production
+    // Allow HTTP in development
+    experimental: {
+        trustHostHeader: true,
+    },
+
+// Security headers for production
     async headers() {
+        const isProd = process.env.NODE_ENV === 'production';
+        
+        // Only enforce CSP in production
+        const csp = isProd 
+            ? "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://*.r2.cloudflarestorage.com https://*.r2.dev; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; frame-ancestors 'none'; upgrade-insecure-requests;"
+            : "default-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src *;";
+        
         return [
             {
                 source: '/:path*',
                 headers: [
                     {
-                        key: 'Content-Security-Policy-Report-Only',
-                        value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://*.r2.cloudflarestorage.com https://*.r2.dev; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; frame-ancestors 'none'; upgrade-insecure-requests;"
+                        key: 'Content-Security-Policy',
+                        value: csp
+                    },
+                    {
+                        key: 'Strict-Transport-Security',
+                        value: 'max-age=63072000; includeSubDomains; preload'
                     },
                     {
                         key: 'X-DNS-Prefetch-Control',
@@ -74,28 +90,42 @@ const nextConfig = {
     poweredByHeader: false,
     compress: true,
 
+    // Disable HTTPS redirect in development
+    httpAgentOptions: {
+        rejectUnauthorized: false,
+    },
+
     async rewrites() {
-        const DJANGO_API_URL = process.env.DJANGO_API_URL || 'http://127.0.0.1:8000';
+        const envUrl = process.env.DJANGO_API_URL || 'http://127.0.0.1:8001';
+        let apiUrl = envUrl;
+        let mediaUrl = envUrl;
+        
+        try {
+            const apiParsed = new URL(envUrl.startsWith('http') ? envUrl : `http://${envUrl}`);
+            apiUrl = apiParsed.origin;
+            mediaUrl = apiParsed.origin;
+        } catch {
+            apiUrl = 'http://127.0.0.1:8001';
+            mediaUrl = 'http://127.0.0.1:8001';
+        }
+        
         return {
-            // Fallback rewrites only apply when no matching Next.js page or API route exists.
-            // This ensures Route Handlers (e.g. /api/auth/login, /api/proxy/*) take priority,
-            // while Django still handles /api/users/, /api/schools/, /admin/, etc.
             fallback: [
                 {
                     source: '/api/:path*',
-                    destination: `${DJANGO_API_URL}/api/:path*`,
+                    destination: `${apiUrl}/api/:path*`,
                 },
                 {
                     source: '/admin/:path*',
-                    destination: `${DJANGO_API_URL}/admin/:path*`,
+                    destination: `${apiUrl}/admin/:path*`,
                 },
                 {
                     source: '/django-static/:path*',
-                    destination: `${DJANGO_API_URL}/django-static/:path*`,
+                    destination: `${apiUrl}/django-static/:path*`,
                 },
                 {
                     source: '/media/:path*',
-                    destination: `${DJANGO_API_URL}/media/:path*`,
+                    destination: `${mediaUrl}/media/:path*`,
                 },
             ],
         };

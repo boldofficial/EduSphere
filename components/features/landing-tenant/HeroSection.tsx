@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { Settings } from '@/lib/types';
 
+import * as Utils from '@/lib/utils';
+
 interface HeroSectionProps {
     settings: Settings;
 }
@@ -17,7 +19,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ settings }) => {
                     style={{ backgroundColor: `${settings.landing_primary_color || '#1A3A5C'}CC` }}
                 ></div>
                 <img
-                    src={settings.landing_hero_image || "/hero1.jpg"}
+                    src={Utils.getMediaUrl(settings.landing_hero_image) || "/hero1.jpg"}
                     alt="School Campus"
                     className="w-full h-full object-cover"
                 />
@@ -27,7 +29,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ settings }) => {
                 {/* School Logo */}
                 <div className="mx-auto mb-8 w-28 h-28 bg-white rounded-2xl shadow-2xl p-3 flex items-center justify-center">
                     {settings.logo_media ? (
-                        <img src={settings.logo_media} alt="School Logo" className="w-full h-full object-contain" />
+                        <img src={Utils.getMediaUrl(settings.logo_media) || ''} alt="School Logo" className="w-full h-full object-contain" />
                     ) : (
                         <img src="/full-logo.png" alt="Registra Logo" className="w-full h-full object-contain" />
                     )}

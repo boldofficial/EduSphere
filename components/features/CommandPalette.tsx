@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Search, School, Zap, ArrowRight, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import * as Utils from '@/lib/utils';
 
 interface CommandPaletteProps {
     schools: any[];
@@ -69,7 +70,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ schools, isOpen,
                                 >
                                     <div className="flex items-center gap-4">
                                         <div className="w-12 h-12 bg-white border border-gray-100 rounded-xl flex items-center justify-center text-brand-600 shadow-sm overflow-hidden">
-                                            {school.logo_media ? <img src={school.logo_media} alt="" /> : <School size={24} />}
+                                            {school.logo_media ? <img src={Utils.getMediaUrl(school.logo_media)} alt="" /> : <School size={24} />}
                                         </div>
                                         <div className="text-left">
                                             <p className="font-bold text-gray-900">{school.name}</p>

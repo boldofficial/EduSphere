@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import * as Utils from '@/lib/utils';
 import { useSchoolStore } from '@/lib/store';
 import { UserRole } from '@/lib/types';
 import {
@@ -27,7 +28,6 @@ export const LoginView = () => {
     });
 
     const [isDemo, setIsDemo] = useState(false);
-    // Default to 'teacher' only on subdomains; on root we want to force school search or super admin secret
     const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
 
     // Form states
@@ -84,7 +84,6 @@ export const LoginView = () => {
         setIsSystemRoot(isRoot);
         setIsDemo(tenantId === 'demo');
 
-        // Set default role if not on root domain
         if (!isRoot) {
             setSelectedRole('teacher');
 
@@ -270,7 +269,6 @@ export const LoginView = () => {
     };
 
     const handleForgotPassword = async (e: React.FormEvent) => {
-        // ... (Keep existing implementation)
         e.preventDefault();
         setForgotError('');
         setIsLoading(true);
@@ -319,7 +317,7 @@ export const LoginView = () => {
                     >
                         {!isSystemRoot ? (
                             <div className="flex items-center gap-3">
-                                <img src={publicBranding.logo_media || "/footer-logo.png"} alt={publicBranding.school_name || "Registra"} className="h-10 w-auto object-contain" />
+                                <img src={Utils.getMediaUrl(publicBranding.logo_media) || "/footer-logo.png"} alt={publicBranding.school_name || "Registra"} className="h-10 w-auto object-contain" />
                                 <span className="text-xl font-bold text-gray-900">{publicBranding.school_name || "Registra"}</span>
                             </div>
                         ) : (

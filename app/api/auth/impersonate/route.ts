@@ -2,14 +2,31 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { getCookieOptions } from '@/lib/auth-utils';
 
-const DJANGO_API_URL = process.env.DJANGO_API_URL || 'http://127.0.0.1:8000';
+function getDjangoUrl(): string {
+    const envUrl = process.env.DJANGO_API_URL;
+    if (envUrl) {
+        const url = new URL(envUrl.startsWith('http') ? envUrl : `http://${envUrl}`);
+        return url.origin;
+    }
+    return 'http://127.0.0.1:8001';
+}
+
+function decodeJwtPayload(token: string): Record<string, unknown> | null {
+    try {
+        const parts = token.split('.');
+        if (parts.length !== 3) return null;
+        const payload = Buffer.from(parts[1], 'base64').toString('utf-8');
+        return JSON.parse(payload);
+    } catch {
+        return null;
+    }
+}
 
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
         const { user_id } = body;
 
-        // 1. Get current Super Admin token from cookies to authorize the request
         const cookieStore = await cookies();
         const currentAccessToken = cookieStore.get('access_token')?.value;
 
@@ -17,8 +34,12 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        // 2. Call Django to impersonate and get new tokens
-        const response = await fetch(`${DJANGO_API_URL}/api/users/impersonate/`, {
+        const payload = decodeJwtPayload(currentAccessToken);
+        if (!payload || payload.role !== 'SUPER_ADMIN') {
+            return NextResponse.json({ error: 'Forbidden - SUPER_ADMIN role required' }, { status: 403 });
+        }
+
+        const response = await fetch(`${getDjangoUrl()}/api/users/impersonate/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -35,12 +56,12 @@ export async function POST(request: NextRequest) {
         const data = await response.json();
         const { access, refresh, user } = data;
 
-        // 3. Set the NEW cookies
+        // 4. Set the NEW cookies
         cookieStore.set('access_token', access, getCookieOptions('access'));
 
         cookieStore.set('refresh_token', refresh, getCookieOptions('refresh'));
 
-        // 4. Return success and new user data
+        // 5. Return success and new user data
         return NextResponse.json({
             success: true,
             user: {

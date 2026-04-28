@@ -24,28 +24,27 @@ interface SchoolState {
 // Custom debounced storage to prevent main thread blocking
 const debouncedStorage = {
     getItem: (name: string) => {
-        if (typeof window === 'undefined') return null;
         try {
+            if (typeof window === 'undefined') return null;
             return localStorage.getItem(name);
         } catch (error) {
-            console.error('Error reading from localStorage:', error);
             return null;
         }
     },
     setItem: Utils.debounce((name: string, value: string) => {
-        if (typeof window === 'undefined') return;
         try {
+            if (typeof window === 'undefined') return;
             localStorage.setItem(name, value);
         } catch (error) {
-            console.error('Error writing to localStorage:', error);
+            // Silently fail
         }
     }, 500),
     removeItem: (name: string) => {
-        if (typeof window === 'undefined') return;
         try {
+            if (typeof window === 'undefined') return;
             localStorage.removeItem(name);
         } catch (error) {
-            console.error('Error removing from localStorage:', error);
+            // Silently fail
         }
     },
 };

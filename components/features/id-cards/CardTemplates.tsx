@@ -2,10 +2,12 @@ import React from 'react';
 import { User, Phone, Mail, MapPin } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import * as Types from '@/lib/types';
+import * as Utils from '@/lib/utils';
 import { CardTemplate } from './id-card-types';
 
 export const getPassportUrl = (s: Types.Student) => {
-    return s.passport_url || (s as any).passport_media || null;
+    const url = s.passport_url || (s as any).passport_media || null;
+    return url ? Utils.getMediaUrl(url) : null;
 };
 
 export const getQRValue = (student: Types.Student, settings: Types.Settings, className: string) => {
@@ -26,13 +28,13 @@ export const PremiumFront = ({ student, settings, accentColor, currentClass, val
 
         {settings.logo_media && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <img src={settings.logo_media} alt="" className="w-32 h-32 object-contain opacity-[0.05]" />
+                <img src={Utils.getMediaUrl(settings.logo_media)} alt="" className="w-32 h-32 object-contain opacity-[0.05]" />
             </div>
         )}
 
         <div className="relative flex items-center justify-center gap-3 px-4 py-2 border-b" style={{ borderColor: `${accentColor.primary}25` }}>
             {settings.logo_media && (
-                <img src={settings.logo_media} className="h-11 w-11 object-contain" alt="Logo" />
+                <img src={Utils.getMediaUrl(settings.logo_media)} className="h-11 w-11 object-contain" alt="Logo" />
             )}
             <div className="text-center">
                 <h3 className="font-extrabold text-[11px] uppercase tracking-wide leading-tight" style={{ color: accentColor.primary }}>
@@ -98,7 +100,7 @@ export const ModernFront = ({ student, settings, accentColor, currentClass, vali
     <div className="relative w-[340px] h-[214px] bg-white rounded-xl overflow-hidden border border-gray-200 shadow-lg print:shadow-none break-inside-avoid">
         {settings.logo_media && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <img src={settings.logo_media} alt="" className="w-24 h-24 object-contain opacity-[0.05]" />
+                <img src={Utils.getMediaUrl(settings.logo_media)} alt="" className="w-24 h-24 object-contain opacity-[0.05]" />
             </div>
         )}
         <div className="absolute top-0 w-full h-[65px] flex items-center px-4"
@@ -108,7 +110,7 @@ export const ModernFront = ({ student, settings, accentColor, currentClass, vali
                 <p className="text-white/60 text-[7px] truncate">{settings.school_tagline}</p>
             </div>
             {settings.logo_media && (
-                <img src={settings.logo_media} className="h-10 w-10 object-contain bg-white rounded-full p-1 shadow-md" alt="Logo" />
+                <img src={Utils.getMediaUrl(settings.logo_media)} className="h-10 w-10 object-contain bg-white rounded-full p-1 shadow-md" alt="Logo" />
             )}
         </div>
         <div className="absolute top-[65px] w-full h-[120px] p-3 flex gap-3">
@@ -147,12 +149,12 @@ export const ElegantFront = ({ student, settings, accentColor, currentClass, val
         style={{ borderColor: accentColor.primary }}>
         {settings.logo_media && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <img src={settings.logo_media} alt="" className="w-24 h-24 object-contain opacity-[0.05]" />
+                <img src={Utils.getMediaUrl(settings.logo_media)} alt="" className="w-24 h-24 object-contain opacity-[0.05]" />
             </div>
         )}
         <div className="absolute top-0 left-0 right-0 h-1.5" style={{ background: accentColor.primary }} />
         <div className="flex items-center gap-2 px-4 pt-2">
-            {settings.logo_media && <img src={settings.logo_media} className="h-8 w-8 object-contain" alt="Logo" />}
+            {settings.logo_media && <img src={Utils.getMediaUrl(settings.logo_media)} className="h-8 w-8 object-contain" alt="Logo" />}
             <div className="flex-1">
                 <h3 className="font-bold text-[9px] uppercase truncate" style={{ color: accentColor.primary }}>{settings.school_name}</h3>
                 <p className="text-gray-400 text-[6px] italic truncate">{settings.school_tagline}</p>
@@ -192,11 +194,11 @@ export const ClassicFront = ({ student, settings, accentColor, currentClass, val
         style={{ borderColor: accentColor.primary }}>
         {settings.logo_media && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <img src={settings.logo_media} alt="" className="w-20 h-20 object-contain opacity-[0.05]" />
+                <img src={Utils.getMediaUrl(settings.logo_media)} alt="" className="w-20 h-20 object-contain opacity-[0.05]" />
             </div>
         )}
         <div className="absolute top-0 w-full h-[50px] flex items-center justify-center gap-2 px-3" style={{ background: accentColor.primary }}>
-            {settings.logo_media && <img src={settings.logo_media} className="h-8 w-8 object-contain" alt="Logo" />}
+            {settings.logo_media && <img src={Utils.getMediaUrl(settings.logo_media)} className="h-8 w-8 object-contain" alt="Logo" />}
             <div className="text-center">
                 <h3 className="text-white font-bold text-[9px] uppercase truncate">{settings.school_name}</h3>
                 <p className="text-white/70 text-[6px] truncate">{settings.school_address}</p>
@@ -231,7 +233,7 @@ export const MinimalFront = ({ student, settings, accentColor, currentClass }: O
     <div className="relative w-[340px] h-[214px] bg-white rounded-xl overflow-hidden border border-gray-200 shadow-lg print:shadow-none break-inside-avoid">
         {settings.logo_media && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <img src={settings.logo_media} alt="" className="w-20 h-20 object-contain opacity-[0.04]" />
+                <img src={Utils.getMediaUrl(settings.logo_media)} alt="" className="w-20 h-20 object-contain opacity-[0.04]" />
             </div>
         )}
         <div className="p-4 flex gap-4 h-full">
@@ -244,7 +246,7 @@ export const MinimalFront = ({ student, settings, accentColor, currentClass }: O
             </div>
             <div className="flex-1">
                 <div className="flex items-center gap-1 mb-2">
-                    {settings.logo_media && <img src={settings.logo_media} className="h-5 w-5 object-contain" alt="Logo" />}
+                    {settings.logo_media && <img src={Utils.getMediaUrl(settings.logo_media)} className="h-5 w-5 object-contain" alt="Logo" />}
                     <h4 className="text-[7px] font-medium text-gray-400 uppercase tracking-wider truncate">{settings.school_name}</h4>
                 </div>
                 <h2 className="text-sm font-bold mb-1.5 truncate" style={{ color: accentColor.primary }}>{student.names}</h2>
@@ -268,7 +270,7 @@ export const BackCard = ({ student, settings, accentColor, template, validityPer
         style={{ borderColor: template === 'classic' || template === 'premium' ? accentColor.primary : '#E5E7EB', borderWidth: template === 'classic' || template === 'premium' ? '2px' : '1px' }}>
         {settings.logo_media && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <img src={settings.logo_media} alt="" className="w-20 h-20 object-contain opacity-[0.05]" />
+                <img src={Utils.getMediaUrl(settings.logo_media)} alt="" className="w-20 h-20 object-contain opacity-[0.05]" />
             </div>
         )}
         <div className="absolute top-0 w-full h-5 flex items-center justify-center" style={{ background: accentColor.primary }}>
@@ -323,7 +325,7 @@ export const BackCard = ({ student, settings, accentColor, template, validityPer
                 </div>
                 <div className="text-center">
                     {settings.director_signature ? (
-                        <img src={settings.director_signature} alt="Signature" className="h-6 w-auto mx-auto object-contain" />
+                        <img src={Utils.getMediaUrl(settings.director_signature)} alt="Signature" className="h-6 w-auto mx-auto object-contain" />
                     ) : (
                         <div className="w-16 border-b border-gray-400 mb-0.5"></div>
                     )}

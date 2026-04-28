@@ -147,7 +147,7 @@ export const TeachersView: React.FC<TeachersViewProps> = ({ teachers, onAdd, onU
                             <div className="flex items-center gap-3">
                                 <div className="h-14 w-14 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-lg overflow-hidden border-2 border-purple-200">
                                     {t.passport_url ? (
-                                        <img src={t.passport_url} alt={t.name} className="h-full w-full object-cover" />
+                                        <img src={Utils.getMediaUrl(t.passport_url) || ''} alt={t.name} className="h-full w-full object-cover" />
                                     ) : (
                                         <User className="h-7 w-7" />
                                     )}

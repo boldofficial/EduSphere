@@ -1,8 +1,11 @@
 /**
- * Rate Limiting Utility
+ * Redis-backed Rate Limiting
  * 
- * In-memory rate limiter for API routes.
+ * Uses @upstash/redis for cluster-safe rate limiting.
+ * Falls back to in-memory if Redis is unavailable.
  */
+
+import { Redis } from '@upstash/redis';
 
 export const RATE_LIMITS = {
     default: { limit: 100, window: 60000 },
@@ -21,13 +24,96 @@ export interface RateLimitResult {
     resetTime: number;
 }
 
+let redisInstance: Redis | null = null;
+let usingRedis = false;
+
 const memoryStore = new Map<string, { count: number; resetTime: number }>();
+
+async function getRedis(): Promise<Redis | null> {
+    if (redisInstance) return redisInstance;
+    
+    try {
+        if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 2000);
+            
+            try {
+                redisInstance = new Redis({
+                    url: process.env.UPSTASH_REDIS_REST_URL,
+                    token: process.env.UPSTASH_REDIS_REST_TOKEN,
+                    signal: controller.signal as AbortSignal,
+                });
+                await redisInstance.ping();
+                clearTimeout(timeoutId);
+                usingRedis = true;
+                return redisInstance;
+            } catch (e) {
+                clearTimeout(timeoutId);
+                console.warn('[RATELIMIT] Redis connection failed:', e);
+                redisInstance = null;
+            }
+        }
+    } catch (e) {
+        console.warn('[RATELIMIT] Redis init failed:', e);
+    }
+    
+    return null;
+}
+
+async function checkRedisRateLimit(
+    identifier: string,
+    config: RateLimitConfig
+): Promise<RateLimitResult | null> {
+    const redis = await getRedis();
+    if (!redis) return null;
+
+    const key = `ratelimit:${identifier}`;
+    const windowSec = Math.ceil(config.window / 1000);
+    const limit = config.limit;
+    const now = Date.now();
+    const nowSec = Math.floor(now / 1000);
+    const windowStart = nowSec - windowSec;
+
+    try {
+        const [removed, added, count] = await Promise.all([
+            redis.zremrangebyscore(key, 0, windowStart),
+            redis.zadd(key, { score: nowSec, member: `${nowSec}:${Math.random().toString(36).slice(2)}` }),
+            redis.zcount(key, windowStart, nowSec),
+        ]);
+
+        redis.expire(key, windowSec + 60);
+
+        if (typeof count !== 'number') return null;
+
+        if (count >= limit) {
+            return {
+                success: false,
+                remaining: 0,
+                resetTime: now + config.window,
+            };
+        }
+
+        return {
+            success: true,
+            remaining: limit - count - 1,
+            resetTime: now + config.window,
+        };
+    } catch {
+        return null;
+    }
+}
 
 export async function checkRateLimit(
     identifier: string,
     config: RateLimitConfig = RATE_LIMITS.default
 ): Promise<RateLimitResult> {
     const now = Date.now();
+    
+    const redisResult = await checkRedisRateLimit(identifier, config);
+    if (redisResult) {
+        return redisResult;
+    }
+    
     const entry = memoryStore.get(identifier);
 
     if (!entry || now > entry.resetTime) {
@@ -84,4 +170,8 @@ export function getRateLimitConfig(endpoint: string): RateLimitConfig {
     if (lower.endsWith('/') || lower.match(/^\/api\/\w+$/)) return RATE_LIMITS.read as RateLimitConfig;
     
     return RATE_LIMITS.default as RateLimitConfig;
+}
+
+export function isUsingRedis(): boolean {
+    return usingRedis;
 }

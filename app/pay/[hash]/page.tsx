@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Script from 'next/script';
+import * as Utils from '@/lib/utils';
 
 interface LineItem {
     purpose: string;
@@ -93,7 +94,7 @@ export default function QuickPayPage({ params }: { params: Promise<{ hash: strin
                 {/* School Header */}
                 <div className="text-center mb-6">
                     {invoice.school.logo && (
-                        <img src={invoice.school.logo} alt="School Logo" className="h-16 w-16 rounded-full mx-auto mb-3 object-cover border-2 border-white shadow" />
+                        <img src={Utils.getMediaUrl(invoice.school.logo)} alt="School Logo" className="h-16 w-16 rounded-full mx-auto mb-3 object-cover border-2 border-white shadow" />
                     )}
                     <h1 className="text-xl font-bold text-gray-900">{invoice.school.name}</h1>
                     {invoice.school.email && <p className="text-sm text-gray-500">{invoice.school.email}</p>}

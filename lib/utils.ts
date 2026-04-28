@@ -17,6 +17,30 @@ export const getCurrentTimestamp = () => Date.now();
 
 export const getTodayString = () => new Date().toISOString().split('T')[0];
 
+export const getMediaUrl = (url: string | null | undefined): string | null => {
+  if (!url) return null;
+  if (url.startsWith('data:')) return url;
+  if (url.startsWith('blob:')) return url;
+  if (url.startsWith('/api/proxy')) return url;
+
+  // If it's an absolute URL containing /media/, make it relative via proxy
+  const mediaIndex = url.indexOf('/media/');
+  if (mediaIndex !== -1) {
+    return '/api/proxy' + url.substring(mediaIndex);
+  }
+
+  // If it's a relative path and doesn't start with http, assume it's a media asset
+  if (!url.startsWith('http')) {
+    let path = url;
+    if (!path.startsWith('/')) path = '/' + path;
+    // Prepend /media if it's missing (common for Django file fields returning relative paths)
+    if (!path.startsWith('/media/')) path = '/media' + path;
+    return '/api/proxy' + path;
+  }
+
+  return url;
+};
+
 export const sameId = (a: string | number | null | undefined, b: string | number | null | undefined) =>
   String(a ?? '') === String(b ?? '');
 
@@ -43,7 +67,6 @@ export const loadFromStorage = <T>(key: string, fallback: T): T => {
     if (!item) return fallback;
     const parsed = JSON.parse(item);
 
-    // For objects (like Settings), merge with fallback to ensure new keys exist
     if (typeof fallback === 'object' && fallback !== null && !Array.isArray(fallback)) {
       return { ...fallback, ...parsed };
     }
@@ -55,7 +78,7 @@ export const loadFromStorage = <T>(key: string, fallback: T): T => {
   }
 };
 
-export const saveToStorage = (key: string, data: any) => {
+export const saveToStorage = (key: string, data: unknown) => {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(key, JSON.stringify(data));

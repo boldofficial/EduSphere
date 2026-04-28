@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Save, Lock } from 'lucide-react';
 import * as Types from '@/lib/types';
+import * as Utils from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -302,12 +303,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                             <div>
                                 <label className="text-xs font-bold text-gray-500 uppercase">School Logo</label>
                                 <input type="file" className="text-xs mt-1 block w-full" onChange={e => handleFileChange(e, 'logo_media')} />
-                                {formData.logo_media && <img src={formData.logo_media} className="mt-2 h-12 object-contain border" />}
+                                {formData.logo_media && <img src={Utils.getMediaUrl(formData.logo_media) || ''} className="mt-2 h-12 object-contain border" />}
                             </div>
                             <div>
                                 <label className="text-xs font-bold text-gray-500 uppercase">Watermark</label>
                                 <input type="file" className="text-xs mt-1 block w-full" onChange={e => handleFileChange(e, 'watermark_media')} />
-                                {formData.watermark_media && <img src={formData.watermark_media} className="mt-2 h-12 object-contain border" />}
+                                {formData.watermark_media && <img src={Utils.getMediaUrl(formData.watermark_media) || ''} className="mt-2 h-12 object-contain border" />}
                             </div>
                         </div>
                         <div className="grid grid-cols-2 gap-4 border-t pt-4">
@@ -315,13 +316,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                                 <label className="text-xs font-bold text-gray-500 uppercase">Director Signature (for ID Card)</label>
                                 <Input placeholder="Director's Name" value={formData.director_name || ''} onChange={e => handleChange('director_name', e.target.value)} className="mt-1" />
                                 <input type="file" className="text-xs mt-2 block w-full" accept="image/*" onChange={e => handleFileChange(e, 'director_signature')} />
-                                {formData.director_signature && <img src={formData.director_signature} className="mt-2 h-10 object-contain border border-dashed p-1" />}
+                                {formData.director_signature && <img src={Utils.getMediaUrl(formData.director_signature) || ''} className="mt-2 h-10 object-contain border border-dashed p-1" />}
                             </div>
                             <div>
                                 <label className="text-xs font-bold text-gray-500 uppercase">{formData.head_teacher_label} Signature</label>
                                 <Input placeholder="Head of School Name" value={formData.head_of_school_name || ''} onChange={e => handleChange('head_of_school_name', e.target.value)} className="mt-1" />
                                 <input type="file" className="text-xs mt-2 block w-full" accept="image/*" onChange={e => handleFileChange(e, 'head_of_school_signature')} />
-                                {formData.head_of_school_signature && <img src={formData.head_of_school_signature} className="mt-2 h-10 object-contain border border-dashed p-1" />}
+                                {formData.head_of_school_signature && <img src={Utils.getMediaUrl(formData.head_of_school_signature) || ''} className="mt-2 h-10 object-contain border border-dashed p-1" />}
                             </div>
                         </div>
                     </div>

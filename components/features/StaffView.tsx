@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, Trash2, Key, Shield, Eye, EyeOff, Edit } from 'lucide-react';
 import * as Types from '@/lib/types';
+import * as Utils from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Modal } from '@/components/ui/modal';
@@ -205,7 +206,7 @@ export const StaffView: React.FC<StaffViewProps> = ({ staff, onAdd, onUpdate, on
                             <tr key={s.id} className="hover:bg-gray-50">
                                 <td className="px-4 py-3 font-medium text-gray-900 flex items-center gap-3">
                                     {s.passport_url ? (
-                                        <img src={s.passport_url} alt={s.name} className="w-8 h-8 rounded-full object-cover border" />
+                                        <img src={Utils.getMediaUrl(s.passport_url) || ''} alt={s.name} className="w-8 h-8 rounded-full object-cover border" />
                                     ) : (
                                         <div className="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 font-bold text-xs">{s.name.charAt(0)}</div>
                                     )}
@@ -250,7 +251,7 @@ export const StaffView: React.FC<StaffViewProps> = ({ staff, onAdd, onUpdate, on
                         <div className="relative group cursor-pointer">
                             <div className="w-24 h-24 rounded-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden">
                                 {formData.passport_url ? (
-                                    <img src={formData.passport_url} alt="Preview" className="w-full h-full object-cover" />
+                                    <img src={Utils.getMediaUrl(formData.passport_url) || ''} alt="Preview" className="w-full h-full object-cover" />
                                 ) : (
                                     <span className="text-gray-400 text-xs text-center px-2">Click to upload photo</span>
                                 )}

@@ -308,7 +308,16 @@ SIMPLE_JWT = {
     "SIGNING_KEY": SECRET_KEY,
     "AUTH_HEADER_TYPES": ("Bearer",),
     "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+    "TOKEN_REUSE_DETECTION_ERROR_MESSAGE": "Token has been revoked",
+    "TOKEN_REUSE_DETECTION_CLASS": "core.security_utils.RevokedTokenReuseDetection",
 }
+
+# =============================================================================
+# REDIS CONFIGURATION (for caching and token blacklist)
+# =============================================================================
+
+REDIS_URL = os.environ.get("REDIS_URL", os.environ.get("CELERY_BROKER_URL", None))
+REDIS_BLACKLIST_TTL = int(os.environ.get("REDIS_BLACKLIST_TTL_SECONDS", 604800))  # 7 days default
 
 
 # =============================================================================

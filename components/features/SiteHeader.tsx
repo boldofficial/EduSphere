@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { GraduationCap, Menu, X } from 'lucide-react';
+import * as Utils from '@/lib/utils';
 
 interface SiteHeaderProps {
     settings: {
@@ -42,7 +43,7 @@ const SiteHeader = ({ settings }: SiteHeaderProps) => {
                     <Link href="/" className="flex items-center gap-3">
                         {settings.logo_media ? (
                             <>
-                                <img src={settings.logo_media} alt="Logo" className="h-12 w-12 rounded-xl object-contain bg-white/10" />
+                                <img src={Utils.getMediaUrl(settings.logo_media) || ''} alt="Logo" className="h-12 w-12 rounded-xl object-contain bg-white/10" />
                                 <div className={`transition-colors duration-300 ${isScrolled ? 'text-brand-900' : 'text-white'}`}>
                                     <h1 className="text-xl font-bold leading-none">{settings.school_name || "Registra"}</h1>
                                     <p className={`text-xs font-medium ${isScrolled ? 'text-brand-500' : 'text-white/80'}`}>{settings.school_tagline || "The operating system for modern schools."}</p>

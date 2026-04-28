@@ -1,46 +1,38 @@
+from django.conf import settings
 from django.core.files.storage import default_storage
 
 
 def get_media_url(path):
     """
-    Consistently resolve a media path to a full URL.
-    Handles R2/S3 signed URLs and local /media/ fallback.
+    Resolve media path to a full URL.
+    Uses /api/media/ route in development for proxy compatibility.
     """
+    import logging
+    logger = logging.getLogger(__name__)
+    
     if not path:
         return None
-
-    # If it's already a full URL
-    if str(path).startswith("http"):
-        # Check if it's a legacy signed URL that should be resolved via default_storage
-        # (e.g. contains 'cloudflarestorage.com' and a signature)
-        if "cloudflarestorage.com" in str(path) or ".r2.dev" in str(path):
-            # Extract the relative path part
-            # Legacy format often looks like: https://<endpoint>/<bucket>/<path>?X-Amz-Algorithm=...
-            # We want to extract just the <path> part if possible
-            try:
-                from urllib.parse import urlparse
-
-                parsed = urlparse(path)
-                parts = parsed.path.lstrip("/").split("/")
-                # If the first part is the bucket name, skip it
-                from django.conf import settings
-
-                bucket_name = getattr(settings, "AWS_STORAGE_BUCKET_NAME", "multi-school")
-                if parts and parts[0] == bucket_name:
-                    clean_path = "/".join(parts[1:])
-                else:
-                    clean_path = "/".join(parts)
-
-                if clean_path:
-                    return default_storage.url(clean_path)
-            except Exception:
-                pass
-
-        return path
-
+    
+    path_str = str(path)
+    
+    # If it's already a full URL, return as-is
+    if path_str.startswith("http"):
+        return path_str
+    
+    # In development, use the Next.js /api/media/ proxy route
+    # This ensures media requests go through our dedicated route
+    is_debug = getattr(settings, 'DEBUG', False)
+    if is_debug:
+        clean_path = path_str.lstrip('/')
+        # Remove /media/ prefix if present
+        if clean_path.startswith('media/'):
+            clean_path = clean_path[6:]
+        api_media_url = f"/api/media/{clean_path}"
+        logger.debug(f"[MEDIA] Dev URL: {api_media_url}")
+        return api_media_url
+    
+    # Production: use standard media URL
     try:
-        # Strip leading /media/ or media/ if present in the stored path
-        clean_path = str(path).replace("/media/", "").replace("media/", "").lstrip("/")
-        return default_storage.url(clean_path)
+        return default_storage.url(path_str)
     except Exception:
-        return path
+        return f"/media/{path_str.lstrip('/')}"

@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Menu, LogOut, ChevronDown, ChevronRight } from 'lucide-react';
 import { NAVIGATION_CATEGORIES } from './navigation-config';
+import * as Utils from '@/lib/utils';
 
 interface SidebarProps {
     isOpen: boolean;
@@ -41,7 +42,7 @@ export function Sidebar({
             `}>
                 <div className="h-16 lg:h-20 flex items-center px-4 lg:px-6 border-b border-white/10 shrink-0 gap-3">
                     <div className="h-10 w-10 bg-white rounded-lg flex items-center justify-center text-brand-600 font-bold shrink-0 shadow-sm">
-                        <img src={settings.logo_media || '/logo.png'} alt="Logo" className="h-8 w-8 object-contain" />
+                        <img src={Utils.getMediaUrl(settings.logo_media) || '/logo.png'} alt="Logo" className="h-8 w-8 object-contain" />
                     </div>
                     <span className="ml-2 text-white font-bold text-lg lg:text-xl truncate tracking-tight">
                         {settings.school_name?.split(' ')[0]}

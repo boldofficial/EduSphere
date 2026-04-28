@@ -14,6 +14,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import * as Types from '@/lib/types';
+import * as Utils from '@/lib/utils';
 
 interface DashboardCmsTabProps {
     editedSettings: Types.Settings;
@@ -131,7 +132,7 @@ export const DashboardCmsTab: React.FC<DashboardCmsTabProps> = ({
                         <div className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center hover:border-brand-300 transition-colors">
                             {editedSettings.landing_hero_image ? (
                                 <div className="relative">
-                                    <img src={editedSettings.landing_hero_image} alt="Hero" className="h-32 w-full object-cover rounded-lg" />
+                                    <img src={Utils.getMediaUrl(editedSettings.landing_hero_image)} alt="Hero" className="h-32 w-full object-cover rounded-lg" />
                                     <button
                                         onClick={() => handleChange('landing_hero_image', null)}
                                         className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
@@ -273,7 +274,7 @@ export const DashboardCmsTab: React.FC<DashboardCmsTabProps> = ({
                             <div className="p-4 space-y-3">
                                 <div className="h-32 bg-gray-200 rounded-xl overflow-hidden mb-3 relative group/img">
                                     {program.image ? (
-                                        <img src={program.image} alt={program.title} className="w-full h-full object-cover" />
+                                        <img src={Utils.getMediaUrl(program.image)} alt={program.title} className="w-full h-full object-cover" />
                                     ) : (
                                         <div className="w-full h-full flex flex-col items-center justify-center text-gray-400">
                                             <Upload size={24} className="mb-2" />

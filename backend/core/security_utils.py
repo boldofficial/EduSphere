@@ -6,6 +6,136 @@ from typing import Any, Dict, List, Optional
 logger = logging.getLogger(__name__)
 
 
+class RevokedTokenReuseDetection:
+    """
+    Custom token reuse detection that checks Redis blacklist for revoked tokens.
+    If a token's JTI is found in Redis, it's been revoked.
+    """
+    
+    def __init__(self, *args, **kwargs):
+        self.redis_client = None
+        self.ttl = int(os.environ.get("REDIS_BLACKLIST_TTL_SECONDS", 604800))
+        self._connect_redis()
+    
+    def _connect_redis(self):
+        """Connect to Redis lazily."""
+        redis_url = os.environ.get("REDIS_URL") or os.environ.get("CELERY_BROKER_URL")
+        
+        if not redis_url:
+            logger.debug("No Redis URL configured, skipping blacklist check")
+            return
+        
+        try:
+            import redis
+            self.redis_client = redis.from_url(redis_url)
+            self.redis_client.ping()
+            logger.info("Redis blacklist detection active")
+        except Exception as e:
+            logger.warning(f"Redis connection failed: {e}")
+            self.redis_client = None
+    
+    def check(self, token):
+        """
+        Check if token's JTI is in blacklist.
+        Returns True if token should be rejected (was revoked).
+        """
+        if not self.redis_client:
+            return False
+        
+        try:
+            jti = token.get("jti")
+            if not jti:
+                return False
+            
+            key = f"blacklist:token:{jti}"
+            result = self.redis_client.exists(key)
+            
+            if result:
+                logger.warning(f"Revoked token reuse attempt: {jti}")
+                return True
+            
+            return False
+        except Exception as e:
+            logger.error(f"Blacklist check error: {e}")
+            return False
+    
+    def mark_revoked(self, jti: str, ttl: Optional[int] = None):
+        """Add a token's JTI to the blacklist."""
+        if not self.redis_client:
+            return
+        
+        try:
+            key = f"blacklist:token:{jti}"
+            self.redis_client.setex(key, ttl or self.ttl, "1")
+            logger.info(f"Token blacklisted: {jti}")
+        except Exception as e:
+            logger.error(f"Failed to blacklist token: {e}")
+
+
+class AuditTrailMixin:
+    """
+    Mixin for models that need automatic field-level change tracking.
+    Inherit from this model and call track_changes() in save().
+    """
+    _original_values = None
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Store original values on load
+        if self.pk:
+            self._original_values = {f.name: getattr(self, f.name, None) for f in self._meta.fields}
+
+    def track_changes(self, user=None, request=None):
+        """Compare current values with original, log any changes."""
+        if not self.pk or not self._original_values:
+            return
+
+        from core.models import FieldChangeLog
+        from schools.models import School
+
+        school = getattr(self, "school", None)
+
+        for field in self._meta.fields:
+            field_name = field.name
+            if field_name.startswith("_") or field_name == "id":
+                continue
+
+            old_value = self._original_values.get(field_name)
+            new_value = getattr(self, field_name, None)
+
+            # Skip timestamps and non-tracked fields
+            if field_name in ["created_at", "updated_at", "id"]:
+                continue
+
+            # Compare values
+            if old_value != new_value:
+                log_field_change(
+                    instance=self,
+                    field_name=field_name,
+                    old_value=old_value,
+                    new_value=new_value,
+                    user=user,
+                    action="UPDATE",
+                    school=school,
+                    request=request,
+                )
+
+    def save(self, *args, **kwargs):
+        """Override save to track changes after the save completes."""
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+
+        # Update original values after save
+        if not is_new:
+            self._original_values = {f.name: getattr(self, f.name, None) for f in self._meta.fields}
+
+
+def blacklist_token(jti: str):
+    """Helper to blacklist a token."""
+    detector = RevokedTokenReuseDetection()
+    detector.mark_revoked(jti)
+
+
 class TenantRequiredMixin:
     """
     Mixin to ensure tenant isolation is enforced on views.

@@ -3,6 +3,7 @@
 import React from 'react';
 import { Sparkles, Type, Image as ImageIcon } from 'lucide-react';
 import { Settings } from '@/lib/types';
+import * as Utils from '@/lib/utils';
 
 interface CmsHeroTabProps {
     localSettings: Settings;
@@ -80,7 +81,7 @@ export const CmsHeroTab: React.FC<CmsHeroTabProps> = ({
                     <div className="relative group overflow-hidden rounded-3xl aspect-[21/9] bg-gray-100 border-2 border-dashed border-gray-200 flex flex-col items-center justify-center transition-all hover:border-brand-400">
                         {localSettings.landing_hero_image ? (
                             <>
-                                <img src={localSettings.landing_hero_image} className="absolute inset-0 w-full h-full object-cover" />
+                                <img src={Utils.getMediaUrl(localSettings.landing_hero_image)} className="absolute inset-0 w-full h-full object-cover" />
                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
                                     <label className="cursor-pointer px-5 py-2.5 bg-white text-gray-900 rounded-xl font-bold text-sm shadow-lg hover:scale-105 transition-all">
                                         Change Image

@@ -4,6 +4,7 @@ import React from 'react';
 import { BadgeCheck, Receipt, Eye, Clock } from 'lucide-react';
 import Link from 'next/link';
 import * as Types from '@/lib/types';
+import * as Utils from '@/lib/utils';
 import { ReportCardPDF } from '@/components/features/grading/ReportCardPDF';
 
 interface StudentProfileHeaderProps {
@@ -34,7 +35,7 @@ export const StudentProfileHeader: React.FC<StudentProfileHeaderProps> = ({
                 {/* Student Picture */}
                 {student.passport_url ? (
                     <img
-                        src={student.passport_url}
+                        src={Utils.getMediaUrl(student.passport_url) || ''}
                         alt={student.names}
                         className="h-20 w-20 sm:h-24 sm:w-24 rounded-xl sm:rounded-2xl border-4 border-brand-100 object-cover shadow-lg shrink-0"
                     />

@@ -6,6 +6,95 @@ from django.db import models
 from schools.models import School
 
 
+class FieldChangeLog(models.Model):
+    """
+    Track individual field changes on any model.
+    Provides field-level audit trail for compliance.
+    """
+    ACTION_CHOICES = (
+        ("CREATE", "Created"),
+        ("UPDATE", "Updated"),
+        ("DELETE", "Deleted"),
+    )
+
+    school = models.ForeignKey(
+        School, on_delete=models.SET_NULL, null=True, blank=True, related_name="change_logs"
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="change_logs"
+    )
+
+    # What was changed
+    content_type = models.CharField(max_length=100)  # e.g., "academic.Student"
+    object_id = models.CharField(max_length=50)  # PK of the object
+    action = models.CharField(max_length=10, choices=ACTION_CHOICES)
+
+    # Field changes
+    field_name = models.CharField(max_length=100)
+    old_value = models.TextField(blank=True, null=True)
+    new_value = models.TextField(blank=True, null=True)
+
+    # Context
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.CharField(max_length=500, blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["content_type", "object_id"]),
+            models.Index(fields=["created_at"]),
+            models.Index(fields=["field_name"]),
+        ]
+
+    def __str__(self):
+        return f"{self.content_type}.{self.object_id}.{self.field_name}: {self.old_value} → {self.new_value}"
+
+
+def log_field_change(
+    instance,
+    field_name: str,
+    old_value,
+    new_value,
+    user=None,
+    action="UPDATE",
+    school=None,
+    request=None,
+):
+    """
+    Log a field change to FieldChangeLog.
+    Call this from model's save() or in a signal handler.
+    """
+    try:
+        school = school or getattr(instance, "school", None)
+        if school is None and hasattr(instance, "school_id"):
+            school = School.objects.filter(pk=instance.school_id).first()
+
+        ip = None
+        ua = None
+        if request:
+            ip = request.META.get("REMOTE_ADDR")
+            ua = request.META.get("HTTP_USER_AGENT", "")[:500]
+
+        FieldChangeLog.objects.create(
+            school=school,
+            user=user,
+            content_type=f"{instance._meta.app_label}.{instance._meta.model_name}",
+            object_id=str(instance.pk),
+            action=action,
+            field_name=field_name,
+            old_value=str(old_value) if old_value is not None else None,
+            new_value=str(new_value) if new_value is not None else None,
+            ip_address=ip,
+            user_agent=ua,
+        )
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Failed to log field change: {e}")
+
+
 class GlobalActivityLog(models.Model):
     ACTION_CHOICES = (
         ("SCHOOL_SIGNUP", "School Signup"),
