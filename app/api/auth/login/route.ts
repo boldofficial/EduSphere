@@ -6,11 +6,16 @@ import { logError, logInfo } from '@/lib/logger';
 
 function getDjangoUrl(): string {
     const envUrl = process.env.DJANGO_API_URL;
+    const isProd = process.env.NODE_ENV === 'production';
     if (envUrl) {
-        const url = new URL(envUrl.startsWith('http') ? envUrl : `http://${envUrl}`);
-        return url.origin;
+        try {
+            const url = new URL(envUrl.startsWith('http') ? envUrl : `http://${envUrl}`);
+            return url.origin;
+        } catch {
+            return isProd ? 'http://127.0.0.1:8000' : 'http://127.0.0.1:8001';
+        }
     }
-    return 'http://127.0.0.1:8001';
+    return isProd ? 'http://127.0.0.1:8000' : 'http://127.0.0.1:8001';
 }
 
 export async function POST(request: NextRequest) {
@@ -39,6 +44,8 @@ export async function POST(request: NextRequest) {
             method: 'POST',
             headers: authHeaders,
             body: JSON.stringify({ username, password }),
+            cache: 'no-store',
+            signal: AbortSignal.timeout(20000),
         });
 
         if (!response.ok) {
@@ -69,7 +76,9 @@ export async function POST(request: NextRequest) {
         }
 
         const userRes = await fetch(meUrl, {
-            headers: meHeaders
+            headers: meHeaders,
+            cache: 'no-store',
+            signal: AbortSignal.timeout(20000),
         });
 
         let userData: Record<string, unknown> = { username };
