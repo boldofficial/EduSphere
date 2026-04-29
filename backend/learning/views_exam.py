@@ -44,6 +44,20 @@ class QuestionBankViewSet(TenantViewSet):
             qs = qs.filter(subject_id=subject_id)
         return qs
 
+    @action(detail=True, methods=["get", "post"], url_path="questions")
+    def questions(self, request, pk=None):
+        bank = self.get_object()
+        if request.method == "GET":
+            serializer = BankQuestionSerializer(bank.questions.order_by("-created_at").all(), many=True)
+            return Response(serializer.data)
+
+        payload = request.data.copy()
+        payload["bank"] = bank.id
+        serializer = BankQuestionCreateSerializer(data=payload, context=self.get_serializer_context())
+        serializer.is_valid(raise_exception=True)
+        question = serializer.save(school=bank.school)
+        return Response(BankQuestionSerializer(question).data, status=status.HTTP_201_CREATED)
+
 
 class BankQuestionViewSet(TenantViewSet):
     queryset = BankQuestion.objects.all()

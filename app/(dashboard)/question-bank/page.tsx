@@ -91,7 +91,22 @@ export default function QuestionBankPage() {
 
     const createBank = useMutation({
         mutationFn: async (data: typeof formData) => {
-            const response = await apiClient.post('learning/question-banks/', data);
+            const matchedSubject = subjects.find(
+                (s: any) => s?.name?.toLowerCase() === data.subject.trim().toLowerCase()
+            );
+
+            const payload: Record<string, unknown> = {
+                name: data.name,
+                description: data.description || '',
+            };
+
+            if (matchedSubject?.id) {
+                payload.subject = matchedSubject.id;
+            } else {
+                payload.subject_input = data.subject;
+            }
+
+            const response = await apiClient.post('learning/question-banks/', payload);
             return response.data;
         },
         onSuccess: (data) => {
@@ -133,48 +148,21 @@ export default function QuestionBankPage() {
 
     const importFromAPI = useMutation({
         mutationFn: async () => {
-            const apiToken = process.env.NEXT_PUBLIC_ALOC_API_TOKEN;
-            const apiUrl = process.env.NEXT_PUBLIC_ALOC_API_URL || 'https://questions.aloc.com.ng/api/v2';
-            
-            if (!apiToken) {
-                // Fallback to demo data if no token configured
-                const demoQuestions = Array.from({ length: importForm.count }, (_, i) => ({
-                    id: Date.now() + i,
-                    question_text: `Sample ${importForm.subject} question ${i + 1} from ${importForm.exam_type.toUpperCase()} ${importForm.year}`,
-                    question_type: 'mcq',
-                    difficulty: ['easy', 'medium', 'hard'][i % 3],
-                    options: {
-                        a: `Option A for question ${i + 1}`,
-                        b: `Option B for question ${i + 1}`,
-                        c: `Option C for question ${i + 1}`,
-                        d: `Option D for question ${i + 1}`,
-                    },
-                    correct_answer: ['a', 'b', 'c', 'd'][i % 4],
-                    topic: importForm.subject,
-                    explanation: `This is the explanation for question ${i + 1}. The correct answer is ${['a', 'b', 'c', 'd'][i % 4].toUpperCase()}.`,
-                }));
-                return demoQuestions;
-            }
-
-            // Real API call to ALOC/QBoard
             const response = await fetch(
-                `${apiUrl}/m?subject=${importForm.subject.toLowerCase()}&type=${importForm.exam_type}&year=${importForm.year}&limit=${importForm.count}`,
-                {
-                    headers: {
-                        'Authorization': `Bearer ${apiToken}`,
-                        'Content-Type': 'application/json',
-                    },
-                }
+                `/api/aloc/questions?subject=${encodeURIComponent(importForm.subject)}&exam_type=${encodeURIComponent(importForm.exam_type)}&year=${encodeURIComponent(importForm.year)}&count=${importForm.count}`,
+                { cache: 'no-store' }
             );
             
             if (!response.ok) {
-                throw new Error(`API Error: ${response.status}`);
+                const errData = await response.json().catch(() => ({}));
+                throw new Error(errData?.error || `API Error: ${response.status}`);
             }
             
             const data = await response.json();
-            
+            const questions = Array.isArray(data?.questions) ? data.questions : [];
+
             // Transform ALOC response to our format
-            return data.questions || data.map((q: any, i: number) => ({
+            return questions.map((q: any, i: number) => ({
                 id: q.id || Date.now() + i,
                 question_text: q.question || q.question_text,
                 question_type: 'mcq',
@@ -194,8 +182,8 @@ export default function QuestionBankPage() {
             setImportedQuestions(data);
             addToast(`Found ${data.length} questions ready to import`, 'success');
         },
-        onError: () => {
-            addToast('Failed to fetch questions from API', 'error');
+        onError: (error: any) => {
+            addToast(error?.message || 'Failed to fetch questions from API', 'error');
         },
     });
 

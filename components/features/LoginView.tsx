@@ -17,6 +17,7 @@ import { StudentLoginForm } from './login/StudentLoginForm';
 import { FindSchoolSection } from './login/FindSchoolSection';
 import { ForgotPasswordModal } from './login/ForgotPasswordModal';
 import { resolveTenantFromHost } from '@/lib/tenant-host';
+import { TwoFactorVerify } from './auth/TwoFactorVerify';
 
 export const LoginView = () => {
     const router = useRouter();
@@ -53,6 +54,11 @@ export const LoginView = () => {
     const [forgotSuccess, setForgotSuccess] = useState(false);
     const [newPassword, setNewPassword] = useState('');
     const [logoClickCount, setLogoClickCount] = useState(0);
+
+    // 2FA state
+    const [showTwoFactor, setShowTwoFactor] = useState(false);
+    const [twoFactorTempToken, setTwoFactorTempToken] = useState('');
+    const [pendingUser, setPendingUser] = useState<{id: number; username: string; email: string; role: string} | null>(null);
 
     const resolveTenantContext = () => {
         if (typeof window === 'undefined') {
@@ -172,6 +178,16 @@ export const LoginView = () => {
             }
 
             const data = await res.json();
+            
+            // Check if 2FA is required
+            if (data.requires_2fa) {
+                setPendingUser(data.user);
+                setTwoFactorTempToken(data.temp_token);
+                setShowTwoFactor(true);
+                setIsLoading(false);
+                return;
+            }
+
             const role = selectedRole || 'admin';
             login(role, { id: data.user.id, name: data.user.username, email: email, role });
             router.push(role === 'super_admin' ? '/dashboard/super-admin' : '/dashboard');
@@ -219,6 +235,52 @@ export const LoginView = () => {
         } finally {
             setIsLoading(false);
         }
+    };
+
+    // 2FA handlers
+    const handleTwoFactorVerify = async (code: string) => {
+        const res = await fetch('/api/auth/2fa-verify', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${twoFactorTempToken}`
+            },
+            body: JSON.stringify({ code }),
+        });
+
+        if (!res.ok) {
+            const data = await res.json();
+            throw new Error(data.error || 'Invalid verification code');
+        }
+
+        const data = await res.json();
+        
+        // Set the actual tokens
+        const cookieStore = await import('next/headers').then(m => m.cookies());
+        cookieStore.set('access_token', data.access, { httpOnly: true, path: '/' });
+        cookieStore.set('refresh_token', data.refresh, { httpOnly: true, path: '/' });
+
+        // Complete login
+        if (pendingUser) {
+            const role = pendingUser.role === 'super_admin' ? 'super_admin' : 
+                        pendingUser.role === 'SCHOOL_ADMIN' ? 'admin' : 
+                        pendingUser.role?.toLowerCase() || 'admin';
+            login(role as UserRole, { 
+                id: pendingUser.id, 
+                name: pendingUser.username, 
+                email: pendingUser.email, 
+                role 
+            });
+        }
+        
+        setShowTwoFactor(false);
+        router.push('/dashboard');
+    };
+
+    const handleTwoFactorCancel = () => {
+        setShowTwoFactor(false);
+        setTwoFactorTempToken('');
+        setPendingUser(null);
     };
 
     const handleDirectLogin = async (role: UserRole) => {
@@ -441,6 +503,17 @@ export const LoginView = () => {
                 isLoading={isLoading}
                 onSubmit={handleForgotPassword}
             />
+
+            {/* Two-Factor Authentication Modal */}
+            {showTwoFactor && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <TwoFactorVerify
+                        onVerify={handleTwoFactorVerify}
+                        onUseBackupCode={handleTwoFactorVerify}
+                        onCancel={handleTwoFactorCancel}
+                    />
+                </div>
+            )}
         </div>
     );
 };

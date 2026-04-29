@@ -1,11 +1,9 @@
+# Use new google.genai package (google.generativeai is deprecated)
+# Install with: pip install google-genai
 try:
-    # Use new google.genai package (google.generativeai is deprecated)
     import google.genai as genai
-except Exception:
-    try:
-        import google.generativeai as genai  # Fallback for backward compatibility
-    except Exception:  # pragma: no cover - optional runtime dependency
-        genai = None
+except Exception:  # pragma: no cover - optional runtime dependency
+    genai = None
 import json
 import logging
 import os

@@ -31,6 +31,7 @@ class PublicPlanListView(APIView):
     """List all active subscription plans (public access)."""
 
     permission_classes = [AllowAny]
+    throttle_classes = []  # Disable throttling for public endpoint
 
     def get(self, request):
         # Restriction: Only show the 'enterprise' plan for the free pilot period
@@ -48,6 +49,7 @@ class VerifySchoolSlugView(APIView):
     """Check if a school slug exists (public access)."""
 
     permission_classes = [AllowAny]
+    throttle_classes = []  # Disable throttling for public endpoint
 
     def get(self, request, slug):
         from django.db.models import Q
@@ -64,6 +66,7 @@ class PublicSchoolPaymentOptionsView(APIView):
     """Public/sanitized payment options for a tenant."""
 
     permission_classes = [AllowAny]
+    throttle_classes = []  # Disable throttling for public endpoint
 
     def get(self, request):
         school = get_request_school(request, allow_super_admin_tenant=True)
@@ -79,6 +82,7 @@ class RegisterSchoolView(APIView):
     """Register a new school (public access)."""
 
     permission_classes = [AllowAny]
+    throttle_classes = []  # Disable throttling for public endpoint
 
     def post(self, request):
         logger.info("School registration request received.")
@@ -181,6 +185,7 @@ class DemoRequestViewSet(APIView):
     """
 
     permission_classes = [AllowAny]
+    throttle_classes = []  # Disable throttling for public endpoint
 
     def post(self, request):
         serializer = DemoRequestSerializer(data=request.data)

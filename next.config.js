@@ -3,10 +3,8 @@ const nextConfig = {
     // NOTE: GEMINI_API_KEY is available server-side only via process.env.GEMINI_API_KEY
     // Do NOT expose it to the client via the `env` config block.
 
-    // Allow HTTP in development
-    experimental: {
-        trustHostHeader: true,
-    },
+    // Trust host header for proxy setups (Next.js 14+)
+    // Note: trustHostHeader is now enabled via the proxy config in Next.js 16
 
 // Security headers for production
     async headers() {
@@ -90,9 +88,9 @@ const nextConfig = {
     poweredByHeader: false,
     compress: true,
 
-    // Disable HTTPS redirect in development
-    httpAgentOptions: {
-        rejectUnauthorized: false,
+    // HTTP agent options for development
+    httpAgent: {
+        keepAlive: true,
     },
 
     async rewrites() {

@@ -15,6 +15,30 @@ interface Plan {
     duration_days: number;
 }
 
+// Default fallback plans in case API is unavailable
+const DEFAULT_PLANS: Plan[] = [
+    {
+        id: 1,
+        name: "Enterprise",
+        slug: "enterprise",
+        price: "FREE",
+        description: "Full platform access to strengthen education together.",
+        features: [
+            "Student Information System",
+            "Academic Management",
+            "Bursary & Fee Collection",
+            "Examination & Grading",
+            "Attendance Tracking",
+            "Library Management",
+            "Transport Management",
+            "Analytics & Reports",
+            "Online Admissions",
+            "Parent Portal",
+        ],
+        duration_days: 180,
+    },
+];
+
 export const PricingSection = () => {
     const [plans, setPlans] = useState<Plan[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -23,11 +47,24 @@ export const PricingSection = () => {
     useEffect(() => {
         const fetchPlans = async () => {
             try {
+                console.log('[Pricing] Fetching plans from /api/schools/plans');
                 const res = await apiClient.get('schools/plans');
-                setPlans(res.data);
-            } catch (err) {
-                console.error("Failed to fetch plans", err);
-                setError("Could not load pricing at this time.");
+                console.log('[Pricing] Response:', res.data);
+                
+                if (res.data && res.data.length > 0) {
+                    setPlans(res.data);
+                } else {
+                    console.log('[Pricing] No plans from API, using defaults');
+                    setPlans(DEFAULT_PLANS);
+                }
+            } catch (err: any) {
+                console.error("[Pricing] Failed to fetch plans:", err);
+                console.error("[Pricing] Error response:", err.response?.data);
+                console.error("[Pricing] Error status:", err.response?.status);
+                // Use default plans as fallback
+                console.log('[Pricing] Using default plans due to error');
+                setPlans(DEFAULT_PLANS);
+                setError(''); // Clear error since we have fallback
             } finally {
                 setIsLoading(false);
             }

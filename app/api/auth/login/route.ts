@@ -79,6 +79,20 @@ export async function POST(request: NextRequest) {
             else if (userData.role === 'SCHOOL_ADMIN') userData.role = 'admin';
         }
 
+        // Check if 2FA is required
+        const twoFactorEnabled = userData.two_factor_enabled as boolean;
+        
+        if (twoFactorEnabled) {
+            // Return partial success with 2FA required
+            // Don't set cookies yet - wait for 2FA verification
+            return NextResponse.json({ 
+                success: true, 
+                user: userData,
+                requires_2fa: true,
+                temp_token: access // Temporary token for 2FA verification
+            });
+        }
+
         return NextResponse.json({ success: true, user: userData });
     } catch (error) {
         const isProd = process.env.NODE_ENV === 'production';

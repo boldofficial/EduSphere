@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { useToast } from '@/components/providers/toast-provider';
 import { PaymentSettingsCard } from '@/components/features/settings/PaymentSettingsCard';
+import { TwoFactorSettings } from '@/components/features/auth/TwoFactorSettings';
 
 interface SettingsViewProps {
     settings: Types.Settings;
@@ -396,6 +397,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                         </div>
                     </div>
                 </Card>
+                
+                {/* Two-Factor Authentication */}
+                <TwoFactorSettings />
             </div>
         </div>
     );
