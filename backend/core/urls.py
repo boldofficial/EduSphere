@@ -13,6 +13,14 @@ from .views import (
     SettingsView,
     GlobalActivityLogViewSet,
 )
+from .notifications_views import (
+    send_sms,
+    send_whatsapp,
+    send_bulk_sms,
+    send_otp,
+    verify_otp,
+    get_notification_balance,
+)
 
 router = DefaultRouter()
 router.register(r"conversations", ConversationViewSet, basename="conversation")
@@ -27,5 +35,12 @@ urlpatterns = [
     path("public-settings/", PublicSettingsView.as_view(), name="public-settings"),
     path("public-stats/", PublicStatsView.as_view(), name="public-stats"),
     path("upload/", FileUploadView.as_view(), name="file-upload"),
+    # Termii notifications
+    path("notifications/sms/", send_sms, name="send-sms"),
+    path("notifications/whatsapp/", send_whatsapp, name="send-whatsapp"),
+    path("notifications/bulk-sms/", send_bulk_sms, name="send-bulk-sms"),
+    path("notifications/otp/send/", send_otp, name="send-otp"),
+    path("notifications/otp/verify/", verify_otp, name="verify-otp"),
+    path("notifications/balance/", get_notification_balance, name="notification-balance"),
     path("", include(router.urls)),
 ]

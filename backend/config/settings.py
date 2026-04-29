@@ -77,6 +77,28 @@ OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
 
 
 # =============================================================================
+# PAYMENT GATEWAY CONFIGURATION (Paystack)
+# =============================================================================
+
+PAYSTACK_SECRET_KEY = os.environ.get("PAYSTACK_SECRET_KEY", "")
+PAYSTACK_PUBLIC_KEY = os.environ.get("PAYSTACK_PUBLIC_KEY", "")
+PAYSTACK_REFERENCE_PREFIX = "EDU"
+PAYSTACK_WEBHOOK_SECRET = os.environ.get("PAYSTACK_WEBHOOK_SECRET", "")
+
+# Enable test mode if not in production
+PAYSTACK_TEST_MODE = DEBUG
+
+
+# =============================================================================
+# SMS/WhatsApp CONFIGURATION (Termii)
+# =============================================================================
+
+TERMII_API_KEY = os.environ.get("TERMII_API_KEY", "")
+TERMII_SENDER_ID = os.environ.get("TERMII_SENDER_ID", "")
+TERMII_CHANNEL = os.environ.get("TERMII_CHANNEL", "dnd")  # dnd, sms, whatsapp
+
+
+# =============================================================================
 # APPLICATION DEFINITION
 # =============================================================================
 
@@ -103,6 +125,10 @@ INSTALLED_APPS = [
     "learning",
     "lms",
     "emails",
+    "library",
+    "inventory",
+    "data_import",
+    "transport",
 ]
 
 MIDDLEWARE = [

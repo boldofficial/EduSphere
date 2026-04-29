@@ -6,6 +6,7 @@ import { ToastProvider } from '@/components/providers/toast-provider'
 import QueryProvider from '@/components/providers/query-provider'
 import { PWAProvider } from '@/components/providers/pwa-provider'
 import { AuthProvider } from '@/components/providers/AuthProvider'
+import { ErrorBoundary } from '@/components/providers/error-boundary'
 import { resolveTenantFromHost } from '@/lib/tenant-host'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -89,15 +90,17 @@ export default function RootLayout({
     return (
         <html lang="en" suppressHydrationWarning>
             <body className={inter.className}>
-                <QueryProvider>
-                    <ToastProvider>
-                        <PWAProvider>
-                            <AuthProvider>
-                                {children}
-                            </AuthProvider>
-                        </PWAProvider>
-                    </ToastProvider>
-                </QueryProvider>
+                <ErrorBoundary>
+                    <QueryProvider>
+                        <ToastProvider>
+                            <PWAProvider>
+                                <AuthProvider>
+                                    {children}
+                                </AuthProvider>
+                            </PWAProvider>
+                        </ToastProvider>
+                    </QueryProvider>
+                </ErrorBoundary>
             </body>
         </html>
     )

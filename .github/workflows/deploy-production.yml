@@ -1,0 +1,64 @@
+name: Deploy Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    environment: production
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Coolify CLI
+        run: |
+          npm install -g coolify-cli
+
+      - name: Run linting
+        run: |
+          npm ci
+          npm run lint
+          npm run check-types
+
+      - name: Run tests
+        run: npm run test:run
+
+      - name: Build frontend
+        run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_ROOT_DOMAIN: ${{ secrets.NEXT_PUBLIC_ROOT_DOMAIN }}
+
+      - name: Deploy to Coolify
+        run: |
+          coolify deploy \
+            --project "registra" \
+            --environment "production" \
+            --wait
+        env:
+          COOLIFY_API_KEY: ${{ secrets.COOLIFY_API_KEY }}
+        continue-on-error: true
+
+      - name: Notify on failure
+        if: failure()
+        uses: slack-notify-action@v1
+        with:
+          status: ${{ job.status }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

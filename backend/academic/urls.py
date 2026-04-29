@@ -33,6 +33,11 @@ from .views import (
     TimetableEntryViewSet,
     TimetableViewSet,
 )
+from .views_conduct import (
+    CommendationViewSet,
+    ConductWarningViewSet,
+    BehaviorAnalyticsViewSet,
+)
 
 router = DefaultRouter()
 router.register(r"subjects", views.SubjectViewSet)
@@ -49,6 +54,10 @@ router.register(r"attendance-records", views.AttendanceRecordViewSet)
 router.register(r"events", views.SchoolEventViewSet)
 router.register(r"lessons", views.LessonViewSet)
 router.register(r"conduct-entries", views.ConductEntryViewSet)
+# New conduct endpoints
+router.register(r"commendations", CommendationViewSet)
+router.register(r"conduct-warnings", ConductWarningViewSet)
+router.register(r"behavior-analytics", BehaviorAnalyticsViewSet)
 
 # Timetable & Grading Module Endpoints
 router.register(r"periods", views.PeriodViewSet, basename="periods")

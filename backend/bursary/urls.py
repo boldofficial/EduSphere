@@ -8,6 +8,7 @@ from .views import (
     ExpenseViewSet,
     FeeCategoryViewSet,
     FeeItemViewSet,
+    InitializePaystackPayment,
     PaymentViewSet,
     PayrollViewSet,
     SalaryAllowanceViewSet,
@@ -16,6 +17,8 @@ from .views import (
     StaffSalaryStructureViewSet,
     StudentFeeViewSet,
     DiscountViewSet,
+    VerifyPaystackPayment,
+    PaystackWebhook,
 )
 from .views_webhooks import PaystackWebhookView
 from .views_public import PublicInvoiceView
@@ -42,4 +45,7 @@ router.register(r"dashboard", DashboardViewSet, basename="bursary-dashboard")
 urlpatterns = [
     path("webhooks/paystack/<str:school_domain>/", PaystackWebhookView.as_view(), name="paystack-webhook"),
     path("public/invoice/<uuid:payment_hash>/", PublicInvoiceView.as_view(), name="public-invoice"),
+    path("payments/initialize/", InitializePaystackPayment.as_view(), name="initialize-payment"),
+    path("payments/verify/", VerifyPaystackPayment.as_view(), name="verify-payment"),
+    path("payments/webhook/", PaystackWebhook.as_view(), name="paystack-webhook-handler"),
 ] + router.urls

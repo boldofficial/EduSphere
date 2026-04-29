@@ -3,7 +3,8 @@ import {
     CalendarCheck, CreditCard, Database, Settings as SettingsIcon,
     ClipboardList, BadgeCheck, UserCog,
     Megaphone as AnnouncementIcon, Calendar, BarChart3, FileCheck, Newspaper, Mail,
-    MessageSquare, Activity, Heart, Wallet, ScrollText, Globe
+    MessageSquare, Activity, Heart, Wallet, ScrollText, Globe,
+    Banknote, Truck, Library, FileText, BookMarked
 } from 'lucide-react';
 
 export const NAVIGATION_ITEMS = [
@@ -13,6 +14,11 @@ export const NAVIGATION_ITEMS = [
     { id: 'staff', name: 'Non-Academic', icon: UserCog, href: '/staff', category: 'Administration' },
     { id: 'admissions', name: 'Admissions', href: '/admissions', icon: FileCheck, category: 'Administration' },
     { id: 'id_cards', name: 'ID Cards', href: '/id_cards', icon: BadgeCheck, category: 'Administration' },
+    // New modules in Administration
+    { id: 'library', name: 'Library', href: '/library', icon: Library, category: 'Administration' },
+    { id: 'inventory', name: 'Inventory', icon: Banknote, href: '/inventory', category: 'Administration' },
+    { id: 'transport', name: 'Transport', icon: Truck, href: '/transport', category: 'Administration' },
+    
     { id: 'classes', name: 'Classes', href: '/classes', icon: BookOpen, category: 'Academics' },
     { id: 'timetables', name: 'Timetable', href: '/timetable', icon: Calendar, category: 'Academics' },
     { id: 'learning', name: 'Learning Center', href: '/learning', icon: GraduationCap, category: 'Academics' },
@@ -20,6 +26,10 @@ export const NAVIGATION_ITEMS = [
     { id: 'attendance', name: 'Attendance', href: '/attendance', icon: CalendarCheck, category: 'Academics' },
     { id: 'broadsheet', name: 'Broadsheet', href: '/broadsheet', icon: ScrollText, category: 'Academics' },
     { id: 'calendar', name: 'Calendar', href: '/calendar', icon: Calendar, category: 'Academics' },
+    // New exam modules under Academics
+    { id: 'question_bank', name: 'Question Bank', href: '/question-bank', icon: BookMarked, category: 'Academics' },
+    { id: 'exams', name: 'Formal Exams', href: '/exams', icon: FileText, category: 'Academics' },
+    
     { id: 'bursary', name: 'Bursary', href: '/bursary', icon: Wallet, category: 'Account' },
     { id: 'conduct', name: 'Conduct & Log', href: '/conduct', icon: Activity, category: 'Health & Conduct' },
     { id: 'messages', name: 'Messages', href: '/messages', icon: Mail, category: 'Messages' },

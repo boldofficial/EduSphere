@@ -36,6 +36,13 @@ MODULES = [
     {"id": "newsletter", "name": "School newsletter", "description": "Create and publish newsletters for parents."},
     {"id": "messages", "name": "Direct Messaging", "description": "Internal chat and messaging for staff/parents."},
     {"id": "cms", "name": "Website CMS", "description": "Manage school website content and landing page."},
+    # New modules
+    {"id": "question_bank", "name": "Question Bank", "description": "Reusable question repository for exams."},
+    {"id": "exams", "name": "Formal Exams", "description": "Timetabled written examinations with grading."},
+    {"id": "library", "name": "Library Management", "description": "Book catalog, borrowing, and returns."},
+    {"id": "inventory", "name": "Inventory & Assets", "description": "Track school assets and consumables."},
+    {"id": "transport", "name": "Transport & Bus", "description": "Manage bus routes and student transportation."},
+    {"id": "data_import", "name": "Bulk Import", "description": "Import students, scores, and fees via CSV."},
 ]
 
 

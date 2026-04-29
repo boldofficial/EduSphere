@@ -32,15 +32,21 @@ export function useNavigationFilter(
             if (teacherModules.length > 0) {
                 allowedNavIds = [...new Set([...allowedNavIds, ...teacherModules])];
             }
-        }
+}
 
         // ALLOWED MODULES from School Subscription Plan
         const userToUse = freshUser || currentUser;
         const schoolAllowedModules = (userToUse as any)?.subscription?.allowed_modules || [];
 
-        // Master list of allowed IDs considering both Role Permissions AND Plan Limitations
+        // Always allowed for all (core modules)
+        const alwaysAllowed = [
+            'dashboard', 'settings', 'data', 'timetables', 'support',
+            // New modules - always visible for admins/teachers
+            'library', 'inventory', 'transport', 'question_bank', 'exams'
+        ];
+
         const masterAllowedNavIds = allowedNavIds.filter((id: string) => {
-            if (id === 'dashboard' || id === 'settings' || id === 'data' || id === 'timetables' || id === 'support') return true;
+            if (alwaysAllowed.includes(id)) return true;
             return (schoolAllowedModules as string[]).includes(id);
         });
 

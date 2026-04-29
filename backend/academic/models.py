@@ -500,6 +500,142 @@ class ConductEntry(TenantModel):
         return f"{self.student.names} - {self.trait}: {self.score}"
 
 
+class Commendation(TenantModel):
+    """Student commendations/rewards for positive behavior."""
+    
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name="commendations")
+    title = models.CharField(max_length=255, help_text="e.g., 'Best Student Award', 'Perfect Attendance'")
+    description = models.TextField(blank=True)
+    category = models.CharField(
+        max_length=50,
+        choices=(
+            ("academic", "Academic"),
+            ("leadership", "Leadership"),
+            ("sports", "Sports"),
+            ("conduct", "Conduct"),
+            ("creativity", "Creativity"),
+            ("service", "Service"),
+            ("other", "Other"),
+        ),
+        default="academic"
+    )
+    
+    points = models.IntegerField(default=5)
+    award_date = models.DateField(auto_now_add=True)
+    awarded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="awarded_commendations")
+    
+    # Evidence
+    evidence_url = models.CharField(max_length=512, blank=True)
+    certificate_number = models.CharField(max_length=50, blank=True, unique=True, null=True)
+    
+    session = models.CharField(max_length=50)
+    term = models.CharField(max_length=50)
+    
+    class Meta:
+        ordering = ["-award_date"]
+    
+    def __str__(self):
+        return f"{self.student.names} - {self.title}"
+
+
+class ConductWarning(TenantModel):
+    """Behavioral warnings/infractions."""
+    
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name="conduct_warnings")
+    
+    SEVERITY_CHOICES = (
+        ("minor", "Minor"),
+        ("moderate", "Moderate"),
+        ("serious", "Serious"),
+        ("severe", "Severe"),
+    )
+    
+    TYPE_CHOICES = (
+        ("late_arrival", "Late Arrival"),
+        ("absenteeism", "Absenteeism"),
+        ("uniform_violation", "Uniform Violation"),
+        ("academic_neglect", "Academic Neglect"),
+        ("disruption", "Class Disruption"),
+        ("dishonesty", "Dishonesty"),
+        ("bullying", "Bullying"),
+        ("damage_property", "Damage to Property"),
+        ("other", "Other"),
+    )
+    
+    incident_type = models.CharField(max_length=30, choices=TYPE_CHOICES)
+    severity = models.CharField(max_length=20, choices=SEVERITY_CHOICES, default="minor")
+    description = models.TextField()
+    incident_date = models.DateField()
+    
+    # Response
+    action_taken = models.TextField(blank=True)
+    parent_notified = models.BooleanField(default=False)
+    parent_notification_method = models.CharField(max_length=20, blank=True, choices=(
+        ("sms", "SMS"), ("whatsapp", "WhatsApp"), ("phone", "Phone"), ("meeting", "In-Person Meeting")
+    ))
+    parent_response = models.TextField(blank=True)
+    
+    # Status
+    STATUS_CHOICES = (
+        ("pending", "Pending"),
+        ("resolved", "Resolved"),
+        ("escalated", "Escalated"),
+    )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    
+    recorded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    session = models.CharField(max_length=50)
+    term = models.CharField(max_length=50)
+    
+    class Meta:
+        ordering = ["-incident_date"]
+    
+    def __str__(self):
+        return f"{self.student.names} - {self.incident_type} ({self.severity})"
+
+
+class BehaviorAnalytics(TenantModel):
+    """Aggregated behavior analytics per student per term."""
+    
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name="behavior_analytics")
+    session = models.CharField(max_length=50)
+    term = models.CharField(max_length=50)
+    
+    # Averages
+    avg_conduct_score = models.FloatField(default=0.0)  # From ConductEntry
+    total_commendations = models.IntegerField(default=0)
+    total_warnings = models.IntegerField(default=0)
+    
+    # Traits breakdown (JSON)
+    trait_scores = models.JSONField(default=dict, blank=True)  # {Punctuality: 4, Neatness: 3}
+    
+    # Categorized counts
+    commendation_points = models.IntegerField(default=0)
+    warning_points = models.IntegerField(default=0)  # Weighted by severity
+    
+    # Computed
+    BEHAVIOR_CHOICES = (
+        ("excellent", "Excellent"),
+        ("good", "Good"),
+        ("average", "Average"),
+        ("needs_improvement", "Needs Improvement"),
+        ("poor", "Poor"),
+    )
+    overall_rating = models.CharField(max_length=20, choices=BEHAVIOR_CHOICES, default="average")
+    
+    # Parent engagement
+    parent_meetings = models.IntegerField(default=0)
+    parent_complaints = models.IntegerField(default=0)
+    
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ("student", "session", "term")
+    
+    def __str__(self):
+        return f"{self.student.names} - {self.term} ({self.overall_rating})"
+
+
 class Period(TenantModel):
     """Defines time slots, e.g., 'Morning Period 1: 8:00-8:40'"""
 
