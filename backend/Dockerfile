@@ -17,7 +17,8 @@ RUN apt-get update && apt-get install -y \
 # Install Python dependencies with uv lockfile
 COPY pyproject.toml uv.lock /app/
 RUN pip install --no-cache-dir --upgrade pip uv && \
-    uv sync --frozen --no-dev --no-install-project
+    uv sync --frozen --no-dev --no-install-project && \
+    uv pip install --python /app/.venv/bin/python "pyotp>=2.9.0"
 
 # Copy the Django project code into the container
 COPY . /app/
