@@ -1,7 +1,11 @@
 try:
-    import google.generativeai as genai
-except Exception:  # pragma: no cover - optional runtime dependency
-    genai = None
+    # Use new google.genai package (google.generativeai is deprecated)
+    import google.genai as genai
+except Exception:
+    try:
+        import google.generativeai as genai  # Fallback for backward compatibility
+    except Exception:  # pragma: no cover - optional runtime dependency
+        genai = None
 import json
 import logging
 import os

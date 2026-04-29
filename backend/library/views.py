@@ -18,7 +18,7 @@ from library.serializers import (
 
 
 class BookCategoryViewSet(TenantViewSet):
-    queryset = BookCategory.objects.all()
+    queryset = BookCategory.objects.order_by('name').all()
     serializer_class = BookCategorySerializer
     
     def get_queryset(self):
@@ -30,7 +30,7 @@ class BookCategoryViewSet(TenantViewSet):
 
 
 class BookViewSet(TenantViewSet):
-    queryset = Book.objects.all()
+    queryset = Book.objects.order_by('title').all()
     serializer_class = BookListSerializer
     
     def get_serializer_class(self):

@@ -164,21 +164,21 @@ class IsAdminOrReadOnly(permissions.BasePermission):
 
 
 class FeeCategoryViewSet(TenantViewSet):
-    queryset = FeeCategory.objects.all()
+    queryset = FeeCategory.objects.order_by('name').all()
     serializer_class = FeeCategorySerializer
     pagination_class = StandardPagination
     permission_classes = [permissions.IsAuthenticated, IsAdminOrReadOnly]
 
 
 class ScholarshipViewSet(TenantViewSet):
-    queryset = Scholarship.objects.all()
+    queryset = Scholarship.objects.order_by('-created_at').all()
     serializer_class = ScholarshipSerializer
     pagination_class = StandardPagination
     permission_classes = [permissions.IsAuthenticated, IsAdminOrReadOnly]
 
 
 class FeeItemViewSet(TenantViewSet):
-    queryset = FeeItem.objects.all()
+    queryset = FeeItem.objects.order_by('-created_at').all()
     serializer_class = FeeItemSerializer
     pagination_class = StandardPagination
     permission_classes = [permissions.IsAuthenticated, IsAdminOrReadOnly]

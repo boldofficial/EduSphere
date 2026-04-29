@@ -19,12 +19,12 @@ from inventory.serializers import (
 
 
 class AssetCategoryViewSet(TenantViewSet):
-    queryset = AssetCategory.objects.all()
+    queryset = AssetCategory.objects.order_by('name').all()
     serializer_class = AssetCategorySerializer
 
 
 class AssetViewSet(TenantViewSet):
-    queryset = Asset.objects.all()
+    queryset = Asset.objects.order_by('name').all()
     serializer_class = AssetListSerializer
     
     def get_serializer_class(self):

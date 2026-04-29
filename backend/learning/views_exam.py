@@ -19,7 +19,7 @@ from learning.serializers_exam import (
 
 
 class QuestionBankViewSet(TenantViewSet):
-    queryset = QuestionBank.objects.all()
+    queryset = QuestionBank.objects.order_by('-created_at').all()
     serializer_class = QuestionBankSerializer
     
     def get_serializer_class(self):

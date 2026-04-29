@@ -17,7 +17,7 @@ from transport.serializers import (
 
 
 class BusStopViewSet(TenantViewSet):
-    queryset = BusStop.objects.all()
+    queryset = BusStop.objects.order_by('name').all()
     serializer_class = BusStopSerializer
     
     def get_queryset(self):
@@ -29,7 +29,7 @@ class BusStopViewSet(TenantViewSet):
 
 
 class BusRouteViewSet(TenantViewSet):
-    queryset = BusRoute.objects.all()
+    queryset = BusRoute.objects.order_by('name').all()
     serializer_class = BusRouteListSerializer
     
     def get_serializer_class(self):
