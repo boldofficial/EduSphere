@@ -95,44 +95,53 @@ class SchoolManagementView(APIView):
 
     @staticmethod
     def _queue_school_decision_email(school, action):
-        recipient = school.email
-        if not recipient:
+        recipients = []
+        if school.email:
+            recipients.append(school.email.strip())
+
+        admin_user = school.users.filter(role="SCHOOL_ADMIN").exclude(email__isnull=True).exclude(email="").first()
+        if admin_user and admin_user.email:
+            admin_email = admin_user.email.strip()
+            if admin_email.lower() not in {r.lower() for r in recipients}:
+                recipients.append(admin_email)
+
+        if not recipients:
             return
+
         login_url = f"https://{school.domain}.myregistra.net/login"
         if action == "approve":
-            try:
-                send_email_task.delay(
-                    "school_approved",
-                    recipient,
-                    {"school_name": school.name, "login_url": login_url},
-                )
-                return
-            except Exception:
-                pass
-
-            send_custom_email_task.delay(
-                recipient,
-                f"School Registration Approved - {school.name}",
-                f"""
-                <h2>Registration Approved</h2>
-                <p>Hello {school.name},</p>
-                <p>Your school registration has been approved and your account is now active.</p>
-                <p>You can now login here: <a href="{login_url}">{login_url}</a></p>
-                """,
-            )
+            for recipient in recipients:
+                try:
+                    send_email_task.delay(
+                        "school_approved",
+                        recipient,
+                        {"school_name": school.name, "login_url": login_url},
+                    )
+                except Exception:
+                    send_custom_email_task.delay(
+                        recipient,
+                        f"School Registration Approved - {school.name}",
+                        f"""
+                        <h2>Registration Approved</h2>
+                        <p>Hello {school.name},</p>
+                        <p>Your school registration has been approved and your account is now active.</p>
+                        <p>You can now login here: <a href="{login_url}">{login_url}</a></p>
+                        """,
+                    )
             return
 
         if action == "reject":
-            send_custom_email_task.delay(
-                recipient,
-                f"School Registration Update - {school.name}",
-                f"""
-                <h2>Registration Not Approved</h2>
-                <p>Hello {school.name},</p>
-                <p>We reviewed your school registration and it was not approved at this time.</p>
-                <p>You may contact support for clarification or submit an updated application.</p>
-                """,
-            )
+            for recipient in recipients:
+                send_custom_email_task.delay(
+                    recipient,
+                    f"School Registration Update - {school.name}",
+                    f"""
+                    <h2>Registration Not Approved</h2>
+                    <p>Hello {school.name},</p>
+                    <p>We reviewed your school registration and it was not approved at this time.</p>
+                    <p>You may contact support for clarification or submit an updated application.</p>
+                    """,
+                )
 
     def get(self, request):
         """List all schools."""
@@ -189,6 +198,7 @@ class SchoolManagementView(APIView):
             raise ValidationError({"detail": "Action is required"})
 
         sub = school.subscription
+        previous_status = sub.status
 
         if action == "suspend":
             sub.status = "cancelled"
@@ -215,9 +225,14 @@ class SchoolManagementView(APIView):
 
         logger.info(f"School '{school.name}' subscription {action}d by {request.user.email}")
 
-        if action in {"approve", "reject"}:
+        if action == "reject":
             try:
-                self._queue_school_decision_email(school, action)
+                self._queue_school_decision_email(school, "reject")
+            except Exception as e:
+                logger.error("Failed to queue school decision email for %s: %s", school.name, e)
+        elif sub.status == "active" and previous_status != "active":
+            try:
+                self._queue_school_decision_email(school, "approve")
             except Exception as e:
                 logger.error("Failed to queue school decision email for %s: %s", school.name, e)
 
