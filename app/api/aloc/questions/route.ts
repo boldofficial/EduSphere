@@ -26,42 +26,69 @@ export async function GET(request: NextRequest) {
     };
     const examType = examTypeMap[examTypeInput] || examTypeInput;
 
-    const upstreamUrl = `${getAlocBaseUrl()}/m?subject=${encodeURIComponent(subject.toLowerCase())}&type=${encodeURIComponent(examType)}&year=${encodeURIComponent(year)}&limit=${encodeURIComponent(count)}`;
-
     try {
-        const upstreamRes = await fetch(upstreamUrl, {
-            method: "GET",
-            headers: {
-                Authorization: `Bearer ${token}`,
-                access_token: token,
-                AccessToken: token,
-                "x-access-token": token,
-                "Content-Type": "application/json",
-            },
-            cache: "no-store",
-        });
+        const headers = {
+            Authorization: `Bearer ${token}`,
+            access_token: token,
+            AccessToken: token,
+            "x-access-token": token,
+            "Content-Type": "application/json",
+        };
 
-        const raw = await upstreamRes.text();
-        let data: any = {};
-        try {
-            data = JSON.parse(raw);
-        } catch {
-            data = { raw };
-        }
+        const base = getAlocBaseUrl();
+        const subjectParam = encodeURIComponent(subject.toLowerCase());
+        const typeParam = encodeURIComponent(examType);
+        const yearParam = encodeURIComponent(year);
+        const limitParam = encodeURIComponent(count);
 
-        if (!upstreamRes.ok) {
-            return NextResponse.json(
-                {
+        const candidates = [
+            `${base}/m?subject=${subjectParam}&type=${typeParam}&year=${yearParam}&limit=${limitParam}`,
+            `${base}/m?subject=${subjectParam}&type=${typeParam}&limit=${limitParam}`,
+            `${base}/m?subject=${subjectParam}&limit=${limitParam}`,
+            `${base}/q?subject=${subjectParam}&type=${typeParam}&year=${yearParam}`,
+            `${base}/q?subject=${subjectParam}&type=${typeParam}`,
+            `${base}/q?subject=${subjectParam}`,
+        ];
+
+        let lastError: any = null;
+        for (const upstreamUrl of candidates) {
+            const upstreamRes = await fetch(upstreamUrl, { method: "GET", headers, cache: "no-store" });
+            const raw = await upstreamRes.text();
+            let data: any = {};
+            try {
+                data = JSON.parse(raw);
+            } catch {
+                data = { raw };
+            }
+
+            if (!upstreamRes.ok) {
+                lastError = {
                     error: data?.message || data?.error || `ALOC API request failed with ${upstreamRes.status}`,
                     status: upstreamRes.status,
                     details: data,
-                },
-                { status: 502 }
-            );
+                    upstreamUrl,
+                };
+                continue;
+            }
+
+            const questions = Array.isArray(data)
+                ? data
+                : Array.isArray(data?.questions)
+                    ? data.questions
+                    : data && typeof data === "object" && (data.question || data.question_text)
+                        ? [data]
+                        : [];
+
+            if (questions.length > 0) {
+                return NextResponse.json({ questions, source: upstreamUrl });
+            }
         }
 
-        const questions = Array.isArray(data) ? data : Array.isArray(data?.questions) ? data.questions : [];
-        return NextResponse.json({ questions });
+        if (lastError) {
+            return NextResponse.json(lastError, { status: 502 });
+        }
+
+        return NextResponse.json({ questions: [] });
     } catch (error) {
         return NextResponse.json(
             { error: "Failed to reach ALOC API", details: (error as Error).message },

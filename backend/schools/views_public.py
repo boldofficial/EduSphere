@@ -19,6 +19,7 @@ from rest_framework.views import APIView
 
 from core.models import GlobalActivityLog
 from core.tenant_utils import get_request_school
+from emails.tasks import send_custom_email_task
 
 from .models import School, SchoolPaymentConfig, Subscription, SubscriptionPlan
 from .serializers import RegisterSchoolSerializer, SchoolPaymentConfigPublicSerializer, SubscriptionPlanSerializer
@@ -83,6 +84,20 @@ class RegisterSchoolView(APIView):
 
     permission_classes = [AllowAny]
     throttle_classes = []  # Disable throttling for public endpoint
+
+    @staticmethod
+    def _queue_registration_ack_email(recipient_email, school_name):
+        if not recipient_email:
+            return
+        subject = f"Registration Received - {school_name}"
+        body_html = f"""
+            <h2>Registration Received</h2>
+            <p>Hello {school_name},</p>
+            <p>Your school registration was submitted successfully and is currently under review.</p>
+            <p>You will receive another email after review with either approval or rejection.</p>
+            <p>Thank you for choosing Registra.</p>
+        """
+        send_custom_email_task.delay(recipient_email, subject, body_html)
 
     def post(self, request):
         logger.info("School registration request received.")
@@ -165,6 +180,15 @@ class RegisterSchoolView(APIView):
                 )
 
             logger.info(f"New school registered: '{school.name}' by {data['email']}")
+
+            # Notify applicant immediately that registration was received and is under review.
+            try:
+                self._queue_registration_ack_email(data["email"], school.name)
+                if school.email and school.email.strip().lower() != data["email"].strip().lower():
+                    self._queue_registration_ack_email(school.email, school.name)
+            except Exception as e:
+                logger.error("Failed to queue registration acknowledgement email: %s", e)
+
             return Response({"success": True, "school_id": school.id}, status=201)
 
         except ValidationError:

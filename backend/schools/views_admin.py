@@ -24,6 +24,7 @@ from rest_framework.views import APIView
 from core.pagination import StandardPagination
 from core.tenant_utils import get_request_school
 from core.models import GlobalActivityLog
+from emails.tasks import send_custom_email_task, send_email_task
 
 from .models import PlatformModule, School, SchoolPayment, SchoolPaymentConfig, Subscription, SubscriptionPlan
 from .serializers import SchoolPaymentConfigAdminSerializer, SchoolSerializer, SubscriptionPlanSerializer
@@ -92,6 +93,47 @@ class SchoolManagementView(APIView):
         if request.user.role != "SUPER_ADMIN":
             raise PermissionDenied("Only Super Admins can access this resource")
 
+    @staticmethod
+    def _queue_school_decision_email(school, action):
+        recipient = school.email
+        if not recipient:
+            return
+        login_url = f"https://{school.domain}.myregistra.net/login"
+        if action == "approve":
+            try:
+                send_email_task.delay(
+                    "school_approved",
+                    recipient,
+                    {"school_name": school.name, "login_url": login_url},
+                )
+                return
+            except Exception:
+                pass
+
+            send_custom_email_task.delay(
+                recipient,
+                f"School Registration Approved - {school.name}",
+                f"""
+                <h2>Registration Approved</h2>
+                <p>Hello {school.name},</p>
+                <p>Your school registration has been approved and your account is now active.</p>
+                <p>You can now login here: <a href="{login_url}">{login_url}</a></p>
+                """,
+            )
+            return
+
+        if action == "reject":
+            send_custom_email_task.delay(
+                recipient,
+                f"School Registration Update - {school.name}",
+                f"""
+                <h2>Registration Not Approved</h2>
+                <p>Hello {school.name},</p>
+                <p>We reviewed your school registration and it was not approved at this time.</p>
+                <p>You may contact support for clarification or submit an updated application.</p>
+                """,
+            )
+
     def get(self, request):
         """List all schools."""
         self.check_super_admin(request)
@@ -156,6 +198,8 @@ class SchoolManagementView(APIView):
             sub.status = "active"
             sub.start_date = timezone.now()
             sub.end_date = timezone.now() + timezone.timedelta(days=sub.plan.duration_days)
+        elif action == "reject":
+            sub.status = "cancelled"
         else:
             raise ValidationError({"detail": f"Unknown action: {action}"})
 
@@ -170,6 +214,13 @@ class SchoolManagementView(APIView):
         )
 
         logger.info(f"School '{school.name}' subscription {action}d by {request.user.email}")
+
+        if action in {"approve", "reject"}:
+            try:
+                self._queue_school_decision_email(school, action)
+            except Exception as e:
+                logger.error("Failed to queue school decision email for %s: %s", school.name, e)
+
         return Response({"success": True, "status": sub.status})
 
     def put(self, request, pk=None):
