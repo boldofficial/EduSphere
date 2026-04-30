@@ -1,0 +1,25 @@
+
+[ACADEMIC]
+Models: TenantModel, Subject, Teacher, Class, SubjectTeacher, Student, StudentGroup, StudentHistory, StudentAchievement, GradingScheme, GradeRange, ReportCard, SubjectScore, AttendanceSession, AttendanceRecord, SchoolEvent, Lesson, ConductEntry, Commendation, ConductWarning, BehaviorAnalytics, Period, Timetable, TimetableEntry, AdmissionIntake, Admission, AcademicTerm
+[BURSARY]
+Models: FeeCategory, Scholarship, FeeItem, StudentFee, Payment, PaymentLineItem, Expense, AdmissionPackage, SalaryAllowance, SalaryDeduction, StaffSalaryStructure, Payroll, PayrollEntry, FeeDiscount
+[CORE]
+Models: FieldChangeLog, GlobalActivityLog, PlatformAnnouncement, Conversation, ConversationParticipant, SchoolMessage, Notification, SchoolAnnouncement, Newsletter
+[DATA_IMPORT]
+Models: ImportJob, ImportRow
+[EMAILS]
+Models: EmailTemplate, EmailCampaign, EmailLog
+[INVENTORY]
+Models: AssetCategory, Asset, AssetAssignment, AssetMaintenance, InventoryItem, InventoryTransaction
+[LEARNING]
+Models: Assignment, Submission, Quiz, Question, Option, Attempt, StudentAnswer, ExamViolation, QuestionBank, BankQuestion, BankOption, FillBlankAnswer, Exam, ExamPaper, ExamQuestion, ExamAnswer, ExamRoom
+[LIBRARY]
+Models: BookCategory, Book, BorrowRecord, Reservation, LibraryMember, LibrarySettings
+[LMS]
+Models: DiscussionThread, DiscussionMessage
+[SCHOOLS]
+Models: School, SubscriptionPlan, PlatformModule, Subscription, SchoolPayment, SchoolSettings, SchoolPaymentConfig, PlatformSettings, DemoRequest, SupportTicket, TicketResponse
+[TRANSPORT]
+Models: BusRoute, BusStop, TransportAssignment, TransportFee, BusAttendance, TransportPayment
+[USERS]
+Models: User

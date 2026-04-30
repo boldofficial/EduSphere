@@ -31,6 +31,7 @@ export const NAVIGATION_ITEMS = [
     { id: 'exams', name: 'Formal Exams', href: '/exams', icon: FileText, category: 'Academics' },
     
     { id: 'bursary', name: 'Bursary', href: '/bursary', icon: Wallet, category: 'Account' },
+    { id: 'hr', name: 'HR & Payroll', href: '/hr', icon: Users, category: 'Account' },
     { id: 'conduct', name: 'Conduct & Log', href: '/conduct', icon: Activity, category: 'Health & Conduct' },
     { id: 'messages', name: 'Messages', href: '/messages', icon: Mail, category: 'Messages' },
     { id: 'announcements', name: 'Announcements', href: '/announcements', icon: AnnouncementIcon, category: 'Messages' },

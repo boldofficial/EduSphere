@@ -12,12 +12,7 @@ from .models import (
     FeeItem,
     Payment,
     PaymentLineItem,
-    Payroll,
-    PayrollEntry,
-    SalaryAllowance,
-    SalaryDeduction,
     Scholarship,
-    StaffSalaryStructure,
     StudentFee,
 )
 
@@ -269,113 +264,7 @@ class AdmissionPackageSerializer(serializers.ModelSerializer):
         return attrs
 
 
-# ==========================================
-# PAYROLL SERIALIZERS
-# ==========================================
-
-
-class SalaryAllowanceSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = SalaryAllowance
-        fields = "__all__"
-        read_only_fields = ("school",)
-
-
-class SalaryDeductionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = SalaryDeduction
-        fields = "__all__"
-        read_only_fields = ("school",)
-
-
-class StaffSalaryStructureSerializer(serializers.ModelSerializer):
-    staff_name = serializers.CharField(source="staff.name", read_only=True)
-    staff_role = serializers.CharField(source="staff.role", read_only=True)
-    basic_salary = serializers.DecimalField(
-        source="staff.basic_salary", max_digits=12, decimal_places=2, read_only=True
-    )
-
-    class Meta:
-        model = StaffSalaryStructure
-        fields = [
-            "id",
-            "staff",
-            "staff_name",
-            "staff_role",
-            "basic_salary",
-            "structure_data",
-            "total_allowances",
-            "total_deductions",
-            "net_salary_preview",
-        ]
-        read_only_fields = ("school",)
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        school = _school_from_request(self)
-        if school:
-            self.fields["staff"].queryset = Teacher.objects.filter(school=school)
-
-    def validate(self, attrs):
-        school = attrs.get("school") or _school_from_request(self)
-        staff = attrs.get("staff")
-        if school and staff and staff.school != school:
-            raise serializers.ValidationError({"staff": "Staff must belong to your school."})
-        return attrs
-
-    def update(self, instance, validated_data):
-        instance = super().update(instance, validated_data)
-        instance.calculate_totals()  # Auto-recalc totals on save
-        return instance
-
-
-class PayrollEntrySerializer(serializers.ModelSerializer):
-    staff_name = serializers.CharField(source="staff.name", read_only=True)
-    staff_role = serializers.CharField(source="staff.role", read_only=True)
-    bank_name = serializers.CharField(source="staff.bank_name", read_only=True)
-    account_number = serializers.CharField(source="staff.account_number", read_only=True)
-
-    class Meta:
-        model = PayrollEntry
-        fields = [
-            "id",
-            "payroll",
-            "staff",
-            "staff_name",
-            "staff_role",
-            "bank_name",
-            "account_number",
-            "basic_salary",
-            "total_allowances",
-            "total_deductions",
-            "net_pay",
-            "breakdown",
-            "is_paid",
-        ]
-        read_only_fields = ("school",)
-
-
-class PayrollSerializer(serializers.ModelSerializer):
-    approver_name = serializers.CharField(source="approved_by.username", read_only=True)
-    entries = PayrollEntrySerializer(many=True, read_only=True)
-
-    class Meta:
-        model = Payroll
-        fields = [
-            "id",
-            "month",
-            "status",
-            "total_wage_bill",
-            "total_staff",
-            "approved_by",
-            "approver_name",
-            "approved_at",
-            "paid_at",
-            "entries",
-            "created_at",
-            "updated_at",
-        ]
-        read_only_fields = ("school", "approved_by", "approved_at", "paid_at")
+# Payroll serializers have been moved to the `hr` app.
 
 
 class FeeDiscountSerializer(serializers.ModelSerializer):

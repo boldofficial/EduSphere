@@ -514,15 +514,13 @@ export interface Expense extends Entity {
 }
 
 export interface FinancialStats {
-  summary: {
-    total_income: number;
-    total_expenses: number;
-    net_balance: number;
-    total_expected: number;
-    income_count: number;
-    expense_count: number;
-  };
-  breakdown: {
+  expected_revenue: number;
+  total_collected: number;
+  total_outstanding: number;
+  total_expenses: number;
+  total_payroll: number;
+  net_balance: number;
+  breakdown?: {
     methods: Record<string, number>;
     expense_categories: Record<string, number>;
     monthly_trend: { month: string; income: number; expense: number }[];
@@ -841,7 +839,7 @@ export interface SupportTicket extends Omit<Entity, 'created_at' | 'updated_at'>
 export type UserRole = 'super_admin' | 'admin' | 'teacher' | 'student' | 'parent' | 'staff';
 
 // =============================================
-// PHASE 6: Payroll & Salary
+// PHASE 6: HR & Payroll
 // =============================================
 
 export interface SalaryAllowance extends Entity {
@@ -856,13 +854,28 @@ export interface SalaryDeduction extends Entity {
   is_statutory: boolean;
 }
 
+export interface SalaryStructureItem {
+  id?: number;
+  name: string;
+  amount: number;
+  type: 'fixed' | 'percentage';
+  value?: number; // percentage value when type is 'percentage'
+}
+
 export interface StaffSalaryStructure extends Entity {
-  teacher: number;
+  staff: number;
+  staff_name?: string;
+  staff_role?: string;
+  staff_type?: string;
+  employment_type?: string;
   basic_salary: number;
   structure_data: {
-    allowances: { name: string; amount: number }[];
-    deductions: { name: string; amount: number }[];
+    allowances: SalaryStructureItem[];
+    deductions: SalaryStructureItem[];
   };
+  total_allowances: number;
+  total_deductions: number;
+  net_salary_preview: number;
 }
 
 export interface Payroll extends Entity {
@@ -870,19 +883,27 @@ export interface Payroll extends Entity {
   total_wage_bill: number;
   total_staff: number;
   status: 'draft' | 'approved' | 'paid';
+  notes?: string;
   entries: PayrollEntry[];
   generated_by?: string;
+  generated_by_name?: string;
   approved_by?: string;
+  approver_name?: string;
+  approved_at?: string;
   paid_at?: string;
 }
 
 export interface PayrollEntry extends Entity {
   payroll: number;
-  staff_id: number;
+  staff: number;
   staff_name: string;
   staff_role: string;
+  staff_type?: string;
+  staff_id_display?: number;
+  payslip_number: string;
   bank_name?: string;
   account_number?: string;
+  account_name?: string;
   basic_salary: number;
   total_allowances: number;
   total_deductions: number;
@@ -890,8 +911,31 @@ export interface PayrollEntry extends Entity {
   breakdown: {
     allowances: { name: string; amount: number }[];
     deductions: { name: string; amount: number }[];
+    bank?: { name: string; account: string; account_name?: string };
   };
   is_paid: boolean;
+  payment_date?: string;
+  payroll_month?: string;
+  payroll_status?: string;
+}
+
+export interface HRDashboardData {
+  total_staff: number;
+  academic_staff: number;
+  non_academic_staff: number;
+  monthly_basic_total: number;
+  last_paid_payroll: {
+    month: string;
+    total: number;
+    paid_at: string | null;
+  } | null;
+  ytd_expenditure: number;
+  payroll_status: {
+    draft: number;
+    approved: number;
+    paid: number;
+  };
+  pending_payroll_id: string | null;
 }
 
 // =============================================
@@ -1001,3 +1045,4 @@ export interface ScoreImportResult {
     exam: number;
   }>;
 }
+

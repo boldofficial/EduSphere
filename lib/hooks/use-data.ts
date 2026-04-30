@@ -149,6 +149,7 @@ export {
 } from './use-learning';
 
 export {
+    useHRDashboard,
     useSalaryAllowances, useCreateAllowance,
     useSalaryDeductions, useCreateDeduction,
     useStaffSalaryStructure, useUpdateSalaryStructure,

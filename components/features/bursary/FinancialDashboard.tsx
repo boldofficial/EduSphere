@@ -31,20 +31,20 @@ export const FinancialDashboard: React.FC<FinancialDashboardProps> = ({
     const currentPayments = payments.filter(p => p.session === settings.current_session && p.term === settings.current_term);
     const currentExpenses = expenses.filter(e => e.session === settings.current_session && e.term === settings.current_term);
 
-    // Derived values from backend stats
-    const totalIncome = stats?.summary.total_income ?? currentPayments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
-    const totalExpenses = stats?.summary.total_expenses ?? currentExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
-    const netBalance = stats?.summary.net_balance ?? (totalIncome - totalExpenses);
-    const expectedIncome = stats?.summary.total_expected ?? students.reduce((sum, student) => {
+    // Derived values from backend stats (mapping optimized response keys)
+    const totalIncome = stats?.total_collected ?? currentPayments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+    const totalExpenses = stats?.total_expenses ?? currentExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+    const netBalance = stats?.net_balance ?? (totalIncome - totalExpenses);
+    const expectedIncome = stats?.expected_revenue ?? students.reduce((sum, student) => {
         const { totalBill } = Utils.getStudentBalance(student, fees, payments, settings.current_session, settings.current_term);
         return sum + totalBill;
     }, 0);
 
-    const totalOutstanding = expectedIncome - totalIncome;
+    const totalOutstanding = stats?.total_outstanding ?? (expectedIncome - totalIncome);
     const collectionRate = expectedIncome > 0 ? (totalIncome / expectedIncome) * 100 : 0;
 
     // Chart Data: Payment Methods from stats or fallback
-    const paymentChartData = stats
+    const paymentChartData = stats?.breakdown?.methods
         ? Object.entries(stats.breakdown.methods).map(([name, value]) => ({ name, value }))
         : Object.entries(currentPayments.reduce((acc, p) => {
             const method = p.method || 'other';
@@ -53,7 +53,7 @@ export const FinancialDashboard: React.FC<FinancialDashboardProps> = ({
         }, {} as Record<string, number>)).map(([name, value]) => ({ name, value }));
 
     // Chart Data: Expense Categories from stats or fallback
-    const expenseChartData = stats
+    const expenseChartData = stats?.breakdown?.expense_categories
         ? Object.entries(stats.breakdown.expense_categories).map(([name, value]) => ({ name, value }))
         : Object.entries(currentExpenses.reduce((acc, e) => {
             const category = e.category || 'other';
@@ -67,7 +67,7 @@ export const FinancialDashboard: React.FC<FinancialDashboardProps> = ({
         return { student, balance };
     }).filter(d => d.balance > 0).sort((a, b) => b.balance - a.balance);
 
-    const revenueChartData = stats?.breakdown.monthly_trend ?? Object.values(currentPayments.reduce((acc, p) => {
+    const revenueChartData = stats?.breakdown?.monthly_trend ?? Object.values(currentPayments.reduce((acc, p) => {
         const month = p.date ? new Date(p.date).toLocaleString('default', { month: 'short' }) : 'Unknown';
         if (!acc[month]) acc[month] = { month, income: 0, expense: 0 };
         acc[month].income += (Number(p.amount) || 0);

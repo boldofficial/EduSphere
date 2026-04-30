@@ -5,7 +5,6 @@ import { useToast } from '@/components/providers/toast-provider';
 // Bursary sub-components
 import { FeeManagement } from './bursary/FeeManagement';
 import { ExpenseManagement } from './bursary/ExpenseManagement';
-import { PayrollManagement } from './bursary/PayrollManagement';
 import { FeeStructureManagement } from './bursary/FeeStructureManagement';
 import { BursaryModals } from './bursary/BursaryModals';
 import { FinancialDashboard } from './bursary/FinancialDashboard';
@@ -39,7 +38,7 @@ interface BursaryViewProps {
     onClassChange?: (c: string) => void;
 }
 
-type TabType = 'dashboard' | 'fees' | 'debtors' | 'expenses' | 'structure' | 'scholarships' | 'payroll';
+type TabType = 'dashboard' | 'fees' | 'debtors' | 'expenses' | 'structure' | 'scholarships';
 
 export const BursaryView: React.FC<BursaryViewProps> = ({
     students, classes, fees, payments, expenses, settings, paymentOptions, onAddPayment, onAddFee, onAddExpense, onDeletePayment, onDeleteFee, onDeleteExpense, onUpdateStudent,
@@ -71,7 +70,6 @@ export const BursaryView: React.FC<BursaryViewProps> = ({
         { key: 'debtors', label: 'Debtors' },
         { key: 'scholarships', label: 'Scholarships' },
         { key: 'expenses', label: 'Expenses' },
-        { key: 'payroll', label: 'Payroll' },
         { key: 'structure', label: 'Fee Structure' },
     ];
 
@@ -157,9 +155,6 @@ export const BursaryView: React.FC<BursaryViewProps> = ({
                 />
             )}
 
-            {activeTab === 'payroll' && (
-                <PayrollManagement />
-            )}
 
             {activeTab === 'structure' && (
                 <FeeStructureManagement

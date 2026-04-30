@@ -120,6 +120,7 @@ INSTALLED_APPS = [
     "core",
     "schools",
     "users",
+    "hr",
     "academic",
     "bursary",
     "learning",

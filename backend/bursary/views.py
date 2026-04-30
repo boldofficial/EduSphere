@@ -28,13 +28,8 @@ from .models import (
     FeeItem,
     Payment,
     PaymentLineItem,
-    Payroll,
-    PayrollEntry,
-    SalaryAllowance,
-    SalaryDeduction,
-    Scholarship,
-    StaffSalaryStructure,
     StudentFee,
+    Scholarship,
     FeeDiscount,
 )
 from .services import apply_bulk_discount, preview_bulk_discount
@@ -44,12 +39,7 @@ from .serializers import (
     FeeCategorySerializer,
     FeeItemSerializer,
     PaymentSerializer,
-    PayrollEntrySerializer,
-    PayrollSerializer,
-    SalaryAllowanceSerializer,
-    SalaryDeductionSerializer,
     ScholarshipSerializer,
-    StaffSalaryStructureSerializer,
     StudentFeeSerializer,
     FeeDiscountSerializer,
 )
@@ -474,172 +464,7 @@ class AdmissionPackageViewSet(TenantViewSet):
     permission_classes = [permissions.IsAuthenticated, IsAdminOrReadOnly]
 
 
-# ==========================================
-# PAYROLL VIEWSETS
-# ==========================================
-
-
-class SalaryAllowanceViewSet(TenantViewSet):
-    queryset = SalaryAllowance.objects.all()
-    serializer_class = SalaryAllowanceSerializer
-    pagination_class = StandardPagination
-
-
-class SalaryDeductionViewSet(TenantViewSet):
-    queryset = SalaryDeduction.objects.all()
-    serializer_class = SalaryDeductionSerializer
-    pagination_class = StandardPagination
-
-
-class StaffSalaryStructureViewSet(TenantViewSet):
-    queryset = StaffSalaryStructure.objects.select_related("staff").all()
-    serializer_class = StaffSalaryStructureSerializer
-    pagination_class = StandardPagination
-
-    @action(detail=False, methods=["get"])
-    def by_staff(self, request):
-        staff_id = request.query_params.get("staff_id")
-        if not staff_id:
-            return Response({"error": "Staff ID required"}, status=400)
-
-        structure, created = StaffSalaryStructure.objects.get_or_create(
-            staff_id=staff_id, school=get_request_school(request)
-        )
-        # Recalculate just in case basic salary changed
-        structure.calculate_totals()
-        return Response(self.get_serializer(structure).data)
-
-
-class PayrollViewSet(TenantViewSet):
-    queryset = Payroll.objects.prefetch_related("entries", "entries__staff").all()
-    serializer_class = PayrollSerializer
-    pagination_class = StandardPagination
-
-    @action(detail=False, methods=["post"])
-    def generate(self, request):
-        """
-        Generate Draft Payroll for a given month.
-        Requires: month (YYYY-MM-DD)
-        """
-        month_str = request.data.get("month")
-        if not month_str:
-            return Response({"error": "Month is required"}, status=400)
-
-        # Parse month to first day
-        from datetime import datetime
-
-        try:
-            date_obj = datetime.strptime(month_str, "%Y-%m-%d").date()
-            month_start = date_obj.replace(day=1)
-        except ValueError:
-            return Response({"error": "Invalid date format. Use YYYY-MM-DD"}, status=400)
-
-        school = get_request_school(request)
-        if not school:
-            return Response({"error": "School context not found"}, status=400)
-
-        # Check if exists
-        if Payroll.objects.filter(school=school, month=month_start).exists():
-            return Response({"error": f"Payroll for {month_start.strftime('%B %Y')} already exists."}, status=400)
-
-        payroll = Payroll.objects.create(school=school, month=month_start, status="draft")
-
-        # Fetch active staff with pre-fetched salary structure
-        active_staff = Teacher.objects.filter(school=school).select_related("salary_structure")
-
-        # Ensure all active staff have a salary structure (Bulk Create if missing)
-        staff_without_structure = [s.id for s in active_staff if not hasattr(s, "salary_structure")]
-        if staff_without_structure:
-            StaffSalaryStructure.objects.bulk_create(
-                [StaffSalaryStructure(staff_id=sid, school=school) for sid in staff_without_structure]
-            )
-            # Re-fetch to include the newly created structures
-            active_staff = Teacher.objects.filter(school=school).select_related("salary_structure")
-
-        total_bill = 0
-        count = 0
-        entries_to_create = []
-
-        for staff in active_staff:
-            structure = staff.salary_structure
-            data = structure.structure_data or {}
-
-            # In-memory calculation instead of calling calculate_totals() which triggers a save()
-            allowances = sum(float(x.get("amount", 0)) for x in data.get("allowances", []))
-            deductions = sum(float(x.get("amount", 0)) for x in data.get("deductions", []))
-
-            basic = float(staff.basic_salary) if staff.basic_salary else 0
-            net = basic + allowances - deductions
-
-            # Keep values for later bulk creation
-            entries_to_create.append(
-                PayrollEntry(
-                    school=school,
-                    payroll=payroll,
-                    staff=staff,
-                    basic_salary=basic,
-                    total_allowances=allowances,
-                    total_deductions=deductions,
-                    net_pay=net,
-                    breakdown=data,
-                )
-            )
-
-            total_bill += net
-            count += 1
-
-        # Bulk create all payroll entries in one query
-        PayrollEntry.objects.bulk_create(entries_to_create)
-
-        payroll.total_wage_bill = total_bill
-        payroll.total_staff = count
-        payroll.save()
-
-        return Response(self.get_serializer(payroll).data, status=201)
-
-    @action(detail=True, methods=["post"])
-    def approve(self, request, pk=None):
-        payroll = self.get_object()
-        if payroll.status != "draft":
-            return Response({"error": "Only draft payrolls can be approved"}, status=400)
-
-        payroll.status = "approved"
-        payroll.approved_by = request.user
-        payroll.approved_at = timezone.now()
-        payroll.save()
-
-        return Response(self.get_serializer(payroll).data)
-
-    @action(detail=True, methods=["post"])
-    def mark_paid(self, request, pk=None):
-        payroll = self.get_object()
-        if payroll.status != "approved":
-            return Response({"error": "Payroll must be approved before payment"}, status=400)
-
-        payroll.status = "paid"
-        payroll.paid_at = timezone.now()
-        payroll.save()
-
-        # Auto-create Expense Check
-        create_expense = request.data.get("create_expense", False)
-        if create_expense:
-            # Use payroll's school for session/term lookup (not request.user.school)
-            from schools.models import SchoolSettings
-
-            school_settings = SchoolSettings.objects.filter(school=payroll.school).first()
-            Expense.objects.create(
-                school=payroll.school,
-                title=f"Staff Payroll - {payroll.month.strftime('%B %Y')}",
-                amount=payroll.total_wage_bill,
-                category="salary",
-                date=timezone.now().date(),
-                session=school_settings.current_session if school_settings else "",
-                term=school_settings.current_term if school_settings else "",
-                recorded_by=request.user.username,
-                description=f"Automated payroll entry for {payroll.total_staff} staff.",
-            )
-
-        return Response(self.get_serializer(payroll).data)
+# Payroll viewsets have been extracted to the `hr` app.
 
 
 class DashboardViewSet(viewsets.ViewSet):
@@ -664,6 +489,7 @@ class DashboardViewSet(viewsets.ViewSet):
         total_expenses = Expense.objects.filter(**financial_filters).aggregate(Sum("amount"))["amount__sum"] or 0
 
         # Payroll stats
+        from hr.models import Payroll
         total_payroll = (
             Payroll.objects.filter(school=school, status="paid").aggregate(
                 total=Coalesce(Sum("total_wage_bill"), Value(0), output_field=DecimalField())
@@ -712,6 +538,7 @@ class DashboardViewSet(viewsets.ViewSet):
         total_expenses = Expense.objects.filter(**filters).aggregate(Sum("amount"))["amount__sum"] or 0
 
         # Payroll stats (approximate based on session/term as payroll is monthly)
+        from hr.models import Payroll
         total_payroll = (
             Payroll.objects.filter(school=school, status="paid").aggregate(
                 total=Coalesce(Sum("total_wage_bill"), Value(0), output_field=DecimalField())

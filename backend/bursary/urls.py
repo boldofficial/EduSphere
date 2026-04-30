@@ -10,11 +10,7 @@ from .views import (
     FeeItemViewSet,
     InitializePaystackPayment,
     PaymentViewSet,
-    PayrollViewSet,
-    SalaryAllowanceViewSet,
-    SalaryDeductionViewSet,
     ScholarshipViewSet,
-    StaffSalaryStructureViewSet,
     StudentFeeViewSet,
     DiscountViewSet,
     VerifyPaystackPayment,
@@ -33,12 +29,6 @@ router.register(r"payments", PaymentViewSet)
 router.register(r"expenses", ExpenseViewSet)
 router.register(r"admission-packages", AdmissionPackageViewSet)
 router.register(r"discounts", DiscountViewSet)
-
-# Payroll
-router.register(r"salary-allowances", SalaryAllowanceViewSet)
-router.register(r"salary-deductions", SalaryDeductionViewSet)
-router.register(r"salary-structures", StaffSalaryStructureViewSet)
-router.register(r"payrolls", PayrollViewSet)
 
 router.register(r"dashboard", DashboardViewSet, basename="bursary-dashboard")
 
