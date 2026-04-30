@@ -80,7 +80,7 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.frontend-auth.priority=2000
-      - 'traefik.http.routers.frontend-auth.rule=(Host(`myregistra.net`) || Host(`www.myregistra.net`) || HostRegexp(`^.+\.myregistra\.net$`)) && (PathPrefix(`/api/auth`) || PathPrefix(`/api/proxy`))'
+      - 'traefik.http.routers.frontend-auth.rule=(Host(`myregistra.net`) || Host(`www.myregistra.net`) || HostRegexp(`^.+\.myregistra\.net$`)) && (PathPrefix(`/api/auth`) || PathPrefix(`/api/proxy`) || PathPrefix(`/api/aloc`))'
       - traefik.http.routers.frontend-auth.entrypoints=https
       - traefik.http.routers.frontend-auth.tls=true
       - traefik.http.routers.frontend-auth.tls.certresolver=letsencrypt

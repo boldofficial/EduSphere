@@ -521,10 +521,16 @@ LOGGING = {
 # REDIS / CACHING CONFIGURATION
 # =============================================================================
 
-# Default to None to allow fallback to LocMemCache if not provided
-REDIS_URL = os.environ.get("REDIS_URL")
+def _as_bool(value: str | None, default: bool = False) -> bool:
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
 
-if REDIS_URL:
+# Default to None to allow fallback to LocMemCache if not provided.
+REDIS_URL = os.environ.get("REDIS_URL")
+USE_REDIS_CACHE = _as_bool(os.environ.get("USE_REDIS_CACHE"), default=True)
+
+if REDIS_URL and USE_REDIS_CACHE:
     CACHES = {
         "default": {
             "BACKEND": "django_redis.cache.RedisCache",

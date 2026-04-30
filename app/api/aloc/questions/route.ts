@@ -11,9 +11,20 @@ export async function GET(request: NextRequest) {
     }
 
     const subject = request.nextUrl.searchParams.get("subject") || "";
-    const examType = request.nextUrl.searchParams.get("exam_type") || "wassce";
+    const examTypeInput = (request.nextUrl.searchParams.get("exam_type") || "wassce").toLowerCase();
     const year = request.nextUrl.searchParams.get("year") || "";
     const count = request.nextUrl.searchParams.get("count") || "10";
+
+    const examTypeMap: Record<string, string> = {
+        wassce: "waec",
+        waec: "waec",
+        utme: "jamb",
+        jamb: "jamb",
+        neco: "neco",
+        post_utme: "post-utme",
+        internal: "internal",
+    };
+    const examType = examTypeMap[examTypeInput] || examTypeInput;
 
     const upstreamUrl = `${getAlocBaseUrl()}/m?subject=${encodeURIComponent(subject.toLowerCase())}&type=${encodeURIComponent(examType)}&year=${encodeURIComponent(year)}&limit=${encodeURIComponent(count)}`;
 
