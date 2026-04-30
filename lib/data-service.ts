@@ -108,7 +108,7 @@ export async function deleteItem(table: string, id: string | number): Promise<vo
  */
 export async function convertAdmissionToStudent(admissionId: string | number, data: any) {
     try {
-        const response = await apiClient.post(`academic/admissions/${admissionId}/convert-to-student/`, data);
+        const response = await apiClient.post(`admissions/admissions/${admissionId}/convert-to-student/`, data);
         return response.data;
     } catch (err) {
         console.error(`[DataService] Failed to convert admission ${admissionId}:`, err);

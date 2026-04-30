@@ -60,8 +60,7 @@ export const StudentLoginForm: React.FC<StudentLoginFormProps> = ({
                         value={studentNo}
                         onChange={e => { setStudentNo(e.target.value); setLoginError(''); }}
                         placeholder="e.g. ST001"
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                        required
+                        className="w-full px-4 py-3.5 bg-white/60 border border-white/50 backdrop-blur-sm rounded-xl focus:bg-white focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition-all shadow-sm"
                     />
                 </div>
                 <div>
@@ -72,8 +71,7 @@ export const StudentLoginForm: React.FC<StudentLoginFormProps> = ({
                             value={password}
                             onChange={e => { setPassword(e.target.value); setLoginError(''); }}
                             placeholder="Enter your password"
-                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 pr-12"
-                            required
+                            className="w-full px-4 py-3.5 bg-white/60 border border-white/50 backdrop-blur-sm rounded-xl focus:bg-white focus:ring-2 focus:ring-purple-400 focus:border-purple-400 pr-12 transition-all shadow-sm"
                         />
                         <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                             {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -91,7 +89,7 @@ export const StudentLoginForm: React.FC<StudentLoginFormProps> = ({
                 <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full py-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-50"
+                    className="w-full py-4 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-bold rounded-xl transition-all shadow-xl shadow-purple-500/30 flex items-center justify-center gap-2 disabled:opacity-50 hover:scale-[1.02]"
                 >
                     {isLoading ? (
                         <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>

@@ -1,5 +1,3 @@
-"""Admission ViewSets."""
-
 import os
 
 from django.db import transaction
@@ -11,9 +9,10 @@ from rest_framework.response import Response
 from core.pagination import StandardPagination
 from core.tenant_utils import get_request_school
 
-from ..models import Admission, AdmissionIntake, Class
-from ..serializers import AdmissionIntakeSerializer, AdmissionSerializer
-from .base import TenantViewSet
+from .models import Admission, AdmissionIntake
+from academic.models import Class, Student
+from .serializers import AdmissionIntakeSerializer, AdmissionSerializer
+from academic.views.base import TenantViewSet
 
 
 class AdmissionIntakeViewSet(TenantViewSet):
@@ -67,8 +66,6 @@ class AdmissionViewSet(TenantViewSet):
             admission.save()
 
             # 2. Create Student
-            from ..models import Student
-
             try:
                 target_class = Class.objects.get(pk=class_id, school=admission.school)
             except Class.DoesNotExist:
@@ -90,7 +87,6 @@ class AdmissionViewSet(TenantViewSet):
 
             # 3. Create User for portal access
             from django.contrib.auth.hashers import make_password
-
             from users.models import User
 
             school_suffix = student.school.domain if student.school and student.school.domain else "school"

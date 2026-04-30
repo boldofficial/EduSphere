@@ -25,7 +25,7 @@ from .timetables import (  # noqa: F401
     TimetableEntryViewSet,
     TimetableViewSet,
 )
-from .admissions import AdmissionIntakeViewSet, AdmissionViewSet  # noqa: F401
+
 from .conduct import ConductEntryViewSet  # noqa: F401
 from .events import SchoolEventViewSet  # noqa: F401
 from .grading import GradeRangeViewSet, GradingSchemeViewSet  # noqa: F401

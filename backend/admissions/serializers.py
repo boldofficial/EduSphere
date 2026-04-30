@@ -1,7 +1,5 @@
-"""Admission serializers."""
-
 from rest_framework import serializers
-from ..models import Admission, AdmissionIntake
+from .models import Admission, AdmissionIntake
 
 
 class AdmissionIntakeSerializer(serializers.ModelSerializer):

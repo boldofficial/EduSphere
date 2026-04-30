@@ -19,7 +19,7 @@ from .timetables import (
     TimetableEntrySerializer,
     TimetableSerializer,
 )
-from .admissions import AdmissionIntakeSerializer, AdmissionSerializer
+
 from .conduct import ConductEntrySerializer
 from .events import SchoolEventSerializer
 from .grading import GradeRangeSerializer, GradingSchemeSerializer
@@ -41,8 +41,7 @@ __all__ = [
     "PeriodSerializer",
     "TimetableEntrySerializer",
     "TimetableSerializer",
-    "AdmissionIntakeSerializer",
-    "AdmissionSerializer",
+
     "ConductEntrySerializer",
     "SchoolEventSerializer",
     "GradeRangeSerializer",

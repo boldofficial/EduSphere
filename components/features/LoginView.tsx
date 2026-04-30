@@ -357,7 +357,7 @@ export const LoginView = () => {
     };
 
     return (
-        <div className={`flex min-h-screen ${isSystemRoot ? 'bg-gray-900' : 'bg-white'}`}>
+        <div className={`flex min-h-screen ${isSystemRoot ? 'bg-gray-900' : 'bg-gradient-to-br from-indigo-50 via-white to-purple-50'}`}>
             {/* Background for System Root */}
             {isSystemRoot && (
                 <div className="fixed inset-0 z-0">
@@ -371,7 +371,16 @@ export const LoginView = () => {
             )}
 
             {/* Left Side: Form */}
-            <div className={`flex-1 flex flex-col justify-center px-6 md:px-16 xl:px-24 py-12 relative z-10 ${isSystemRoot ? 'items-center' : 'lg:w-1/2 bg-white'}`}>
+            <div className={`flex-1 flex flex-col justify-center items-center px-6 md:px-16 xl:px-24 py-12 relative z-10 ${isSystemRoot ? '' : 'lg:w-1/2 relative'}`}>
+                {/* Decorative blob */}
+                {!isSystemRoot && (
+                    <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+                        <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-brand-400/20 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob"></div>
+                        <div className="absolute top-[20%] right-[-10%] w-96 h-96 bg-purple-400/20 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000"></div>
+                        <div className="absolute bottom-[-10%] left-[20%] w-96 h-96 bg-pink-400/20 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-4000"></div>
+                    </div>
+                )}
+                <div className="w-full max-w-md">
                 <div className="mb-10 w-full flex justify-start">
                     <div
                         className="inline-block cursor-pointer transition-transform active:scale-95"
@@ -389,10 +398,10 @@ export const LoginView = () => {
                 </div>
 
                 {(isSystemRoot && selectedRole !== 'super_admin') ? null : (
-                    <div className="mb-6 w-full text-left">
-                        <h1 className={`text-2xl font-bold mb-1 ${isSystemRoot ? 'text-white' : 'text-gray-900'}`}>Sign in</h1>
-                        <p className={`text-sm ${isSystemRoot ? 'text-brand-100/70' : 'text-gray-500'}`}>
-                            Enter your {selectedRole === 'student' ? 'student number' : 'email'} and password to access account.
+                    <div className="mb-8 w-full text-left">
+                        <h1 className={`text-3xl font-extrabold mb-2 tracking-tight ${isSystemRoot ? 'text-white' : 'text-gray-900'}`}>Welcome back 👋</h1>
+                        <p className={`text-sm font-medium ${isSystemRoot ? 'text-brand-100/70' : 'text-gray-500'}`}>
+                            Enter your {selectedRole === 'student' ? 'student number' : 'email'} and password to access your account.
                         </p>
                     </div>
                 )}
@@ -410,7 +419,7 @@ export const LoginView = () => {
                             onSelectSuperAdmin={() => setSelectedRole('super_admin')}
                         />
                     ) : (
-                        <div className={isSystemRoot ? 'w-full max-w-md bg-white p-8 rounded-3xl shadow-2xl' : 'w-full'}>
+                        <div className={isSystemRoot ? 'w-full max-w-md bg-white p-8 rounded-3xl shadow-2xl' : 'w-full bg-white/70 backdrop-blur-xl p-8 rounded-3xl shadow-2xl border border-white/50'}>
                             {selectedRole === 'student' ? (
                                 <StudentLoginForm
                                     studentNo={studentNo}
@@ -453,27 +462,33 @@ export const LoginView = () => {
 
                 {/* Login As Section */}
                 {!isSystemRoot && (
-                    <div className="mt-2">
-                        <div className="flex items-center gap-2 mb-3 text-xs text-gray-400 font-medium uppercase tracking-wider">
+                    <div className="mt-8">
+                        <div className="flex items-center gap-2 mb-4 text-xs text-gray-400 font-bold uppercase tracking-widest">
                             <span>Login As</span>
-                            <ArrowRight size={12} className="rotate-90" />
+                            <div className="h-px bg-gray-300 flex-1"></div>
                         </div>
-                        <div className="flex flex-wrap gap-2">
-                            {roleDefinitions.map((role) => (
-                                <button
-                                    key={role.id}
-                                    onClick={() => handleRoleChange(role.id)}
-                                    className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-200 border ${selectedRole === role.id
-                                        ? 'bg-brand-50 border-brand-200 text-brand-700 shadow-sm ring-1 ring-brand-200'
-                                        : 'bg-white border-gray-200 text-gray-600 hover:border-brand-200 hover:text-brand-600'
-                                        }`}
-                                >
-                                    {role.name}
-                                </button>
-                            ))}
+                        <div className="grid grid-cols-4 gap-3">
+                            {roleDefinitions.map((role) => {
+                                const Icon = role.icon;
+                                const isActive = selectedRole === role.id;
+                                return (
+                                    <button
+                                        key={role.id}
+                                        onClick={() => handleRoleChange(role.id)}
+                                        className={`flex flex-col items-center justify-center p-3 rounded-2xl text-xs font-semibold transition-all duration-300 group ${isActive
+                                            ? 'bg-gradient-to-br from-brand-600 to-brand-700 text-white shadow-lg shadow-brand-500/30 scale-105'
+                                            : 'bg-white/60 border border-white/80 text-gray-600 hover:bg-white hover:shadow-md hover:-translate-y-1'
+                                            }`}
+                                    >
+                                        <Icon size={20} className={`mb-1.5 ${isActive ? 'text-white' : role.color} transition-colors`} />
+                                        {role.name}
+                                    </button>
+                                );
+                            })}
                         </div>
                     </div>
                 )}
+                </div>
             </div>
 
             {/* Right Side: Image - Hidden on root domain because we use it as background */}
@@ -484,7 +499,13 @@ export const LoginView = () => {
                         alt="African Classroom"
                         className="absolute inset-0 w-full h-full object-cover"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-br from-brand-900/60 via-purple-900/40 to-black/80 mix-blend-multiply" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-12 text-white">
+                        <h2 className="text-4xl font-bold mb-4">Empowering Education.</h2>
+                        <p className="text-lg text-gray-200 max-w-lg">
+                            Experience a beautiful, seamless, and powerful school management system designed for modern institutions.
+                        </p>
+                    </div>
                 </div>
             )}
 

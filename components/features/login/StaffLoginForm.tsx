@@ -67,7 +67,7 @@ export const StaffLoginForm: React.FC<StaffLoginFormProps> = ({
                                 value={email}
                                 onChange={e => { setEmail(e.target.value); setLoginError(''); }}
                                 placeholder={`admin@school.com`}
-                                className="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                                className="w-full pl-11 pr-4 py-3.5 bg-white/60 border border-white/50 backdrop-blur-sm rounded-xl focus:bg-white focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition-all shadow-sm"
                                 required
                             />
                         </div>
@@ -81,7 +81,7 @@ export const StaffLoginForm: React.FC<StaffLoginFormProps> = ({
                                 value={password}
                                 onChange={e => { setPassword(e.target.value); setLoginError(''); }}
                                 placeholder="Enter your password"
-                                className="w-full pl-11 pr-12 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                                className="w-full pl-11 pr-12 py-3.5 bg-white/60 border border-white/50 backdrop-blur-sm rounded-xl focus:bg-white focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition-all shadow-sm"
                                 required
                             />
                             <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
@@ -100,7 +100,7 @@ export const StaffLoginForm: React.FC<StaffLoginFormProps> = ({
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full py-4 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-50"
+                        className="w-full py-4 bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 text-white font-bold rounded-xl transition-all shadow-xl shadow-brand-500/30 flex items-center justify-center gap-2 disabled:opacity-50 hover:scale-[1.02]"
                     >
                         {isLoading ? (
                             <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
