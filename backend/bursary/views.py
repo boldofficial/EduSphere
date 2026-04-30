@@ -1,8 +1,10 @@
+import json
+
 from django.conf import settings
-from django.db.models import Count, Q, Sum
-from django.utils import timezone
-from django.db.models import Case, DecimalField, ExpressionWrapper, F, Sum, Value, When
+from django.db import transaction
+from django.db.models import Case, Count, DecimalField, ExpressionWrapper, F, Q, Sum, Value, When
 from django.db.models.functions import Coalesce
+from django.utils import timezone
 from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
@@ -396,16 +398,16 @@ class PaystackWebhook(APIView):
     permission_classes = [AllowAny]
     
     def post(self, request):
-        from core.payment_utils import get_paystack_service, PaystackError
-        
+        from core.payment_utils import get_paystack_service, PaystackError, PaystackService
+
         # Verify webhook signature
         signature = request.headers.get("x-paystack-signature")
         if not signature:
             return Response({"error": "No signature"}, status=400)
-        
+
         # Get raw body
         body = request.body
-        
+
         try:
             paystack = get_paystack_service()
             if not PaystackService.verify_webhook_signature(
@@ -413,15 +415,16 @@ class PaystackWebhook(APIView):
                 signature,
                 paystack.webhook_secret
             ):
+                logger.warning("Paystack webhook signature verification failed")
                 return Response({"error": "Invalid signature"}, status=401)
-        except Exception:
-            pass  # Skip verification if not configured
-        
+        except PaystackError as e:
+            logger.error(f"Paystack service error during webhook verification: {e}")
+            return Response({"error": "Payment service not configured"}, status=503)
+
         # Parse event
-        import json
         try:
             event = json.loads(body)
-        except:
+        except (ValueError, json.JSONDecodeError):
             return Response({"error": "Invalid JSON"}, status=400)
         
         event_type = event.get("event")

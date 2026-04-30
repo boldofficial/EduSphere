@@ -93,9 +93,9 @@ class TwoFactorVerifyView(APIView):
 
         # Verify the TOTP code
         totp = pyotp.TOTP(user.two_factor_secret)
-        
-        # Allow for time drift (valid within 1 window)
-        is_valid = totp.verify(code) or totp.verify(str(int(code) - 1)) or totp.verify(str(int(code) + 1))
+
+        # Allow for time drift (valid within 1 time-step window)
+        is_valid = totp.verify(code, valid_window=1)
 
         if is_valid:
             user.two_factor_enabled = True
@@ -148,7 +148,7 @@ class TwoFactorLoginView(APIView):
 
         # Verify the TOTP code
         totp = pyotp.TOTP(user.two_factor_secret)
-        is_valid = totp.verify(code) or totp.verify(str(int(code) - 1)) or totp.verify(str(int(code) + 1))
+        is_valid = totp.verify(code, valid_window=1)
 
         if is_valid:
             # Generate JWT tokens

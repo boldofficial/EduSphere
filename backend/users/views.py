@@ -3,6 +3,7 @@ import os
 
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -67,7 +68,7 @@ class MeView(APIView):
         return Response(get_user_me_data(request.user))
 
 
-logger = logging.getLogger(__name__)
+
 
 
 class ImpersonateUserView(APIView):
@@ -261,7 +262,8 @@ class PasswordResetRequestView(APIView):
             token_generator = PasswordResetTokenGenerator()
             token = token_generator.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
-            reset_url = f"https://myregistra.net/reset-password?uid={uid}&token={token}"
+            root_domain = getattr(settings, 'ROOT_DOMAIN', 'myregistra.net')
+            reset_url = f"https://{root_domain}/reset-password?uid={uid}&token={token}"
 
             send_email_task.delay("password_reset", email, {"reset_url": reset_url})
             logger.info(f"Password reset requested for {email}")

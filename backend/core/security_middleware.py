@@ -62,6 +62,20 @@ class SecurityHeadersMiddleware:
         response['Referrer-Policy'] = 'strict-origin-when-cross-origin'
         response['Permissions-Policy'] = 'geolocation=(), microphone=(), camera=()'
 
+        # Content Security Policy
+        csp_directives = [
+            "default-src 'self'",
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+            "font-src 'self' https://fonts.gstatic.com",
+            "img-src 'self' data: blob: https://*.r2.dev https://*.supabase.co",
+            "connect-src 'self' https://*.supabase.co https://api.paystack.co",
+            "frame-src 'self'",
+            "object-src 'none'",
+            "base-uri 'self'",
+        ]
+        response['Content-Security-Policy'] = '; '.join(csp_directives)
+
         return response
 
 
