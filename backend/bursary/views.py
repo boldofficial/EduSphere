@@ -745,19 +745,31 @@ class DashboardViewSet(viewsets.ViewSet):
         if not term:
             return Response({"error": "Academic term not found"}, status=404)
 
-        # 1. EXPECTED REVENUE CALCULATION
-        # Phase A: Get all fee items for this term
-        fee_items = FeeItem.objects.filter(school=school, session=term.session, term=term.name, active=True)
+        from django.db.models import Sum, F, DecimalField, Count, Q
         
-        total_expected = 0
-        for item in fee_items:
-            # Count target students
-            student_query = Q(school=school, status="active")
-            if item.target_class:
-                student_query &= Q(current_class=item.target_class)
-            
-            student_count = Student.objects.filter(student_query).count()
-            total_expected += (item.amount * student_count)
+        # 1. EXPECTED REVENUE CALCULATION
+        # Calculate expected using optimized aggregated queries instead of an N+1 loop.
+        total_active_students = Student.objects.filter(school=school, status="active").count()
+        
+        # A. Items targeting specific classes
+        target_items_expected = FeeItem.objects.filter(
+            school=school, session=term.session, term=term.name, active=True, target_class__isnull=False
+        ).annotate(
+            student_count=Count(
+                'target_class__students',
+                filter=Q(target_class__students__status='active', target_class__students__school=school)
+            )
+        ).aggregate(
+            total=Sum(F('amount') * F('student_count'), output_field=DecimalField())
+        )['total'] or 0
+        
+        # B. Items applicable to all students (no target class)
+        global_items_sum = FeeItem.objects.filter(
+            school=school, session=term.session, term=term.name, active=True, target_class__isnull=True
+        ).aggregate(total=Sum('amount'))['total'] or 0
+        
+        global_expected = global_items_sum * total_active_students
+        total_expected = target_items_expected + global_expected
 
         # Phase B: Subtract individual discounts
         total_discounts = StudentFee.objects.filter(

@@ -21,8 +21,6 @@ class TenantMiddleware(MiddlewareMixin):
         # 1. Get tenant identifier from header (set by Next.js middleware)
         tenant_domain = request.headers.get("X-Tenant-ID")
 
-        import logging
-        logger = logging.getLogger(__name__)
         logger.info(f"[TenantMW] host={request.get_host()}, X-Tenant-ID={tenant_domain}")
 
         # 2. Fallback for Local Dev / No Header (e.g. direct API calls)
@@ -44,12 +42,20 @@ class TenantMiddleware(MiddlewareMixin):
 
         if tenant_domain and tenant_domain != "www" and tenant_domain != root_host:
             try:
-                # Lookup by subdomain (slug) or custom domain
                 from django.db.models import Q
+                from django.core.cache import cache
+                
+                cache_key = f"tenant_domain_lookup:{tenant_domain}"
+                school = cache.get(cache_key)
 
-                request.tenant = School.objects.filter(Q(domain=tenant_domain) | Q(custom_domain=tenant_domain)).first()
+                if school is None:
+                    school = School.objects.filter(Q(domain=tenant_domain) | Q(custom_domain=tenant_domain)).first()
+                    # Cache the result for 5 minutes (300 seconds), even if None (to cache negative lookups)
+                    cache.set(cache_key, school, timeout=300)
+
+                request.tenant = school
                 if request.tenant:
-                    logger.info(f"[TenantMW] Resolved tenant: {request.tenant.domain}")
+                    logger.info(f"[TenantMW] Resolved tenant: {request.tenant.domain} (cached)")
                     request.subdomain = tenant_domain
                 else:
                     logger.warning(f"[TenantMW] No tenant found for domain: {tenant_domain}")
@@ -97,7 +103,7 @@ class AuditLogMiddleware:
 
     def _log_activity(self, request, response, force_anonymous=False):
         try:
-            from core.models import GlobalActivityLog
+            from core.tasks import log_activity_async
 
             user = request.user if request.user.is_authenticated and not force_anonymous else None
             school = getattr(request, "tenant", None)
@@ -111,13 +117,20 @@ class AuditLogMiddleware:
                 "status": response.status_code,
                 "ip": self.get_client_ip(request),
             }
+            from core.security_utils import sanitize_log_data
             metadata = sanitize_log_data(metadata)
 
-            GlobalActivityLog.objects.create(
-                action="RECORDS_MUTATED" if response.status_code < 400 else "ACCESS_DENIED",
-                school=school,
-                user=user,
-                description=f"{request.method} request to {request.path}",
+            action = "RECORDS_MUTATED" if response.status_code < 400 else "ACCESS_DENIED"
+            school_id = school.id if school else None
+            user_id = user.id if user else None
+            description = f"{request.method} request to {request.path}"
+
+            # Dispatch asynchronously via Celery
+            log_activity_async.delay(
+                action=action,
+                school_id=school_id,
+                user_id=user_id,
+                description=description,
                 metadata=metadata,
             )
         except Exception as e:

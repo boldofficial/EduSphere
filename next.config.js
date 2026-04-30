@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    // Enable standalone output for minimal Docker image size
+    output: 'standalone',
+
     // NOTE: GEMINI_API_KEY is available server-side only via process.env.GEMINI_API_KEY
     // Do NOT expose it to the client via the `env` config block.
 
