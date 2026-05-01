@@ -37,8 +37,7 @@ export async function POST(request: NextRequest) {
         const tenantId = headerTenantId || fallbackTenantId;
 
         const authHeaders: HeadersInit = { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${tempToken}`
+            'Content-Type': 'application/json'
         };
         if (tenantId) {
             authHeaders['X-Tenant-ID'] = tenantId;
@@ -48,7 +47,7 @@ export async function POST(request: NextRequest) {
         const response = await fetch(`${baseUrl}/api/users/2fa/login/`, {
             method: 'POST',
             headers: authHeaders,
-            body: JSON.stringify({ code }),
+            body: JSON.stringify({ code, two_factor_token: tempToken }),
         });
 
         if (!response.ok) {

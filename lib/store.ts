@@ -26,7 +26,7 @@ const debouncedStorage = {
     getItem: (name: string) => {
         try {
             if (typeof window === 'undefined') return null;
-            return localStorage.getItem(name);
+            return sessionStorage.getItem(name);
         } catch (error) {
             return null;
         }
@@ -34,7 +34,7 @@ const debouncedStorage = {
     setItem: Utils.debounce((name: string, value: string) => {
         try {
             if (typeof window === 'undefined') return;
-            localStorage.setItem(name, value);
+            sessionStorage.setItem(name, value);
         } catch (error) {
             // Silently fail
         }
@@ -42,7 +42,7 @@ const debouncedStorage = {
     removeItem: (name: string) => {
         try {
             if (typeof window === 'undefined') return;
-            localStorage.removeItem(name);
+            sessionStorage.removeItem(name);
         } catch (error) {
             // Silently fail
         }

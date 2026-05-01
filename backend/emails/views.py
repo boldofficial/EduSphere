@@ -8,13 +8,7 @@ from .serializers import EmailCampaignSerializer, EmailLogSerializer, EmailTempl
 from .tasks import process_campaign_task, send_custom_email_task
 
 
-class IsSuperAdmin(permissions.BasePermission):
-    """
-    Allows access only to users with 'SUPER_ADMIN' role.
-    """
-
-    def has_permission(self, request, view):
-        return bool(request.user and request.user.is_authenticated and request.user.role == "SUPER_ADMIN")
+from users.permissions import IsSuperAdmin
 
 
 class EmailTemplateViewSet(viewsets.ModelViewSet):

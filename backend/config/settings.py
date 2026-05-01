@@ -583,6 +583,23 @@ CELERY_TIMEZONE = TIME_ZONE
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes
 
+from celery.schedules import crontab
+CELERY_BEAT_SCHEDULE = {
+    'check-subscription-expiry-daily': {
+        'task': 'schools.tasks.check_subscription_expiry',
+        'schedule': crontab(hour=0, minute=0),  # Run daily at midnight
+    },
+    'cleanup-expired-sessions-daily': {
+        'task': 'core.tasks.cleanup_expired_sessions',
+        'schedule': crontab(hour=3, minute=0),  # Run daily at 3 AM
+    },
+    'auto-report-generation-monthly': {
+        'task': 'schools.tasks.auto_report_generation',
+        # Usually scheduled for the end of the term, running on the 28th as a placeholder
+        'schedule': crontab(day_of_month=28, hour=0, minute=0), 
+    },
+}
+
 
 # =============================================================================
 # EMAIL CONFIGURATION (BREVO / SMTP)

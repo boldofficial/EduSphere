@@ -126,19 +126,33 @@ class TwoFactorVerifyView(APIView):
 class TwoFactorLoginView(APIView):
     """
     Second step of login with 2FA.
-    POST: Verify 2FA code after initial login
+    POST: Verify 2FA code using the temporary two_factor_token
     """
-    permission_classes = [IsAuthenticated]  # User must be authenticated via password
+    permission_classes = []  # Public endpoint, verified via temporary token
 
     def post(self, request):
-        user = request.user
+        token_str = request.data.get('two_factor_token')
         code = request.data.get('code', '')
 
-        if not code:
+        if not token_str or not code:
             return Response(
-                {"error": "Verification code is required"},
+                {"error": "two_factor_token and code are required"},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+        from rest_framework_simplejwt.tokens import UntypedToken
+        from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
+        from django.contrib.auth import get_user_model
+
+        User = get_user_model()
+        try:
+            token = UntypedToken(token_str)
+            if token.get('token_type') != 'two_factor_pending':
+                raise InvalidToken("Invalid token type")
+            user_id = token.get('user_id')
+            user = User.objects.get(id=user_id)
+        except (InvalidToken, TokenError, User.DoesNotExist):
+            return Response({"error": "Invalid or expired 2FA token"}, status=status.HTTP_401_UNAUTHORIZED)
 
         if not user.two_factor_enabled:
             return Response(
@@ -147,21 +161,38 @@ class TwoFactorLoginView(APIView):
             )
 
         # Verify the TOTP code
+        import pyotp
         totp = pyotp.TOTP(user.two_factor_secret)
         is_valid = totp.verify(code, valid_window=1)
 
         if is_valid:
-            # Generate JWT tokens
+            # Generate final JWT tokens
             from rest_framework_simplejwt.tokens import RefreshToken
             refresh = RefreshToken.for_user(user)
             
             logger.info(f"2FA login successful for user {user.username}")
             
-            return Response({
-                "access": str(refresh.access_token),
-                "refresh": str(refresh),
-                "message": "Login successful"
-            })
+            from users.serializers import CustomTokenObtainPairSerializer
+            
+            # Use serializer logic to get all custom claims and data
+            serializer = CustomTokenObtainPairSerializer()
+            serializer.user = user
+            serializer.context = {'request': request}
+            
+            try:
+                # We mock validate and construct the token response manually
+                # Or just construct data manually
+                data = {
+                    "access": str(refresh.access_token),
+                    "refresh": str(refresh),
+                    "role": user.role,
+                    "school_id": user.school.id if user.school else None,
+                    "user": {"id": user.id, "username": user.username, "role": user.role},
+                    "message": "Login successful"
+                }
+                return Response(data)
+            except Exception as e:
+                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         else:
             # Check backup code
             if user.verify_backup_code(code):
@@ -173,6 +204,9 @@ class TwoFactorLoginView(APIView):
                 return Response({
                     "access": str(refresh.access_token),
                     "refresh": str(refresh),
+                    "role": user.role,
+                    "school_id": user.school.id if user.school else None,
+                    "user": {"id": user.id, "username": user.username, "role": user.role},
                     "message": "Login successful (backup code)"
                 })
             

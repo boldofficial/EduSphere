@@ -25,6 +25,8 @@ from core.pagination import StandardPagination
 from core.tenant_utils import get_request_school
 from core.models import GlobalActivityLog
 from emails.tasks import send_custom_email_task, send_email_task
+from users.permissions import IsSuperAdmin, IsSchoolAdmin
+from users.permissions import IsSuperAdmin, IsSchoolAdmin
 
 from .models import PlatformModule, School, SchoolPayment, SchoolPaymentConfig, Subscription, SubscriptionPlan
 from .serializers import SchoolPaymentConfigAdminSerializer, SchoolSerializer, SubscriptionPlanSerializer
@@ -54,11 +56,9 @@ class PlatformModulesView(APIView):
 class ModuleToggleView(APIView):
     """Toggle a module's global active state (Super Admin only)."""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsSuperAdmin]
 
     def post(self, request):
-        if request.user.role != "SUPER_ADMIN":
-            raise PermissionDenied("Only Super Admins can toggle modules")
 
         module_id = request.data.get("module_id")
         action = request.data.get("action")  # 'on' or 'off'
@@ -86,12 +86,7 @@ class ModuleToggleView(APIView):
 class SchoolManagementView(APIView):
     """Manage schools (Super Admin only)."""
 
-    permission_classes = [IsAuthenticated]
-
-    def check_super_admin(self, request):
-        """Verify the user has super admin privileges."""
-        if request.user.role != "SUPER_ADMIN":
-            raise PermissionDenied("Only Super Admins can access this resource")
+    permission_classes = [IsAuthenticated, IsSuperAdmin]
 
     @staticmethod
     def _queue_school_decision_email(school, action):
@@ -145,7 +140,6 @@ class SchoolManagementView(APIView):
 
     def get(self, request):
         """List all schools."""
-        self.check_super_admin(request)
         schools = School.objects.all().order_by("-created_at")
 
         paginator = StandardPagination()
@@ -159,7 +153,6 @@ class SchoolManagementView(APIView):
 
     def delete(self, request, pk=None):
         """Delete a school by ID."""
-        self.check_super_admin(request)
 
         if not pk:
             raise ValidationError({"detail": "School ID is required"})
@@ -180,7 +173,6 @@ class SchoolManagementView(APIView):
 
     def patch(self, request, pk=None):
         """Update school subscription status (suspend/activate/approve)."""
-        self.check_super_admin(request)
 
         if not pk:
             raise ValidationError({"detail": "School ID is required"})
@@ -240,7 +232,6 @@ class SchoolManagementView(APIView):
 
     def put(self, request, pk=None):
         """Update full school details (Super Admin only)."""
-        self.check_super_admin(request)
         if not pk:
             raise ValidationError({"detail": "School ID is required"})
 
@@ -302,11 +293,9 @@ class SchoolManagementView(APIView):
 class SchoolRevenueView(APIView):
     """Get revenue statistics (Super Admin only)."""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsSuperAdmin]
 
     def get(self, request):
-        if request.user.role != "SUPER_ADMIN":
-            raise PermissionDenied("Only Super Admins can access this resource")
 
         from django.db.models import Sum
 
@@ -324,11 +313,9 @@ class SchoolRevenueView(APIView):
 class RecordPaymentView(APIView):
     """Record a manual payment for a school (Super Admin only)."""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsSuperAdmin]
 
     def post(self, request):
-        if request.user.role != "SUPER_ADMIN":
-            raise PermissionDenied("Only Super Admins can access this resource")
 
         school_id = request.data.get("school_id")
         amount = request.data.get("amount")
@@ -378,16 +365,10 @@ class RecordPaymentView(APIView):
 class PlanManagementView(APIView):
     """Manage subscription plans (Super Admin only)."""
 
-    permission_classes = [IsAuthenticated]
-
-    def check_super_admin(self, request):
-        """Verify the user has super admin privileges."""
-        if request.user.role != "SUPER_ADMIN":
-            raise PermissionDenied("Only Super Admins can access this resource")
+    permission_classes = [IsAuthenticated, IsSuperAdmin]
 
     def post(self, request):
         """Create a new subscription plan."""
-        self.check_super_admin(request)
         serializer = SubscriptionPlanSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -397,7 +378,6 @@ class PlanManagementView(APIView):
 
     def put(self, request, pk=None):
         """Update an existing subscription plan."""
-        self.check_super_admin(request)
 
         if not pk:
             raise ValidationError({"detail": "Plan ID is required"})
@@ -416,7 +396,6 @@ class PlanManagementView(APIView):
 
     def delete(self, request, pk=None):
         """Delete a subscription plan."""
-        self.check_super_admin(request)
 
         if not pk:
             raise ValidationError({"detail": "Plan ID is required"})
@@ -434,7 +413,7 @@ class PlanManagementView(APIView):
 class PlatformSettingsView(APIView):
     """Manage global platform settings (Super Admin only)."""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsSuperAdmin]
 
     def get_settings(self):
         from .models import PlatformSettings
@@ -443,8 +422,6 @@ class PlatformSettingsView(APIView):
         return settings
 
     def get(self, request):
-        if request.user.role != "SUPER_ADMIN":
-            raise PermissionDenied("Only Super Admins can view platform settings")
         from .serializers import PlatformSettingsSerializer
 
         settings = self.get_settings()
@@ -452,8 +429,6 @@ class PlatformSettingsView(APIView):
         return Response(serializer.data)
 
     def put(self, request):
-        if request.user.role != "SUPER_ADMIN":
-            raise PermissionDenied("Only Super Admins can update platform settings")
 
         from .serializers import PlatformSettingsSerializer
 
@@ -500,18 +475,13 @@ class SchoolPaymentSettingsView(APIView):
 class AdminDemoRequestView(APIView):
     """Manage demo requests (Super Admin only)."""
 
-    permission_classes = [IsAuthenticated]
-
-    def check_super_admin(self, request):
-        if request.user.role != "SUPER_ADMIN":
-            raise PermissionDenied("Only Super Admins can access this resource")
+    permission_classes = [IsAuthenticated, IsSuperAdmin]
 
     def get(self, request):
         """List all demo requests."""
         from .models import DemoRequest
         from .serializers import DemoRequestSerializer
 
-        self.check_super_admin(request)
         requests = DemoRequest.objects.all().order_by("-created_at")
 
         paginator = StandardPagination()
@@ -529,7 +499,6 @@ class AdminDemoRequestView(APIView):
 
         from .models import DemoRequest
 
-        self.check_super_admin(request)
 
         if not pk:
             raise ValidationError({"detail": "Request ID is required"})

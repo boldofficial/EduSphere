@@ -24,6 +24,21 @@ def cleanup_old_logs():
     # Add cleanup logic here
     return "Cleaned"
 
+@shared_task
+def cleanup_expired_sessions():
+    """
+    Cleans up expired Django sessions.
+    Runs daily via Celery Beat.
+    """
+    from django.core.management import call_command
+    try:
+        call_command('clearsessions')
+        logger.info("Successfully cleaned up expired sessions.")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to clean up expired sessions: {e}")
+        return False
+
 @shared_task(ignore_result=True)
 def log_activity_async(action, school_id, user_id, description, metadata):
     """
