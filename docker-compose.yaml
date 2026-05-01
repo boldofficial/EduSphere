@@ -117,7 +117,7 @@ services:
       pgbouncer:
         condition: service_started
     environment:
-      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@pgbouncer:5432/${POSTGRES_DB}
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@pgbouncer:6432/${POSTGRES_DB}
       - REPLICA_DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db_replica:5432/${POSTGRES_DB}
 
     restart: always
@@ -194,7 +194,7 @@ services:
       pgbouncer:
         condition: service_started
     environment:
-      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@pgbouncer:5432/${POSTGRES_DB}
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@pgbouncer:6432/${POSTGRES_DB}
       - REPLICA_DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db_replica:5432/${POSTGRES_DB}
 
     # on-failure prevents crash loops from consuming resources (unlike 'always')
@@ -223,7 +223,7 @@ services:
       pgbouncer:
         condition: service_started
     environment:
-      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@pgbouncer:5432/${POSTGRES_DB}
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@pgbouncer:6432/${POSTGRES_DB}
       - REPLICA_DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db_replica:5432/${POSTGRES_DB}
 
     # on-failure prevents crash loops from consuming resources (unlike 'always')

@@ -20,10 +20,25 @@ import dj_database_url
 _settings_logger = logging.getLogger(__name__)
 
 # Load environment variables from .env file in development
+# We look for .env.local first, then .env in the root directory
 try:
     from dotenv import load_dotenv
-
-    load_dotenv()
+    
+    # root_path is two levels up from settings.py (backend/config/settings.py -> backend/ -> ./)
+    root_path = Path(__file__).resolve().parent.parent.parent
+    
+    # Load .env.local first (local overrides)
+    local_env = root_path / ".env.local"
+    if local_env.exists():
+        load_dotenv(local_env)
+        _settings_logger.info(f"Loaded environment from {local_env}")
+    
+    # Then load .env (base config)
+    base_env = root_path / ".env"
+    if base_env.exists():
+        load_dotenv(base_env)
+        _settings_logger.info(f"Loaded environment from {base_env}")
+        
 except ImportError:
     pass  # python-dotenv not installed, using system env vars
 
