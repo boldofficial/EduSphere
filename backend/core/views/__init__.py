@@ -8,6 +8,7 @@ from .messaging import ConversationViewSet, SchoolMessageViewSet
 from .activity import GlobalActivityLogViewSet
 from .notifications import NotificationViewSet
 from .announcements import NewsletterViewSet, SchoolAnnouncementViewSet
+from .health import HealthCheckView
 
 __all__ = [
     "SettingsView",
@@ -20,4 +21,5 @@ __all__ = [
     "NotificationViewSet",
     "SchoolAnnouncementViewSet",
     "NewsletterViewSet",
+    "HealthCheckView",
 ]

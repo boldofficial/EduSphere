@@ -12,6 +12,7 @@ from .views import (
     SchoolMessageViewSet,
     SettingsView,
     GlobalActivityLogViewSet,
+    HealthCheckView,
 )
 from .notifications_views import (
     send_sms,
@@ -42,5 +43,6 @@ urlpatterns = [
     path("notifications/otp/send/", send_otp, name="send-otp"),
     path("notifications/otp/verify/", verify_otp, name="verify-otp"),
     path("notifications/balance/", get_notification_balance, name="notification-balance"),
+    path("health/", HealthCheckView.as_view(), name="health-check"),
     path("", include(router.urls)),
 ]
