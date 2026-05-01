@@ -84,7 +84,7 @@ const faqs = [
     { question: "What is the 2025/2026 Pilot Program?", answer: "We are offering the Enterprise version of Registra for free during the 2nd and 3rd terms of the 2025/2026 session. This allows us to work closely with schools like yours to refine our features while you benefit from world-class automation." },
     { question: "Is it really free? What's the catch?", answer: "Yes, it's completely free for the pilot session. In exchange, we ask for your honest feedback and a written review to help us continue building the most powerful school OS in the market." },
     { question: "Can I migrate my existing data?", answer: "Absolutely. Our expert team will help you import your student, staff, and financial records for a seamless transition, free of charge during the pilot." },
-    { question: "What happens after the pilot session?", answer: "You'll have the option to continue with a preferred pricing plan or export your data. There's no obligation to continue, but we're confident you'll love the transformation." },
+    { question: "What happens after the pilot session?", answer: "After the pilot period, Registra remains free for smaller schools with fewer than 40 students. For schools with 40 students and above, the subscription is ₦700 per student per term, which includes access to all premium features and enterprise-grade tools." },
     { question: "How do I get started?", answer: "Simply click the 'Start Free Trial' button, set up your school details, and our onboarding team will reach out to guide you through the next steps." }
 ];
 

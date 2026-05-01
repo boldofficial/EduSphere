@@ -47,6 +47,15 @@ export async function generateMetadata(): Promise<Metadata> {
             template: `%s | ${schoolName}`,
         },
         description,
+        keywords: [
+            'school management system',
+            'school software Nigeria',
+            'education ERP',
+            'student information system',
+            'automated report cards',
+            'school fee collection software',
+            'Registra school OS'
+        ],
         metadataBase: new URL('https://myregistra.net'),
         openGraph: {
             type: 'website',
@@ -55,11 +64,20 @@ export async function generateMetadata(): Promise<Metadata> {
             siteName: schoolName,
             title: title,
             description: description,
+            images: [
+                {
+                    url: '/opengraph-image.png',
+                    width: 1200,
+                    height: 630,
+                    alt: schoolName,
+                }
+            ],
         },
         twitter: {
             card: 'summary_large_image',
             title: title,
             description: description,
+            images: ['/opengraph-image.png'],
         },
         manifest: '/manifest.json',
         icons: {
