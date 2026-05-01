@@ -380,7 +380,7 @@ export const LoginView = () => {
                         <div className="absolute bottom-[-10%] left-[20%] w-96 h-96 bg-pink-400/20 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-4000"></div>
                     </div>
                 )}
-                <div className="w-full max-w-md">
+                <div className={`w-full ${isSystemRoot && selectedRole !== 'super_admin' ? 'max-w-4xl' : 'max-w-md'}`}>
                 <div className="mb-10 w-full flex justify-start">
                     <div
                         className="inline-block cursor-pointer transition-transform active:scale-95"
@@ -419,7 +419,7 @@ export const LoginView = () => {
                             onSelectSuperAdmin={() => setSelectedRole('super_admin')}
                         />
                     ) : (
-                        <div className={isSystemRoot ? 'w-full max-w-md bg-white p-8 rounded-3xl shadow-2xl' : 'w-full bg-white/70 backdrop-blur-xl p-8 rounded-3xl shadow-2xl border border-white/50'}>
+                        <div className={isSystemRoot ? 'w-full max-w-md bg-white/90 backdrop-blur-xl p-8 rounded-3xl shadow-2xl border border-white/20' : 'w-full bg-white/70 backdrop-blur-xl p-8 rounded-3xl shadow-2xl border border-white/50'}>
                             {selectedRole === 'student' ? (
                                 <StudentLoginForm
                                     studentNo={studentNo}

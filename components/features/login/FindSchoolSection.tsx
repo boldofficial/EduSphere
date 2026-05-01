@@ -26,7 +26,7 @@ export const FindSchoolSection: React.FC<FindSchoolSectionProps> = ({
 }) => {
     return (
         <div className={`w-full max-w-4xl grid grid-cols-1 ${showSystemLogin ? 'md:grid-cols-2' : 'max-w-md'} gap-8 px-4 relative z-20`}>
-            <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl p-8 flex flex-col justify-center border border-white/20">
+            <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 flex flex-col justify-center border border-white/50">
                 <h2 className="text-3xl font-black text-gray-900 mb-2">Find your School</h2>
                 <p className="text-gray-500 mb-8 font-medium">Enter your school's unique ID or subdomain to access your portal.</p>
 
@@ -39,7 +39,7 @@ export const FindSchoolSection: React.FC<FindSchoolSectionProps> = ({
                                 value={searchSlug}
                                 onChange={e => setSearchSlug(e.target.value)}
                                 placeholder="e.g. vine-heritage"
-                                className="w-full pl-12 pr-4 py-4 bg-white/50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 font-bold placeholder:text-gray-400"
+                                className="w-full pl-12 pr-4 py-4 bg-white/60 border border-white/50 backdrop-blur-sm rounded-2xl focus:bg-white focus:ring-2 focus:ring-brand-400 focus:border-brand-400 font-bold placeholder:text-gray-400 transition-all shadow-sm"
                                 required
                             />
                         </div>
@@ -53,7 +53,7 @@ export const FindSchoolSection: React.FC<FindSchoolSectionProps> = ({
                     <button
                         type="submit"
                         disabled={isSearching}
-                        className="w-full py-4 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-2xl transition-all shadow-xl shadow-brand-600/30 flex items-center justify-center gap-2 disabled:opacity-50"
+                        className="w-full py-4 bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 text-white font-bold rounded-2xl transition-all shadow-xl shadow-brand-500/30 flex items-center justify-center gap-2 disabled:opacity-50 hover:scale-[1.02]"
                     >
                         {isSearching ? (
                             <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
@@ -75,9 +75,9 @@ export const FindSchoolSection: React.FC<FindSchoolSectionProps> = ({
             </div>
 
             {showSystemLogin && (
-                <div className="bg-black/40 backdrop-blur-md rounded-3xl p-8 border border-white/10 flex flex-col justify-between animate-in slide-in-from-right-8 duration-500">
+                <div className="bg-brand-900/60 backdrop-blur-xl rounded-3xl p-8 border border-white/20 shadow-2xl flex flex-col justify-between animate-in slide-in-from-right-8 duration-500 group hover:border-brand-400/30 transition-colors">
                     <div>
-                        <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center text-white mb-6 shadow-lg">
+                        <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center text-white mb-6 shadow-xl shadow-indigo-500/20 group-hover:scale-110 transition-transform">
                             <ShieldCheck size={32} />
                         </div>
                         <h3 className="text-2xl font-black text-white mb-2">System Login</h3>
@@ -86,7 +86,7 @@ export const FindSchoolSection: React.FC<FindSchoolSectionProps> = ({
 
                     <button
                         onClick={onSelectSuperAdmin}
-                        className="w-full py-4 bg-white/10 hover:bg-white/20 text-white font-bold rounded-2xl border border-white/20 transition-all flex items-center justify-center gap-2"
+                        className="w-full py-4 bg-white/10 hover:bg-white/20 text-white font-bold rounded-2xl border border-white/20 transition-all flex items-center justify-center gap-2 shadow-lg backdrop-blur-md hover:scale-[1.02]"
                     >
                         Login as Super Admin <ArrowRight size={20} />
                     </button>
