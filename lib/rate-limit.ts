@@ -6,17 +6,18 @@
  */
 
 import { Redis } from '@upstash/redis';
+import { Ratelimit } from '@upstash/ratelimit';
 
 export const RATE_LIMITS = {
-    default: { limit: 100, window: 60000 },
-    auth: { limit: 10, window: 60000 },
-    upload: { limit: 20, window: 60000 },
-    reports: { limit: 10, window: 60000 },
-    sensitive: { limit: 30, window: 60000 },
-    read: { limit: 200, window: 60000 },
+    default: { limit: 100, window: '60s' },
+    auth: { limit: 10, window: '60s' },
+    upload: { limit: 20, window: '60s' },
+    reports: { limit: 10, window: '60s' },
+    sensitive: { limit: 30, window: '60s' },
+    read: { limit: 200, window: '60s' },
 };
 
-export type RateLimitConfig = typeof RATE_LIMITS[keyof typeof RATE_LIMITS];
+export type RateLimitConfig = { limit: number; window: string | any };
 
 export interface RateLimitResult {
     success: boolean;
@@ -25,130 +26,68 @@ export interface RateLimitResult {
 }
 
 let redisInstance: Redis | null = null;
-let usingRedis = false;
-
+const ratelimiters = new Map<string, Ratelimit>();
 const memoryStore = new Map<string, { count: number; resetTime: number }>();
 
-async function getRedis(): Promise<Redis | null> {
+function getRedis(): Redis | null {
     if (redisInstance) return redisInstance;
-    
-    try {
-        if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 2000);
-            
-            try {
-                redisInstance = new Redis({
-                    url: process.env.UPSTASH_REDIS_REST_URL,
-                    token: process.env.UPSTASH_REDIS_REST_TOKEN,
-                    signal: controller.signal as AbortSignal,
-                });
-                await redisInstance.ping();
-                clearTimeout(timeoutId);
-                usingRedis = true;
-                return redisInstance;
-            } catch (e) {
-                clearTimeout(timeoutId);
-                console.warn('[RATELIMIT] Redis connection failed:', e);
-                redisInstance = null;
-            }
-        }
-    } catch (e) {
-        console.warn('[RATELIMIT] Redis init failed:', e);
+    if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+        redisInstance = new Redis({
+            url: process.env.UPSTASH_REDIS_REST_URL,
+            token: process.env.UPSTASH_REDIS_REST_TOKEN,
+        });
+        return redisInstance;
     }
-    
     return null;
-}
-
-async function checkRedisRateLimit(
-    identifier: string,
-    config: RateLimitConfig
-): Promise<RateLimitResult | null> {
-    const redis = await getRedis();
-    if (!redis) return null;
-
-    const key = `ratelimit:${identifier}`;
-    const windowSec = Math.ceil(config.window / 1000);
-    const limit = config.limit;
-    const now = Date.now();
-    const nowSec = Math.floor(now / 1000);
-    const windowStart = nowSec - windowSec;
-
-    try {
-        const [removed, added, count] = await Promise.all([
-            redis.zremrangebyscore(key, 0, windowStart),
-            redis.zadd(key, { score: nowSec, member: `${nowSec}:${Math.random().toString(36).slice(2)}` }),
-            redis.zcount(key, windowStart, nowSec),
-        ]);
-
-        redis.expire(key, windowSec + 60);
-
-        if (typeof count !== 'number') return null;
-
-        if (count >= limit) {
-            return {
-                success: false,
-                remaining: 0,
-                resetTime: now + config.window,
-            };
-        }
-
-        return {
-            success: true,
-            remaining: limit - count - 1,
-            resetTime: now + config.window,
-        };
-    } catch {
-        return null;
-    }
 }
 
 export async function checkRateLimit(
     identifier: string,
-    config: RateLimitConfig = RATE_LIMITS.default
+    config: any = RATE_LIMITS.default
 ): Promise<RateLimitResult> {
+    const redis = getRedis();
     const now = Date.now();
-    
-    const redisResult = await checkRedisRateLimit(identifier, config);
-    if (redisResult) {
-        return redisResult;
+
+    if (redis) {
+        try {
+            const configKey = `${config.limit}-${config.window}`;
+            let limiter = ratelimiters.get(configKey);
+            
+            if (!limiter) {
+                limiter = new Ratelimit({
+                    redis: redis,
+                    limiter: Ratelimit.slidingWindow(config.limit, config.window),
+                    analytics: true,
+                    prefix: '@upstash/ratelimit',
+                });
+                ratelimiters.set(configKey, limiter);
+            }
+
+            const { success, remaining, reset } = await limiter.limit(identifier);
+            return { success, remaining, resetTime: reset };
+        } catch (e) {
+            console.error('[RATELIMIT] Redis check failed, falling back to memory:', e);
+        }
     }
-    
+
+    // Fallback to in-memory Map
+    const windowMs = 60000; // Default fallback window
     const entry = memoryStore.get(identifier);
 
     if (!entry || now > entry.resetTime) {
         memoryStore.set(identifier, {
             count: 1,
-            resetTime: now + config.window,
+            resetTime: now + windowMs,
         });
-        
-        if (memoryStore.size > 1000) {
-            for (const [key, val] of memoryStore.entries()) {
-                if (now > val.resetTime) memoryStore.delete(key);
-            }
-        }
-        
-        return {
-            success: true,
-            remaining: config.limit - 1,
-            resetTime: now + config.window,
-        };
+        return { success: true, remaining: config.limit - 1, resetTime: now + windowMs };
     }
 
     if (entry.count < config.limit) {
         entry.count++;
-        return {
-            success: true,
-            remaining: config.limit - entry.count,
-            resetTime: entry.resetTime,
-        };
+        return { success: true, remaining: config.limit - entry.count, resetTime: entry.resetTime };
     }
 
-    return {
-        success: false,
-        remaining: 0,
-        resetTime: entry.resetTime,
-    };
+    return { success: false, remaining: 0, resetTime: entry.resetTime };
 }
 
 export function getClientIdentifier(request: Request): string {
@@ -173,5 +112,5 @@ export function getRateLimitConfig(endpoint: string): RateLimitConfig {
 }
 
 export function isUsingRedis(): boolean {
-    return usingRedis;
+    return redisInstance !== null;
 }

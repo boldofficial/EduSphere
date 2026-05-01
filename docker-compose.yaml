@@ -12,6 +12,17 @@ services:
     restart: always
     networks:
       - coolify
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+          cpus: '1.0'
 
   redis:
     image: 'redis:7-alpine'
@@ -22,6 +33,17 @@ services:
     restart: always
     networks:
       - coolify
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+          cpus: '0.5'
 
   pgbouncer:
     image: edoburu/pgbouncer
@@ -34,10 +56,16 @@ services:
       - POOL_MODE=transaction
       - AUTH_TYPE=scram-sha-256
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - coolify
     restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 128m
+          cpus: '0.25'
 
   backend:
     build:
@@ -52,16 +80,31 @@ services:
     env_file:
       - .env
     depends_on:
-      - db
-      - redis
-      - pgbouncer
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      pgbouncer:
+        condition: service_started
     environment:
       - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@pgbouncer:5432/${POSTGRES_DB}
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/api/core/health/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+          cpus: '1.5'
     labels:
       - traefik.enable=true
       - traefik.http.routers.backend.priority=1000
-      - 'traefik.http.routers.backend.rule=(Host(`myregistra.net`) || Host(`www.myregistra.net`) || HostRegexp(`^.+\.myregistra\.net$`)) && (PathPrefix(`/api`) || PathPrefix(`/admin`) || PathPrefix(`/django-static`) || PathPrefix(`/media`))'
+      # NOTE: /media intentionally excluded — files served directly from Cloudflare R2
+      - 'traefik.http.routers.backend.rule=(Host(`myregistra.net`) || Host(`www.myregistra.net`) || HostRegexp(`^.+\.myregistra\.net$`)) && (PathPrefix(`/api`) || PathPrefix(`/admin`) || PathPrefix(`/django-static`))'
       - traefik.http.routers.backend.entrypoints=https
       - traefik.http.routers.backend.tls=true
       - traefik.http.routers.backend.tls.certresolver=letsencrypt
@@ -76,12 +119,18 @@ services:
     env_file:
       - .env
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     restart: always
     networks:
       - coolify
     environment:
       - 'DJANGO_API_URL=http://backend:8000'
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+          cpus: '1.0'
     labels:
       - traefik.enable=true
       - traefik.http.routers.frontend-auth.priority=2000
@@ -106,14 +155,23 @@ services:
     env_file:
       - .env
     depends_on:
-      - db
-      - redis
-      - pgbouncer
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      pgbouncer:
+        condition: service_started
     environment:
       - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@pgbouncer:5432/${POSTGRES_DB}
-    restart: always
+    # on-failure prevents crash loops from consuming resources (unlike 'always')
+    restart: on-failure
     networks:
       - coolify
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+          cpus: '2.0'
 
   celery_beat:
     build:
@@ -124,14 +182,23 @@ services:
     env_file:
       - .env
     depends_on:
-      - db
-      - redis
-      - pgbouncer
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      pgbouncer:
+        condition: service_started
     environment:
       - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@pgbouncer:5432/${POSTGRES_DB}
-    restart: always
+    # on-failure prevents crash loops from consuming resources (unlike 'always')
+    restart: on-failure
     networks:
       - coolify
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+          cpus: '0.5'
 
 volumes:
   postgres_data:

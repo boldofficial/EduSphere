@@ -45,14 +45,22 @@ urlpatterns = [
     path("api/inventory/", include("inventory.urls")),
     path("api/transport/", include("transport.urls")),
     path("api/data-import/", include("data_import.urls")),
-    # API Documentation
-    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
-    path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
-    path("api/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
 ]
 
 from django.conf import settings
-from django.conf.urls.static import static
 
-# Serve media files even in production if requested (proxied by Next.js)
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# API Documentation — only available in development (DEBUG=True)
+# In production these return 404 to prevent reconnaissance attacks
+if settings.DEBUG:
+    urlpatterns += [
+        path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+        path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
+        path("api/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
+    ]
+
+
+
+# NOTE: Media files are served via Cloudflare R2 in production (pre-signed URLs).
+# Do NOT add Django's static() media serving here — it blocks Gunicorn workers
+# with synchronous file I/O. In development, use `python manage.py runserver`
+# which serves media automatically, or configure a local R2-compatible endpoint.

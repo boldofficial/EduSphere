@@ -312,9 +312,25 @@ export const LoginView = () => {
         e.preventDefault();
         setSearchError('');
         setIsSearching(true);
+
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 10000);
+
         try {
-            const res = await fetch(`/api/proxy/schools/verify-slug/${searchSlug.trim().toLowerCase()}/`);
-            if (!res.ok) throw new Error('School not found. Please check the spelling.');
+            const res = await fetch(
+                `/api/proxy/schools/verify-slug/${searchSlug.trim().toLowerCase()}`,
+                { signal: controller.signal }
+            );
+            clearTimeout(timeout);
+
+            if (res.status === 404) {
+                throw new Error('School not found. Please check the spelling.');
+            }
+            if (!res.ok) {
+                // 502 or other gateway errors — backend connectivity issue, not a user error
+                throw new Error('Unable to connect to the server. Please try again in a moment.');
+            }
+
             const data = await res.json();
             const envRootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || '';
             const normalizedEnvRoot = envRootDomain.split(':')[0];
@@ -325,7 +341,12 @@ export const LoginView = () => {
             const targetHost = data.custom_domain || `${data.slug}.${effectiveRoot}`;
             window.location.href = `${window.location.protocol}//${targetHost}${portSuffix}/login`;
         } catch (err: any) {
-            setSearchError(err.message);
+            clearTimeout(timeout);
+            if (err.name === 'AbortError') {
+                setSearchError('Request timed out. Please check your connection and try again.');
+            } else {
+                setSearchError(err.message || 'Something went wrong. Please try again.');
+            }
             setIsSearching(false);
         }
     };

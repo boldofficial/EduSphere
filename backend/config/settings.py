@@ -180,7 +180,7 @@ FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:3000")
 DATABASES = {
     "default": dj_database_url.config(
         default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
-        conn_max_age=int(os.environ.get("DB_CONN_MAX_AGE", 0)),
+        conn_max_age=int(os.environ.get("DB_CONN_MAX_AGE", 60)),
         conn_health_checks=True,
     )
 }
@@ -204,9 +204,15 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Increase max upload size for base64 images
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10MB
 
-# Enforce PostgreSQL in Production
+# Enforce PostgreSQL in Production — hard failure, not a silent warning.
+# A misconfigured DATABASE_URL would otherwise let Django start on SQLite
+# with no durability, no concurrency, and data loss on container restart.
 if not DEBUG and DATABASES["default"]["ENGINE"] == "django.db.backends.sqlite3":
-    _settings_logger.warning("SQLite is NOT recommended for production. Set DATABASE_URL to a PostgreSQL instance.")
+    from django.core.exceptions import ImproperlyConfigured
+    raise ImproperlyConfigured(
+        "DATABASE_URL must be set in production. SQLite is not supported. "
+        "Set DATABASE_URL to a PostgreSQL connection string and redeploy."
+    )
 
 
 # =============================================================================

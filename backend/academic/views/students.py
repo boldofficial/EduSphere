@@ -46,32 +46,39 @@ class StudentViewSet(TenantViewSet):
         if not school and not request.user.is_superuser:
             return Response({"error": "School context not found"}, status=403)
 
-        updated_count = 0
-        with transaction.atomic():
-            for student_id, next_class_id in promotions.items():
-                try:
-                    student = Student.objects.get(pk=student_id)
-                    # Check tenant isolation if not superuser
-                    if school and student.school != school:
-                        continue
-
-                    if next_class_id == "graduate":
-                        # Handle graduation logic if needed (e.g. set class to null and status to graduated)
-                        student.current_class = None
-                        # student.is_active = False # or similar
-                    else:
-                        target_class_qs = Class.objects.filter(pk=next_class_id)
-                        if school:
-                            target_class_qs = target_class_qs.filter(school=school)
-                        target_class = target_class_qs.get()
-                        student.current_class = target_class
-
-                    student.save()
-                    updated_count += 1
-                except (Student.DoesNotExist, Class.DoesNotExist):
+        # 1. Fetch all students in one query
+        student_ids = list(promotions.keys())
+        students = Student.objects.filter(pk__in=student_ids).select_related("school")
+        
+        # 2. Fetch all unique target classes in one query
+        target_class_ids = set(cid for cid in promotions.values() if cid != "graduate")
+        classes = {str(c.id): c for c in Class.objects.filter(pk__in=target_class_ids)}
+        
+        updated_students = []
+        for student in students:
+            # Check tenant isolation
+            if school and student.school != school:
+                continue
+                
+            next_class_id = str(promotions.get(str(student.id)))
+            
+            if next_class_id == "graduate":
+                student.current_class = None
+                updated_students.append(student)
+            elif next_class_id in classes:
+                target_class = classes[next_class_id]
+                # Security: Ensure class belongs to same school
+                if school and target_class.school_id != school.id:
                     continue
+                student.current_class = target_class
+                updated_students.append(student)
 
-        return Response({"success": True, "updated": updated_count})
+        # 3. Perform bulk update in a single transaction
+        if updated_students:
+            with transaction.atomic():
+                Student.objects.bulk_update(updated_students, ["current_class"])
+
+        return Response({"success": True, "updated": len(updated_students)})
 
     @action(detail=False, methods=["post"], url_path="trigger-auto-promotion")
     def trigger_auto_promotion(self, request):

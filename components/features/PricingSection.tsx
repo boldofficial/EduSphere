@@ -1,9 +1,8 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { CheckCircle2, ArrowRight, Loader2 } from 'lucide-react';
+import { CheckCircle2, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
-import apiClient from '@/lib/api-client';
 
 interface Plan {
     id: number;
@@ -15,7 +14,8 @@ interface Plan {
     duration_days: number;
 }
 
-// Default fallback plans in case API is unavailable
+// Hardcoded default — the landing page is public and must render even when
+// the backend is unreachable. This data is the source of truth for the pilot.
 const DEFAULT_PLANS: Plan[] = [
     {
         id: 1,
@@ -40,54 +40,36 @@ const DEFAULT_PLANS: Plan[] = [
 ];
 
 export const PricingSection = () => {
-    const [plans, setPlans] = useState<Plan[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState('');
+    // Initialise with defaults so the page renders instantly — no loading spinner
+    const [plans, setPlans] = useState<Plan[]>(DEFAULT_PLANS);
 
     useEffect(() => {
-        const fetchPlans = async () => {
-            try {
-                console.log('[Pricing] Fetching plans from /api/schools/plans');
-                const res = await apiClient.get('schools/plans');
-                console.log('[Pricing] Response:', res.data);
-                
-                if (res.data && res.data.length > 0) {
-                    setPlans(res.data);
-                } else {
-                    console.log('[Pricing] No plans from API, using defaults');
-                    setPlans(DEFAULT_PLANS);
-                }
-            } catch (err: any) {
-                console.error("[Pricing] Failed to fetch plans:", err);
-                console.error("[Pricing] Error response:", err.response?.data);
-                console.error("[Pricing] Error status:", err.response?.status);
-                // Use default plans as fallback
-                console.log('[Pricing] Using default plans due to error');
-                setPlans(DEFAULT_PLANS);
-                setError(''); // Clear error since we have fallback
-            } finally {
-                setIsLoading(false);
-            }
-        };
+        // Optionally try to fetch live overrides from the backend.
+        // Uses a short 3-second timeout. If the backend is unreachable (e.g. 502,
+        // network error, cold start), we silently stay with the hardcoded defaults.
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 3000);
 
-        fetchPlans();
+        fetch('/api/proxy/schools/plans', { signal: controller.signal, cache: 'no-store' })
+            .then(res => res.ok ? res.json() : null)
+            .then(data => {
+                if (Array.isArray(data) && data.length > 0) {
+                    setPlans(data);
+                }
+            })
+            .catch(() => {
+                // Backend unreachable — silently use defaults. No console error on public page.
+            })
+            .finally(() => clearTimeout(timeout));
+
+        return () => {
+            controller.abort();
+            clearTimeout(timeout);
+        };
     }, []);
 
-    if (isLoading) {
-        return (
-            <div className="py-20 flex justify-center">
-                <Loader2 className="animate-spin text-brand-600" size={40} />
-            </div>
-        );
-    }
 
-    if (error) {
-        return (
-            <div className="py-20 text-center text-gray-500">
-                <p>{error}</p>
-            </div>
-        );
-    }
+
 
     return (
         <section id="pricing" className="py-20 bg-white">
