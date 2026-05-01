@@ -9,7 +9,9 @@ services:
       - 'postgres_data:/var/lib/postgresql/data'
     env_file:
       - .env
+    command: postgres -c wal_level=replica -c max_wal_senders=10 -c max_replication_slots=10 -c hot_standby=on
     restart: always
+
     networks:
       - coolify
     healthcheck:
@@ -23,6 +25,31 @@ services:
         limits:
           memory: 512m
           cpus: '1.0'
+
+  db_replica:
+    image: 'postgres:15-alpine'
+    container_name: registra_db_replica
+    env_file:
+      - .env
+    environment:
+      - PGDATA=/var/lib/postgresql/data/pgdata
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    command: |
+      sh -c "until pg_basebackup -h db -D /var/lib/postgresql/data/pgdata -U ${POSTGRES_USER} -vP -W; do echo 'Waiting for primary...'; sleep 1; done && postgres"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - coolify
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+          cpus: '1.0'
+
 
   redis:
     image: 'redis:7-alpine'
@@ -58,6 +85,9 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    ports:
+      - '6432:6432'
+
     networks:
       - coolify
     restart: always
@@ -88,6 +118,8 @@ services:
         condition: service_started
     environment:
       - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@pgbouncer:5432/${POSTGRES_DB}
+      - REPLICA_DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db_replica:5432/${POSTGRES_DB}
+
     restart: always
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8000/api/core/health/ || exit 1"]
@@ -151,7 +183,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: registra_worker
-    command: 'celery -A config worker -l info --concurrency=2'
+    command: 'celery -A config worker -l info --concurrency=4 --max-tasks-per-child=100'
     env_file:
       - .env
     depends_on:
@@ -163,6 +195,8 @@ services:
         condition: service_started
     environment:
       - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@pgbouncer:5432/${POSTGRES_DB}
+      - REPLICA_DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db_replica:5432/${POSTGRES_DB}
+
     # on-failure prevents crash loops from consuming resources (unlike 'always')
     restart: on-failure
     networks:
@@ -190,6 +224,8 @@ services:
         condition: service_started
     environment:
       - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@pgbouncer:5432/${POSTGRES_DB}
+      - REPLICA_DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db_replica:5432/${POSTGRES_DB}
+
     # on-failure prevents crash loops from consuming resources (unlike 'always')
     restart: on-failure
     networks:

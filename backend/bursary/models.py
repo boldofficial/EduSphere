@@ -5,6 +5,7 @@ from django.utils import timezone
 
 from academic.models import Class, Student, Teacher, TenantModel
 from schools.models import School
+from core.security_utils import AuditTrailMixin
 
 
 class FeeCategory(TenantModel):
@@ -37,7 +38,7 @@ class Scholarship(TenantModel):
         return f"{self.name} ({self.school.name})"
 
 
-class FeeItem(TenantModel):
+class FeeItem(AuditTrailMixin, TenantModel):
     """
     Specific fee amount for a session/term/class.
     E.g. Year 1 Tuition for 2025/2026 First Term = 50,000
@@ -52,6 +53,10 @@ class FeeItem(TenantModel):
     target_class = models.ForeignKey(Class, on_delete=models.CASCADE, null=True, blank=True, related_name="fees")
 
     active = models.BooleanField(default=True)
+
+    def save(self, *args, **kwargs):
+        self.track_changes(user=getattr(self, "_user", None))
+        super().save(*args, **kwargs)
 
     def __str__(self):
         target = self.target_class.name if self.target_class else "All Classes"
@@ -78,7 +83,7 @@ class StudentFee(TenantModel):
         return f"{self.student.names} -> {self.fee_item}"
 
 
-class Payment(TenantModel):
+class Payment(AuditTrailMixin, TenantModel):
     PAYMENT_METHODS = (("cash", "Cash"), ("transfer", "Bank Transfer"), ("pos", "POS"), ("online", "Online Payment"))
 
     STATUS_CHOICES = (
@@ -111,6 +116,10 @@ class Payment(TenantModel):
         indexes = [
             models.Index(fields=["student", "session", "term"]),
         ]
+
+    def save(self, *args, **kwargs):
+        self.track_changes(user=getattr(self, "_user", None))
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Recpt#{self.reference} - {self.student.names} - {self.amount}"

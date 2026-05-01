@@ -4,6 +4,7 @@ from django.utils import timezone
 
 from schools.models import School
 from users.models import User
+from core.security_utils import AuditTrailMixin
 
 
 # Abstract base for multi-tenant models
@@ -126,7 +127,7 @@ class SubjectTeacher(TenantModel):
         return f"{self.teacher.name} - {self.subject} ({self.student_class.name})"
 
 
-class Student(TenantModel):
+class Student(AuditTrailMixin, TenantModel):
     user = models.OneToOneField(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="student_profile")
     student_no = models.CharField(max_length=50)
     names = models.CharField(max_length=255)
@@ -152,6 +153,10 @@ class Student(TenantModel):
     assigned_fees = models.JSONField(default=list, blank=True)  # List of FeeItem IDs
     discounts = models.JSONField(default=list, blank=True)  # List of discount objects
     assigned_subjects = models.JSONField(default=list, blank=True)  # List of subject names (strings)
+
+    def save(self, *args, **kwargs):
+        self.track_changes(user=getattr(self, "_user", None))
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.names} ({self.school.name})"
@@ -240,7 +245,7 @@ class GradeRange(TenantModel):
         return f"{self.grade} ({self.min_score}-{self.max_score})"
 
 
-class ReportCard(TenantModel):
+class ReportCard(AuditTrailMixin, TenantModel):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name="report_cards")
     student_class = models.ForeignKey(Class, on_delete=models.SET_NULL, null=True)
     session = models.CharField(max_length=50)
@@ -286,7 +291,12 @@ class ReportCard(TenantModel):
         Class, on_delete=models.SET_NULL, null=True, blank=True, related_name="promoted_students"
     )
 
+    def save(self, *args, **kwargs):
+        self.track_changes(user=getattr(self, "_user", None))
+        super().save(*args, **kwargs)
+
     def __str__(self):
+
         return f"Report - {self.student.names} - {self.term} {self.session}"
 
     class Meta:
@@ -358,7 +368,7 @@ class ReportCard(TenantModel):
         cls.objects.bulk_update(reports, ["position"])
 
 
-class SubjectScore(TenantModel):
+class SubjectScore(AuditTrailMixin, TenantModel):
     report_card = models.ForeignKey(ReportCard, on_delete=models.CASCADE, related_name="scores")
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
     ca1 = models.FloatField(default=0)
@@ -399,6 +409,7 @@ class SubjectScore(TenantModel):
                 else:
                     self.grade = "F"
 
+        self.track_changes(user=getattr(self, "_user", None))
         super().save(*args, **kwargs)
         # Trigger update of parent report card without saving the report card yet
         # (the serializer will save it once at the end)

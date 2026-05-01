@@ -1,6 +1,7 @@
 import logging
 
-from django.db.models.signals import post_save
+from django.db import models
+from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 
 from emails.tasks import send_email_task
@@ -10,12 +11,31 @@ from .models import School
 logger = logging.getLogger(__name__)
 
 
+@receiver(pre_save, sender=School)
+def capture_previous_status(sender, instance, **kwargs):
+    """
+    Capture the previous subscription status before saving.
+    """
+    if instance.pk:
+        try:
+            old_instance = School.objects.get(pk=instance.pk)
+            instance._previous_sub_status = (
+                old_instance.subscription.status
+                if hasattr(old_instance, "subscription") and old_instance.subscription
+                else "none"
+            )
+        except School.DoesNotExist:
+            instance._previous_sub_status = "none"
+    else:
+        instance._previous_sub_status = "none"
+
+
 @receiver(post_save, sender=School)
 def send_school_status_email(sender, instance, created, **kwargs):
     """
     Sends automated emails based on School status changes.
     """
-    # 1. New School Signup -> Welcome Email (triggered when created)
+    # 1. New School Signup -> Welcome Email
     if created:
         logger.info(f"New school created: {instance.name}. Queueing welcome email.")
         if not instance.email:
@@ -32,22 +52,21 @@ def send_school_status_email(sender, instance, created, **kwargs):
             logger.error(f"Failed to queue welcome email for {instance.name}: {e}")
 
     # 2. Status Change to Active -> Approval Email
-    # Note: We need to check if the status *changed* to active, not just if it is active.
-    # In a real-world scenario, we'd use a pre_save signal or a specific field tracker.
-    # For now, if status is active and not created, we assume it was just approved.
     sub_status = "none"
     if hasattr(instance, "subscription") and instance.subscription:
         sub_status = instance.subscription.status
 
-    if not created and sub_status == "active":
+    previous_sub_status = getattr(instance, "_previous_sub_status", "none")
+
+    # Only send if status transitioned from something else to 'active'
+    if not created and sub_status == "active" and previous_sub_status != "active":
         if not instance.email:
             logger.warning(
                 "Skipping approval email for %s because school email is empty.",
                 instance.name,
             )
             return
-        # Ideally, check if previous status was 'pending' using a field tracker package
-        # or by checking instance._state.adding (already handled by 'created')
+
         logger.info(f"School activated: {instance.name}. Queueing approval email.")
         try:
             send_email_task.delay(
@@ -57,3 +76,4 @@ def send_school_status_email(sender, instance, created, **kwargs):
             )
         except Exception as e:
             logger.error(f"Failed to queue approval email for {instance.name}: {e}")
+

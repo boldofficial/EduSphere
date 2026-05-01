@@ -182,8 +182,18 @@ DATABASES = {
         default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
         conn_max_age=int(os.environ.get("DB_CONN_MAX_AGE", 60)),
         conn_health_checks=True,
-    )
+    ),
+    "replica": dj_database_url.config(
+        env="REPLICA_DATABASE_URL",
+        default=os.environ.get("DATABASE_URL", f"sqlite:///{BASE_DIR / 'db.sqlite3'}"),
+        conn_max_age=int(os.environ.get("DB_CONN_MAX_AGE", 60)),
+        conn_health_checks=True,
+    ),
+
 }
+
+DATABASE_ROUTERS = ["config.routers.DbRouter"]
+
 
 # If using PostgreSQL, ensure it has some default options
 if DATABASES["default"].get("ENGINE") == "django.db.backends.postgresql":
@@ -595,10 +605,14 @@ CELERY_BEAT_SCHEDULE = {
     },
     'auto-report-generation-monthly': {
         'task': 'schools.tasks.auto_report_generation',
-        # Usually scheduled for the end of the term, running on the 28th as a placeholder
         'schedule': crontab(day_of_month=28, hour=0, minute=0), 
     },
+    'monitor-pgbouncer-pools': {
+        'task': 'core.tasks.monitor_pgbouncer_pools',
+        'schedule': crontab(minute='*/5'),  # Every 5 minutes
+    },
 }
+
 
 
 # =============================================================================
