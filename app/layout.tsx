@@ -56,7 +56,7 @@ export async function generateMetadata(): Promise<Metadata> {
             'school fee collection software',
             'Registra school OS'
         ],
-        metadataBase: new URL('https://myregistra.net'),
+        metadataBase: new URL(`https://${host}`),
         alternates: {
             canonical: isRootHost ? 'https://myregistra.net' : `https://${host}`,
         },

@@ -1,8 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { resolveTenantFromHost } from './lib/tenant-host';
 
-
-
 export async function middleware(request: NextRequest) {
     const hostname = request.headers.get('host') || '';
     let rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'myregistra.net';
@@ -14,8 +12,6 @@ export async function middleware(request: NextRequest) {
 
     const { pathname } = request.nextUrl;
     const accessToken = request.cookies.get('access_token')?.value;
-
-
 
     // 2. Access Control
     // Define public paths that don't require authentication
@@ -31,7 +27,9 @@ export async function middleware(request: NextRequest) {
         '/help',
         '/resources',
         '/success-stories',
-        '/admission'
+        '/admission',
+        '/opengraph-image',
+        '/twitter-image',
     ];
 
     const isPublicPath = publicPaths.includes(pathname) ||

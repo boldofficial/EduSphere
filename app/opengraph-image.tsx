@@ -2,7 +2,8 @@ import { ImageResponse } from 'next/og'
 import { headers } from 'next/headers'
 import { resolveTenantFromHost } from '@/lib/tenant-host'
 
-export const runtime = 'edge'
+// Using Node.js runtime for better stability in local/Windows environments
+// export const runtime = 'edge'
 
 export const alt = 'Registra - Quality Education Management'
 export const size = {
@@ -29,7 +30,8 @@ export default async function Image() {
         try {
             const res = await fetch(`${DJANGO_API_URL}/api/core/public-settings/`, {
                 headers: { 'X-Tenant-ID': tenantId },
-                next: { revalidate: 3600 }
+                next: { revalidate: 3600 },
+                signal: AbortSignal.timeout(5000) // 5s timeout
             });
             if (res.ok) {
                 const data = await res.json();
@@ -44,11 +46,12 @@ export default async function Image() {
         }
     }
 
-    // For system logo, we need to ensure it's a full URL for ImageResponse if it's a relative path
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://myregistra.net';
+    // Use the current host for absolute URLs of local assets to ensure they are reachable by the generator
+    const protocol = host.includes('localhost') ? 'http' : 'https';
+    const baseUrl = `${protocol}://${host}`;
     const logoUrl = schoolData.logo_media?.startsWith('http') 
         ? schoolData.logo_media 
-        : `${appUrl}${schoolData.logo_media || '/full-logo.png'}`;
+        : `${baseUrl}${schoolData.logo_media || '/full-logo.png'}`;
 
     return new ImageResponse(
         (

@@ -2,8 +2,6 @@ import { ImageResponse } from 'next/og'
 import { headers } from 'next/headers'
 import { resolveTenantFromHost } from '@/lib/tenant-host'
 
-export const runtime = 'edge'
-
 export const alt = 'Registra - Quality Education Management'
 export const size = {
     width: 1200,
@@ -22,14 +20,15 @@ export default async function Image() {
     let schoolData = {
         school_name: 'Registra',
         school_tagline: 'The operating system for modern schools',
-        logo_media: null as string | null
+        logo_media: '/full-logo.png'
     };
 
     if (tenantId) {
         try {
             const res = await fetch(`${DJANGO_API_URL}/api/core/public-settings/`, {
                 headers: { 'X-Tenant-ID': tenantId },
-                next: { revalidate: 3600 }
+                next: { revalidate: 3600 },
+                signal: AbortSignal.timeout(5000)
             });
             if (res.ok) {
                 const data = await res.json();
@@ -43,6 +42,12 @@ export default async function Image() {
             // Fallback
         }
     }
+
+    const protocol = host.includes('localhost') ? 'http' : 'https';
+    const baseUrl = `${protocol}://${host}`;
+    const logoUrl = schoolData.logo_media?.startsWith('http') 
+        ? schoolData.logo_media 
+        : `${baseUrl}${schoolData.logo_media || '/full-logo.png'}`;
 
     return new ImageResponse(
         (
@@ -75,15 +80,11 @@ export default async function Image() {
                         padding: 20,
                     }}
                 >
-                    {schoolData.logo_media ? (
-                        <img
-                            src={schoolData.logo_media}
-                            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                            alt="Logo"
-                        />
-                    ) : (
-                        <span style={{ fontSize: 80 }}>🏫</span>
-                    )}
+                    <img
+                        src={logoUrl}
+                        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                        alt="Logo"
+                    />
                 </div>
 
                 {/* Content Section */}
