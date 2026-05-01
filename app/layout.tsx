@@ -57,6 +57,9 @@ export async function generateMetadata(): Promise<Metadata> {
             'Registra school OS'
         ],
         metadataBase: new URL('https://myregistra.net'),
+        alternates: {
+            canonical: isRootHost ? 'https://myregistra.net' : `https://${host}`,
+        },
         openGraph: {
             type: 'website',
             locale: 'en_NG',
@@ -64,20 +67,11 @@ export async function generateMetadata(): Promise<Metadata> {
             siteName: schoolName,
             title: title,
             description: description,
-            images: [
-                {
-                    url: '/opengraph-image.png',
-                    width: 1200,
-                    height: 630,
-                    alt: schoolName,
-                }
-            ],
         },
         twitter: {
             card: 'summary_large_image',
             title: title,
             description: description,
-            images: ['/opengraph-image.png'],
         },
         manifest: '/manifest.json',
         icons: {

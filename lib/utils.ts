@@ -44,49 +44,7 @@ export const getMediaUrl = (url: string | null | undefined): string => {
 export const sameId = (a: string | number | null | undefined, b: string | number | null | undefined) =>
   String(a ?? '') === String(b ?? '');
 
-// --- STORAGE KEYS ---
-export const STORAGE_KEYS = {
-  SETTINGS: 'ng_school_settings',
-  STUDENTS: 'ng_school_students',
-  TEACHERS: 'ng_school_teachers',
-  STAFF: 'ng_school_staff',
-  CLASSES: 'ng_school_classes',
-  FEES: 'ng_school_fees',
-  PAYMENTS: 'ng_school_payments',
-  EXPENSES: 'ng_school_expenses',
-  SCORES: 'ng_school_scores',
-  ATTENDANCE: 'ng_school_attendance',
-  ADMISSIONS: 'ng_school_admissions'
-};
-
-// Generic Load/Save
-export const loadFromStorage = <T>(key: string, fallback: T): T => {
-  if (typeof window === 'undefined') return fallback;
-  try {
-    const item = localStorage.getItem(key);
-    if (!item) return fallback;
-    const parsed = JSON.parse(item);
-
-    if (typeof fallback === 'object' && fallback !== null && !Array.isArray(fallback)) {
-      return { ...fallback, ...parsed };
-    }
-
-    return parsed;
-  } catch (e) {
-    console.error(`Error loading ${key}`, e);
-    return fallback;
-  }
-};
-
-export const saveToStorage = (key: string, data: unknown) => {
-  if (typeof window === 'undefined') return;
-  try {
-    localStorage.setItem(key, JSON.stringify(data));
-  } catch (e) {
-    console.error(`Error saving ${key}`, e);
-  }
-};
-
+// Debounce utility for performance optimization
 // Debounce utility for performance optimization
 export const debounce = <T extends (...args: any[]) => any>(
   func: T,

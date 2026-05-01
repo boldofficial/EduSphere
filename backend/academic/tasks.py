@@ -181,3 +181,23 @@ def promote_students_task(self, school_id, session, term):
 
     logger.info(f"Promotion task completed for {school.name}: {result}")
     return result
+
+
+@shared_task(bind=True)
+def generate_school_report_cards(self, school_id, session, term):
+    """
+    Triggers report card PDF generation for all classes in a school.
+    """
+    try:
+        classes = Class.objects.filter(school_id=school_id)
+        for cls in classes:
+            generate_class_report_cards.delay(
+                class_id=cls.id,
+                session=session,
+                term=term,
+                school_id=school_id
+            )
+        return {"status": "triggered", "classes_count": classes.count()}
+    except Exception as e:
+        logger.error(f"School report generation failed for {school_id}: {e}")
+        return {"error": str(e)}

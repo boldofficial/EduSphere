@@ -19,6 +19,7 @@ services:
       POSTGRES_DB: registra_db
       POSTGRES_USER: registra_admin
       POSTGRES_PASSWORD: registra_secure_pass_2026
+    command: postgres -c max_connections=200
     restart: always
 
   redis:

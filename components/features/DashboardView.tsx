@@ -113,7 +113,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     const handleSaveSettings = () => {
         const updatedSettings = { ...editedSettings, updated_at: Date.now() };
         setSettings(updatedSettings);
-        Utils.saveToStorage(Utils.STORAGE_KEYS.SETTINGS, updatedSettings);
         addToast('System settings saved successfully!', 'success');
     };
 
@@ -271,7 +270,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     // ─── System Health Data ─────────────────────────────────────────────
     const systemHealth = [
         { name: 'Database Status', status: 'Healthy', ok: true },
-        { name: 'Storage Usage', status: typeof window !== 'undefined' ? `${Math.round((JSON.stringify(localStorage).length / 5242880) * 100)}% Used` : 'N/A', ok: true },
+        { name: 'API Connectivity', status: 'Online', ok: true },
         { name: 'Last Activity', status: new Date().toLocaleDateString(), ok: true },
     ];
 

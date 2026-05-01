@@ -47,9 +47,27 @@ def check_subscription_expiry():
 @shared_task
 def auto_report_generation():
     """
-    Automated task to generate end-of-term reports.
+    Automated task to generate end-of-term reports for all active schools.
     Scheduled to run based on term calendar.
     """
-    # TODO: Implement full report generation logic here
-    logger.info("Auto report generation task triggered.")
-    return True
+    from schools.models import School, SchoolSettings
+    from academic.tasks import generate_school_report_cards
+    
+    # Only process schools with active subscriptions
+    active_schools = School.objects.filter(
+        subscriptions__status='active'
+    ).distinct()
+    
+    count = 0
+    for school in active_schools:
+        settings = SchoolSettings.objects.filter(school=school).first()
+        if settings:
+            generate_school_report_cards.delay(
+                school_id=school.id,
+                session=settings.current_session,
+                term=settings.current_term
+            )
+            count += 1
+            logger.info(f"Triggered auto-report generation for {school.name}")
+            
+    return f"Triggered reports for {count} schools"

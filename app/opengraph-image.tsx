@@ -22,29 +22,33 @@ export default async function Image() {
     let schoolData = {
         school_name: 'Registra',
         school_tagline: 'The operating system for modern schools',
-        logo_media: null as string | null
+        logo_media: '/full-logo.png' // Default to platform logo
     };
 
     if (tenantId) {
         try {
-            const res = await fetch(`${DJANGO_API_URL}/api/core/settings/`, {
-                headers: {
-                    'X-Tenant-ID': tenantId
-                },
-                next: { revalidate: 3600 } // Cache for 1 hour
+            const res = await fetch(`${DJANGO_API_URL}/api/core/public-settings/`, {
+                headers: { 'X-Tenant-ID': tenantId },
+                next: { revalidate: 3600 }
             });
             if (res.ok) {
                 const data = await res.json();
                 schoolData = {
                     school_name: data.school_name || 'Registra',
                     school_tagline: data.school_tagline || 'Quality Education Management',
-                    logo_media: data.logo_media // This is already a full URL from get_media_url
+                    logo_media: data.logo_media
                 };
             }
         } catch (e) {
-            console.error('Failed to fetch school settings for OG image:', e);
+            // Fallback
         }
     }
+
+    // For system logo, we need to ensure it's a full URL for ImageResponse if it's a relative path
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://myregistra.net';
+    const logoUrl = schoolData.logo_media?.startsWith('http') 
+        ? schoolData.logo_media 
+        : `${appUrl}${schoolData.logo_media || '/full-logo.png'}`;
 
     return new ImageResponse(
         (
@@ -64,32 +68,28 @@ export default async function Image() {
                 {/* Logo Section */}
                 <div
                     style={{
-                        width: 180,
-                        height: 180,
-                        borderRadius: 32,
+                        width: 220,
+                        height: 220,
+                        borderRadius: 40,
                         backgroundColor: 'white',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         marginBottom: 40,
-                        boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
+                        boxShadow: '0 25px 60px rgba(0,0,0,0.6)',
                         overflow: 'hidden',
-                        padding: 20,
+                        padding: 30,
                     }}
                 >
-                    {schoolData.logo_media ? (
-                        <img
-                            src={schoolData.logo_media}
-                            style={{
-                                width: '100%',
-                                height: '100%',
-                                objectFit: 'contain'
-                            }}
-                            alt="Logo"
-                        />
-                    ) : (
-                        <span style={{ fontSize: 80 }}>🏫</span>
-                    )}
+                    <img
+                        src={logoUrl}
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'contain'
+                        }}
+                        alt="Logo"
+                    />
                 </div>
 
                 {/* Content Section */}
@@ -98,17 +98,18 @@ export default async function Image() {
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
-                        gap: 15,
+                        gap: 20,
                     }}
                 >
                     <h1
                         style={{
-                            fontSize: 72,
+                            fontSize: 84,
                             fontWeight: 'bold',
                             color: 'white',
                             textAlign: 'center',
                             margin: 0,
-                            letterSpacing: '-0.02em',
+                            letterSpacing: '-0.03em',
+                            textShadow: '0 4px 20px rgba(0,0,0,0.3)',
                         }}
                     >
                         {schoolData.school_name}
@@ -116,35 +117,58 @@ export default async function Image() {
 
                     <p
                         style={{
-                            fontSize: 32,
-                            color: '#94a3b8',
+                            fontSize: 36,
+                            color: '#cbd5e1',
                             textAlign: 'center',
                             margin: 0,
                             fontStyle: 'italic',
-                            maxWidth: 800,
+                            maxWidth: 900,
+                            lineHeight: 1.4,
                         }}
                     >
-                        "{schoolData.school_tagline}"
+                        {schoolData.school_tagline}
                     </p>
                 </div>
 
-                {/* Badge/Platform Info */}
-                <div
-                    style={{
-                        position: 'absolute',
-                        bottom: 40,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 10,
-                        backgroundColor: 'rgba(255,255,255,0.05)',
-                        padding: '12px 24px',
-                        borderRadius: 100,
-                        border: '1px solid rgba(255,255,255,0.1)',
-                    }}
-                >
-                    <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#3b82f6' }} />
-                    <span style={{ fontSize: 20, color: 'white', fontWeight: 600 }}>Powered by Registra</span>
-                </div>
+                {/* Platform Badge */}
+                {!tenantId && (
+                    <div
+                        style={{
+                            position: 'absolute',
+                            bottom: 50,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 12,
+                            backgroundColor: 'rgba(255,255,255,0.08)',
+                            padding: '16px 32px',
+                            borderRadius: 100,
+                            border: '1px solid rgba(255,255,255,0.15)',
+                            backdropFilter: 'blur(10px)',
+                        }}
+                    >
+                        <div style={{ width: 14, height: 14, borderRadius: '50%', background: '#3b82f6', boxShadow: '0 0 15px #3b82f6' }} />
+                        <span style={{ fontSize: 24, color: 'white', fontWeight: 700, letterSpacing: '0.05em' }}>SCHOOL MANAGEMENT EVOLVED</span>
+                    </div>
+                )}
+                
+                {tenantId && (
+                    <div
+                        style={{
+                            position: 'absolute',
+                            bottom: 50,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 10,
+                            backgroundColor: 'rgba(255,255,255,0.05)',
+                            padding: '12px 24px',
+                            borderRadius: 100,
+                            border: '1px solid rgba(255,255,255,0.1)',
+                        }}
+                    >
+                        <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#3b82f6' }} />
+                        <span style={{ fontSize: 20, color: 'white', fontWeight: 600 }}>Powered by Registra</span>
+                    </div>
+                )}
             </div>
         ),
         {
