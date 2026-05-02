@@ -183,6 +183,50 @@ export function useConversations() {
     });
 }
 
+// =============================================
+// NOTIFICATIONS
+// =============================================
+export function useNotifications() {
+    return useQuery({
+        queryKey: queryKeys.notifications,
+        queryFn: () => fetchAll<Types.NotificationItem>('core/notifications/'),
+        refetchInterval: 30000,
+    });
+}
+
+export function useMarkNotificationRead() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (id: string) => {
+            const response = await apiClient.patch(`core/notifications/${id}/`, { is_read: true });
+            return response.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.notifications });
+        },
+    });
+}
+
+export function useMarkAllNotificationsRead() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async () => {
+            const response = await apiClient.post('core/notifications/mark-all-read/');
+            return response.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.notifications });
+        },
+    });
+}
+
+export function useMessagingRecipients() {
+    return useQuery({
+        queryKey: ['messaging_recipients'],
+        queryFn: () => fetchAll<Types.MessagingRecipient>('core/conversations/recipients/'),
+    });
+}
+
 export function useCreateConversation() {
     const queryClient = useQueryClient();
     return useMutation({
@@ -191,6 +235,31 @@ export function useCreateConversation() {
             return response.data;
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['conversations'] }); },
+    });
+}
+
+export function useStartConversation() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (payload: {
+            participant_id: number;
+            subject: string;
+            body: string;
+            type?: 'DIRECT' | 'GROUP' | 'BROADCAST';
+        }) => {
+            const response = await apiClient.post('core/conversations/start/', payload);
+            return response.data as {
+                conversation: Types.Conversation;
+                message: Types.Message;
+            };
+        },
+        onSuccess: (data) => {
+            queryClient.invalidateQueries({ queryKey: ['conversations'] });
+            if (data?.conversation?.id) {
+                queryClient.invalidateQueries({ queryKey: ['messages', data.conversation.id] });
+            }
+            queryClient.invalidateQueries({ queryKey: queryKeys.messages });
+        },
     });
 }
 

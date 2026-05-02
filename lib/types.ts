@@ -609,6 +609,13 @@ export interface Message extends Entity {
   is_system_generated: boolean;
 }
 
+export interface MessagingRecipient {
+  user_id: number;
+  name: string;
+  role: string;
+  type: 'teacher' | 'student' | 'staff' | 'parent' | 'admin';
+}
+
 // Phase 3: Calendar Events
 export interface SchoolEvent extends Entity {
   title: string;
@@ -635,6 +642,16 @@ export interface Newsletter extends Entity {
   term: string;
   published_by: string;
   is_published: boolean;
+}
+
+export interface NotificationItem {
+  id: string;
+  title: string;
+  message: string;
+  category: 'academic' | 'bursary' | 'attendance' | 'announcement' | 'system';
+  link: string;
+  is_read: boolean;
+  created_at: string;
 }
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning';

@@ -17,9 +17,9 @@ import { useToast } from '@/components/providers/toast-provider';
 import * as Utils from '@/lib/utils';
 import * as Types from '@/lib/types';
 import {
-    useStudents, useTeachers, useStaff, useMessages,
+    useMessages,
     useCreateMessage, useUpdateMessage, useDeleteMessage,
-    useConversations, useCreateConversation, useMarkConversationRead,
+    useConversations, useStartConversation, useMarkConversationRead, useMessagingRecipients,
     useArchiveConversation
 } from '@/lib/hooks/use-data';
 
@@ -48,10 +48,8 @@ export const MessagesView: React.FC = () => {
     const { addToast } = useToast();
 
     // Data Hooks
-    const { data: students = [] } = useStudents();
-    const { data: teachers = [] } = useTeachers();
-    const { data: staff = [] } = useStaff();
     const { data: conversations = [], isLoading: isLoadingConversations } = useConversations();
+    const { data: messagingRecipients = [] } = useMessagingRecipients();
 
     // State
     const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
@@ -71,7 +69,7 @@ export const MessagesView: React.FC = () => {
     const [newConvSubject, setNewConvSubject] = useState('');
 
     // Mutations
-    const { mutate: createConversation, isPending: isCreatingConv } = useCreateConversation();
+    const { mutate: startConversation, isPending: isCreatingConv } = useStartConversation();
     const { mutate: sendMessage, isPending: isSending } = useCreateMessage();
     const { mutate: markRead } = useMarkConversationRead();
     const { mutate: archiveConversation } = useArchiveConversation();
@@ -81,49 +79,26 @@ export const MessagesView: React.FC = () => {
         conversations.find(c => c.id === activeConversationId),
         [conversations, activeConversationId]);
 
-    // Role-based recipient filtering
+    // Backend-driven recipient directory (safe for all roles)
     const allRecipients: Recipient[] = useMemo(() => {
-        const recipients: Recipient[] = [];
-        const seenUserIds = new Set<number>();
-
-        // Teachers (academic staff)
-        teachers.forEach((t: Types.Teacher) => {
-            if (t.user && !seenUserIds.has(t.user)) {
-                seenUserIds.add(t.user);
-                recipients.push({ id: String(t.id), userId: t.user, name: t.name, type: 'teacher' });
-            }
-        });
-
-        // Non-academic staff
-        staff.forEach((s: Types.Staff) => {
-            if (s.user && !seenUserIds.has(s.user)) {
-                seenUserIds.add(s.user);
-                const rec: Recipient = { id: String(s.id), userId: s.user, name: s.name, type: 'staff' };
-                recipients.push(rec);
-                // Also tag admin-like staff for non-admin user targeting
-                const role = s.role.toLowerCase();
-                const isAdmin = ['principal', 'admin', 'head', 'director', 'manage', 'secretary', 'proprietor', 'accountant', 'bursar', 'registrar', 'clerk', 'office'].some(r => role.includes(r));
-                if (isAdmin) {
-                    recipients.push({ ...rec, type: 'admin' });
-                }
-            }
-        });
-
-        // Students
-        students.forEach((s: Types.Student) => {
-            if (s.user) {
-                recipients.push({ id: String(s.id), userId: s.user, name: s.names, type: 'student', parentName: s.parent_name });
-            }
-        });
-        return recipients;
-    }, [teachers, staff, students]);
+        return messagingRecipients.map((r) => ({
+            id: String(r.user_id),
+            userId: r.user_id,
+            name: r.name,
+            type: r.type,
+        }));
+    }, [messagingRecipients]);
 
     const filteredRecipients = useMemo(() => {
         if (currentRole === 'admin') {
             return allRecipients.filter(r => r.type === recipientType);
         }
-        // Non-admin users: show admin staff as recipients
-        return allRecipients.filter(r => r.type === 'admin');
+        // Non-admin users: prefer admins, fallback to teachers, then staff
+        const admins = allRecipients.filter(r => r.type === 'admin');
+        if (admins.length > 0) return admins;
+        const teachers = allRecipients.filter(r => r.type === 'teacher');
+        if (teachers.length > 0) return teachers;
+        return allRecipients.filter(r => r.type === 'staff');
     }, [allRecipients, recipientType, currentRole]);
 
     // ============================================
@@ -184,24 +159,17 @@ export const MessagesView: React.FC = () => {
             return;
         }
 
-        createConversation({
+        startConversation({
             type: 'DIRECT',
-            participant_ids: [Number(selectedRecipient)],
-            metadata: { subject: newConvSubject }
+            participant_id: Number(selectedRecipient),
+            subject: newConvSubject,
+            body: messageBody,
         }, {
-            onSuccess: (newConv: Types.Conversation) => {
-                // Send the first message into the (new or existing) conversation
-                sendMessage({
-                    conversation: newConv.id,
-                    body: messageBody,
-                } as any, {
-                    onSuccess: () => {
-                        addToast('Message sent!', 'success');
-                        setIsComposeOpen(false);
-                        setActiveConversationId(newConv.id);
-                        resetCompose();
-                    }
-                });
+            onSuccess: (data) => {
+                addToast('Message sent!', 'success');
+                setIsComposeOpen(false);
+                setActiveConversationId(data.conversation.id);
+                resetCompose();
             },
             onError: () => {
                 addToast('Failed to start conversation. Please try again.', 'error');
@@ -502,15 +470,21 @@ export const MessagesView: React.FC = () => {
                             </div>
                         </div>
                     ) : (
-                        <div className="bg-brand-50 p-4 rounded-xl flex items-center gap-3 border border-brand-100">
-                            <div className="h-10 w-10 bg-brand-100 rounded-full flex items-center justify-center">
-                                <UserCog className="h-5 w-5 text-brand-600" />
+                        filteredRecipients.length > 0 ? (
+                            <div className="bg-brand-50 p-4 rounded-xl flex items-center gap-3 border border-brand-100">
+                                <div className="h-10 w-10 bg-brand-100 rounded-full flex items-center justify-center">
+                                    <UserCog className="h-5 w-5 text-brand-600" />
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-brand-900 text-sm">School Administration</h4>
+                                    <p className="text-xs text-brand-600">Secure direct channel to school management</p>
+                                </div>
                             </div>
-                            <div>
-                                <h4 className="font-bold text-brand-900 text-sm">School Administration</h4>
-                                <p className="text-xs text-brand-600">Secure direct channel to school management</p>
+                        ) : (
+                            <div className="bg-amber-50 p-4 rounded-xl border border-amber-200 text-amber-800 text-sm">
+                                No recipient is currently available for your role. Please contact school administration.
                             </div>
-                        </div>
+                        )
                     )}
 
                     <div>
@@ -582,7 +556,7 @@ export const MessagesView: React.FC = () => {
 
                     <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
                         <Button variant="secondary" onClick={() => setIsComposeOpen(false)}>Cancel</Button>
-                        <Button onClick={handleStartConversation} disabled={isCreatingConv}>
+                        <Button onClick={handleStartConversation} disabled={isCreatingConv || filteredRecipients.length === 0}>
                             {isCreatingConv ? 'Creating...' : 'Start Conversation'}
                         </Button>
                     </div>

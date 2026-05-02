@@ -10,7 +10,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
     ArrowRight, Phone, Mail, MapPin,
-    Facebook, Twitter, Instagram, Youtube, Zap
+    Facebook, Linkedin, Instagram, Youtube, Zap
 } from 'lucide-react';
 
 export const ContactSection: React.FC = () => (
@@ -124,8 +124,8 @@ export const ContactSection: React.FC = () => (
                         <h4 className="font-semibold text-gray-900 mb-4">Follow Us</h4>
                         <div className="flex gap-4">
                             {[
-                                { icon: Facebook, href: 'https://facebook.com/myregistra' },
-                                { icon: Twitter, href: 'https://twitter.com/myregistra' },
+                                { icon: Facebook, href: 'https://facebook.com/registraSMS' },
+                                { icon: Linkedin, href: 'https://linkedin.com/company/registrasms' },
                                 { icon: Instagram, href: 'https://instagram.com/myregistra' },
                                 { icon: Youtube, href: 'https://youtube.com/myregistra' }
                             ].map((social, index) => (
@@ -155,8 +155,8 @@ export const LandingFooter: React.FC = () => (
                     </p>
                     <div className="flex gap-4">
                         {[
-                            { icon: Facebook, href: 'https://facebook.com/myregistra' },
-                            { icon: Twitter, href: 'https://twitter.com/myregistra' },
+                            { icon: Facebook, href: 'https://facebook.com/registraSMS' },
+                            { icon: Linkedin, href: 'https://linkedin.com/company/registrasms' },
                             { icon: Instagram, href: 'https://instagram.com/myregistra' },
                             { icon: Youtube, href: 'https://youtube.com/myregistra' }
                         ].map((social, index) => (

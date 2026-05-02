@@ -2,6 +2,7 @@
 
 import logging
 from django.utils import timezone
+from django.db import transaction
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -122,6 +123,90 @@ class ConversationViewSet(CachingMixin, viewsets.ModelViewSet):
         out_serializer = self.get_serializer(conv)
         return Response(out_serializer.data, status=201)
 
+    @action(detail=False, methods=["get"], url_path="recipients")
+    def recipients(self, request):
+        """
+        Return role-aware message recipients for the current tenant/school.
+        This avoids fragile frontend heuristics for recipient discovery.
+        """
+        user = request.user
+        school = get_request_school(request, allow_super_admin_tenant=True)
+        if not school:
+            return Response([])
+
+        from users.models import User
+        from academic.models import Student, Teacher
+
+        users_qs = User.objects.filter(school=school, is_active=True).exclude(id=user.id)
+
+        # Role-based recipient visibility policy (phase 0 safe defaults)
+        role = (user.role or "").upper()
+        if role in {"SCHOOL_ADMIN", "SUPER_ADMIN"}:
+            visible = users_qs
+        elif role in {"TEACHER", "STAFF"}:
+            # Staff/teachers can message school admins and fellow staff/teachers
+            visible = users_qs.filter(role__in=["SCHOOL_ADMIN", "TEACHER", "STAFF"])
+        elif role in {"STUDENT", "PARENT"}:
+            # Students/parents can message school admins and teachers
+            visible = users_qs.filter(role__in=["SCHOOL_ADMIN", "TEACHER"])
+        else:
+            visible = users_qs.filter(role="SCHOOL_ADMIN")
+
+        recipient_rows = []
+        for target in visible.select_related("school"):
+            display_name = target.username
+            recipient_type = "staff"
+
+            # Prefer canonical profile names where available.
+            # Student names should always use academic.Student.names when present.
+            try:
+                student_profile = Student.objects.filter(user=target, school=school).first()
+                if student_profile:
+                    display_name = student_profile.names or display_name
+                    recipient_type = "student"
+            except Exception:
+                pass
+
+            try:
+                if recipient_type != "student":
+                    teacher_profile = Teacher.objects.filter(user=target, school=school).first()
+                    if teacher_profile:
+                        display_name = teacher_profile.name or display_name
+                        recipient_type = "teacher" if target.role == "TEACHER" else "staff"
+            except Exception:
+                pass
+
+            if target.role == "SCHOOL_ADMIN":
+                recipient_type = "admin"
+            elif target.role == "PARENT":
+                recipient_type = "parent"
+
+            recipient_rows.append(
+                {
+                    "user_id": target.id,
+                    "name": display_name,
+                    "role": target.role,
+                    "type": recipient_type,
+                }
+            )
+
+        # Guarantee at least one admin recipient for non-admin users
+        if role not in {"SCHOOL_ADMIN", "SUPER_ADMIN"} and not any(r["type"] == "admin" for r in recipient_rows):
+            admin_fallback = User.objects.filter(
+                school=school, role="SCHOOL_ADMIN", is_active=True
+            ).exclude(id=user.id).first()
+            if admin_fallback:
+                recipient_rows.append(
+                    {
+                        "user_id": admin_fallback.id,
+                        "name": admin_fallback.username,
+                        "role": admin_fallback.role,
+                        "type": "admin",
+                    }
+                )
+
+        return Response(recipient_rows)
+
     @action(detail=True, methods=["post"], url_path="mark-read")
     def mark_read(self, request, pk=None):
         conv = self.get_object()
@@ -142,6 +227,118 @@ class ConversationViewSet(CachingMixin, viewsets.ModelViewSet):
             participant.save()
             return Response({"status": "archived"})
         return Response({"error": "not a participant"}, status=403)
+
+    @action(detail=False, methods=["post"], url_path="start")
+    def start(self, request):
+        """
+        Atomically create/find a conversation and send the first message.
+        Body:
+        {
+          "participant_id": number,
+          "subject": string,
+          "body": string,
+          "type": "DIRECT" | "GROUP" | "BROADCAST" (optional)
+        }
+        """
+        user = request.user
+        school = get_request_school(request, allow_super_admin_tenant=True)
+        if not school:
+            return Response({"detail": "No school context found."}, status=400)
+
+        participant_id = request.data.get("participant_id")
+        subject = (request.data.get("subject") or "").strip()
+        body = (request.data.get("body") or "").strip()
+        conv_type = (request.data.get("type") or "DIRECT").upper()
+
+        if not participant_id:
+            return Response({"detail": "participant_id is required."}, status=400)
+        if not subject:
+            return Response({"detail": "subject is required."}, status=400)
+        if not body:
+            return Response({"detail": "body is required."}, status=400)
+        if conv_type not in {"DIRECT", "GROUP", "BROADCAST"}:
+            return Response({"detail": "Invalid conversation type."}, status=400)
+
+        from users.models import User
+
+        try:
+            participant_id = int(participant_id)
+        except (TypeError, ValueError):
+            return Response({"detail": "participant_id must be a valid integer."}, status=400)
+
+        if participant_id == user.id:
+            return Response({"detail": "You cannot start a conversation with yourself."}, status=400)
+
+        target_user = User.objects.filter(id=participant_id, school=school, is_active=True).first()
+        if not target_user:
+            return Response({"detail": "Recipient not found in your school."}, status=404)
+
+        with transaction.atomic():
+            conv = None
+            if conv_type == "DIRECT":
+                conv = (
+                    Conversation.objects.filter(school=school, type="DIRECT", participants__user=user)
+                    .filter(participants__user_id=participant_id)
+                    .first()
+                )
+
+            if not conv:
+                conv = Conversation.objects.create(
+                    school=school,
+                    type=conv_type,
+                    metadata={"subject": subject},
+                )
+                ConversationParticipant.objects.get_or_create(user=user, conversation=conv)
+                ConversationParticipant.objects.get_or_create(user_id=participant_id, conversation=conv)
+            else:
+                # Keep subject fresh without dropping existing metadata keys
+                conv.metadata = {**(conv.metadata or {}), "subject": subject}
+                conv.save(update_fields=["metadata"])
+
+            msg = SchoolMessage.objects.create(
+                conversation=conv,
+                sender=user,
+                body=body,
+            )
+
+            # Mark sender as read up to now
+            ConversationParticipant.objects.filter(user=user, conversation=conv).update(
+                last_read_at=timezone.now()
+            )
+
+            # Notify other participants
+            other_participants = (
+                ConversationParticipant.objects.filter(conversation=conv)
+                .exclude(user=user)
+                .select_related("user")
+            )
+            notifications = [
+                Notification(
+                    school=school,
+                    user=p.user,
+                    title=f"New message from {user.username}",
+                    message=msg.body[:200],
+                    category="system",
+                    link="/messages",
+                )
+                for p in other_participants
+            ]
+            if notifications:
+                Notification.objects.bulk_create(notifications)
+
+        conv_data = self.get_serializer(conv).data
+        return Response(
+            {
+                "conversation": conv_data,
+                "message": {
+                    "id": msg.id,
+                    "conversation": str(conv.id),
+                    "body": msg.body,
+                    "created_at": msg.created_at,
+                },
+            },
+            status=201,
+        )
 
 
 class SchoolMessageViewSet(CachingMixin, viewsets.ModelViewSet):
@@ -206,13 +403,13 @@ class SchoolMessageViewSet(CachingMixin, viewsets.ModelViewSet):
                     title=f"New message from {self.request.user.username}",
                     message=msg.body[:200],
                     category="system",
-                    link="/dashboard/messages",
+                    link="/messages",
                 )
                 for p in other_participants
             ]
             Notification.objects.bulk_create(notifications)
 
-    @action(detail=False, methods=["post"], url_path="ai-draft")
+    @action(detail=False, methods=["get"], url_path="ai-draft")
     def ai_draft(self, request):
         """
         AI-powered professional message drafting.

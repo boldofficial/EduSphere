@@ -31,6 +31,7 @@ export const queryKeys = {
     subjects: ['subjects'] as const,
     subjectTeachers: ['subject_teachers'] as const,
     newsletters: ['newsletters'] as const,
+    notifications: ['notifications'] as const,
     messages: ['messages'] as const,
     conversations: ['conversations'] as const,
     publicStats: ['public_stats'] as const,
@@ -140,8 +141,9 @@ export {
     useTimetables, useCreateTimetable, useCreateTimetableEntry,
     useEvents, useCreateEvent, useUpdateEvent, useDeleteEvent,
     useNewsletters, useCreateNewsletter, useUpdateNewsletter, useDeleteNewsletter,
+    useNotifications, useMarkNotificationRead, useMarkAllNotificationsRead,
     useMessages, useCreateMessage, useUpdateMessage, useDeleteMessage,
-    useConversations, useCreateConversation, useMarkConversationRead, useArchiveConversation,
+    useConversations, useCreateConversation, useStartConversation, useMarkConversationRead, useArchiveConversation, useMessagingRecipients,
 } from './use-communication';
 
 export {
