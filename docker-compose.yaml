@@ -36,8 +36,9 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - PGPASSWORD=${POSTGRES_PASSWORD}
     command: |
-      sh -c "until pg_basebackup -h db -D /var/lib/postgresql/data/pgdata -U ${POSTGRES_USER} -vP -W; do echo 'Waiting for primary...'; sleep 1; done && postgres"
+      sh -c "until pg_basebackup -h db -D /var/lib/postgresql/data/pgdata -U ${POSTGRES_USER} -vP; do echo 'Waiting for primary...'; sleep 1; done && postgres"
     depends_on:
       db:
         condition: service_healthy
@@ -81,15 +82,19 @@ services:
       - DEFAULT_POOL_SIZE=50
       - MIN_POOL_SIZE=5
       - POOL_MODE=transaction
-      - AUTH_TYPE=scram-sha-256
+      - AUTH_TYPE=trust
     depends_on:
       db:
         condition: service_healthy
     ports:
       - '6432:6432'
-
     networks:
       - coolify
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h localhost -p 6432 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     restart: always
     deploy:
       resources:
@@ -115,7 +120,7 @@ services:
       redis:
         condition: service_healthy
       pgbouncer:
-        condition: service_started
+        condition: service_healthy
     environment:
       - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@pgbouncer:6432/${POSTGRES_DB}
       - REPLICA_DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db_replica:5432/${POSTGRES_DB}
@@ -125,8 +130,8 @@ services:
       test: ["CMD-SHELL", "curl -f http://localhost:8000/api/core/health/ || exit 1"]
       interval: 30s
       timeout: 10s
-      retries: 3
-      start_period: 40s
+      retries: 5
+      start_period: 60s
     deploy:
       resources:
         limits:
