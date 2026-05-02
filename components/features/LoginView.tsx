@@ -318,7 +318,7 @@ export const LoginView = () => {
 
         try {
             const res = await fetch(
-                `/api/proxy/schools/verify-slug/${searchSlug.trim().toLowerCase()}`,
+                `/api/schools/verify-slug/${searchSlug.trim().toLowerCase()}`,
                 { signal: controller.signal }
             );
             clearTimeout(timeout);
