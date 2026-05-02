@@ -3,13 +3,15 @@ const nextConfig = {
     // Enable standalone output for minimal Docker image size
     output: 'standalone',
 
+    // NOTE: GEMINI_API_KEY is available server-side only via process.env.GEMINI_API_KEY
+    // Do NOT expose it to the client via the `env` config block.
+
     // Disable heavy checks during build to prevent OOM/crashing on build servers
     typescript: {
         ignoreBuildErrors: true,
     },
-    eslint: {
-        ignoreDuringBuilds: true,
-    },
+    // ESLint key is deprecated in Next.js 16 next.config.js. 
+    // We rely on local checks for linting.
 
     // Security headers for production
     async headers() {
@@ -120,6 +122,10 @@ const nextConfig = {
             ],
         };
     },
+
+    // Required to silence Turbopack/Webpack conflict error in Next.js 16 
+    // when using plugins like next-pwa that rely on Webpack.
+    turbopack: {},
 }
 
 const withPWA = require('next-pwa')({
