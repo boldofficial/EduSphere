@@ -40,17 +40,28 @@ def get_user_me_data(user):
         "student_id": None,  # Kept for potential frontend compatibility
     }
 
-    # Fetch profile ID based on role
-    if user.role == "STUDENT" and hasattr(user, "student_profile"):
-        data["profile_id"] = user.student_profile.id
-        data["student_id"] = user.student_profile.id
-    elif user.role in ["TEACHER", "STAFF"] and hasattr(user, "teacher_profile"):
-        data["profile_id"] = user.teacher_profile.id
+    # Fetch profile ID based on role (guard against missing reverse relations)
+    try:
+        if user.role == "STUDENT":
+            student_profile = getattr(user, "student_profile", None)
+            if student_profile:
+                data["profile_id"] = student_profile.id
+                data["student_id"] = student_profile.id
+        elif user.role in ["TEACHER", "STAFF"]:
+            teacher_profile = getattr(user, "teacher_profile", None)
+            if teacher_profile:
+                data["profile_id"] = teacher_profile.id
+    except Exception as e:
+        logger.warning(f"[ME_VIEW] Profile relation lookup failed for user {user.id}: {e}")
 
-    if user.school and hasattr(user.school, "subscription"):
+    if user.school:
         from schools.models import PlatformModule
+        from schools.models import Subscription
 
-        sub = user.school.subscription
+        # Use query instead of reverse relation to avoid RelatedObjectDoesNotExist crashes
+        sub = Subscription.objects.filter(school=user.school).first()
+        if not sub:
+            return data
 
         # Filter allowed_modules by what is GLOBALLY active
         global_active_ids = set(PlatformModule.objects.filter(is_active=True).values_list("module_id", flat=True))
