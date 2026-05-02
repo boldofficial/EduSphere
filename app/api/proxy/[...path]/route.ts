@@ -7,6 +7,7 @@ import { getRateLimitConfig, checkRateLimit, getClientIdentifier } from '@/lib/r
 function getDjangoUrl(): string {
     const envUrl = process.env.DJANGO_API_URL;
     const isDev = process.env.NODE_ENV !== 'production';
+    const defaultUrl = isDev ? 'http://127.0.0.1:8001' : 'http://backend:8000';
     
     if (envUrl) {
         // Handle full URLs like http://127.0.0.1:8001
@@ -15,13 +16,13 @@ function getDjangoUrl(): string {
                 const url = new URL(envUrl);
                 return url.origin;
             } catch {
-                return isDev ? 'http://127.0.0.1:8001' : 'http://127.0.0.1:8000';
+                return defaultUrl;
             }
         }
         // Handle host:port format like 127.0.0.1:8001
         return `http://${envUrl}`;
     }
-    return isDev ? 'http://127.0.0.1:8001' : 'http://127.0.0.1:8000';
+    return defaultUrl;
 }
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {

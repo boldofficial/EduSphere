@@ -7,15 +7,16 @@ import { logError, logInfo } from '@/lib/logger';
 function getDjangoUrl(): string {
     const envUrl = process.env.DJANGO_API_URL;
     const isProd = process.env.NODE_ENV === 'production';
+    const defaultUrl = isProd ? 'http://backend:8000' : 'http://127.0.0.1:8001';
     if (envUrl) {
         try {
             const url = new URL(envUrl.startsWith('http') ? envUrl : `http://${envUrl}`);
             return url.origin;
         } catch {
-            return isProd ? 'http://127.0.0.1:8000' : 'http://127.0.0.1:8001';
+            return defaultUrl;
         }
     }
-    return isProd ? 'http://127.0.0.1:8000' : 'http://127.0.0.1:8001';
+    return defaultUrl;
 }
 
 export async function POST(request: NextRequest) {

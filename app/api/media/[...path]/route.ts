@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 function getDjangoUrl(): string {
     const envUrl = process.env.DJANGO_API_URL;
     const isDev = process.env.NODE_ENV !== 'production';
+    const defaultUrl = isDev ? 'http://127.0.0.1:8001' : 'http://backend:8000';
     
     if (envUrl) {
         if (envUrl.startsWith('http')) {
@@ -10,12 +11,12 @@ function getDjangoUrl(): string {
                 const url = new URL(envUrl);
                 return url.origin;
             } catch {
-                return isDev ? 'http://127.0.0.1:8001' : 'http://127.0.0.1:8000';
+                return defaultUrl;
             }
         }
         return `http://${envUrl}`;
     }
-    return isDev ? 'http://127.0.0.1:8001' : 'http://127.0.0.1:8000';
+    return defaultUrl;
 }
 
 // GET /api/media/:path - Serve media files directly from Django

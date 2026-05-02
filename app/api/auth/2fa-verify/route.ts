@@ -5,11 +5,17 @@ import { resolveTenantFromHost } from '@/lib/tenant-host';
 
 function getDjangoUrl(): string {
     const envUrl = process.env.DJANGO_API_URL;
+    const isProd = process.env.NODE_ENV === 'production';
+    const defaultUrl = isProd ? 'http://backend:8000' : 'http://127.0.0.1:8001';
     if (envUrl) {
-        const url = new URL(envUrl.startsWith('http') ? envUrl : `http://${envUrl}`);
-        return url.origin;
+        try {
+            const url = new URL(envUrl.startsWith('http') ? envUrl : `http://${envUrl}`);
+            return url.origin;
+        } catch {
+            return defaultUrl;
+        }
     }
-    return 'http://127.0.0.1:8001';
+    return defaultUrl;
 }
 
 export async function POST(request: NextRequest) {
