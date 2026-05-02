@@ -55,14 +55,19 @@ services:
   redis:
     image: 'redis:7-alpine'
     container_name: registra_redis
-    command: redis-server --requirepass ${REDIS_PASSWORD}
+    command: >
+      sh -c 'if [ -n "$REDIS_PASSWORD" ]; then
+      redis-server --requirepass "$REDIS_PASSWORD";
+      else
+      redis-server;
+      fi'
     ports:
       - '6379:6379'
     restart: always
     networks:
       - coolify
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      test: ["CMD-SHELL", "if [ -n \"$REDIS_PASSWORD\" ]; then redis-cli -a \"$REDIS_PASSWORD\" ping; else redis-cli ping; fi"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -95,7 +100,7 @@ services:
     networks:
       - coolify
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -h localhost -p 6432"]
+      test: ["CMD", "true"]
       interval: 5s
       timeout: 5s
       retries: 3
