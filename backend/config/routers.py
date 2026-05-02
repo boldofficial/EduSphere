@@ -8,10 +8,14 @@ class DbRouter:
 
     def db_for_read(self, model, **hints):
         """
-        Attempts to read academic, bursary, analytics, and schools models go to replica.
+        Read routing with safe fallback.
+        Replica is used only when explicitly enabled; otherwise reads stay on default.
         """
+        from django.conf import settings
+
+        use_replica = getattr(settings, "USE_DB_REPLICA", False)
         if model._meta.app_label in self.route_app_labels:
-            return "replica"
+            return "replica" if use_replica else "default"
         return "default"
 
     def db_for_write(self, model, **hints):

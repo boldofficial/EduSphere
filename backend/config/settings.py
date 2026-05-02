@@ -562,6 +562,7 @@ def _as_bool(value: str | None, default: bool = False) -> bool:
 # Default to None to allow fallback to LocMemCache if not provided.
 REDIS_URL = os.environ.get("REDIS_URL")
 USE_REDIS_CACHE = _as_bool(os.environ.get("USE_REDIS_CACHE"), default=True)
+USE_DB_REPLICA = _as_bool(os.environ.get("USE_DB_REPLICA"), default=False)
 
 if REDIS_URL and USE_REDIS_CACHE:
     CACHES = {
