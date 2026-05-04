@@ -88,10 +88,12 @@ export const FeeManagement: React.FC<FeeManagementProps> = ({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
             <div className="lg:col-span-1 space-y-4">
                 <Card className="h-full">
-                    <div className="mb-4">
-                        <Select label="Select Class" value={selectedClass} onChange={e => setSelectedClass(e.target.value)}>
-                            {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                        </Select>
+                    <div className="flex flex-col sm:flex-row gap-3 sm:items-center mb-4">
+                        <div className="flex-1">
+                            <Select label="Select Class" value={selectedClass} onChange={e => setSelectedClass(e.target.value)}>
+                                {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                            </Select>
+                        </div>
                     </div>
 
                     {/* Search */}
@@ -108,41 +110,43 @@ export const FeeManagement: React.FC<FeeManagementProps> = ({
                         </div>
                     </div>
 
-                    <div className="space-y-1 max-h-[300px] lg:h-[550px] overflow-y-auto">
+                    <div className="space-y-1 max-h-[300px] lg:h-[600px] overflow-y-auto custom-scrollbar pr-1">
                         {filteredStudents.map(s => {
                             const bal = Utils.getStudentBalance(s, fees, payments, settings.current_session, settings.current_term).balance;
                             return (
                                 <div
                                     key={s.id}
                                     onClick={() => setSelectedStudent(s.id)}
-                                    className={`p-2 lg:p-3 rounded-md cursor-pointer flex justify-between items-center text-sm transition-colors ${selectedStudent === s.id
-                                        ? 'bg-brand-50 border-brand-200 border'
-                                        : 'hover:bg-gray-50'
+                                    className={`p-2 lg:p-3 rounded-xl cursor-pointer flex justify-between items-center text-sm transition-all duration-200 ${selectedStudent === s.id
+                                        ? 'bg-brand-600 text-white shadow-md transform scale-[1.02]'
+                                        : 'hover:bg-gray-50 border border-transparent'
                                         }`}
                                 >
                                     <div className="min-w-0 flex-1">
-                                        <div className="font-medium truncate">{s.names}</div>
-                                        <div className="text-xs text-gray-500">{s.student_no}</div>
+                                        <div className="font-bold truncate">{s.names}</div>
+                                        <div className={`text-[10px] ${selectedStudent === s.id ? 'text-brand-100' : 'text-gray-500'}`}>{s.student_no}</div>
                                     </div>
-                                    <div className={`font-mono text-xs lg:text-sm shrink-0 ml-2 ${bal > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                                    <div className={`font-mono text-xs lg:text-sm shrink-0 ml-2 font-bold ${selectedStudent === s.id ? 'text-white' : bal > 0 ? 'text-red-600' : 'text-green-600'}`}>
                                         {bal > 0 ? `-${Utils.formatCurrency(bal)}` : '✓'}
                                     </div>
                                 </div>
                             );
                         })}
                         {filteredStudents.length === 0 && (
-                            <div className="text-center py-8 text-gray-400 text-sm">
-                                {searchTerm ? 'No students match your search' : 'No students in this class'}
+                            <div className="text-center py-8 text-gray-400 text-sm italic">
+                                {searchTerm ? 'No students match search' : 'No students in class'}
                             </div>
                         )}
                     </div>
 
                     {onStudentPageChange && studentTotalPages && studentTotalPages > 1 && (
-                        <Pagination
-                            currentPage={studentPage || 1}
-                            totalPages={studentTotalPages}
-                            onPageChange={onStudentPageChange}
-                        />
+                        <div className="mt-4 border-t pt-4">
+                            <Pagination
+                                currentPage={studentPage || 1}
+                                totalPages={studentTotalPages}
+                                onPageChange={onStudentPageChange}
+                            />
+                        </div>
                     )}
                 </Card>
             </div>
@@ -150,20 +154,20 @@ export const FeeManagement: React.FC<FeeManagementProps> = ({
                 {selectedStudent && student ? (
                     <div className="space-y-4 lg:space-y-6">
                         {/* Summary Cards */}
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 lg:gap-4">
-                            <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 p-3 lg:p-4 shadow-sm">
-                                <div className="text-[10px] lg:text-xs font-bold text-blue-600 uppercase tracking-wider mb-1">Total Bill</div>
-                                <div className="text-lg lg:text-2xl font-extrabold text-blue-900">{Utils.formatCurrency(totalBill)}</div>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4">
+                            <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 p-3 sm:p-4 shadow-sm">
+                                <div className="text-[10px] sm:text-xs font-bold text-blue-600 uppercase tracking-wider mb-1">Total Bill</div>
+                                <div className="text-base sm:text-2xl font-extrabold text-blue-900">{Utils.formatCurrency(totalBill)}</div>
                             </Card>
-                            <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200 p-3 lg:p-4 shadow-sm">
-                                <div className="text-[10px] lg:text-xs font-bold text-green-600 uppercase tracking-wider mb-1">Total Paid</div>
-                                <div className="text-lg lg:text-2xl font-extrabold text-green-900">{Utils.formatCurrency(totalPaid)}</div>
+                            <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200 p-3 sm:p-4 shadow-sm">
+                                <div className="text-[10px] sm:text-xs font-bold text-green-600 uppercase tracking-wider mb-1">Total Paid</div>
+                                <div className="text-base sm:text-2xl font-extrabold text-green-900">{Utils.formatCurrency(totalPaid)}</div>
                             </Card>
-                            <Card className={`p-3 lg:p-4 shadow-sm border-2 ${balance > 0 ? 'bg-gradient-to-br from-rose-50 to-rose-100 border-rose-200' : 'bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200'}`}>
-                                <div className={`text-[10px] lg:text-xs font-bold uppercase tracking-wider mb-1 ${balance > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+                            <Card className={`col-span-2 sm:col-span-1 p-3 sm:p-4 shadow-sm border-2 ${balance > 0 ? 'bg-gradient-to-br from-rose-50 to-rose-100 border-rose-200' : 'bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200'}`}>
+                                <div className={`text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-1 ${balance > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
                                     {balance > 0 ? 'Outstanding' : 'Status'}
                                 </div>
-                                <div className={`text-lg lg:text-2xl font-extrabold ${balance > 0 ? 'text-rose-900' : 'text-emerald-900'}`}>
+                                <div className={`text-base sm:text-2xl font-extrabold ${balance > 0 ? 'text-rose-900' : 'text-emerald-900'}`}>
                                     {balance > 0 ? Utils.formatCurrency(balance) : '✓ Fully Paid'}
                                 </div>
                             </Card>

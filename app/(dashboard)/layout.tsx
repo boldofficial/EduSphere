@@ -13,6 +13,7 @@ import { UniversalSearch } from '@/components/features/UniversalSearch';
 // Decomposed Components
 import { Sidebar } from '@/components/features/dashboard/Sidebar';
 import { TopBar } from '@/components/features/dashboard/TopBar';
+import { BottomNav } from '@/components/features/dashboard/BottomNav';
 import { useNavigationFilter } from '@/components/features/dashboard/useNavigationFilter';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -147,12 +148,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     settings={settings}
                 />
 
-                <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+                <div className="flex-1 overflow-y-auto pb-28 lg:pb-8 p-2 sm:p-4 md:p-6 lg:p-8">
                     <div className="max-w-7xl mx-auto">
                         {children}
                     </div>
                 </div>
             </main>
+
+            <BottomNav onMenuToggle={() => setIsSidebarOpen(!isSidebarOpen)} />
 
             <UniversalSearch
                 isOpen={isSearchOpen}

@@ -76,22 +76,24 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div><h1 className="text-2xl font-bold text-gray-900">Attendance Register</h1><p className="text-gray-500">Daily roll call management</p></div>
-                <Button onClick={handleSave} disabled={isLocked} variant={isLocked ? "secondary" : "primary"}>
-                    {isLocked ? <Lock className="h-4 w-4 mr-2" /> : <Save className="h-4 w-4 mr-2" />}
-                    {isLocked ? 'Register Locked' : 'Save Register'}
-                </Button>
+                <div className="hidden sm:block">
+                    <Button onClick={handleSave} disabled={isLocked} variant={isLocked ? "secondary" : "primary"}>
+                        {isLocked ? <Lock className="h-4 w-4 mr-2" /> : <Save className="h-4 w-4 mr-2" />}
+                        {isLocked ? 'Register Locked' : 'Save Register'}
+                    </Button>
+                </div>
             </div>
             <Card>
-                <div className="flex gap-4 mb-6 items-end border-b pb-4">
-                    <div className="w-64"><Select label="Class" value={selectedClass} onChange={e => setSelectedClass(e.target.value)}>{classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</Select></div>
-                    <div className="w-64"><Input label="Date" type="date" value={date} onChange={e => setDate(e.target.value)} /></div>
+                <div className="flex flex-col lg:flex-row gap-4 mb-6 items-start lg:items-end border-b pb-4">
+                    <div className="w-full lg:w-64"><Select label="Class" value={selectedClass} onChange={e => setSelectedClass(e.target.value)}>{classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</Select></div>
+                    <div className="w-full lg:w-64"><Input label="Date" type="date" value={date} onChange={e => setDate(e.target.value)} /></div>
 
                     {/* Retroactive Marking Status */}
-                    <div className="flex-1 flex flex-col items-end gap-2">
+                    <div className="w-full flex-1 flex flex-col items-start lg:items-end gap-2">
                         {isTermMismatch ? (
-                            <div className="flex flex-col items-end gap-1">
+                            <div className="flex flex-col items-start lg:items-end gap-1">
                                 <div className="flex items-center text-amber-600 bg-amber-50 px-3 py-1 rounded text-sm font-medium">
                                     <AlertCircle className="h-4 w-4 mr-2" />
                                     Term Mismatch: Saved in {existingRecord?.term}
@@ -113,9 +115,9 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                         )}
 
                         {!existingRecord && (
-                            <div className="flex gap-2">
-                                <Button size="sm" variant="secondary" onClick={() => markAll('present')}>Mark All Present</Button>
-                                <Button size="sm" variant="secondary" onClick={() => markAll('absent')}>Mark All Absent</Button>
+                            <div className="flex gap-2 w-full lg:w-auto">
+                                <Button size="sm" className="flex-1 lg:flex-none" variant="secondary" onClick={() => markAll('present')}>Mark All Present</Button>
+                                <Button size="sm" className="flex-1 lg:flex-none" variant="secondary" onClick={() => markAll('absent')}>Mark All Absent</Button>
                             </div>
                         )}
                     </div>
@@ -132,13 +134,13 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                     {activeStudents.map(s => (
                         <div key={s.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
                             <div><div className="font-bold text-gray-900">{s.names}</div><div className="text-xs text-gray-500">{s.student_no}</div></div>
-                            <div className="flex bg-gray-100 rounded-md p-1">
+                             <div className="flex bg-gray-100 rounded-lg p-1 min-w-[180px]">
                                 {(['present', 'late', 'absent'] as const).map(status => (
                                     <button
                                         key={status}
                                         disabled={isLocked}
                                         onClick={() => setCurrentStatuses(prev => ({ ...prev, [s.id]: status }))}
-                                        className={`px-3 py-1 text-xs font-medium rounded capitalize transition-colors ${currentStatuses[s.id] === status ? (status === 'present' ? 'bg-green-500 text-white' : status === 'late' ? 'bg-yellow-500 text-white' : 'bg-red-500 text-white') : 'text-gray-500 hover:bg-gray-200'} ${isLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                        className={`flex-1 py-2 text-xs font-bold rounded-md capitalize transition-all duration-200 ${currentStatuses[s.id] === status ? (status === 'present' ? 'bg-green-500 text-white shadow-sm' : status === 'late' ? 'bg-yellow-500 text-white shadow-sm' : 'bg-red-500 text-white shadow-sm') : 'text-gray-500 hover:bg-gray-200'} ${isLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
                                     >
                                         {status}
                                     </button>
@@ -149,6 +151,19 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                     {activeStudents.length === 0 && <p className="text-gray-500 italic col-span-3 text-center py-8">No students in this class.</p>}
                 </div>
             </Card>
+
+            {/* Mobile Sticky Save Button */}
+            <div className="sm:hidden fixed bottom-16 left-0 right-0 p-4 bg-white/80 backdrop-blur-md border-t z-20 no-print">
+                <Button 
+                    onClick={handleSave} 
+                    disabled={isLocked} 
+                    variant={isLocked ? "secondary" : "primary"}
+                    className="w-full h-12 shadow-lg"
+                >
+                    {isLocked ? <Lock className="h-4 w-4 mr-2" /> : <Save className="h-4 w-4 mr-2" />}
+                    {isLocked ? 'Register Locked' : 'Save Register'}
+                </Button>
+            </div>
         </div>
     );
 };

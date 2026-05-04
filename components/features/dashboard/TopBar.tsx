@@ -16,7 +16,7 @@ export function TopBar({
     settings
 }: TopBarProps) {
     return (
-        <header className="h-16 lg:h-20 bg-white border-b sticky top-0 z-20 flex items-center justify-between px-4 lg:px-6 no-print shadow-sm shrink-0">
+        <header className="h-14 lg:h-20 bg-white border-b sticky top-0 z-20 flex items-center justify-between px-3 lg:px-6 no-print shadow-sm shrink-0 transition-all duration-300">
             {/* Mobile menu button - hidden on desktop */}
             <button 
                 onClick={onMenuToggle} 

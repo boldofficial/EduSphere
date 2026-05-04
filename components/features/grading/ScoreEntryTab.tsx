@@ -93,7 +93,71 @@ export const ScoreEntryTab: React.FC<ScoreEntryTabProps> = ({
                 </Button>
             </div>
 
-            <div className="overflow-x-auto">
+            {/* Mobile-Friendly Card View */}
+            <div className="lg:hidden divide-y divide-gray-100">
+                {activeStudents
+                    .filter(student => {
+                        if (student.assigned_subjects && student.assigned_subjects.length > 0) {
+                            return student.assigned_subjects.includes(selectedSubject);
+                        }
+                        return true;
+                    })
+                    .map(student => {
+                        const row = getRow(student.id);
+                        const gradeBg =
+                            row.grade === 'A'
+                                ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
+                                : row.grade === 'B'
+                                  ? 'bg-cyan-100 text-cyan-800 border-cyan-200'
+                                  : row.grade === 'C'
+                                    ? 'bg-blue-100 text-blue-800 border-blue-200'
+                                    : row.grade === 'D'
+                                      ? 'bg-amber-100 text-amber-800 border-amber-200'
+                                      : row.grade === 'F'
+                                        ? 'bg-rose-100 text-rose-800 border-rose-200'
+                                        : 'bg-gray-100 text-gray-600 border-gray-200';
+
+                        return (
+                            <div key={student.id} className="p-4 space-y-3">
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <p className="font-bold text-gray-900">{student.names}</p>
+                                        <p className="text-xs text-gray-500">{student.student_no}</p>
+                                    </div>
+                                    <span className={`inline-flex min-w-10 justify-center rounded-full border px-2 py-0.5 text-xs font-bold ${gradeBg}`}>
+                                        {row.grade}
+                                    </span>
+                                </div>
+                                <div className="grid grid-cols-3 gap-3">
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">CA 1</label>
+                                        <ScoreInput className="w-full h-10" value={row.ca1} max={20} onChange={v => handleScoreChange(student.id, 'ca1', v)} />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">CA 2</label>
+                                        <ScoreInput className="w-full h-10" value={row.ca2} max={20} onChange={v => handleScoreChange(student.id, 'ca2', v)} />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">Exam</label>
+                                        <ScoreInput className="w-full h-10" value={row.exam} max={60} onChange={v => handleScoreChange(student.id, 'exam', v)} />
+                                    </div>
+                                </div>
+                                <div className="flex justify-between items-center text-xs text-gray-500 pt-1">
+                                    <p>Total: <span className="font-bold text-brand-600">{row.total}</span></p>
+                                    <p className="italic">{row.comment}</p>
+                                </div>
+                            </div>
+                        );
+                    })}
+                {activeStudents.length === 0 && (
+                    <div className="p-10 text-center text-sm text-gray-500">
+                        No students found.
+                    </div>
+                )}
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="hidden lg:block overflow-x-auto">
                 <table className="w-full min-w-[760px] text-sm">
                     <thead className="bg-brand-900 text-[11px] font-semibold uppercase tracking-[0.14em] text-white">
                         <tr>

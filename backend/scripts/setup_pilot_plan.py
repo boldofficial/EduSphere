@@ -2,7 +2,7 @@ import os
 
 import django
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 django.setup()
 
 from schools.models import SubscriptionPlan
@@ -49,14 +49,16 @@ def setup_pilot_plan():
                 "messages",
                 "cms",
             ],
+            "custom_domain_enabled": True,
         },
     )
 
     if not created:
-        print(f"Updating existing Enterprise plan to Free Pilot (₦0.00)")
+        print(f"Updating existing Enterprise plan to Free Pilot (NGN 0.00)")
         plan.price = 0.00
         plan.is_active = True
         plan.duration_days = 730
+        plan.custom_domain_enabled = True
         plan.save()
 
     # Deactivate other plans to ensure only Enterprise shows up if fallback fails

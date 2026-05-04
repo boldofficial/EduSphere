@@ -136,7 +136,7 @@ class RegisterSchoolView(APIView):
                 Subscription.objects.create(
                     school=school,
                     plan=plan,
-                    status="pending",  # Keep manual approval required
+                    status="active",  # Auto-activate during pilot phase
                     payment_method="free_pilot",
                     payment_proof=None,
                     end_date=timezone.now() + timezone.timedelta(days=730),  # 2 years for 2025/26 session coverage
@@ -151,9 +151,9 @@ class RegisterSchoolView(APIView):
                         user=sa,
                         school=school,
                         title="New School Registration",
-                        message=f"School '{school.name}' has registered and is pending approval.",
+                        message=f"School '{school.name}' has registered and is active.",
                         category="system",
-                        link=f"/super-admin/schools",  # Assuming this is the frontend route
+                        link=f"/super-admin/schools",
                     )
 
                 # 5. Log the event
@@ -161,7 +161,7 @@ class RegisterSchoolView(APIView):
                     action="SCHOOL_SIGNUP",
                     school=school,
                     user=admin_user,
-                    description=f"New school '{school.name}' registered (Status: PENDING) with plan '{plan.name}'",
+                    description=f"New school '{school.name}' registered (Status: ACTIVE) with plan '{plan.name}'",
                 )
 
             logger.info(f"New school registered: '{school.name}' by {data['email']}")

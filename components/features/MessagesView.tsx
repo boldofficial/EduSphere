@@ -59,6 +59,7 @@ export const MessagesView: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [messageBody, setMessageBody] = useState('');
     const [showTemplates, setShowTemplates] = useState(false);
+    const [showMobileThread, setShowMobileThread] = useState(false); // Mobile view toggle
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     // Compose form state
@@ -231,9 +232,9 @@ export const MessagesView: React.FC = () => {
     };
 
     return (
-        <div className="flex h-[calc(100vh-12rem)] bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="flex h-[calc(100vh-10rem)] sm:h-[calc(100vh-12rem)] bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden relative">
             {/* Sidebar: Conversation List */}
-            <div className="w-80 border-r border-gray-100 flex flex-col">
+            <div className={`${showMobileThread ? 'hidden lg:flex' : 'flex'} w-full lg:w-80 border-r border-gray-100 flex-col`}>
                 <div className="p-4 border-b border-gray-100 space-y-4">
                     <div className="flex items-center justify-between">
                         <h2 className="text-lg font-bold text-gray-900">Inbox</h2>
@@ -271,7 +272,10 @@ export const MessagesView: React.FC = () => {
                             return (
                                 <button
                                     key={conv.id}
-                                    onClick={() => setActiveConversationId(conv.id)}
+                                    onClick={() => {
+                                        setActiveConversationId(conv.id);
+                                        setShowMobileThread(true);
+                                    }}
                                     className={`w-full p-4 text-left transition-colors flex gap-3 ${isActive ? 'bg-brand-50 border-l-4 border-brand-500' : 'hover:bg-gray-50'
                                         }`}
                                 >
@@ -306,23 +310,33 @@ export const MessagesView: React.FC = () => {
             </div>
 
             {/* Main: Message Thread */}
-            <div className="flex-1 flex flex-col bg-gray-50/30">
+            <div className={`${!showMobileThread ? 'hidden lg:flex' : 'flex'} flex-1 flex-col bg-gray-50/30`}>
                 {activeConversation ? (
                     <>
                         {/* Thread Header */}
-                        <div className="p-4 bg-white border-b border-gray-100 flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className={`h-10 w-10 rounded-full flex items-center justify-center ${activeConversation.type === 'GROUP' ? 'bg-purple-100 text-purple-600' : 'bg-brand-100 text-brand-600'}`}>
+                        <div className="p-3 sm:p-4 bg-white border-b border-gray-100 flex items-center justify-between">
+                            <div className="flex items-center gap-2 sm:gap-3">
+                                {/* Mobile Back Button */}
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setShowMobileThread(false)}
+                                    className="lg:hidden p-1 -ml-1 h-8 w-8 text-gray-400"
+                                >
+                                    <ChevronRight className="h-5 w-5 rotate-180" />
+                                </Button>
+
+                                <div className={`h-8 w-8 sm:h-10 sm:w-10 rounded-full flex items-center justify-center shrink-0 ${activeConversation.type === 'GROUP' ? 'bg-purple-100 text-purple-600' : 'bg-brand-100 text-brand-600'}`}>
                                     {activeConversation.type === 'GROUP' ? <Users className="h-5 w-5" /> : <User className="h-5 w-5" />}
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-gray-900 leading-none">
+                                    <h3 className="font-bold text-gray-900 leading-none text-sm sm:text-base">
                                         {activeConversation.type === 'GROUP'
                                             ? (activeConversation.metadata?.subject || 'Group Chat')
                                             : (getOtherParticipant(activeConversation)?.user_name || 'System')
                                         }
                                     </h3>
-                                    <p className="text-xs text-gray-500 mt-1">
+                                    <p className="text-[10px] sm:text-xs text-gray-500 mt-1">
                                         {activeConversation.type === 'GROUP'
                                             ? `${activeConversation.participants.length} members`
                                             : (activeConversation.metadata?.subject || 'Direct Messaging')
@@ -344,7 +358,7 @@ export const MessagesView: React.FC = () => {
                         </div>
 
                         {/* Message Explorer */}
-                        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
                             {isLoadingMessages ? (
                                 <div className="text-center text-gray-400 text-sm py-8">Loading messages...</div>
                             ) : messages.length === 0 ? (
@@ -355,12 +369,12 @@ export const MessagesView: React.FC = () => {
                                     const read = isMe && isMessageRead(msg, activeConversation);
                                     return (
                                         <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                                            <div className={`max-w-[70%] group relative`}>
+                                            <div className={`max-w-[85%] sm:max-w-[70%] group relative`}>
                                                 {/* Sender name for group conversations */}
                                                 {!isMe && activeConversation.type === 'GROUP' && (
                                                     <p className="text-[10px] text-gray-500 font-medium mb-0.5 ml-3">{msg.sender_name}</p>
                                                 )}
-                                                <div className={`px-4 py-2 rounded-2xl text-sm ${isMe ? 'bg-brand-600 text-white rounded-tr-none' : 'bg-white border border-gray-100 text-gray-800 rounded-tl-none shadow-sm'
+                                                <div className={`px-3 py-2 sm:px-4 sm:py-2 rounded-2xl text-sm ${isMe ? 'bg-brand-600 text-white rounded-tr-none' : 'bg-white border border-gray-100 text-gray-800 rounded-tl-none shadow-sm'
                                                     }`}>
                                                     <p className="whitespace-pre-wrap leading-relaxed">{msg.body}</p>
                                                     {/* Attachment indicator */}
@@ -396,7 +410,7 @@ export const MessagesView: React.FC = () => {
                         </div>
 
                         {/* Reply Box */}
-                        <div className="p-4 bg-white border-t border-gray-100">
+                        <div className="p-3 sm:p-4 bg-white border-t border-gray-100">
                             <div className="flex items-end gap-2">
                                 <textarea
                                     value={messageBody}
@@ -421,7 +435,7 @@ export const MessagesView: React.FC = () => {
                         </div>
                     </>
                 ) : (
-                    <div className="flex-1 flex flex-col items-center justify-center text-gray-400">
+                    <div className="flex-1 flex flex-col items-center justify-center text-gray-400 p-6 text-center">
                         <div className="h-20 w-20 bg-gray-50 rounded-full flex items-center justify-center mb-4">
                             <Mail className="h-10 w-10 text-gray-200" />
                         </div>

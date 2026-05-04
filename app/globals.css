@@ -249,3 +249,36 @@
 .animation-delay-4000 {
     animation-delay: 4s;
 }
+
+@layer utilities {
+    /* Mobile-first touch optimizations */
+    .touch-target {
+        @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
+    }
+
+    /* Hide scrollbar but allow scrolling */
+    .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* Mobile grid optimizations */
+    .mobile-grid-cols-1 {
+        @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
+    }
+
+    /* Safe area bottom padding for devices with home indicators */
+    .pb-safe {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+}
+
+/* Optimize forms for mobile */
+@media (max-width: 640px) {
+    input, select, textarea {
+        font-size: 16px !important; /* Prevent iOS zoom on focus */
+    }
+}
