@@ -1,12 +1,15 @@
 # feat: AI performance indicators in grading module
 
 ## Summary
+
 Automated trend analysis integrated into the Grading module to highlight student performance shifts.
 
 ## Branch Name
+
 `feature/ai-performance-indicators`
 
 ## PR Title
+
 `feat: add AI-driven performance trend indicators to grading module`
 
 ---
@@ -51,18 +54,18 @@ def generate_remark(student, trend):
 
 ## UI Indicators
 
-| Trend | Badge Color | Icon |
-|-------|-------------|------|
-| Improving | Green | ↑ |
-| Declining | Red | ↓ |
-| Stable | Grey | → |
+| Trend     | Badge Color | Icon |
+| --------- | ----------- | ---- |
+| Improving | Green       | ↑    |
+| Declining | Red         | ↓    |
+| Stable    | Grey        | →    |
 
 ## API Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/grades/trends/?student_id=` | Get trend data for a student |
-| GET | `/api/grades/trends/class/?class_id=` | Get trends for entire class |
+| Method | Endpoint                              | Description                  |
+| ------ | ------------------------------------- | ---------------------------- |
+| GET    | `/api/grades/trends/?student_id=`     | Get trend data for a student |
+| GET    | `/api/grades/trends/class/?class_id=` | Get trends for entire class  |
 
 ## Status: Completed (Phase 1, Feature 2)
 
@@ -74,6 +77,7 @@ def generate_remark(student, trend):
 - [x] Student Profile and Grade List views updated with trend visualization and AI remarks.
 
 ## Acceptance Criteria
+
 - [x] Trend badge visible on grade list per student
 - [x] Trend computed from last N assessments (configurable, default is historical term averages)
 - [x] AI remark generated and stored when trend changes
