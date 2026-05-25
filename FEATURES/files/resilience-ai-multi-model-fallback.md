@@ -1,12 +1,15 @@
 # feat: AI multi-model fallback resilience
 
 ## Summary
+
 The AI remark generation service automatically cycles through alternative models when the primary model is unavailable, ensuring remark generation never fails.
 
 ## Branch Name
+
 `feature/ai-multi-model-fallback`
 
 ## PR Title
+
 `feat: add multi-model fallback chain to AI remark generation service`
 
 ---
@@ -123,14 +126,15 @@ ai_model_used = models.CharField(max_length=100, blank=True)  # for audit
 
 ## Fallback Chain Summary
 
-| Priority | Provider | Model | Notes |
-|----------|----------|-------|-------|
-| 1 | Google | gemini-1.5-flash | Primary |
-| 2 | Groq | llama-3.1-8b-instant | Fast, free tier |
-| 3 | OpenRouter | qwen-2.5-72b | Strong secondary |
-| 4 | OpenRouter | mistral-7b-instruct | Last resort |
+| Priority | Provider   | Model                | Notes            |
+| -------- | ---------- | -------------------- | ---------------- |
+| 1        | Google     | gemini-1.5-flash     | Primary          |
+| 2        | Groq       | llama-3.1-8b-instant | Fast, free tier  |
+| 3        | OpenRouter | qwen-2.5-72b         | Strong secondary |
+| 4        | OpenRouter | mistral-7b-instruct  | Last resort      |
 
 ## Acceptance Criteria
+
 - [ ] Primary model (Gemini) used when available
 - [ ] Failure of one model silently falls to the next without crashing
 - [ ] Each model attempt respects the 8-second timeout
