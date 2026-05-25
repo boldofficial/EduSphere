@@ -1,12 +1,15 @@
 # feat: inventory management — uniforms, books, stationery
 
 ## Summary
+
 Full stock tracking for school inventory items with low-stock alerts.
 
 ## Branch Name
+
 `feature/inventory-management`
 
 ## PR Title
+
 `feat: add inventory management module with low-stock alerts`
 
 ---
@@ -69,14 +72,15 @@ def check_low_stock(sender, instance, **kwargs):
 
 ## API Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/inventory/items/` | List all items with current stock |
-| POST | `/api/inventory/items/` | Create new item |
-| POST | `/api/inventory/movements/` | Record stock in/out |
-| GET | `/api/inventory/alerts/` | List low-stock alerts |
+| Method | Endpoint                    | Description                       |
+| ------ | --------------------------- | --------------------------------- |
+| GET    | `/api/inventory/items/`     | List all items with current stock |
+| POST   | `/api/inventory/items/`     | Create new item                   |
+| POST   | `/api/inventory/movements/` | Record stock in/out               |
+| GET    | `/api/inventory/alerts/`    | List low-stock alerts             |
 
 ## Acceptance Criteria
+
 - [ ] Admin can add/edit inventory items with category and reorder threshold
 - [ ] Stock-in and stock-out movements update current stock in real time
 - [ ] Alert is generated when stock falls at or below reorder threshold
