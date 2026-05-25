@@ -116,7 +116,7 @@ export interface Settings extends Entity {
 
 // Role-based permissions for navigation and dashboard widgets
 export interface RolePermissions {
-  navigation: string[];       // List of navigation item IDs allowed for this role
+  navigation: string[]; // List of navigation item IDs allowed for this role
   dashboardWidgets: string[]; // List of dashboard widget IDs to show for this role
 }
 
@@ -410,22 +410,22 @@ export interface FeeStructure extends Entity {
   category?: FeeCategory;
 }
 
-export type FeeCategory = 
-  | 'tuition'           // School fess
-  | 'uniform'          // Uniform
-  | 'books'            // Textbooks
-  | 'pta'              // Parent-Teacher Association
-  | 'development'      // Development levy
-  | 'medical'          // Medical fee
-  | 'ict'              // ICT fee
-  | 'security'         // Security levy
-  | 'transport'         // Bus/transport
-  | 'feeding'          // Lunch/feeding
-  | 'activity'          // Activity fee
-  | 'exam'             // Exam fee
-  | 'registration'     // Registration
-  | 'card'             // ID card
-  | 'other';          // Other
+export type FeeCategory =
+  | 'tuition' // School fess
+  | 'uniform' // Uniform
+  | 'books' // Textbooks
+  | 'pta' // Parent-Teacher Association
+  | 'development' // Development levy
+  | 'medical' // Medical fee
+  | 'ict' // ICT fee
+  | 'security' // Security levy
+  | 'transport' // Bus/transport
+  | 'feeding' // Lunch/feeding
+  | 'activity' // Activity fee
+  | 'exam' // Exam fee
+  | 'registration' // Registration
+  | 'card' // ID card
+  | 'other'; // Other
 
 export const NIGERIAN_FEE_CATEGORIES: { value: FeeCategory; label: string }[] = [
   { value: 'tuition', label: 'Tuition/School Fee' },
@@ -813,7 +813,6 @@ export interface DiscussionMessage extends Entity {
   replies: DiscussionMessage[];
 }
 
-
 export interface TicketResponse extends Omit<Entity, 'created_at' | 'updated_at'> {
   username: string;
   message: string;
@@ -1045,4 +1044,3 @@ export interface ScoreImportResult {
     exam: number;
   }>;
 }
-
