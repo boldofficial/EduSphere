@@ -1,12 +1,15 @@
 # feat: automated arrears fee reminders
 
 ## Summary
+
 Automated system for sending fee reminder notifications to parents of students with outstanding balances.
 
 ## Branch Name
+
 `feature/arrears-reminders`
 
 ## PR Title
+
 `feat: add automated arrears reminder notifications for outstanding fees`
 
 ---
@@ -66,13 +69,14 @@ Thank you.
 
 ## API Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/finance/reminders/?term_id=` | List all reminders sent this term |
-| POST | `/api/finance/reminders/trigger/` | Manually trigger reminders (admin) |
-| GET | `/api/finance/reminders/log/?student_id=` | Reminder history for a student |
+| Method | Endpoint                                  | Description                        |
+| ------ | ----------------------------------------- | ---------------------------------- |
+| GET    | `/api/finance/reminders/?term_id=`        | List all reminders sent this term  |
+| POST   | `/api/finance/reminders/trigger/`         | Manually trigger reminders (admin) |
+| GET    | `/api/finance/reminders/log/?student_id=` | Reminder history for a student     |
 
 ## Acceptance Criteria
+
 - [ ] Celery beat runs reminder task daily
 - [ ] Reminders sent at configured day offsets relative to due date
 - [ ] Duplicate sends prevented via reminder log
