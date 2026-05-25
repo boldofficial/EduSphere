@@ -1,59 +1,59 @@
 /**
  * Query Client Configuration
- * 
+ *
  * Optimized caching strategy for scalability with deduplication.
  */
 
 import { QueryClient } from '@tanstack/react-query';
 
 export const defaultQueryOptions = {
-    staleTime: 1000 * 60 * 5, // 5 minutes - data is fresh for 5 minutes
-    gcTime: 1000 * 60 * 30, // 30 minutes - keep in cache for 30 minutes
-    retry: 1, // Only retry once on failure
-    refetchOnWindowFocus: false, // Don't refetch when window regains focus
-    refetchOnReconnect: true, // Refetch when reconnecting
-    dedupe: true, // Deduplicate identical requests
+  staleTime: 1000 * 60 * 5, // 5 minutes - data is fresh for 5 minutes
+  gcTime: 1000 * 60 * 30, // 30 minutes - keep in cache for 30 minutes
+  retry: 1, // Only retry once on failure
+  refetchOnWindowFocus: false, // Don't refetch when window regains focus
+  refetchOnReconnect: true, // Refetch when reconnecting
+  dedupe: true, // Deduplicate identical requests
 };
 
 // In-flight query tracking for deduplication
 const inFlightQueries = new Map<string, Promise<unknown>>();
 
 function hashKey(key: readonly string[]): string {
-    return JSON.stringify(key);
+  return JSON.stringify(key);
 }
 
 export async function deduplicatedQuery<T>(
-    queryKey: readonly string[],
-    queryFn: () => Promise<T>
+  queryKey: readonly string[],
+  queryFn: () => Promise<T>
 ): Promise<T> {
-    const key = hashKey(queryKey);
-    
-    // Check if there's already an in-flight query with same key
-    const existing = inFlightQueries.get(key);
-    if (existing) {
-        return existing as Promise<T>;
-    }
-    
-    // Create new query
-    const promise = queryFn().finally(() => {
-        inFlightQueries.delete(key);
-    });
-    
-    inFlightQueries.set(key, promise);
-    return promise;
+  const key = hashKey(queryKey);
+
+  // Check if there's already an in-flight query with same key
+  const existing = inFlightQueries.get(key);
+  if (existing) {
+    return existing as Promise<T>;
+  }
+
+  // Create new query
+  const promise = queryFn().finally(() => {
+    inFlightQueries.delete(key);
+  });
+
+  inFlightQueries.set(key, promise);
+  return promise;
 }
 
 export const createQueryClient = () => {
-    return new QueryClient({
-        defaultOptions: {
-            queries: {
-                ...defaultQueryOptions,
-            },
-            mutations: {
-                retry: 0, // Don't retry mutations
-            },
-        },
-    });
+  return new QueryClient({
+    defaultOptions: {
+      queries: {
+        ...defaultQueryOptions,
+      },
+      mutations: {
+        retry: 0, // Don't retry mutations
+      },
+    },
+  });
 };
 
 // =============================================
@@ -61,20 +61,18 @@ export const createQueryClient = () => {
 // =============================================
 
 export const queryKeyFactory = {
-    students: (filters?: { page?: number; search?: string; classId?: string }) => 
-        ['students', filters] as const,
-    
-    scores: (classId: string, session: string, term: string) => 
-        ['scores', classId, session, term] as const,
-    
-    payments: (filters?: { session?: string; term?: string; status?: string }) =>
-        ['payments', filters] as const,
-    
-    attendance: (classId: string, date: string) =>
-        ['attendance', classId, date] as const,
-    
-    fees: (classId: string, session: string) =>
-        ['fees', classId, session] as const,
+  students: (filters?: { page?: number; search?: string; classId?: string }) =>
+    ['students', filters] as const,
+
+  scores: (classId: string, session: string, term: string) =>
+    ['scores', classId, session, term] as const,
+
+  payments: (filters?: { session?: string; term?: string; status?: string }) =>
+    ['payments', filters] as const,
+
+  attendance: (classId: string, date: string) => ['attendance', classId, date] as const,
+
+  fees: (classId: string, session: string) => ['fees', classId, session] as const,
 };
 
 // =============================================
@@ -82,17 +80,17 @@ export const queryKeyFactory = {
 // =============================================
 
 export async function prefetchPaginatedList<T>(
-    queryClient: QueryClient,
-    key: readonly string[],
-    fetcher: () => Promise<T[]>,
-    pageSize = 20
+  queryClient: QueryClient,
+  key: readonly string[],
+  fetcher: () => Promise<T[]>,
+  pageSize = 20
 ): Promise<T[]> {
-    const data = await queryClient.fetchQuery({
-        queryKey: key,
-        queryFn: fetcher,
-    });
-    
-    return data;
+  const data = await queryClient.fetchQuery({
+    queryKey: key,
+    queryFn: fetcher,
+  });
+
+  return data;
 }
 
 // =============================================
@@ -102,36 +100,36 @@ export async function prefetchPaginatedList<T>(
 type Updater<T> = (old: T[]) => T[];
 
 export function optimisticUpdate<T>(
-    queryClient: QueryClient,
-    queryKey: readonly string[],
-    updateFn: Updater<T>
+  queryClient: QueryClient,
+  queryKey: readonly string[],
+  updateFn: Updater<T>
 ) {
-    queryClient.setQueryData<T[]>(queryKey, (old) => {
-        if (!old) return [];
-        return updateFn(old);
-    });
+  queryClient.setQueryData<T[]>(queryKey, (old) => {
+    if (!old) return [];
+    return updateFn(old);
+  });
 }
 
 export function optimisticAdd<T extends { id: string }>(
-    queryClient: QueryClient,
-    queryKey: readonly string[],
-    newItem: T
+  queryClient: QueryClient,
+  queryKey: readonly string[],
+  newItem: T
 ) {
-    queryClient.setQueryData<T[]>(queryKey, (old) => {
-        if (!old) return [newItem];
-        return [...old, newItem];
-    });
+  queryClient.setQueryData<T[]>(queryKey, (old) => {
+    if (!old) return [newItem];
+    return [...old, newItem];
+  });
 }
 
 export function optimisticRemove<T extends { id: string }>(
-    queryClient: QueryClient,
-    queryKey: readonly string[],
-    itemId: string
+  queryClient: QueryClient,
+  queryKey: readonly string[],
+  itemId: string
 ) {
-    queryClient.setQueryData<T[]>(queryKey, (old) => {
-        if (!old) return [];
-        return old.filter(item => item.id !== itemId);
-    });
+  queryClient.setQueryData<T[]>(queryKey, (old) => {
+    if (!old) return [];
+    return old.filter((item) => item.id !== itemId);
+  });
 }
 
 // =============================================
@@ -139,10 +137,10 @@ export function optimisticRemove<T extends { id: string }>(
 // =============================================
 
 export const cacheInvalidationRules = {
-    studentCreated: ['students', 'classes', 'fees'],
-    scoreUpdated: ['scores', 'analytics'],
-    paymentReceived: ['payments', 'fees', 'bursary'],
-    attendanceMarked: ['attendance'],
+  studentCreated: ['students', 'classes', 'fees'],
+  scoreUpdated: ['scores', 'analytics'],
+  paymentReceived: ['payments', 'fees', 'bursary'],
+  attendanceMarked: ['attendance'],
 };
 
 // =============================================
@@ -150,27 +148,27 @@ export const cacheInvalidationRules = {
 // =============================================
 
 export function trackQueryPerformance<T>(
-    queryKey: readonly string[],
-    queryFn: () => Promise<T>
+  queryKey: readonly string[],
+  queryFn: () => Promise<T>
 ): () => Promise<T> {
-    return async () => {
-        const start = performance.now();
-        try {
-            const result = await queryFn();
-            const duration = performance.now() - start;
-            
-            // Log slow queries
-            if (duration > 2000) {
-                console.warn(`[QUERY_SLOW] ${queryKey.join(', ')}: ${duration}ms`);
-            }
-            
-            return result;
-        } catch (error) {
-            const duration = performance.now() - start;
-            console.error(`[QUERY_ERROR] ${queryKey.join(',')}: ${duration}ms`, error);
-            throw error;
-        }
-    };
+  return async () => {
+    const start = performance.now();
+    try {
+      const result = await queryFn();
+      const duration = performance.now() - start;
+
+      // Log slow queries
+      if (duration > 2000) {
+        console.warn(`[QUERY_SLOW] ${queryKey.join(', ')}: ${duration}ms`);
+      }
+
+      return result;
+    } catch (error) {
+      const duration = performance.now() - start;
+      console.error(`[QUERY_ERROR] ${queryKey.join(',')}: ${duration}ms`, error);
+      throw error;
+    }
+  };
 }
 
 // =============================================
@@ -178,34 +176,31 @@ export function trackQueryPerformance<T>(
 // =============================================
 
 interface BatchPrefetchOptions {
-    queries: Array<{
-        key: readonly string[];
-        fetcher: () => Promise<unknown>;
-    }>;
-    priority?: 'high' | 'normal';
+  queries: Array<{
+    key: readonly string[];
+    fetcher: () => Promise<unknown>;
+  }>;
+  priority?: 'high' | 'normal';
 }
 
-export async function batchPrefetch(
-    queryClient: QueryClient,
-    options: BatchPrefetchOptions
-) {
-    const { queries, priority = 'normal' } = options;
-    
-    // Use Promise.allSettled to not fail entire batch if one query fails
-    const results = await Promise.allSettled(
-        queries.map(q => 
-            queryClient.prefetchQuery({
-                queryKey: q.key,
-                queryFn: q.fetcher,
-            })
-        )
-    );
-    
-    const failed = results.filter(r => r.status === 'rejected').length;
-    
-    if (failed > 0) {
-        console.warn(`[BATCH_PREFETCH] ${failed}/${queries.length} queries failed`);
-    }
-    
-    return results;
+export async function batchPrefetch(queryClient: QueryClient, options: BatchPrefetchOptions) {
+  const { queries, priority = 'normal' } = options;
+
+  // Use Promise.allSettled to not fail entire batch if one query fails
+  const results = await Promise.allSettled(
+    queries.map((q) =>
+      queryClient.prefetchQuery({
+        queryKey: q.key,
+        queryFn: q.fetcher,
+      })
+    )
+  );
+
+  const failed = results.filter((r) => r.status === 'rejected').length;
+
+  if (failed > 0) {
+    console.warn(`[BATCH_PREFETCH] ${failed}/${queries.length} queries failed`);
+  }
+
+  return results;
 }
