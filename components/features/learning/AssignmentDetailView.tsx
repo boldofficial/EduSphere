@@ -4,16 +4,7 @@ import React from 'react';
 import { Assignment } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { 
-  Calendar, 
-  Award, 
-  FileText, 
-  Video, 
-  Image as ImageIcon,
-  ArrowLeft,
-  Download,
-  ExternalLink
-} from 'lucide-react';
+import { Calendar, Award, FileText, Video, ArrowLeft, Download, ExternalLink } from 'lucide-react';
 import { DiscussionThreadComponent } from '../lms/DiscussionThread';
 
 interface AssignmentDetailViewProps {
@@ -33,7 +24,12 @@ export const AssignmentDetailView: React.FC<AssignmentDetailViewProps> = ({
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="sm" onClick={onBack} className="hover:bg-brand-50 text-brand-700">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onBack}
+          className="hover:bg-brand-50 text-brand-700"
+        >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to list
         </Button>
@@ -70,12 +66,14 @@ export const AssignmentDetailView: React.FC<AssignmentDetailViewProps> = ({
               {/* Attachments Section */}
               {(assignment.attachment_url || assignment.video_url || assignment.image_url) && (
                 <div className="pt-6 border-t border-gray-100">
-                  <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-4">Resources</h3>
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-4">
+                    Resources
+                  </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {assignment.attachment_url && (
-                      <a 
-                        href={assignment.attachment_url} 
-                        target="_blank" 
+                      <a
+                        href={assignment.attachment_url}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center justify-between p-3 rounded-xl border border-gray-100 hover:border-brand-200 hover:bg-brand-50 transition-all group"
                       >
@@ -83,15 +81,17 @@ export const AssignmentDetailView: React.FC<AssignmentDetailViewProps> = ({
                           <div className="p-2 rounded-lg bg-blue-50 text-blue-600">
                             <FileText className="w-5 h-5" />
                           </div>
-                          <span className="text-sm font-medium text-gray-700">Document Attachment</span>
+                          <span className="text-sm font-medium text-gray-700">
+                            Document Attachment
+                          </span>
                         </div>
                         <Download className="w-4 h-4 text-gray-400 group-hover:text-brand-600" />
                       </a>
                     )}
                     {assignment.video_url && (
-                      <a 
-                        href={assignment.video_url} 
-                        target="_blank" 
+                      <a
+                        href={assignment.video_url}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center justify-between p-3 rounded-xl border border-gray-100 hover:border-red-200 hover:bg-red-50 transition-all group"
                       >
@@ -112,9 +112,9 @@ export const AssignmentDetailView: React.FC<AssignmentDetailViewProps> = ({
 
           {/* Discussion Section */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-            <DiscussionThreadComponent 
-              contentTypeId={ASSIGNMENT_CONTENT_TYPE_ID} 
-              objectId={Number(assignment.id)} 
+            <DiscussionThreadComponent
+              contentTypeId={ASSIGNMENT_CONTENT_TYPE_ID}
+              objectId={Number(assignment.id)}
               title="Assignment Discussion"
             />
           </div>
@@ -126,20 +126,21 @@ export const AssignmentDetailView: React.FC<AssignmentDetailViewProps> = ({
             <CardContent className="p-6 space-y-4">
               <h3 className="font-bold text-lg">Your Submission</h3>
               <p className="text-xs text-brand-200">
-                {isStudent 
-                  ? "Submit your work before the deadline to avoid late penalties."
+                {isStudent
+                  ? 'Submit your work before the deadline to avoid late penalties.'
                   : "View and grade students' work for this assignment."}
               </p>
               <Button className="w-full bg-accent-500 hover:bg-accent-600 text-brand-900 font-bold">
-                {isStudent ? "Upload Work" : "Manage Submissions"}
+                {isStudent ? 'Upload Work' : 'Manage Submissions'}
               </Button>
             </CardContent>
           </Card>
 
           <div className="p-6 rounded-2xl bg-brand-50 border border-brand-100">
-            <h4 className="text-sm font-bold text-brand-800 mb-2">Teacher's Note</h4>
+            <h4 className="text-sm font-bold text-brand-800 mb-2">Teacher&rsquo;s Note</h4>
             <p className="text-xs text-brand-600 leading-relaxed italic">
-              "Please focus on showing your working for the algebra problems. Partial points will be awarded for correct steps."
+              &ldquo;Please focus on showing your working for the algebra problems. Partial points
+              will be awarded for correct steps.&rdquo;
             </p>
           </div>
         </div>
