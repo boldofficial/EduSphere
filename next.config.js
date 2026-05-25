@@ -1,138 +1,138 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    // Enable standalone output for minimal Docker image size
-    output: 'standalone',
+  // Enable standalone output for minimal Docker image size
+  output: 'standalone',
 
-    // NOTE: GEMINI_API_KEY is available server-side only via process.env.GEMINI_API_KEY
-    // Do NOT expose it to the client via the `env` config block.
+  // NOTE: GEMINI_API_KEY is available server-side only via process.env.GEMINI_API_KEY
+  // Do NOT expose it to the client via the `env` config block.
 
-    // Disable heavy checks during build to prevent OOM/crashing on build servers
-    typescript: {
-        ignoreBuildErrors: true,
-    },
-    // ESLint key is deprecated in Next.js 16 next.config.js. 
-    // We rely on local checks for linting.
+  // Disable heavy checks during build to prevent OOM/crashing on build servers
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  // ESLint key is deprecated in Next.js 16 next.config.js.
+  // We rely on local checks for linting.
 
-    // Security headers for production
-    async headers() {
-        const isProd = process.env.NODE_ENV === 'production';
-        
-        // Only enforce CSP in production
-        const csp = isProd 
-            ? "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://*.r2.cloudflarestorage.com https://*.r2.dev; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; frame-ancestors 'none'; upgrade-insecure-requests;"
-            : "default-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src *;";
-        
-        return [
-            {
-                source: '/:path*',
-                headers: [
-                    {
-                        key: 'Content-Security-Policy',
-                        value: csp
-                    },
-                    {
-                        key: 'Strict-Transport-Security',
-                        value: 'max-age=63072000; includeSubDomains; preload'
-                    },
-                    {
-                        key: 'X-DNS-Prefetch-Control',
-                        value: 'on'
-                    },
-                    {
-                        key: 'X-Content-Type-Options',
-                        value: 'nosniff'
-                    },
-                    {
-                        key: 'X-Frame-Options',
-                        value: 'DENY'
-                    },
-                    {
-                        key: 'X-XSS-Protection',
-                        value: '1; mode=block'
-                    },
-                    {
-                        key: 'Referrer-Policy',
-                        value: 'origin-when-cross-origin'
-                    },
-                    {
-                        key: 'Permissions-Policy',
-                        value: 'camera=(), microphone=(), geolocation=()'
-                    }
-                ]
-            },
-            {
-                // CSP for API routes
-                source: '/api/:path*',
-                headers: [
-                    {
-                        key: 'Cache-Control',
-                        value: 'no-store, max-age=0'
-                    }
-                ]
-            }
-        ]
-    },
+  // Security headers for production
+  async headers() {
+    const isProd = process.env.NODE_ENV === 'production';
 
-    // Optimize images
-    images: {
-        remotePatterns: [
-            {
-                protocol: 'https',
-                hostname: '**.r2.cloudflarestorage.com',
-            },
-            {
-                protocol: 'https',
-                hostname: '**.r2.dev',
-            }
+    // Only enforce CSP in production
+    const csp = isProd
+      ? "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://*.r2.cloudflarestorage.com https://*.r2.dev; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; frame-ancestors 'none'; upgrade-insecure-requests;"
+      : "default-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src *;";
+
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: csp,
+          },
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=63072000; includeSubDomains; preload',
+          },
+          {
+            key: 'X-DNS-Prefetch-Control',
+            value: 'on',
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-XSS-Protection',
+            value: '1; mode=block',
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'origin-when-cross-origin',
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()',
+          },
         ],
-    },
+      },
+      {
+        // CSP for API routes
+        source: '/api/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store, max-age=0',
+          },
+        ],
+      },
+    ];
+  },
 
-    // Production optimizations
-    poweredByHeader: false,
-    compress: true,
+  // Optimize images
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**.r2.cloudflarestorage.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.r2.dev',
+      },
+    ],
+  },
 
-    async rewrites() {
-        const envUrl = process.env.DJANGO_API_URL || 'http://127.0.0.1:8001';
-        let apiUrl = envUrl;
-        let mediaUrl = envUrl;
-        
-        try {
-            const apiParsed = new URL(envUrl.startsWith('http') ? envUrl : `http://${envUrl}`);
-            apiUrl = apiParsed.origin;
-            mediaUrl = apiParsed.origin;
-        } catch {
-            apiUrl = 'http://127.0.0.1:8001';
-            mediaUrl = 'http://127.0.0.1:8001';
-        }
-        
-        return {
-            fallback: [
-                {
-                    source: '/admin/:path*',
-                    destination: `${apiUrl}/admin/:path*`,
-                },
-                {
-                    source: '/django-static/:path*',
-                    destination: `${apiUrl}/django-static/:path*`,
-                },
-                {
-                    source: '/media/:path*',
-                    destination: `${mediaUrl}/media/:path*`,
-                },
-            ],
-        };
-    },
+  // Production optimizations
+  poweredByHeader: false,
+  compress: true,
 
-    // Required to silence Turbopack/Webpack conflict error in Next.js 16 
-    // when using plugins like next-pwa that rely on Webpack.
-    turbopack: {},
-}
+  async rewrites() {
+    const envUrl = process.env.DJANGO_API_URL || 'http://127.0.0.1:8001';
+    let apiUrl = envUrl;
+    let mediaUrl = envUrl;
+
+    try {
+      const apiParsed = new URL(envUrl.startsWith('http') ? envUrl : `http://${envUrl}`);
+      apiUrl = apiParsed.origin;
+      mediaUrl = apiParsed.origin;
+    } catch {
+      apiUrl = 'http://127.0.0.1:8001';
+      mediaUrl = 'http://127.0.0.1:8001';
+    }
+
+    return {
+      fallback: [
+        {
+          source: '/admin/:path*',
+          destination: `${apiUrl}/admin/:path*`,
+        },
+        {
+          source: '/django-static/:path*',
+          destination: `${apiUrl}/django-static/:path*`,
+        },
+        {
+          source: '/media/:path*',
+          destination: `${mediaUrl}/media/:path*`,
+        },
+      ],
+    };
+  },
+
+  // Required to silence Turbopack/Webpack conflict error in Next.js 16
+  // when using plugins like next-pwa that rely on Webpack.
+  turbopack: {},
+};
 
 const withPWA = require('next-pwa')({
-    dest: 'public',
-    disable: process.env.NODE_ENV === 'development',
-    register: true,
-    skipWaiting: true,
+  dest: 'public',
+  disable: process.env.NODE_ENV === 'development',
+  register: true,
+  skipWaiting: true,
 });
 
-module.exports = withPWA(nextConfig);
+module.exports = withPWA(nextConfig);
