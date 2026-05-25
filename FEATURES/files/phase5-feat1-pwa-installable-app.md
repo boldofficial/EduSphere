@@ -1,12 +1,15 @@
 # feat: PWA — installable app (manifest + service worker)
 
 ## Summary
+
 The portal can be installed on mobile and desktop devices as a Progressive Web App.
 
 ## Branch Name
+
 `feature/pwa-installable-app`
 
 ## PR Title
+
 `feat: add PWA manifest and service worker for installable app experience`
 
 ---
@@ -33,7 +36,12 @@ The portal can be installed on mobile and desktop devices as a Progressive Web A
   "icons": [
     { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
     { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
-    { "src": "/icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "/icons/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }
 ```
@@ -41,11 +49,11 @@ The portal can be installed on mobile and desktop devices as a Progressive Web A
 ## next.config.js — PWA Setup (using next-pwa)
 
 ```javascript
-const withPWA = require("next-pwa")({
-  dest: "public",
+const withPWA = require('next-pwa')({
+  dest: 'public',
   register: true,
   skipWaiting: true,
-  disable: process.env.NODE_ENV === "development",
+  disable: process.env.NODE_ENV === 'development',
 });
 
 module.exports = withPWA({
@@ -57,7 +65,7 @@ module.exports = withPWA({
 
 ```javascript
 // hooks/useInstallPrompt.js
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 
 export function useInstallPrompt() {
   const [prompt, setPrompt] = useState(null);
@@ -67,8 +75,8 @@ export function useInstallPrompt() {
       e.preventDefault();
       setPrompt(e);
     };
-    window.addEventListener("beforeinstallprompt", handler);
-    return () => window.removeEventListener("beforeinstallprompt", handler);
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
 
   const install = async () => {
@@ -83,7 +91,7 @@ export function useInstallPrompt() {
 }
 ```
 
-## _document.js — Meta Tags
+## \_document.js — Meta Tags
 
 ```jsx
 <link rel="manifest" href="/manifest.json" />
@@ -94,6 +102,7 @@ export function useInstallPrompt() {
 ```
 
 ## Acceptance Criteria
+
 - [ ] Lighthouse PWA score ≥ 90
 - [ ] Install prompt appears on supported browsers (Chrome, Edge, Safari iOS)
 - [ ] App launches in standalone mode (no browser chrome)
