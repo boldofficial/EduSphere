@@ -5,6 +5,7 @@
 **Registra** is a comprehensive, multi-tenant SaaS platform designed to streamline school administration, academics, and finance. It features a sophisticated separation between platform governance and tenant-specific operations.
 
 ### Key Characteristics
+
 - **Multi-tenant Architecture**: Each school operates independently within the platform
 - **Role-based Access Control**: 6 distinct user roles with specific permissions
 - **Subscription-based Model**: Schools subscribe to feature modules via subscription plans
@@ -16,6 +17,7 @@
 ## Tech Stack
 
 ### Frontend
+
 - **Framework**: Next.js 16 with React 19
 - **Language**: TypeScript 5.8
 - **Styling**: Tailwind CSS 4.1 + PostCSS
@@ -32,6 +34,7 @@
 - **Storage**: AWS S3 (via @aws-sdk/client-s3)
 
 ### Backend
+
 - **Framework**: Django 6.0.1 + Django REST Framework 3.15
 - **Language**: Python
 - **Database**: PostgreSQL (via psycopg3)
@@ -51,6 +54,7 @@
 ### 1. Multi-Tenant Design
 
 **TenantModel (Abstract Base)**
+
 ```
 TenantModel (Abstract)
 ├── school (ForeignKey to School)
@@ -59,10 +63,12 @@ TenantModel (Abstract)
 ```
 
 All school-specific data inherits from `TenantModel`:
+
 - Academic models (Students, Teachers, Classes, ReportCards, Attendance, Subjects)
 - Bursary models (Payments, Expenses, Fees, StudentFees)
 
 **Tenant Identification**
+
 - Header-based: `X-Tenant-ID` from Next.js middleware
 - Fallback: Host header parsing for subdomain routing
 - Enforced via `TenantMiddleware` in every request
@@ -70,6 +76,7 @@ All school-specific data inherits from `TenantModel`:
 ### 2. User Roles & Permissions
 
 **6 Role Hierarchy** (in `users/models.py`):
+
 ```
 SUPER_ADMIN     → Platform administrator (full control)
 SCHOOL_ADMIN    → School-level administrator
@@ -82,6 +89,7 @@ STAFF           → Support staff (non-academic)
 ### 3. Module-Based Feature Control
 
 **PlatformModule System** - Dynamic feature toggling:
+
 - **16 Feature Modules** with independent activation:
   1. `students` - Student Management
   2. `teachers` - Teacher Management
@@ -101,6 +109,7 @@ STAFF           → Support staff (non-academic)
   16. `cms` - Website CMS
 
 **Subscription Plans**
+
 - Define which modules are included
 - Tied to payment and duration
 - Auto-renewal support
@@ -112,6 +121,7 @@ STAFF           → Support staff (non-academic)
 ### Core Entities
 
 #### 1. **Schools & Tenancy** (`schools/models.py`)
+
 ```
 School
 ├── name
@@ -124,6 +134,7 @@ School
 ```
 
 #### 2. **Users & Authentication** (`users/models.py`)
+
 ```
 User (extends Django AbstractUser)
 ├── role (choice: SUPER_ADMIN, SCHOOL_ADMIN, etc.)
@@ -134,6 +145,7 @@ User (extends Django AbstractUser)
 ```
 
 #### 3. **Academic Entities** (`academic/models.py`)
+
 ```
 Subject (TenantModel)
 ├── name
@@ -186,6 +198,7 @@ AttendanceRecord (TenantModel)
 ```
 
 #### 4. **Bursary & Finance** (`bursary/models.py`)
+
 ```
 FeeCategory (TenantModel)
 ├── name
@@ -222,6 +235,7 @@ Expense (TenantModel)
 ```
 
 #### 5. **Subscription & Platform Management** (`schools/models.py`)
+
 ```
 SubscriptionPlan
 ├── name, slug (unique)
@@ -252,6 +266,7 @@ PlatformModule
 ```
 
 #### 6. **Audit & Governance** (`core/models.py`)
+
 ```
 GlobalActivityLog
 ├── action (SCHOOL_SIGNUP, PAYMENT_RECORDED, etc.)
@@ -273,6 +288,7 @@ PlatformAnnouncement
 ```
 
 ### Database Indexing Strategy
+
 - Composite indexes on frequently queried combinations: `[school, session, term]`, `[school, student_no]`
 - Unique constraints prevent duplicate data
 - Soft-delete could be added via `is_deleted` fields if needed
@@ -284,6 +300,7 @@ PlatformAnnouncement
 ### Frontend-Backend Communication
 
 **Proxy Pattern** (`app/api/proxy/[...path]/route.ts`)
+
 - Next.js acts as a gateway to Django backend
 - Handles authentication token management
 - Cookie-based token storage (secure)
@@ -291,6 +308,7 @@ PlatformAnnouncement
 - Forwards `X-Tenant-ID` header from frontend to backend
 
 **Authentication Flow**
+
 ```
 1. User logs in via POST /api/auth/login
 2. Django returns access + refresh tokens (JWT)
@@ -303,11 +321,13 @@ PlatformAnnouncement
 ### API Endpoints Overview
 
 **Authentication** (`users/`)
+
 - `POST /auth/login/` - CustomTokenObtainPairView
 - `GET /me/` - MeView (current user info)
 - `POST /impersonate/` - ImpersonateUserView (super admin only)
 
 **Schools & Platform** (`schools/`)
+
 - `GET /plans/` - PublicPlanListView
 - `GET /modules/` - PlatformModulesView (list active modules)
 - `POST /modules/toggle/` - ModuleToggleView
@@ -324,20 +344,24 @@ PlatformAnnouncement
 - `POST /register/` - RegisterSchoolView
 
 **Academic** (`academic/`)
+
 - ViewSets: `SubjectViewSet`, `TeacherViewSet`, `ClassViewSet`, `StudentViewSet`
 - ViewSets: `ReportCardViewSet`, `SubjectScoreViewSet`
 - ViewSets: `AttendanceSessionViewSet`, `AttendanceRecordViewSet`
 - All inherit from `TenantViewSet` (auto-filters by school)
 
 **Bursary** (implied)
+
 - ViewSets likely for: Payments, Expenses, FeeCategories, FeeItems, StudentFees
 
 **Core Settings** (`core/`)
+
 - `GET/POST /settings/` - SettingsView
 - `GET /stats/` - PublicStatsView
 - `POST /upload/` - FileUploadView (AWS S3)
 
 ### Response Interceptors & Error Handling
+
 - Automatic retry on network failures
 - Token refresh queue system (prevents multiple refresh calls)
 - Customized error responses with metadata
@@ -350,6 +374,7 @@ PlatformAnnouncement
 ### Pages & Routes
 
 **Public Routes**
+
 - `/` - Public landing page
 - `/login` - Authentication
 - `/privacy-policy`
@@ -357,6 +382,7 @@ PlatformAnnouncement
 - `/admission` - Online admissions form
 
 **Dashboard Routes (Protected)**
+
 - `/(dashboard)` - Main app shell with navigation
   - `/dashboard` - Main dashboard
   - `/students` - StudentsView
@@ -378,6 +404,7 @@ PlatformAnnouncement
   - `/data` - DataManagementView
 
 **Role-Specific Views**
+
 - `StudentDashboardView` - Personalized student portal
 - `TeacherDashboardView` - Teacher workspace
 - `StaffDashboardView` - Staff operations
@@ -386,6 +413,7 @@ PlatformAnnouncement
 ### Component Architecture
 
 **Organizational Structure**
+
 ```
 components/
 ├── features/
@@ -402,6 +430,7 @@ components/
 ```
 
 **State Management** (Zustand stores in `lib/store.ts`)
+
 - User authentication state
 - School context
 - Module availability
@@ -411,22 +440,26 @@ components/
 ### Data Service Layer
 
 **lib/api-client.ts**
+
 - Axios instance with custom interceptors
 - Token refresh logic
 - Error handling
 - Request/response transformation
 
 **lib/data-service.ts**
+
 - High-level API methods
 - Caching logic (React Query)
 - Business logic abstraction
 
 **lib/types.ts** (333 lines)
+
 - TypeScript interfaces for all entities
 - Settings type (detailed configuration schema)
 - Strong typing throughout frontend
 
 **lib/api-utils.ts**
+
 - Helper functions for API calls
 - Response parsing
 - Error extraction
@@ -434,11 +467,13 @@ components/
 ### Styling & UI
 
 **Tailwind CSS 4.1**
+
 - Utility-first CSS framework
 - Customized theme in `tailwind.config.js`
 - Dark mode support
 
 **PostCSS Pipeline**
+
 - Autoprefixer for browser compatibility
 - CSS processing
 
@@ -449,12 +484,14 @@ components/
 ### Authentication & Authorization
 
 **JWT-based Authentication**
+
 - `djangorestframework-simplejwt` for token generation
 - Access tokens + Refresh tokens
 - Token blacklist for logout (via `rest_framework_simplejwt.token_blacklist`)
 - Custom serializer: `CustomTokenObtainPairSerializer`
 
 **Role-Based Access Control**
+
 - 6 roles with implicit hierarchies
 - Frontend route protection
 - Backend view-level permission checks
@@ -463,12 +500,14 @@ components/
 ### Middleware Security
 
 **TenantMiddleware** (`core/middleware.py`)
+
 - Extracts tenant from `X-Tenant-ID` header
 - Validates subdomain routing
 - Attaches `request.tenant` to all requests
 - QuerySets auto-filtered by tenant
 
 **Request Headers** (from `next.config.js`)
+
 - `X-DNS-Prefetch-Control: on`
 - `Strict-Transport-Security` (HSTS with preload)
 - `X-Content-Type-Options: nosniff`
@@ -480,14 +519,17 @@ components/
 ### API Security
 
 **Rate Limiting** (`lib/rate-limit.ts`)
+
 - `@upstash/ratelimit` + `@upstash/redis`
 - Prevents brute force and abuse
 
 **CORS** (`django-cors-headers`)
+
 - Restricted cross-origin requests
 - Configured per environment
 
 **File Upload Security** (`app/api/upload/route.ts`)
+
 - Authorization checks
 - AWS S3 integration via presigned URLs
 - File type validation (implied)
@@ -499,6 +541,7 @@ components/
 ### File Storage
 
 **AWS S3 / Cloudflare R2**
+
 - School logos: `logo` field in School model (URL)
 - Student/Teacher passports: `passport_url` fields
 - Profile pictures: Generic media uploads
@@ -506,21 +549,24 @@ components/
 - Hero images: `landing_hero_image` for CMS
 
 **Remote Pattern Configuration** (next.config.js)
+
 ```javascript
 remotePatterns: [
-    {protocol: 'https', hostname: '**.r2.cloudflarestorage.com'},
-    {protocol: 'https', hostname: '**.r2.dev'}
-]
+  { protocol: 'https', hostname: '**.r2.cloudflarestorage.com' },
+  { protocol: 'https', hostname: '**.r2.dev' },
+];
 ```
 
 ### Caching Strategy
 
 **Backend Caching** (`django-redis`)
+
 - Redis-backed caching layer
 - Reduces database queries
 - Session storage
 
 **Frontend Caching** (`React Query`)
+
 - Automatic request caching
 - Stale-while-revalidate patterns
 - Cache invalidation on mutations
@@ -528,6 +574,7 @@ remotePatterns: [
 ### Background Tasks
 
 **Celery** (configured in `config/celery.py`)
+
 - Asynchronous job processing
 - Email sending (newsletters, announcements)
 - Report generation
@@ -541,12 +588,14 @@ remotePatterns: [
 ### 1. Report Card Generation
 
 **Data Model Support**
+
 - `ReportCard`: Session/Term aggregates
 - `SubjectScore`: Component scores (CA1, CA2, Exam)
 - Automatic total calculation
 - Position ranking per term/session/class
 
 **PDF Generation** (`lib/pdf-utils.ts`)
+
 - `html2pdf.js` library
 - Customizable watermark/branding
 - School signature integration
@@ -555,6 +604,7 @@ remotePatterns: [
 ### 2. Settings Management
 
 **Global Configuration** (`SettingsView` in backend, `Settings` type in frontend)
+
 - School branding (logo, colors, tagline)
 - Academic periods (session, terms, terms list)
 - Signatories (director, head of school + signatures)
@@ -565,12 +615,14 @@ remotePatterns: [
 ### 3. Multi-Tenant Data Isolation
 
 **Tenant Model Pattern**
+
 - Every model explicitly scoped to school
 - No global data exposure
 - Queries auto-filtered via TenantViewSet
 - Impossible to access another school's data
 
 **Subdomain Routing**
+
 - `vine.myregistra.net` → Vine School
 - Platform recognizes schools by domain
 - Header-based tenant identification in frontend
@@ -578,12 +630,14 @@ remotePatterns: [
 ### 4. Subscription & Monetization
 
 **Feature Gating**
+
 - School can only access allowed modules
 - Module toggling at platform level
 - Subscription status checked on requests
 - Expired subscriptions auto-disable features
 
 **Payment Processing**
+
 - School payment tracking (`SchoolPayment` model)
 - Reference tracking (for payment gateway integration - Paystack implied)
 - Multi-status pipeline (pending → success/failed)
@@ -592,6 +646,7 @@ remotePatterns: [
 ### 5. API Documentation
 
 **drf-spectacular Integration**
+
 - Auto-generated OpenAPI/Swagger schemas
 - Available at `/api/schema/`
 - Swagger UI at `/api/schema/swagger-ui/`
@@ -604,6 +659,7 @@ remotePatterns: [
 ### Environment Configuration
 
 **Backend** (Django settings.py)
+
 - `DJANGO_SECRET_KEY` - cryptographic key
 - `DEBUG` - development mode toggle
 - `ALLOWED_HOSTS` - CORS-like host restriction
@@ -612,17 +668,20 @@ remotePatterns: [
 - Redis: Caching & Celery broker
 
 **Frontend** (.env.local)
+
 - `GEMINI_API_KEY` - Google Gemini API (AI features)
 - Backend API URL (implicit from proxy pattern)
 
 ### Database Migrations
 
 **Django ORM**
+
 - Alembic-style migrations in each app's `migrations/` folder
 - Initial migration generation: `python manage.py makemigrations`
 - Apply: `python manage.py migrate`
 
 **Seed Data**
+
 - `seed_data.py` - Initial school/user/academic data
 - `seed_plans.py` - Subscription plans
 - `create_admin.py` - Super admin creation script
@@ -630,16 +689,19 @@ remotePatterns: [
 ### Testing
 
 **Backend**
+
 - `tests.py` files in each app
 - Django TestCase framework (implied)
 
 **Frontend**
+
 - Component testing (implied via Next.js)
 - E2E testing infrastructure (not visible in current structure)
 
 ### Running Locally
 
 **Backend**
+
 ```bash
 cd backend
 pip install -r requirements.txt
@@ -648,6 +710,7 @@ python manage.py runserver
 ```
 
 **Frontend**
+
 ```bash
 npm install
 npm run dev  # Next.js dev server on http://localhost:3000
@@ -658,6 +721,7 @@ npm run dev  # Next.js dev server on http://localhost:3000
 ## Potential Enhancement Opportunities
 
 ### 1. **Performance Optimizations**
+
 - Add pagination to all list endpoints
 - Implement query optimization (select_related, prefetch_related)
 - Cache API responses at CDN level
@@ -665,6 +729,7 @@ npm run dev  # Next.js dev server on http://localhost:3000
 - Database query profiling and optimization
 
 ### 2. **Feature Completeness**
+
 - Implement Phase 2: Automated promotion rules
 - Message queue for attendance sync
 - Mobile app (React Native)
@@ -672,6 +737,7 @@ npm run dev  # Next.js dev server on http://localhost:3000
 - Bulk import/export tools (CSV, Excel)
 
 ### 3. **Analytics & Reporting**
+
 - Advanced reporting builder (custom reports)
 - Predictive analytics (student performance forecasting)
 - Dashboard customization per role
@@ -679,6 +745,7 @@ npm run dev  # Next.js dev server on http://localhost:3000
 - Real-time data visualizations
 
 ### 4. **Communication Features**
+
 - WhatsApp/SMS integration for announcements
 - Email templates for notifications
 - Two-way messaging (parents ↔ teachers)
@@ -686,6 +753,7 @@ npm run dev  # Next.js dev server on http://localhost:3000
 - Message delivery tracking
 
 ### 5. **Payment Integration**
+
 - Paystack/Stripe webhook handling
 - Invoice generation
 - Payment reminders (automated)
@@ -693,6 +761,7 @@ npm run dev  # Next.js dev server on http://localhost:3000
 - Expense approval workflows
 
 ### 6. **Academic Features**
+
 - Lesson planning & resource library
 - Online assignment submission
 - Quiz/exam builder
@@ -700,6 +769,7 @@ npm run dev  # Next.js dev server on http://localhost:3000
 - Parent-teacher conference scheduling
 
 ### 7. **Admin & Operations**
+
 - Advanced audit logging with diffs
 - User impersonation with full session replay
 - Bulk operations (student bulk import)
@@ -707,6 +777,7 @@ npm run dev  # Next.js dev server on http://localhost:3000
 - School analytics dashboard (platform-level)
 
 ### 8. **Security Enhancements**
+
 - Two-factor authentication (2FA)
 - SSO integration (Google, Microsoft Entra ID)
 - Data encryption at rest
@@ -714,6 +785,7 @@ npm run dev  # Next.js dev server on http://localhost:3000
 - IP whitelist for API access
 
 ### 9. **DevOps & Infrastructure**
+
 - Docker containerization
 - Kubernetes deployment manifests
 - CI/CD pipeline (GitHub Actions/GitLab CI)
@@ -721,6 +793,7 @@ npm run dev  # Next.js dev server on http://localhost:3000
 - Database backup automation
 
 ### 10. **Code Quality**
+
 - Type checking for Python (mypy)
 - Linting configuration (pylint, black)
 - Frontend test coverage
@@ -731,28 +804,29 @@ npm run dev  # Next.js dev server on http://localhost:3000
 
 ## Key Files Reference
 
-| File | Purpose |
-|------|---------|
-| [package.json](package.json) | Frontend dependencies |
-| [backend/requirements.txt](backend/requirements.txt) | Backend dependencies |
-| [backend/config/settings.py](backend/config/settings.py) | Django configuration |
-| [backend/config/urls.py](backend/config/urls.py) | Backend routing |
-| [lib/types.ts](lib/types.ts) | Frontend type definitions |
-| [lib/api-client.ts](lib/api-client.ts) | HTTP client setup |
-| [backend/academic/models.py](backend/academic/models.py) | Academic data models |
-| [backend/bursary/models.py](backend/bursary/models.py) | Finance data models |
-| [backend/schools/models.py](backend/schools/models.py) | Platform models |
-| [backend/users/models.py](backend/users/models.py) | User & auth models |
-| [app/api/proxy/[...path]/route.ts](app/api/proxy/[...path]/route.ts) | Backend proxy handler |
-| [backend/core/middleware.py](backend/core/middleware.py) | Tenant middleware |
-| [next.config.js](next.config.js) | Next.js configuration |
-| [tailwind.config.js](tailwind.config.js) | Tailwind styling |
+| File                                                                 | Purpose                   |
+| -------------------------------------------------------------------- | ------------------------- |
+| [package.json](package.json)                                         | Frontend dependencies     |
+| [backend/requirements.txt](backend/requirements.txt)                 | Backend dependencies      |
+| [backend/config/settings.py](backend/config/settings.py)             | Django configuration      |
+| [backend/config/urls.py](backend/config/urls.py)                     | Backend routing           |
+| [lib/types.ts](lib/types.ts)                                         | Frontend type definitions |
+| [lib/api-client.ts](lib/api-client.ts)                               | HTTP client setup         |
+| [backend/academic/models.py](backend/academic/models.py)             | Academic data models      |
+| [backend/bursary/models.py](backend/bursary/models.py)               | Finance data models       |
+| [backend/schools/models.py](backend/schools/models.py)               | Platform models           |
+| [backend/users/models.py](backend/users/models.py)                   | User & auth models        |
+| [app/api/proxy/[...path]/route.ts](app/api/proxy/[...path]/route.ts) | Backend proxy handler     |
+| [backend/core/middleware.py](backend/core/middleware.py)             | Tenant middleware         |
+| [next.config.js](next.config.js)                                     | Next.js configuration     |
+| [tailwind.config.js](tailwind.config.js)                             | Tailwind styling          |
 
 ---
 
 ## Summary
 
 This is a **sophisticated, production-ready school management SaaS platform** with:
+
 - ✅ Proper multi-tenancy architecture
 - ✅ Robust authentication & authorization
 - ✅ Comprehensive data models
@@ -765,5 +839,5 @@ The codebase demonstrates strong software engineering practices with clear separ
 
 ---
 
-*Analysis Date: January 24, 2026*
-*Codebase Version: 0.1.0*
+_Analysis Date: January 24, 2026_
+_Codebase Version: 0.1.0_
