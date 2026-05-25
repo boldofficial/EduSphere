@@ -25,7 +25,8 @@
     "backend": "cd backend && .venv/bin/python3 manage.py runserver 127.0.0.1:8001",
     "backend:win": "cd backend && python manage.py runserver 127.0.0.1:8001",
     "test:backend": "powershell -ExecutionPolicy Bypass -File backend/scripts/test-backend.ps1",
-    "local": "npm run docker:up && npm run dev"
+    "local": "npm run docker:up && npm run dev",
+    "prepare": "husky"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.958.0",
@@ -72,6 +73,20 @@
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.18",
     "typescript": "~5.8.2",
-    "vitest": "^2.0.0"
+    "vitest": "^2.0.0",
+    "@commitlint/cli": "^19.7.0",
+    "@commitlint/config-conventional": "^19.6.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.4.3",
+    "prettier": "^3.4.0"
+  },
+  "lint-staged": {
+    "**/*.{ts,tsx,js,jsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "**/*.{css,md,json}": [
+      "prettier --write"
+    ]
   }
 }
