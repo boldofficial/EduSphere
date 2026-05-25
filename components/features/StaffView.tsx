@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { Plus, Trash2, Key, Shield, Eye, EyeOff, Edit } from 'lucide-react';
 import * as Types from '@/lib/types';
 import * as Utils from '@/lib/utils';
@@ -228,7 +229,7 @@ export const StaffView: React.FC<StaffViewProps> = ({ staff, onAdd, onUpdate, on
       setShowLoginModal(false);
       setSelectedStaff(null);
       setLoginPassword('');
-    } catch (error) {
+    } catch {
       addToast('An error occurred. Please try again.', 'error');
     } finally {
       setIsCreatingLogin(false);
@@ -262,10 +263,13 @@ export const StaffView: React.FC<StaffViewProps> = ({ staff, onAdd, onUpdate, on
               <tr key={s.id} className="hover:bg-gray-50">
                 <td className="px-4 py-3 font-medium text-gray-900 flex items-center gap-3">
                   {s.passport_url ? (
-                    <img
+                    <Image
                       src={Utils.getMediaUrl(s.passport_url) || ''}
                       alt={s.name}
+                      width={32}
+                      height={32}
                       className="w-8 h-8 rounded-full object-cover border"
+                      unoptimized
                     />
                   ) : (
                     <div className="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 font-bold text-xs">
@@ -333,10 +337,13 @@ export const StaffView: React.FC<StaffViewProps> = ({ staff, onAdd, onUpdate, on
             <div className="relative group cursor-pointer">
               <div className="w-24 h-24 rounded-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden">
                 {formData.passport_url ? (
-                  <img
+                  <Image
                     src={Utils.getMediaUrl(formData.passport_url) || ''}
                     alt="Preview"
+                    width={96}
+                    height={96}
                     className="w-full h-full object-cover"
+                    unoptimized
                   />
                 ) : (
                   <span className="text-gray-400 text-xs text-center px-2">
