@@ -9,6 +9,7 @@
 ## Bursary Module - 5 Endpoints
 
 ### Fee Categories Management
+
 ```
 GET    /api/fee-categories/
        → List all fee categories
@@ -34,6 +35,7 @@ DELETE /api/fee-categories/{id}/
 ```
 
 ### Fee Items Management
+
 ```
 GET    /api/fee-items/
        → List all fee items
@@ -59,6 +61,7 @@ DELETE /api/fee-items/{id}/
 ```
 
 ### Student Fee Assignments
+
 ```
 GET    /api/student-fees/
        → List all student fee assignments
@@ -84,6 +87,7 @@ DELETE /api/student-fees/{id}/
 ```
 
 ### Payment Tracking
+
 ```
 GET    /api/payments/
        → List all payments
@@ -110,6 +114,7 @@ DELETE /api/payments/{id}/
 ```
 
 ### Expense Tracking
+
 ```
 GET    /api/expenses/
        → List all expenses
@@ -139,6 +144,7 @@ DELETE /api/expenses/{id}/
 ## Calendar Module - 1 Endpoint
 
 ### School Events Management
+
 ```
 GET    /api/events/
        → List all events
@@ -178,6 +184,7 @@ FILTERING SUPPORT:
 ```
 
 **Event Types:**
+
 - `academic` - Academic schedule
 - `holiday` - Holiday/break
 - `exam` - Exam period
@@ -185,6 +192,7 @@ FILTERING SUPPORT:
 - `other` - Other event
 
 **Target Audiences:**
+
 - `all` - All users
 - `teachers` - Teaching staff only
 - `students` - Students only
@@ -195,6 +203,7 @@ FILTERING SUPPORT:
 ## Messaging Module - 1 Endpoint
 
 ### School Messages
+
 ```
 GET    /api/messages/
        → List user's messages (as sender or recipient)
@@ -238,6 +247,7 @@ Header: X-Tenant-ID: <school_domain>
 ```
 
 Example:
+
 ```bash
 curl -X GET http://localhost:8000/api/payments/ \
   -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGc..." \
@@ -250,6 +260,7 @@ curl -X GET http://localhost:8000/api/payments/ \
 ## Response Codes
 
 ### Success
+
 ```
 200 OK              - Successful GET, PUT
 201 Created         - Successful POST
@@ -257,6 +268,7 @@ curl -X GET http://localhost:8000/api/payments/ \
 ```
 
 ### Client Errors
+
 ```
 400 Bad Request     - Invalid input
 401 Unauthorized    - Missing/invalid token
@@ -266,6 +278,7 @@ curl -X GET http://localhost:8000/api/payments/ \
 ```
 
 ### Server Errors
+
 ```
 500 Internal Error  - Server error
 503 Service Unavailable - Database issue
@@ -276,6 +289,7 @@ curl -X GET http://localhost:8000/api/payments/ \
 ## Response Examples
 
 ### Create Payment (201)
+
 ```json
 {
   "id": 42,
@@ -298,6 +312,7 @@ curl -X GET http://localhost:8000/api/payments/ \
 ```
 
 ### Create Event (201)
+
 ```json
 {
   "id": 1,
@@ -315,6 +330,7 @@ curl -X GET http://localhost:8000/api/payments/ \
 ```
 
 ### Send Message (201)
+
 ```json
 {
   "id": 127,
@@ -334,6 +350,7 @@ curl -X GET http://localhost:8000/api/payments/ \
 ```
 
 ### List Events with Filters (200)
+
 ```json
 [
   {
@@ -370,6 +387,7 @@ curl -X GET http://localhost:8000/api/payments/ \
 ## Error Examples
 
 ### 401 Unauthorized
+
 ```json
 {
   "detail": "Authentication credentials were not provided."
@@ -377,6 +395,7 @@ curl -X GET http://localhost:8000/api/payments/ \
 ```
 
 ### 400 Bad Request
+
 ```json
 {
   "amount": ["This field is required."],
@@ -385,6 +404,7 @@ curl -X GET http://localhost:8000/api/payments/ \
 ```
 
 ### 404 Not Found
+
 ```json
 {
   "detail": "Not found."
@@ -396,10 +416,12 @@ curl -X GET http://localhost:8000/api/payments/ \
 ## Rate Limiting
 
 All endpoints are subject to platform rate limits:
+
 - 100 requests per minute per user
 - 1000 requests per minute per IP
 
 Headers returned:
+
 ```
 X-RateLimit-Limit: 100
 X-RateLimit-Remaining: 95
@@ -411,6 +433,7 @@ X-RateLimit-Reset: 1735031400
 ## Pagination (for list endpoints)
 
 Supported query parameters:
+
 ```
 ?page=1                 → Page number (default: 1)
 ?page_size=50          → Results per page (default: 10, max: 100)
@@ -419,11 +442,13 @@ Supported query parameters:
 ```
 
 Example:
+
 ```
 GET /api/payments/?page=2&page_size=25&ordering=-created_at
 ```
 
 Response includes pagination metadata:
+
 ```json
 {
   "count": 542,
@@ -450,7 +475,7 @@ const response = await apiClient.post('/api/payments/', {
   method: 'transfer',
   category: 1,
   session: '2025/2026',
-  term: 'First Term'
+  term: 'First Term',
 });
 
 // Fetch all events
@@ -460,12 +485,12 @@ const events = await apiClient.get('/api/events/');
 const msg = await apiClient.post('/api/messages/', {
   recipient: recipientId,
   subject: 'Grade Update',
-  body: 'Your grades are ready'
+  body: 'Your grades are ready',
 });
 
 // Mark message as read
 await apiClient.put(`/api/messages/${messageId}/`, {
-  is_read: true
+  is_read: true,
 });
 ```
 
@@ -474,6 +499,7 @@ await apiClient.put(`/api/messages/${messageId}/`, {
 ## Testing with cURL
 
 ### Create Payment
+
 ```bash
 curl -X POST http://localhost:8000/api/payments/ \
   -H "Authorization: Bearer TOKEN" \
@@ -489,12 +515,14 @@ curl -X POST http://localhost:8000/api/payments/ \
 ```
 
 ### List Events
+
 ```bash
 curl -X GET "http://localhost:8000/api/events/?event_type=exam" \
   -H "Authorization: Bearer TOKEN"
 ```
 
 ### Send Message
+
 ```bash
 curl -X POST http://localhost:8000/api/messages/ \
   -H "Authorization: Bearer TOKEN" \
@@ -510,20 +538,20 @@ curl -X POST http://localhost:8000/api/messages/ \
 
 ## Summary Statistics
 
-| Metric | Value |
-|--------|-------|
-| Total Endpoints | 13 |
-| GET endpoints | 4 |
-| POST endpoints | 4 |
-| PUT endpoints | 4 |
-| DELETE endpoints | 4 |
-| Query Parameters Supported | 6+ |
-| Response Formats | JSON |
-| Authentication | JWT Bearer |
-| Multi-tenant | Yes |
-| Pagination | Yes |
-| Filtering | Yes |
-| Sorting | Yes |
+| Metric                     | Value      |
+| -------------------------- | ---------- |
+| Total Endpoints            | 13         |
+| GET endpoints              | 4          |
+| POST endpoints             | 4          |
+| PUT endpoints              | 4          |
+| DELETE endpoints           | 4          |
+| Query Parameters Supported | 6+         |
+| Response Formats           | JSON       |
+| Authentication             | JWT Bearer |
+| Multi-tenant               | Yes        |
+| Pagination                 | Yes        |
+| Filtering                  | Yes        |
+| Sorting                    | Yes        |
 
 ---
 
@@ -531,4 +559,3 @@ curl -X POST http://localhost:8000/api/messages/ \
 **Status:** ✅ Production Ready  
 **API Version:** 1.0  
 **Compatibility:** Django 6.0+, DRF 3.15+
-
