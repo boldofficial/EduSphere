@@ -1,5 +1,16 @@
-
-import { ScoreRow, Settings, Class, Subject, Student, Teacher, Staff, FeeStructure, Payment, Score, Attendance } from './types';
+import {
+  ScoreRow,
+  Settings,
+  Class,
+  Subject,
+  Student,
+  Teacher,
+  Staff,
+  FeeStructure,
+  Payment,
+  Score,
+  Attendance,
+} from './types';
 
 export const calculateGrade = (total: number) => {
   if (total >= 90) return { grade: 'A*', comment: 'Outstanding' };
@@ -41,8 +52,10 @@ export const getMediaUrl = (url: string | null | undefined): string => {
   return url || '';
 };
 
-export const sameId = (a: string | number | null | undefined, b: string | number | null | undefined) =>
-  String(a ?? '') === String(b ?? '');
+export const sameId = (
+  a: string | number | null | undefined,
+  b: string | number | null | undefined
+) => String(a ?? '') === String(b ?? '');
 
 // Debounce utility for performance optimization
 // Debounce utility for performance optimization
@@ -72,7 +85,7 @@ export const PRESET_PRESCHOOL_SUBJECTS = [
   'Handwriting',
   'Diction/Phonics',
   'C.R.S/I.R.S',
-  'Health Education'
+  'Health Education',
 ];
 
 export const PRESET_PRIMARY_SUBJECTS = [
@@ -95,7 +108,7 @@ export const PRESET_PRIMARY_SUBJECTS = [
   'French Language',
   'Verbal Reasoning',
   'Quantitative Reasoning',
-  'Handwriting'
+  'Handwriting',
 ];
 
 export const PRESET_JUNIOR_SEC_SUBJECTS = [
@@ -114,7 +127,7 @@ export const PRESET_JUNIOR_SEC_SUBJECTS = [
   'Physical and Health Education (PHE)',
   'French Language',
   'Computer Studies (ICT)',
-  'Yoruba/Igbo/Hausa'
+  'Yoruba/Igbo/Hausa',
 ];
 
 export const PRESET_SSS_SCIENCE_SUBJECTS = [
@@ -128,7 +141,7 @@ export const PRESET_SSS_SCIENCE_SUBJECTS = [
   'Geography',
   'Agricultural Science',
   'Economics',
-  'Data Processing/Trade'
+  'Data Processing/Trade',
 ];
 
 export const PRESET_SSS_ART_SUBJECTS = [
@@ -143,7 +156,7 @@ export const PRESET_SSS_ART_SUBJECTS = [
   'Fine Art',
   'Yoruba/Igbo/Hausa',
   'Economics',
-  'Data Processing/Trade'
+  'Data Processing/Trade',
 ];
 
 export const PRESET_SSS_COMMERCE_SUBJECTS = [
@@ -157,7 +170,7 @@ export const PRESET_SSS_COMMERCE_SUBJECTS = [
   'Geography',
   'Agricultural Science',
   'Office Practice',
-  'Data Processing/Trade'
+  'Data Processing/Trade',
 ];
 
 export const INITIAL_SETTINGS: Settings = {
@@ -192,57 +205,190 @@ export const INITIAL_SETTINGS: Settings = {
   report_scale: 100,
   landing_hero_title: 'Welcome to Registra',
   landing_hero_subtitle: 'Faith-Based Excellence in Education',
-  landing_features: 'Faith-Based Education, Modern Facilities, Expert Teachers, Safe Environment, Holistic Development, Academic Excellence',
+  landing_features:
+    'Faith-Based Education, Modern Facilities, Expert Teachers, Safe Environment, Holistic Development, Academic Excellence',
   landing_hero_image: null,
-  landing_about_text: 'We are a faith-based school dedicated to training and raising a total child with godly values and excellent character, who will excel through the grace and the wisdom of God, by blending biblical principles with modern scholarship, educating children to thrive and reach their highest height in life.',
+  landing_about_text:
+    'We are a faith-based school dedicated to training and raising a total child with godly values and excellent character, who will excel through the grace and the wisdom of God, by blending biblical principles with modern scholarship, educating children to thrive and reach their highest height in life.',
   landing_gallery_images: [],
   landing_primary_color: '#1A3A5C',
   landing_show_stats: true,
   landing_cta_text: 'Start Your Journey',
   landing_core_values: [
-    { title: 'CARE', description: 'We nurture every child with love, compassion, and individual attention, ensuring they feel valued and supported in their journey.', icon: 'Heart' },
-    { title: 'RESPECT', description: 'We foster an environment of mutual respect, teaching children to honour themselves, others, and their community.', icon: 'Users' },
-    { title: 'EXCELLENCE', description: 'We inspire a pursuit of excellence in academics, character, and all endeavours, helping every child reach their highest potential.', icon: 'Award' }
+    {
+      title: 'CARE',
+      description:
+        'We nurture every child with love, compassion, and individual attention, ensuring they feel valued and supported in their journey.',
+      icon: 'Heart',
+    },
+    {
+      title: 'RESPECT',
+      description:
+        'We foster an environment of mutual respect, teaching children to honour themselves, others, and their community.',
+      icon: 'Users',
+    },
+    {
+      title: 'EXCELLENCE',
+      description:
+        'We inspire a pursuit of excellence in academics, character, and all endeavours, helping every child reach their highest potential.',
+      icon: 'Award',
+    },
   ],
   landing_academic_programs: [
-    { title: "Crèche", image: "/fruitful2.jpg.jpg", age_range: "Ages 0 - 2", description: "A safe and nurturing environment for infants and toddlers to explore and grow." },
-    { title: "Pre-School", image: "/fruitful5.jpg.jpg", age_range: "Ages 3 - 5", description: "Play-based learning that builds foundational skills in literacy, numeracy, and social interaction." },
-    { title: "Primary School", image: "/fruitful3.jpg.jpg", age_range: "Ages 6 - 11", description: "A robust curriculum developing critical thinking, creativity, and strong moral values." }
+    {
+      title: 'Crèche',
+      image: '/fruitful2.jpg.jpg',
+      age_range: 'Ages 0 - 2',
+      description: 'A safe and nurturing environment for infants and toddlers to explore and grow.',
+    },
+    {
+      title: 'Pre-School',
+      image: '/fruitful5.jpg.jpg',
+      age_range: 'Ages 3 - 5',
+      description:
+        'Play-based learning that builds foundational skills in literacy, numeracy, and social interaction.',
+    },
+    {
+      title: 'Primary School',
+      image: '/fruitful3.jpg.jpg',
+      age_range: 'Ages 6 - 11',
+      description:
+        'A robust curriculum developing critical thinking, creativity, and strong moral values.',
+    },
   ],
   landing_testimonials: [],
   landing_stats_config: {
     students: true,
     teachers: true,
-    classes: true
+    classes: true,
   },
   promotion_threshold: 50,
   promotion_rules: 'manual',
   role_permissions: {
-
     super_admin: {
-      navigation: ['dashboard', 'students', 'teachers', 'staff', 'classes', 'timetables', 'grading', 'attendance', 'bursary', 'learning', 'announcements', 'calendar', 'analytics', 'id_cards', 'broadsheet', 'admissions', 'newsletter', 'messages', 'conduct', 'cms', 'data', 'settings', 'admin_schools', 'admin_revenue', 'system_health', 'support'],
-      dashboardWidgets: ['stats', 'finance_chart', 'student_population', 'quick_actions', 'recent_transactions', 'strategic_analytics', 'platform_governance']
+      navigation: [
+        'dashboard',
+        'students',
+        'teachers',
+        'staff',
+        'classes',
+        'timetables',
+        'grading',
+        'attendance',
+        'bursary',
+        'learning',
+        'announcements',
+        'calendar',
+        'analytics',
+        'id_cards',
+        'broadsheet',
+        'admissions',
+        'newsletter',
+        'messages',
+        'conduct',
+        'cms',
+        'data',
+        'settings',
+        'admin_schools',
+        'admin_revenue',
+        'system_health',
+        'support',
+      ],
+      dashboardWidgets: [
+        'stats',
+        'finance_chart',
+        'student_population',
+        'quick_actions',
+        'recent_transactions',
+        'strategic_analytics',
+        'platform_governance',
+      ],
     },
     admin: {
-      navigation: ['dashboard', 'students', 'teachers', 'staff', 'classes', 'timetables', 'grading', 'attendance', 'bursary', 'learning', 'announcements', 'calendar', 'analytics', 'id_cards', 'broadsheet', 'admissions', 'newsletter', 'messages', 'conduct', 'cms', 'data', 'settings', 'support'],
-      dashboardWidgets: ['stats', 'finance_chart', 'student_population', 'quick_actions', 'recent_transactions']
+      navigation: [
+        'dashboard',
+        'students',
+        'teachers',
+        'staff',
+        'classes',
+        'timetables',
+        'grading',
+        'attendance',
+        'bursary',
+        'learning',
+        'announcements',
+        'calendar',
+        'analytics',
+        'id_cards',
+        'broadsheet',
+        'admissions',
+        'newsletter',
+        'messages',
+        'conduct',
+        'cms',
+        'data',
+        'settings',
+        'support',
+      ],
+      dashboardWidgets: [
+        'stats',
+        'finance_chart',
+        'student_population',
+        'quick_actions',
+        'recent_transactions',
+      ],
     },
     teacher: {
-      navigation: ['dashboard', 'timetables', 'grading', 'attendance', 'learning', 'announcements', 'calendar', 'messages', 'conduct'],
-      dashboardWidgets: ['stats', 'quick_actions', 'my_classes']
+      navigation: [
+        'dashboard',
+        'timetables',
+        'grading',
+        'attendance',
+        'learning',
+        'announcements',
+        'calendar',
+        'messages',
+        'conduct',
+      ],
+      dashboardWidgets: ['stats', 'quick_actions', 'my_classes'],
     },
     student: {
-      navigation: ['dashboard', 'timetables', 'grading', 'attendance', 'learning', 'announcements', 'bursary', 'calendar', 'id_cards', 'newsletter', 'messages', 'conduct'],
-      dashboardWidgets: ['my_scores', 'my_attendance', 'my_fees', 'class_info']
+      navigation: [
+        'dashboard',
+        'timetables',
+        'grading',
+        'attendance',
+        'learning',
+        'announcements',
+        'bursary',
+        'calendar',
+        'id_cards',
+        'newsletter',
+        'messages',
+        'conduct',
+      ],
+      dashboardWidgets: ['my_scores', 'my_attendance', 'my_fees', 'class_info'],
     },
     parent: {
-      navigation: ['dashboard', 'grading', 'attendance', 'learning', 'announcements', 'bursary', 'calendar', 'id_cards', 'newsletter', 'messages', 'conduct'],
-      dashboardWidgets: ['my_scores', 'my_attendance', 'my_fees', 'class_info']
+      navigation: [
+        'dashboard',
+        'grading',
+        'attendance',
+        'learning',
+        'announcements',
+        'bursary',
+        'calendar',
+        'id_cards',
+        'newsletter',
+        'messages',
+        'conduct',
+      ],
+      dashboardWidgets: ['my_scores', 'my_attendance', 'my_fees', 'class_info'],
     },
     staff: {
       navigation: ['dashboard', 'calendar', 'messages'],
-      dashboardWidgets: ['quick_actions', 'my_tasks']
-    }
+      dashboardWidgets: ['quick_actions', 'my_tasks'],
+    },
   },
   // Invoice & Payment Settings
   show_bank_details: true,
@@ -252,7 +398,7 @@ export const INITIAL_SETTINGS: Settings = {
   bank_sort_code: '',
   invoice_notes: 'Please ensure payment is made before the due date to avoid late fees.',
   invoice_due_days: 14,
-  currency_symbol: 'NGN'
+  currency_symbol: 'NGN',
 };
 
 export const getSubjectsForClass = (cls: Class | undefined) => {
@@ -261,7 +407,12 @@ export const getSubjectsForClass = (cls: Class | undefined) => {
   if (cls.subjects && cls.subjects.length > 0) return cls.subjects;
 
   const lowerName = cls.name.toLowerCase();
-  if (lowerName.includes('play') || lowerName.includes('reception') || lowerName.includes('nursery') || lowerName.includes('kinder')) {
+  if (
+    lowerName.includes('play') ||
+    lowerName.includes('reception') ||
+    lowerName.includes('nursery') ||
+    lowerName.includes('kinder')
+  ) {
     return PRESET_PRESCHOOL_SUBJECTS;
   }
   if (lowerName.includes('jss') || lowerName.includes('junior')) {
@@ -270,20 +421,37 @@ export const getSubjectsForClass = (cls: Class | undefined) => {
   if (lowerName.includes('sss') || lowerName.includes('senior')) {
     if (lowerName.includes('sci')) return PRESET_SSS_SCIENCE_SUBJECTS;
     if (lowerName.includes('art')) return PRESET_SSS_ART_SUBJECTS;
-    if (lowerName.includes('comm') || lowerName.includes('bus')) return PRESET_SSS_COMMERCE_SUBJECTS;
+    if (lowerName.includes('comm') || lowerName.includes('bus'))
+      return PRESET_SSS_COMMERCE_SUBJECTS;
     return PRESET_SSS_SCIENCE_SUBJECTS; // Default to Science if unsure
   }
   return PRESET_PRIMARY_SUBJECTS;
 };
 
 export const PRESET_CLASSES = [
-  'Playschool', 'Reception', 'Kindergarten',
-  'Nursery 1', 'Nursery 2',
-  'Year 1', 'Year 2', 'Year 3', 'Year 4', 'Year 5', 'Year 6',
-  'JSS 1', 'JSS 2', 'JSS 3',
-  'SSS 1 Science', 'SSS 1 Art', 'SSS 1 Commerce',
-  'SSS 2 Science', 'SSS 2 Art', 'SSS 2 Commerce',
-  'SSS 3 Science', 'SSS 3 Art', 'SSS 3 Commerce'
+  'Playschool',
+  'Reception',
+  'Kindergarten',
+  'Nursery 1',
+  'Nursery 2',
+  'Year 1',
+  'Year 2',
+  'Year 3',
+  'Year 4',
+  'Year 5',
+  'Year 6',
+  'JSS 1',
+  'JSS 2',
+  'JSS 3',
+  'SSS 1 Science',
+  'SSS 1 Art',
+  'SSS 1 Commerce',
+  'SSS 2 Science',
+  'SSS 2 Art',
+  'SSS 2 Commerce',
+  'SSS 3 Science',
+  'SSS 3 Art',
+  'SSS 3 Commerce',
 ];
 
 export const EARLY_YEARS_LEARNING_AREAS = [
@@ -302,15 +470,31 @@ export const isEarlyYearsClass = (cls?: Class) => {
   const category = (cls.category || '').toLowerCase();
   if (category === 'nursery') return true;
   const lowerName = (cls.name || '').toLowerCase();
-  return lowerName.includes('play') || lowerName.includes('reception') || lowerName.includes('nursery') || lowerName.includes('kinder');
+  return (
+    lowerName.includes('play') ||
+    lowerName.includes('reception') ||
+    lowerName.includes('nursery') ||
+    lowerName.includes('kinder')
+  );
 };
 
 export const DOMAINS_AFFECTIVE = [
-  'Punctuality', 'Attentiveness', 'Neatness', 'Honesty', 'Self Control', 'Politeness', 'Leadership'
+  'Punctuality',
+  'Attentiveness',
+  'Neatness',
+  'Honesty',
+  'Self Control',
+  'Politeness',
+  'Leadership',
 ];
 
 export const DOMAINS_PSYCHOMOTOR = [
-  'Handwriting', 'Verbal Fluency', 'Sports/Games', 'Handling Tools', 'Drawing/Painting', 'Music/Dance'
+  'Handwriting',
+  'Verbal Fluency',
+  'Sports/Games',
+  'Handling Tools',
+  'Drawing/Painting',
+  'Music/Dance',
 ];
 
 // Mock Initial Data (Seeds) - EMPTY FOR PRODUCTION
@@ -326,7 +510,7 @@ export const SEED_CLASSES: Class[] = [
     subjects: PRESET_PRESCHOOL_SUBJECTS,
     category: 'Preschool',
     created_at: Date.now(),
-    updated_at: Date.now()
+    updated_at: Date.now(),
   },
   {
     id: 'class-reception',
@@ -335,7 +519,7 @@ export const SEED_CLASSES: Class[] = [
     subjects: PRESET_PRESCHOOL_SUBJECTS,
     category: 'Preschool',
     created_at: Date.now(),
-    updated_at: Date.now()
+    updated_at: Date.now(),
   },
   {
     id: 'class-kindergarten',
@@ -344,7 +528,7 @@ export const SEED_CLASSES: Class[] = [
     subjects: PRESET_PRESCHOOL_SUBJECTS,
     category: 'Preschool',
     created_at: Date.now(),
-    updated_at: Date.now()
+    updated_at: Date.now(),
   },
   {
     id: 'class-year-1',
@@ -353,7 +537,7 @@ export const SEED_CLASSES: Class[] = [
     subjects: PRESET_PRIMARY_SUBJECTS,
     category: 'Primary',
     created_at: Date.now(),
-    updated_at: Date.now()
+    updated_at: Date.now(),
   },
   {
     id: 'class-year-2',
@@ -362,7 +546,7 @@ export const SEED_CLASSES: Class[] = [
     subjects: PRESET_PRIMARY_SUBJECTS,
     category: 'Primary',
     created_at: Date.now(),
-    updated_at: Date.now()
+    updated_at: Date.now(),
   },
   {
     id: 'class-year-3',
@@ -371,7 +555,7 @@ export const SEED_CLASSES: Class[] = [
     subjects: PRESET_PRIMARY_SUBJECTS,
     category: 'Primary',
     created_at: Date.now(),
-    updated_at: Date.now()
+    updated_at: Date.now(),
   },
   {
     id: 'class-year-4',
@@ -380,7 +564,7 @@ export const SEED_CLASSES: Class[] = [
     subjects: PRESET_PRIMARY_SUBJECTS,
     category: 'Primary',
     created_at: Date.now(),
-    updated_at: Date.now()
+    updated_at: Date.now(),
   },
   {
     id: 'class-year-5',
@@ -389,7 +573,7 @@ export const SEED_CLASSES: Class[] = [
     subjects: PRESET_PRIMARY_SUBJECTS,
     category: 'Primary',
     created_at: Date.now(),
-    updated_at: Date.now()
+    updated_at: Date.now(),
   },
   {
     id: 'class-year-6',
@@ -398,8 +582,8 @@ export const SEED_CLASSES: Class[] = [
     subjects: PRESET_PRIMARY_SUBJECTS,
     category: 'Primary',
     created_at: Date.now(),
-    updated_at: Date.now()
-  }
+    updated_at: Date.now(),
+  },
 ];
 
 export const SEED_STUDENTS: Student[] = [];
@@ -408,16 +592,23 @@ export const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
 };
 
-export const getStudentBalance = (student: Student, fees: FeeStructure[], payments: Payment[], session: string, term: string) => {
+export const getStudentBalance = (
+  student: Student,
+  fees: FeeStructure[],
+  payments: Payment[],
+  session: string,
+  term: string
+) => {
   // Calculate total bill for this session/term
-  const classFees = fees.filter(f =>
-    f.session === session &&
-    f.term === term &&
-    (f.class_id === null || String(f.class_id) === String(student.class_id))
+  const classFees = fees.filter(
+    (f) =>
+      f.session === session &&
+      f.term === term &&
+      (f.class_id === null || String(f.class_id) === String(student.class_id))
   );
 
   // Filter mandatory vs optional fees
-  const applicableFees = classFees.filter(f => {
+  const applicableFees = classFees.filter((f) => {
     if (!f.is_optional) return true; // Mandatory fees always apply
     return (student.assigned_fees || []).includes(f.id); // Optional fees only if assigned
   });
@@ -425,46 +616,57 @@ export const getStudentBalance = (student: Student, fees: FeeStructure[], paymen
   const rawBill = applicableFees.reduce((acc, f) => acc + (Number(f.amount) || 0), 0);
 
   // Calculate discounts for this session/term
-  const activeDiscounts = (student.discounts || []).filter(d => d.session === session && d.term === term);
+  const activeDiscounts = (student.discounts || []).filter(
+    (d) => d.session === session && d.term === term
+  );
   const totalDiscount = activeDiscounts.reduce((acc, d) => acc + (Number(d.amount) || 0), 0);
 
   const totalBill = Math.max(0, rawBill - totalDiscount); // Ensure bill doesn't go below 0
 
   // Calculate total paid
-  const studentPayments = payments.filter(p =>
-    String(p.student_id) === String(student.id) &&
-    p.session === session &&
-    p.term === term
+  const studentPayments = payments.filter(
+    (p) => String(p.student_id) === String(student.id) && p.session === session && p.term === term
   );
   const totalPaid = studentPayments.reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
 
   return { totalBill, totalPaid, balance: totalBill - totalPaid, totalDiscount, applicableFees };
 };
 
-export const getStudentPosition = (studentId: string, students: Student[], scores: Score[], session: string, term: string) => {
-  const student = students.find(s => s.id === studentId);
+export const getStudentPosition = (
+  studentId: string,
+  students: Student[],
+  scores: Score[],
+  session: string,
+  term: string
+) => {
+  const student = students.find((s) => s.id === studentId);
   if (!student) return null;
 
-  const classStudents = students.filter(s => String(s.class_id) === String(student.class_id));
-  const classScores = classStudents.map(s => {
-    const score = scores.find(sc => sc.student_id === s.id && sc.session === session && sc.term === term);
-    return {
-      student_id: s.id,
-      total: score?.rows.reduce((acc, r) => acc + r.total, 0) || 0
-    };
-  }).sort((a, b) => b.total - a.total);
+  const classStudents = students.filter((s) => String(s.class_id) === String(student.class_id));
+  const classScores = classStudents
+    .map((s) => {
+      const score = scores.find(
+        (sc) => sc.student_id === s.id && sc.session === session && sc.term === term
+      );
+      return {
+        student_id: s.id,
+        total: score?.rows.reduce((acc, r) => acc + r.total, 0) || 0,
+      };
+    })
+    .sort((a, b) => b.total - a.total);
 
-  const index = classScores.findIndex(s => s.student_id === studentId);
+  const index = classScores.findIndex((s) => s.student_id === studentId);
   return index !== -1 ? index + 1 : null;
 };
 
 // Helper to ordinalize numbers (1st, 2nd, 3rd)
 export const ordinalSuffix = (i: number) => {
-  const j = i % 10, k = i % 100;
-  if (j === 1 && k !== 11) return i + "st";
-  if (j === 2 && k !== 12) return i + "nd";
-  if (j === 3 && k !== 13) return i + "rd";
-  return i + "th";
+  const j = i % 10,
+    k = i % 100;
+  if (j === 1 && k !== 11) return i + 'st';
+  if (j === 2 && k !== 12) return i + 'nd';
+  if (j === 3 && k !== 13) return i + 'rd';
+  return i + 'th';
 };
 
 export function formatDate(date: string | number | Date, formatStr: string = 'PP') {
@@ -484,11 +686,11 @@ export function formatDate(date: string | number | Date, formatStr: string = 'PP
 export function formatDateTime(date: string | number | Date) {
   const d = new Date(date);
   if (isNaN(d.getTime())) return String(date);
-  return d.toLocaleString('en-US', { 
-    month: 'short', 
-    day: 'numeric', 
+  return d.toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
     year: 'numeric',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
   });
 }
