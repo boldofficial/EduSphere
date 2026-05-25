@@ -1,12 +1,15 @@
 # feat: security audit trails
 
 ## Summary
+
 Every system mutation (grades, finances, inventory) is audited at the database level for full accountability.
 
 ## Branch Name
+
 `feature/security-audit-trails`
 
 ## PR Title
+
 `feat: add database-level audit trails for grades, finance, and inventory mutations`
 
 ---
@@ -83,22 +86,23 @@ class AuditableMixin:
 
 ## Audited Models
 
-| Module | Models Audited |
-|--------|---------------|
-| Grades | `Grade`, `GradingScheme` |
-| Finance | `Payment`, `FeeAssignment`, `FeeDiscount` |
-| Inventory | `StockMovement`, `InventoryItem` |
-| Users | `User` (role changes, password resets) |
-| CBT | `ExamSession`, `ExamViolation` |
+| Module    | Models Audited                            |
+| --------- | ----------------------------------------- |
+| Grades    | `Grade`, `GradingScheme`                  |
+| Finance   | `Payment`, `FeeAssignment`, `FeeDiscount` |
+| Inventory | `StockMovement`, `InventoryItem`          |
+| Users     | `User` (role changes, password resets)    |
+| CBT       | `ExamSession`, `ExamViolation`            |
 
 ## API Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/audit-log/` | Query audit log (admin only) |
-| GET | `/api/audit-log/?model=Grade&actor_id=5&from=2026-01-01` | Filtered query |
+| Method | Endpoint                                                 | Description                  |
+| ------ | -------------------------------------------------------- | ---------------------------- |
+| GET    | `/api/audit-log/`                                        | Query audit log (admin only) |
+| GET    | `/api/audit-log/?model=Grade&actor_id=5&from=2026-01-01` | Filtered query               |
 
 ## Acceptance Criteria
+
 - [ ] AuditLog records created for all create/update/delete on audited models
 - [ ] `changes` field captures before/after values for updates
 - [ ] Audit records are append-only — no update or delete permissions on the model
