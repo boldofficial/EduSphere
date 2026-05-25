@@ -64,14 +64,14 @@ from users.models import User
 
 class PaymentModelTests(TestCase):
     """Unit tests for Payment model"""
-    
+
     def setUp(self):
         self.school = School.objects.create(name='Test School')
         self.user = User.objects.create_user(
             username='test@test.com',
             school=self.school
         )
-    
+
     def test_payment_creation(self):
         """Test creating a payment"""
         payment = Payment.objects.create(
@@ -82,7 +82,7 @@ class PaymentModelTests(TestCase):
         )
         self.assertTrue(payment.id)
         self.assertEqual(payment.amount, 50000)
-    
+
     def test_payment_auto_field_population(self):
         """Test that auto fields are populated"""
         payment = Payment.objects.create(
@@ -151,23 +151,23 @@ from rest_framework.test import APITestCase
 from rest_framework import status
 
 class BursaryIntegrationTests(APITestCase):
-    
+
     def test_create_payment(self):
         """Test complete payment workflow"""
         # Setup
         school = School.objects.create(name='Test')
         user = User.objects.create_user(username='test', school=school)
-        
+
         # Authenticate
         self.client.force_authenticate(user=user)
-        
+
         # Create payment
         response = self.client.post('/api/payments/', {
             'student': 1,
             'amount': 50000,
             'payment_method': 'bank_transfer'
         })
-        
+
         # Assert
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 ```
@@ -179,6 +179,7 @@ class BursaryIntegrationTests(APITestCase):
 ### Manual API Testing with cURL
 
 #### Fee Categories
+
 ```bash
 # List fee categories (paginated)
 curl -H "Authorization: Bearer TOKEN" \
@@ -206,6 +207,7 @@ curl -X DELETE -H "Authorization: Bearer TOKEN" \
 ```
 
 #### Payments
+
 ```bash
 # List payments with pagination
 curl -H "Authorization: Bearer TOKEN" \
@@ -228,6 +230,7 @@ curl -H "Authorization: Bearer TOKEN" \
 ```
 
 #### School Events
+
 ```bash
 # List events
 curl -H "Authorization: Bearer TOKEN" \
@@ -251,6 +254,7 @@ curl -H "Authorization: Bearer TOKEN" \
 ```
 
 #### School Messages
+
 ```bash
 # List messages
 curl -H "Authorization: Bearer TOKEN" \
@@ -322,13 +326,13 @@ from locust import HttpUser, task, between
 
 class SchoolManagementUser(HttpUser):
     wait_time = between(1, 3)
-    
+
     @task(3)
     def list_payments(self):
         self.client.get("/api/payments/", headers={
             "Authorization": "Bearer TOKEN"
         })
-    
+
     @task(1)
     def create_payment(self):
         self.client.post("/api/payments/", headers={
@@ -338,7 +342,7 @@ class SchoolManagementUser(HttpUser):
             "amount": 50000,
             "payment_method": "bank_transfer"
         })
-    
+
     @task(2)
     def list_events(self):
         self.client.get("/api/events/", headers={
@@ -363,33 +367,33 @@ from django.core.cache import cache
 from django.test import TestCase
 
 class CachingTests(TestCase):
-    
+
     def test_cache_hit_on_list_endpoint(self):
         """Test that cache is being used"""
         # First request (cache miss)
         response1 = self.client.get('/api/payments/')
-        
+
         # Second request (should be cached)
         response2 = self.client.get('/api/payments/')
-        
+
         # Both should return same data
         self.assertEqual(response1.data, response2.data)
-    
+
     def test_cache_invalidation_on_create(self):
         """Test that cache is invalidated on create"""
         cache.clear()
-        
+
         # Get initial list
         response1 = self.client.get('/api/payments/')
         count1 = response1.data['count']
-        
+
         # Create new payment
         self.client.post('/api/payments/', {...})
-        
+
         # Get list again
         response2 = self.client.get('/api/payments/')
         count2 = response2.data['count']
-        
+
         # Count should increase
         self.assertEqual(count2, count1 + 1)
 ```
@@ -402,28 +406,28 @@ class CachingTests(TestCase):
 
 ```python
 class MultiTenantTests(APITestCase):
-    
+
     def test_users_see_only_own_school_data(self):
         """Test that users can't see other schools' data"""
         # Create two schools
         school1 = School.objects.create(name='School 1')
         school2 = School.objects.create(name='School 2')
-        
+
         user1 = User.objects.create_user(
             username='user1', school=school1
         )
         user2 = User.objects.create_user(
             username='user2', school=school2
         )
-        
+
         # Create fee in school1
         FeeCategory.objects.create(name='Fee1', school=school1)
-        
+
         # User1 should see the fee
         self.client.force_authenticate(user=user1)
         response = self.client.get('/api/fee-categories/')
         self.assertEqual(response.data['count'], 1)
-        
+
         # User2 should see nothing
         self.client.force_authenticate(user=user2)
         response = self.client.get('/api/fee-categories/')
@@ -442,20 +446,20 @@ from django.test.utils import override_settings
 
 @override_settings(DEBUG=True)
 class QueryOptimizationTests(TransactionTestCase):
-    
+
     def test_no_n_plus_one_on_list(self):
         """Test that list endpoint doesn't have N+1 queries"""
         from django.db import reset_queries, connection
-        
+
         reset_queries()
-        
+
         # Create test data
         for i in range(10):
             Student.objects.create(...)
-        
+
         # Fetch list
         response = self.client.get('/api/students/')
-        
+
         # Should have <5 queries regardless of record count
         query_count = len(connection.queries)
         self.assertLess(query_count, 5)
@@ -477,7 +481,7 @@ on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     services:
       postgres:
         image: postgres:14
@@ -492,20 +496,20 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
-    
+
     steps:
       - uses: actions/checkout@v2
-      
+
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
           python-version: 3.11
-      
+
       - name: Install dependencies
         run: |
           pip install -r backend/requirements.txt
           pip install pytest pytest-django
-      
+
       - name: Run tests
         run: cd backend && python manage.py test
         env:
@@ -515,7 +519,7 @@ jobs:
           DB_NAME: test_db
           DB_USER: postgres
           DB_PASSWORD: postgres
-      
+
       - name: Generate coverage report
         run: |
           pip install coverage
@@ -546,13 +550,13 @@ jobs:
 
 ## 12. Test Coverage Goals
 
-| Module | Target | Current |
-|--------|--------|---------|
-| Bursary | 85%+ | 90% |
-| Academic | 85%+ | 88% |
-| Core | 85%+ | 92% |
-| Users | 85%+ | 85% |
-| Schools | 85%+ | 87% |
+| Module   | Target | Current |
+| -------- | ------ | ------- |
+| Bursary  | 85%+   | 90%     |
+| Academic | 85%+   | 88%     |
+| Core     | 85%+   | 92%     |
+| Users    | 85%+   | 85%     |
+| Schools  | 85%+   | 87%     |
 
 ---
 
@@ -587,18 +591,21 @@ python manage.py test --database=production
 ### Common Issues
 
 **Issue: Tests fail with "permission denied"**
+
 ```bash
 # Solution: Run with appropriate permissions
 python manage.py test --no-migrations
 ```
 
 **Issue: "No such table" error**
+
 ```bash
 # Solution: Ensure test database is created
 python manage.py migrate --run-syncdb
 ```
 
 **Issue: Cache tests failing**
+
 ```bash
 # Solution: Clear cache before tests
 cache.clear()
@@ -616,4 +623,3 @@ Testing Status: ✅ **PRODUCTION READY**
 - Multi-tenant isolation verified
 - CI/CD pipeline template provided
 - 85%+ code coverage across all modules
-
