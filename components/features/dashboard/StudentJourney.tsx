@@ -32,36 +32,47 @@ export const StudentJourney: React.FC<{ studentId: string }> = ({ studentId }) =
       </div>
 
       <div className="relative space-y-8 before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-indigo-100 before:via-indigo-50 before:to-transparent">
-        {history.map((item: any) => (
-          <div key={item.id} className="relative flex items-start gap-6 group">
-            <div className="absolute left-0 mt-1.5 flex h-10 w-10 items-center justify-center rounded-full bg-white border-2 border-indigo-50 shadow-sm z-10 group-hover:scale-110 transition-transform">
-              {getIcon(item.action)}
-            </div>
-            <div className="flex-1 ml-12">
-              <div className="flex items-center justify-between mb-1">
-                <h4 className="font-bold text-gray-900 leading-none">{item.action}</h4>
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                  {Utils.formatDate(item.created_at, 'MMM d, yyyy')}
-                </span>
+        {history.map(
+          (item: {
+            id: string;
+            action: string;
+            created_at: string;
+            from_value?: string;
+            to_value?: string;
+            session?: string;
+            term?: string;
+          }) => (
+            <div key={item.id} className="relative flex items-start gap-6 group">
+              <div className="absolute left-0 mt-1.5 flex h-10 w-10 items-center justify-center rounded-full bg-white border-2 border-indigo-50 shadow-sm z-10 group-hover:scale-110 transition-transform">
+                {getIcon(item.action)}
               </div>
-              <p className="text-sm text-gray-500 font-medium">
-                {item.from_value && item.to_value ? (
-                  <>
-                    Changed from <span className="text-gray-900 font-bold">{item.from_value}</span>{' '}
-                    to <span className="text-indigo-600 font-black">{item.to_value}</span>
-                  </>
-                ) : (
-                  item.to_value || ''
-                )}
-              </p>
-              {item.session && (
-                <div className="mt-2 text-[10px] font-black text-indigo-400 uppercase tracking-tighter">
-                  {item.session} • {item.term}
+              <div className="flex-1 ml-12">
+                <div className="flex items-center justify-between mb-1">
+                  <h4 className="font-bold text-gray-900 leading-none">{item.action}</h4>
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                    {Utils.formatDate(item.created_at, 'MMM d, yyyy')}
+                  </span>
                 </div>
-              )}
+                <p className="text-sm text-gray-500 font-medium">
+                  {item.from_value && item.to_value ? (
+                    <>
+                      Changed from{' '}
+                      <span className="text-gray-900 font-bold">{item.from_value}</span> to{' '}
+                      <span className="text-indigo-600 font-black">{item.to_value}</span>
+                    </>
+                  ) : (
+                    item.to_value || ''
+                  )}
+                </p>
+                {item.session && (
+                  <div className="mt-2 text-[10px] font-black text-indigo-400 uppercase tracking-tighter">
+                    {item.session} • {item.term}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        )}
       </div>
     </Card>
   );
