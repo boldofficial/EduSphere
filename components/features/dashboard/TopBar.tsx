@@ -6,7 +6,7 @@ interface TopBarProps {
   onMenuToggle: () => void;
   onSearchOpen: () => void;
   currentRole: string;
-  settings: any;
+  settings: { current_term?: string };
 }
 
 export function TopBar({ onMenuToggle, onSearchOpen, currentRole, settings }: TopBarProps) {
