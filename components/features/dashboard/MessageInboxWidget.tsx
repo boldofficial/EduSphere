@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Mail, MailOpen, ChevronRight, Clock, Reply, Send, User } from 'lucide-react';
+import { Mail, ChevronRight, Clock, Reply, Send, User } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
-import { useMessages, useUpdateMessage, useCreateMessage } from '@/lib/hooks/use-data';
+import { useMessages, useCreateMessage } from '@/lib/hooks/use-data';
 import { useSchoolStore } from '@/lib/store';
 import { useToast } from '@/components/providers/toast-provider';
 import * as Types from '@/lib/types';
@@ -18,12 +18,11 @@ interface MessageInboxWidgetProps {
 
 export const MessageInboxWidget: React.FC<MessageInboxWidgetProps> = ({
   maxMessages = 5,
-  showViewAll = true,
+  showViewAll: _showViewAll = true,
 }) => {
-  const { currentRole, currentUser } = useSchoolStore();
+  const { currentUser } = useSchoolStore();
   const { addToast } = useToast();
   const { data: messages = [] } = useMessages();
-  const { mutate: updateMessage } = useUpdateMessage();
   const { mutate: createMessage, isPending: isSending } = useCreateMessage();
 
   // State for viewing/replying
@@ -32,8 +31,6 @@ export const MessageInboxWidget: React.FC<MessageInboxWidgetProps> = ({
   const [replyBody, setReplyBody] = useState('');
 
   // Get the user's profile ID - now from currentUser (demo mode)
-  const myProfileId = currentUser?.id;
-  const myAuthId = currentUser?.id;
 
   // Get messages for this user (they are already filtered by backend to only show my conversations)
   const myMessages = React.useMemo(() => {
@@ -48,7 +45,6 @@ export const MessageInboxWidget: React.FC<MessageInboxWidgetProps> = ({
 
   // Get unread count - this is trickier now as read status is per-participant
   // For now, we'll rely on the conversational unread counts or just show 0 in this simplified widget
-  const unreadCount = 0;
 
   // Check if this message was sent to me
   const isMessageToMe = (message: Types.Message) => {
@@ -77,7 +73,7 @@ export const MessageInboxWidget: React.FC<MessageInboxWidgetProps> = ({
     const payload = {
       conversation: viewingMessage.conversation,
       body: replyBody.trim(),
-    } as any;
+    };
 
     createMessage(payload, {
       onSuccess: () => {
