@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { ShieldCheck, Eye, CheckCircle, Mail, Globe, User } from 'lucide-react';
+import { ShieldCheck, CheckCircle, User } from 'lucide-react';
 import { useToast } from '@/components/providers/toast-provider';
 import apiClient from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
@@ -22,21 +22,20 @@ export const DashboardDemoRequestsTab: React.FC = () => {
   const { addToast } = useToast();
   const [processingId, setProcessingId] = useState<number | null>(null);
 
-  const fetchRequests = async () => {
-    try {
-      const response = await apiClient.get('schools/admin/demo-requests/');
-      setRequests(response.data);
-    } catch (error) {
-      console.error('Failed to fetch demo requests:', error);
-      addToast('Failed to load demo requests', 'error');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchRequests();
-  }, []);
+    const loadRequests = async () => {
+      try {
+        const response = await apiClient.get('schools/admin/demo-requests/');
+        setRequests(response.data);
+      } catch (error) {
+        console.error('Failed to fetch demo requests:', error);
+        addToast('Failed to load demo requests', 'error');
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadRequests();
+  }, [addToast]);
 
   const handleApprove = async (id: number) => {
     setProcessingId(id);
