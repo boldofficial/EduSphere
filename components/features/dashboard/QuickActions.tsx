@@ -13,7 +13,7 @@ import * as Types from '@/lib/types';
 
 interface QuickActionsProps {
   onChangeView: (view: Types.ViewState) => void;
-  onTabChange?: (tab: any) => void;
+  onTabChange?: (tab: string) => void;
   userRole?: string;
   allowedModules?: string[];
 }
