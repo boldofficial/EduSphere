@@ -20,6 +20,7 @@ import {
   Heart,
   GraduationCap,
 } from 'lucide-react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import * as Types from '@/lib/types';
@@ -27,7 +28,7 @@ import * as Utils from '@/lib/utils';
 
 interface DashboardCmsTabProps {
   editedSettings: Types.Settings;
-  handleChange: (field: keyof Types.Settings, value: any) => void;
+  handleChange: (field: keyof Types.Settings, value: unknown) => void;
   handleSaveSettings: () => void;
   handleImageUpload: (e: React.ChangeEvent<HTMLInputElement>, field: keyof Types.Settings) => void;
   features: string[];
@@ -41,7 +42,7 @@ interface DashboardCmsTabProps {
   handleAcademicProgramChange: (
     index: number,
     field: keyof Types.AcademicProgram,
-    value: any
+    value: unknown
   ) => void;
   addAcademicProgram: () => void;
   removeAcademicProgram: (index: number) => void;
@@ -157,11 +158,13 @@ export const DashboardCmsTab: React.FC<DashboardCmsTabProps> = ({
             </label>
             <div className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center hover:border-brand-300 transition-colors">
               {editedSettings.landing_hero_image ? (
-                <div className="relative">
-                  <img
+                <div className="relative h-32 w-full">
+                  <Image
                     src={Utils.getMediaUrl(editedSettings.landing_hero_image)}
                     alt="Hero"
-                    className="h-32 w-full object-cover rounded-lg"
+                    fill
+                    className="object-cover rounded-lg"
+                    unoptimized
                   />
                   <button
                     onClick={() => handleChange('landing_hero_image', null)}
@@ -333,10 +336,12 @@ export const DashboardCmsTab: React.FC<DashboardCmsTabProps> = ({
               <div className="p-4 space-y-3">
                 <div className="h-32 bg-gray-200 rounded-xl overflow-hidden mb-3 relative group/img">
                   {program.image ? (
-                    <img
+                    <Image
                       src={Utils.getMediaUrl(program.image)}
                       alt={program.title}
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
+                      unoptimized
                     />
                   ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center text-gray-400">
