@@ -6,16 +6,12 @@ import {
   Send,
   Plus,
   Search,
-  Filter,
-  MoreVertical,
   ChevronRight,
   BarChart3,
   Clock,
   CheckCircle,
   AlertCircle,
   User,
-  HardDrive,
-  History,
   Layout,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -40,10 +36,19 @@ interface EmailCampaign {
   completed_at?: string;
 }
 
+interface EmailLog {
+  id: number;
+  recipient: string;
+  subject: string;
+  campaign_title?: string;
+  status: string;
+  sent_at: string;
+}
+
 export const EmailMarketingTab: React.FC = () => {
   const [activeSubTab, setActiveSubTab] = useState<'campaigns' | 'logs'>('campaigns');
   const [campaigns, setCampaigns] = useState<EmailCampaign[]>([]);
-  const [logs, setLogs] = useState<any[]>([]);
+  const [logs, setLogs] = useState<EmailLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -58,9 +63,31 @@ export const EmailMarketingTab: React.FC = () => {
   const { addToast } = useToast();
 
   useEffect(() => {
-    fetchData();
-    fetchStats();
-  }, [activeSubTab]);
+    const load = async () => {
+      setIsLoading(true);
+      try {
+        if (activeSubTab === 'campaigns') {
+          const res = await apiClient.get('emails/campaigns/');
+          setCampaigns(res.data);
+        } else {
+          const res = await apiClient.get('emails/logs/');
+          setLogs(res.data);
+        }
+      } catch {
+        addToast('Failed to fetch data', 'error');
+      } finally {
+        setIsLoading(false);
+      }
+
+      try {
+        const res = await apiClient.get('emails/campaigns/stats/');
+        setStats(res.data);
+      } catch {
+        // Stats are non-critical, silently fail
+      }
+    };
+    load();
+  }, [activeSubTab, addToast]);
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -72,19 +99,10 @@ export const EmailMarketingTab: React.FC = () => {
         const res = await apiClient.get('emails/logs/');
         setLogs(res.data);
       }
-    } catch (error) {
+    } catch {
       addToast('Failed to fetch data', 'error');
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const fetchStats = async () => {
-    try {
-      const res = await apiClient.get('emails/campaigns/stats/');
-      setStats(res.data);
-    } catch (error) {
-      // Stats are non-critical, silently fail
     }
   };
 
@@ -93,7 +111,7 @@ export const EmailMarketingTab: React.FC = () => {
       await apiClient.post(`emails/campaigns/${id}/send_campaign/`);
       addToast('Campaign queued for sending', 'success');
       fetchData();
-    } catch (error) {
+    } catch {
       addToast('Failed to trigger campaign', 'error');
     }
   };
