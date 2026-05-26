@@ -53,7 +53,7 @@ export const StrategicAnalyticsTab: React.FC<AnalyticsTabProps> = ({ data }) => 
   const totalSchools = data.registrations?.reduce((acc, curr) => acc + curr.value, 0) || 0;
 
   // Calculate growth percentages
-  const getGrowth = (list: any[]) => {
+  const getGrowth = (list: { name: string; value: number }[]) => {
     if (!list || list.length < 2) return 0;
     const last = list[list.length - 1].value;
     const prev = list[list.length - 2].value;
@@ -169,7 +169,7 @@ export const StrategicAnalyticsTab: React.FC<AnalyticsTabProps> = ({ data }) => 
                     fontSize: '12px',
                     fontWeight: 'bold',
                   }}
-                  formatter={(v: any) => [`₦${v.toLocaleString()}`, 'Revenue']}
+                  formatter={(v: number) => [`₦${v.toLocaleString()}`, 'Revenue']}
                 />
                 <Area
                   type="monotone"
@@ -201,40 +201,36 @@ export const StrategicAnalyticsTab: React.FC<AnalyticsTabProps> = ({ data }) => 
           </div>
           <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              {
-                (
-                  <BarChart data={data.registrations}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
-                    <XAxis
-                      dataKey="name"
-                      stroke="#9CA3AF"
-                      fontSize={10}
-                      fontWeight="bold"
-                      axisLine={false}
-                      tickLine={false}
-                      dy={10}
-                    />
-                    <YAxis
-                      stroke="#9CA3AF"
-                      fontSize={10}
-                      fontWeight="bold"
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        borderRadius: '16px',
-                        border: 'none',
-                        boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)',
-                        fontSize: '12px',
-                        fontWeight: 'bold',
-                      }}
-                      cursor={{ fill: '#F3F4F6' }}
-                    />
-                    <Bar dataKey="value" fill="#6366F1" radius={[10, 10, 0, 0]} barSize={24} />
-                  </BarChart>
-                ) as any
-              }
+              <BarChart data={data.registrations}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                <XAxis
+                  dataKey="name"
+                  stroke="#9CA3AF"
+                  fontSize={10}
+                  fontWeight="bold"
+                  axisLine={false}
+                  tickLine={false}
+                  dy={10}
+                />
+                <YAxis
+                  stroke="#9CA3AF"
+                  fontSize={10}
+                  fontWeight="bold"
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: '16px',
+                    border: 'none',
+                    boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)',
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                  }}
+                  cursor={{ fill: '#F3F4F6' }}
+                />
+                <Bar dataKey="value" fill="#6366F1" radius={[10, 10, 0, 0]} barSize={24} />
+              </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
@@ -254,39 +250,35 @@ export const StrategicAnalyticsTab: React.FC<AnalyticsTabProps> = ({ data }) => 
           </div>
           <div className="h-[300px] w-full flex items-center">
             <ResponsiveContainer width="100%" height="100%">
-              {
-                (
-                  <PieChart>
-                    <Pie
-                      data={data.plans}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={100}
-                      paddingAngle={8}
-                      dataKey="school_count"
-                      nameKey="name"
-                    >
-                      {data.plans.map((entry, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={COLORS[index % COLORS.length]}
-                          stroke="none"
-                        />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      contentStyle={{
-                        borderRadius: '16px',
-                        border: 'none',
-                        boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)',
-                        fontSize: '12px',
-                        fontWeight: 'bold',
-                      }}
+              <PieChart>
+                <Pie
+                  data={data.plans}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={100}
+                  paddingAngle={8}
+                  dataKey="school_count"
+                  nameKey="name"
+                >
+                  {data.plans.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                      stroke="none"
                     />
-                  </PieChart>
-                ) as any
-              }
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: '16px',
+                    border: 'none',
+                    boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)',
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                  }}
+                />
+              </PieChart>
             </ResponsiveContainer>
             <div className="flex flex-col gap-3 pr-8">
               {data.plans.map((plan, i) => (
