@@ -62,7 +62,7 @@ export const CreateCampaignModal: React.FC<CreateCampaignModalProps> = ({
       };
       fetchTemplates();
     }
-  }, [isOpen]);
+  }, [isOpen, addToast]);
 
   const handleCreate = async () => {
     if (!formData.title) return addToast('Campaign title is required', 'error');
