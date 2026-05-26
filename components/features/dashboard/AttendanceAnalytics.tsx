@@ -13,7 +13,6 @@ import {
 import { Card } from '@/components/ui/card';
 import { useAttendance } from '@/lib/hooks/use-data';
 import * as Utils from '@/lib/utils';
-import * as Types from '@/lib/types';
 
 export const AttendanceAnalytics: React.FC = () => {
   const { data: attendanceData = [] } = useAttendance();
