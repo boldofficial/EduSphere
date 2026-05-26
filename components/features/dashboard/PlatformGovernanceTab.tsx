@@ -3,7 +3,6 @@
 import React from 'react';
 import {
   ShieldCheck,
-  Bell,
   Activity,
   Clock,
   User,
@@ -11,15 +10,15 @@ import {
   AlertCircle,
   CheckCircle2,
   Search,
-  Filter,
   Plus,
   Megaphone,
+  CreditCard,
+  Trash2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/providers/toast-provider';
 import apiClient from '@/lib/api-client';
-import { Trash2 } from 'lucide-react';
 
 interface GovernanceTabProps {
   activities: {
@@ -56,9 +55,17 @@ export const PlatformGovernanceTab: React.FC<GovernanceTabProps> = ({
 }) => {
   const [searchTerm, setSearchTerm] = React.useState('');
   const [isSearching, setIsSearching] = React.useState(false);
-  const [searchResults, setSearchResults] = React.useState<{ schools: any[]; logs: any[] } | null>(
-    null
-  );
+  const [searchResults, setSearchResults] = React.useState<{
+    schools: Array<{ id: number; name: string; domain: string }>;
+    logs: Array<{
+      id: number;
+      action: string;
+      school_name: string;
+      user_email: string;
+      description: string;
+      created_at: string;
+    }>;
+  } | null>(null);
   const [maintenanceMode, setMaintenanceMode] = React.useState(false);
   const { addToast } = useToast();
 
@@ -167,53 +174,62 @@ export const PlatformGovernanceTab: React.FC<GovernanceTabProps> = ({
             )}
 
             <div className="space-y-4">
-              {displayActivities.map((activity: any) => (
-                <div
-                  key={activity.id}
-                  className="group p-5 bg-gray-50 hover:bg-white hover:shadow-lg hover:shadow-indigo-500/5 border border-transparent hover:border-indigo-100 rounded-3xl transition-all duration-300"
-                >
-                  <div className="flex items-start gap-4">
-                    <div
-                      className={`p-3 rounded-2xl bg-white shadow-sm border border-gray-100 group-hover:scale-110 transition-transform`}
-                    >
-                      {ACTION_ICONS[activity.action] || (
-                        <ShieldCheck className="text-gray-400" size={16} />
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-1">
-                        <h4 className="font-black text-gray-900 text-sm tracking-tight uppercase">
-                          {activity.action.replace(/_/g, ' ')}
-                        </h4>
-                        <span className="text-[10px] font-bold text-gray-400 flex items-center gap-1">
-                          <Clock size={10} />{' '}
-                          {new Date(activity.created_at).toLocaleTimeString([], {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
-                        </span>
+              {displayActivities.map(
+                (activity: {
+                  id: number;
+                  action: string;
+                  school_name: string;
+                  user_email: string;
+                  description: string;
+                  created_at: string;
+                }) => (
+                  <div
+                    key={activity.id}
+                    className="group p-5 bg-gray-50 hover:bg-white hover:shadow-lg hover:shadow-indigo-500/5 border border-transparent hover:border-indigo-100 rounded-3xl transition-all duration-300"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div
+                        className={`p-3 rounded-2xl bg-white shadow-sm border border-gray-100 group-hover:scale-110 transition-transform`}
+                      >
+                        {ACTION_ICONS[activity.action] || (
+                          <ShieldCheck className="text-gray-400" size={16} />
+                        )}
                       </div>
-                      <p className="text-sm text-gray-600 font-medium mb-3">
-                        {activity.description}
-                      </p>
-                      <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white border border-gray-100 rounded-full">
-                          <School size={10} className="text-brand-500" />
-                          <span className="text-[10px] font-black text-gray-500 tracking-tight">
-                            {activity.school_name || 'System'}
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-1">
+                          <h4 className="font-black text-gray-900 text-sm tracking-tight uppercase">
+                            {activity.action.replace(/_/g, ' ')}
+                          </h4>
+                          <span className="text-[10px] font-bold text-gray-400 flex items-center gap-1">
+                            <Clock size={10} />{' '}
+                            {new Date(activity.created_at).toLocaleTimeString([], {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
                           </span>
                         </div>
-                        <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white border border-gray-100 rounded-full">
-                          <User size={10} className="text-purple-500" />
-                          <span className="text-[10px] font-black text-gray-500 tracking-tight">
-                            {activity.user_email || 'automated'}
-                          </span>
+                        <p className="text-sm text-gray-600 font-medium mb-3">
+                          {activity.description}
+                        </p>
+                        <div className="flex items-center gap-4">
+                          <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white border border-gray-100 rounded-full">
+                            <School size={10} className="text-brand-500" />
+                            <span className="text-[10px] font-black text-gray-500 tracking-tight">
+                              {activity.school_name || 'System'}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white border border-gray-100 rounded-full">
+                            <User size={10} className="text-purple-500" />
+                            <span className="text-[10px] font-black text-gray-500 tracking-tight">
+                              {activity.user_email || 'automated'}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                )
+              )}
             </div>
           </div>
         </div>
