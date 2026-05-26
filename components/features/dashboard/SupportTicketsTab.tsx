@@ -9,10 +9,8 @@ import {
   MessageSquare,
   Send,
   Reply,
-  Check,
   MoreVertical,
   Search,
-  Filter,
   School,
   User,
 } from 'lucide-react';
@@ -30,7 +28,13 @@ interface SupportTicket {
   status: 'open' | 'in_progress' | 'resolved' | 'closed';
   priority: 'low' | 'medium' | 'high' | 'urgent';
   created_at: string;
-  responses: any[];
+  responses: Array<{
+    id: number;
+    is_admin_response: boolean;
+    body: string;
+    created_at: string;
+    admin_name?: string;
+  }>;
 }
 
 interface SupportTicketsTabProps {
@@ -255,46 +259,54 @@ export const SupportTicketsTab: React.FC<SupportTicketsTabProps> = ({
               </div>
 
               {/* Responses */}
-              {selectedTicket.responses.map((res: any) => (
-                <div
-                  key={res.id}
-                  className={`flex gap-4 ${res.is_admin_response ? 'flex-row-reverse' : ''}`}
-                >
+              {selectedTicket.responses.map(
+                (res: {
+                  id: number;
+                  is_admin_response: boolean;
+                  body: string;
+                  created_at: string;
+                  admin_name?: string;
+                }) => (
                   <div
-                    className={`h-10 w-10 rounded-2xl flex items-center justify-center shrink-0 border ${
-                      res.is_admin_response
-                        ? 'bg-brand-900 text-white border-brand-950 shadow-lg shadow-brand-900/10'
-                        : 'bg-brand-100 text-brand-600 border-brand-200'
-                    }`}
+                    key={res.id}
+                    className={`flex gap-4 ${res.is_admin_response ? 'flex-row-reverse' : ''}`}
                   >
-                    {res.is_admin_response ? <ShieldCheck size={20} /> : <User size={20} />}
-                  </div>
-                  <div
-                    className={`space-y-2 max-w-[80%] ${res.is_admin_response ? 'text-right' : ''}`}
-                  >
-                    <div className="flex items-center gap-2 flex-row-reverse">
-                      <span className="font-black text-sm text-gray-900">
-                        {res.is_admin_response ? 'Support Team' : res.user_name}
-                      </span>
-                      <span className="text-[10px] font-bold text-gray-400">
-                        {new Date(res.created_at).toLocaleTimeString([], {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </span>
-                    </div>
                     <div
-                      className={`p-5 rounded-3xl text-sm leading-relaxed shadow-sm ${
+                      className={`h-10 w-10 rounded-2xl flex items-center justify-center shrink-0 border ${
                         res.is_admin_response
-                          ? 'bg-brand-600 text-white rounded-tr-none'
-                          : 'bg-gray-50 text-gray-700 rounded-tl-none border border-gray-100'
+                          ? 'bg-brand-900 text-white border-brand-950 shadow-lg shadow-brand-900/10'
+                          : 'bg-brand-100 text-brand-600 border-brand-200'
                       }`}
                     >
-                      {res.message}
+                      {res.is_admin_response ? <ShieldCheck size={20} /> : <User size={20} />}
+                    </div>
+                    <div
+                      className={`space-y-2 max-w-[80%] ${res.is_admin_response ? 'text-right' : ''}`}
+                    >
+                      <div className="flex items-center gap-2 flex-row-reverse">
+                        <span className="font-black text-sm text-gray-900">
+                          {res.is_admin_response ? 'Support Team' : res.user_name}
+                        </span>
+                        <span className="text-[10px] font-bold text-gray-400">
+                          {new Date(res.created_at).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </span>
+                      </div>
+                      <div
+                        className={`p-5 rounded-3xl text-sm leading-relaxed shadow-sm ${
+                          res.is_admin_response
+                            ? 'bg-brand-600 text-white rounded-tr-none'
+                            : 'bg-gray-50 text-gray-700 rounded-tl-none border border-gray-100'
+                        }`}
+                      >
+                        {res.message}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                )
+              )}
             </div>
 
             {/* Quick Actions & Input */}
