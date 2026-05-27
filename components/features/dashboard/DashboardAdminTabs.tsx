@@ -17,7 +17,7 @@ import {
   Trash2,
   Settings,
   Activity,
-  Image,
+  Image as ImageIcon,
   CreditCard,
 } from 'lucide-react';
 import Image from 'next/image';
@@ -583,7 +583,7 @@ export const SchoolManagementModal: React.FC<SchoolModalProps> = ({
           {selectedSchool.subscription?.payment_proof && (
             <div className="mb-8 p-6 bg-gray-50 rounded-2xl">
               <h4 className="text-[10px] font-black uppercase text-gray-400 tracking-wider mb-4 flex items-center gap-2">
-                <Image size={14} /> Proof of Payment
+                <ImageIcon size={14} /> Proof of Payment
               </h4>
               <Image
                 src={selectedSchool.subscription.payment_proof}
@@ -591,7 +591,7 @@ export const SchoolManagementModal: React.FC<SchoolModalProps> = ({
                 width={800}
                 height={450}
                 className="w-full rounded-xl border border-gray-200 cursor-pointer hover:opacity-90 transition-opacity"
-                onClick={() => window.open(selectedSchool.subscription.payment_proof)}
+                onClick={() => window.open(selectedSchool.subscription?.payment_proof)}
                 unoptimized
               />
             </div>
