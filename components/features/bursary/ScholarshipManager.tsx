@@ -79,7 +79,7 @@ const SimpleScholarshipList: React.FC = () => {
         addToast('Scholarship created successfully', 'success');
       }
       resetForm();
-    } catch (error) {
+    } catch {
       addToast('Failed to save scholarship', 'error');
     }
   };
@@ -89,7 +89,7 @@ const SimpleScholarshipList: React.FC = () => {
     try {
       await deleteScholarship.mutateAsync(id);
       addToast('Scholarship deleted successfully', 'success');
-    } catch (error) {
+    } catch {
       addToast('Failed to delete scholarship', 'error');
     }
   };

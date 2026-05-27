@@ -61,7 +61,9 @@ function TemplateEditModal({ template, onClose, onSave }: any) {
                 {Object.entries(template?.variables || {}).map(([key, example]) => (
                   <p key={key}>
                     {'{{'} <span className="text-white">{key}</span> {'}}'}{' '}
-                    <span className="text-slate-500 text-[10px] ml-2">{'/*'} {String(example)} {'*/'}</span>
+                    <span className="text-slate-500 text-[10px] ml-2">
+                      {'/*'} {String(example)} {'*/'}
+                    </span>
                   </p>
                 ))}
                 {Object.keys(template?.variables || {}).length === 0 && (
@@ -118,7 +120,7 @@ export function EmailTemplatesTab({
       await onTemplatesChanged?.();
       addToast('Template updated successfully', 'success');
       setIsEditModalOpen(false);
-    } catch (error) {
+    } catch {
       addToast('Failed to update template', 'error');
     }
   };

@@ -7,10 +7,8 @@
  * and re-exports all domain-specific hooks so existing imports continue to work.
  */
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from '@/lib/api-client';
 import * as Types from '@/lib/types';
-import { INITIAL_SETTINGS } from '@/lib/utils';
 
 // =============================================
 // QUERY KEYS

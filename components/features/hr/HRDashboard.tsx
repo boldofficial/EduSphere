@@ -13,7 +13,6 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { useHRDashboard, usePayrolls } from '@/lib/hooks/use-data';
-import * as Utils from '@/lib/utils';
 
 interface HRDashboardProps {
   onNavigate: (tab: string) => void;

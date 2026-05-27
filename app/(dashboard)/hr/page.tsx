@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LayoutDashboard, Banknote, Users, FileText } from 'lucide-react';
+import { LayoutDashboard, Banknote, Users } from 'lucide-react';
 import * as Types from '@/lib/types';
 
 import { HRDashboard } from '@/components/features/hr/HRDashboard';

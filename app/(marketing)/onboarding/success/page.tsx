@@ -1,14 +1,8 @@
 'use client';
 
 import React from 'react';
-import { useSearchParams } from 'next/navigation';
 import { CheckCircle2, ArrowRight } from 'lucide-react';
-import Link from 'next/link';
-
 export default function OnboardingSuccessPage() {
-  const searchParams = useSearchParams();
-  const url = searchParams.get('url') || '/';
-
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
       <div className="bg-white rounded-3xl shadow-xl p-10 max-w-md w-full text-center">

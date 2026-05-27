@@ -116,7 +116,7 @@ export const TeachersView: React.FC<TeachersViewProps> = ({
       setShowLoginModal(false);
       setSelectedTeacher(null);
       setLoginPassword('');
-    } catch (error) {
+    } catch {
       addToast('An error occurred. Please try again.', 'error');
     } finally {
       setIsCreatingLogin(false);

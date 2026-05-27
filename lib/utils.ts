@@ -1,15 +1,12 @@
 import {
-  ScoreRow,
   Settings,
   Class,
-  Subject,
   Student,
   Teacher,
   Staff,
   FeeStructure,
   Payment,
   Score,
-  Attendance,
 } from './types';
 
 export const calculateGrade = (total: number) => {

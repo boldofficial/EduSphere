@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { CheckCircle2, ArrowRight, School, User, CreditCard, Loader2 } from 'lucide-react';
+import { CheckCircle2, School, User, CreditCard, Loader2 } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 
 const schema = z.object({
@@ -36,8 +36,7 @@ export default function OnboardingPage() {
   const [plans, setPlans] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [isPaid, setIsPaid] = useState(false);
-  const [isPaying, setIsPaying] = useState(false);
+  const [isPaid] = useState(false);
 
   const {
     register,
@@ -68,8 +67,6 @@ export default function OnboardingPage() {
 
   const [rootDomain, setRootDomain] = useState('myregistra.net');
 
-  const [platformSettings, setPlatformSettings] = useState<any>(null);
-
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setRootDomain(window.location.host.replace(/^www\./, ''));
@@ -80,20 +77,9 @@ export default function OnboardingPage() {
       .catch(console.error);
     apiClient
       .get('schools/platform-settings/')
-      .then((res) => setPlatformSettings(res.data))
+      .then((res) => setValue('payment_method', res.data?.default_payment_method || 'bank_transfer'))
       .catch(console.error);
-  }, []);
-
-  const handleProofUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setValue('payment_proof', reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+  }, [setValue]);
 
   const onSubmit = async (data: FormData) => {
     setIsLoading(true);

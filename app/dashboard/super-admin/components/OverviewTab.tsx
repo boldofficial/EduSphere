@@ -87,12 +87,10 @@ export function HealthCard({ title, status, message, icon: Icon }: any) {
 
 export function OverviewTab({
   schools,
-  plans,
   revenue,
   health,
   strategic,
   governance,
-  onImpersonate,
 }: any) {
   const stats = health?.platform_stats || {};
   const activities = governance?.activities || [];

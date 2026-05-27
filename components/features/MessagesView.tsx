@@ -1,34 +1,21 @@
 'use client';
 
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import {
   Mail,
   Plus,
-  Trash2,
   Send,
-  Inbox,
-  CheckCircle,
-  Circle,
   User,
   Users,
-  GraduationCap,
   UserCog,
   Search,
   X,
-  Clock,
-  ChevronRight,
-  MailOpen,
-  Reply,
-  Paperclip,
   Archive,
   Check,
   CheckCheck,
-  MessageSquarePlus,
-  Hash,
   FileText,
 } from 'lucide-react';
 import { useSchoolStore } from '@/lib/store';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
@@ -42,8 +29,6 @@ import {
   useStaff,
   useMessages,
   useCreateMessage,
-  useUpdateMessage,
-  useDeleteMessage,
   useConversations,
   useCreateConversation,
   useMarkConversationRead,
@@ -111,6 +96,11 @@ export const MessagesView: React.FC = () => {
   const [messageBody, setMessageBody] = useState('');
   const [showTemplates, setShowTemplates] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const getOtherParticipant = useCallback((conv: Types.Conversation) => {
+    if (!currentUser?.id) return null;
+    return conv.participants.find((p) => String(p.user) !== String(currentUser.id));
+  }, [currentUser?.id]);
 
   // Compose form state
   const [recipientType, setRecipientType] = useState<RecipientType>(
@@ -208,14 +198,14 @@ export const MessagesView: React.FC = () => {
       const lastMsg = (conv.last_message?.body || '').toLowerCase();
       return otherName.includes(term) || subject.includes(term) || lastMsg.includes(term);
     });
-  }, [conversations, searchTerm, currentUser?.id]);
+  }, [conversations, searchTerm, getOtherParticipant]);
 
   // Selection Side Effects
   useEffect(() => {
     if (activeConversationId) {
       markRead(activeConversationId);
     }
-  }, [activeConversationId]);
+  }, [activeConversationId, markRead]);
 
   // Auto-scroll to bottom on new messages
   useEffect(() => {
@@ -321,10 +311,7 @@ export const MessagesView: React.FC = () => {
     setShowTemplates(false);
   };
 
-  const getOtherParticipant = (conv: Types.Conversation) => {
-    if (!currentUser?.id) return null;
-    return conv.participants.find((p) => String(p.user) !== String(currentUser.id));
-  };
+
 
   // Helper: check if message was read by other participant
   const isMessageRead = (msg: Types.Message, conv: Types.Conversation) => {

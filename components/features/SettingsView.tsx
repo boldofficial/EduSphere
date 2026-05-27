@@ -106,29 +106,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     return parsed.toISOString().slice(0, 10);
   };
 
-  const formatApiError = (error: any): string => {
-    const data = error?.response?.data;
-    if (typeof data?.detail === 'string') return data.detail;
-    if (typeof data?.error === 'string') return data.error;
-    if (typeof error?.message === 'string' && error.message) return error.message;
-
-    if (data && typeof data === 'object') {
-      const firstEntry = Object.entries(data)[0];
-      if (firstEntry) {
-        const [field, value] = firstEntry;
-        if (Array.isArray(value) && value.length > 0) {
-          return `${field}: ${String(value[0])}`;
-        }
-        if (typeof value === 'string') {
-          return `${field}: ${value}`;
-        }
-      }
-    }
-
-    return 'Failed to update settings';
-  };
-
-  const buildSettingsPayload = (data: Types.Settings) => {
+const buildSettingsPayload = (data: Types.Settings) => {
     const normalizedNextTermBegins = normalizeDateForApi(data.next_term_begins);
 
     return {
@@ -211,8 +189,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     try {
       await onUpdate(buildSettingsPayload(formData));
       addToast('Settings updated successfully', 'success');
-    } catch (error) {
-      addToast(formatApiError(error), 'error');
+    } catch {
+      addToast('Failed to update settings', 'error');
     }
   };
   const handlePaymentSettingsChange = (updates: Partial<Types.SchoolPaymentSettings>) => {
@@ -253,7 +231,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       setIsSavingPaymentSettings(true);
       await onUpdatePaymentSettings(paymentForm);
       addToast('Payment settings updated successfully', 'success');
-    } catch (error) {
+    } catch {
       addToast('Failed to update payment settings', 'error');
     } finally {
       setIsSavingPaymentSettings(false);

@@ -10,7 +10,6 @@ import apiClient from '@/lib/api-client';
 import { useToast } from '@/components/providers/toast-provider';
 import {
   AlertTriangle,
-  TrendingUp,
   TrendingDown,
   Shield,
   Loader2,

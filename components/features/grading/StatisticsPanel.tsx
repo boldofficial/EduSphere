@@ -32,7 +32,6 @@ export const StatisticsPanel: React.FC<StatisticsPanelProps> = ({
   subject,
   session,
   term,
-  studentCount,
   gradingScheme,
 }) => {
   const subjectScores = scores

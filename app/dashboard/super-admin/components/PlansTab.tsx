@@ -69,7 +69,7 @@ export function PlansTab({ plans, modules = [], onPlansChanged }: any) {
       }
       setModalOpen(false);
       await onPlansChanged?.();
-    } catch (error) {
+    } catch {
       addToast('Failed to save plan', 'error');
     } finally {
       setIsProcessing(false);
@@ -85,7 +85,7 @@ export function PlansTab({ plans, modules = [], onPlansChanged }: any) {
       addToast('Plan deleted successfully', 'success');
       setPendingDeleteId(null);
       await onPlansChanged?.();
-    } catch (e) {
+    } catch {
       addToast('Failed to delete plan', 'error');
     } finally {
       setIsProcessing(false);

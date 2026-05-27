@@ -13,7 +13,7 @@ import apiClient from '@/lib/api-client';
 
 export default function CBTPage() {
   const router = useRouter();
-  const { currentRole, currentUser } = useSchoolStore();
+  const { currentRole } = useSchoolStore();
   const isStudent = currentRole === 'student';
   const { data: quizzes = [], isLoading: quizzesLoading } = useQuizzes();
 

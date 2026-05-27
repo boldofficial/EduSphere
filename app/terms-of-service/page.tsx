@@ -1,11 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ScrollText, Gavel, Scale, AlertCircle } from 'lucide-react';
 import { LandingNav } from '@/components/features/landing/LandingNav';
 import { LandingFooter } from '@/components/features/landing/LandingContactFooter';
-import * as Utils from '@/lib/utils';
-import * as DataService from '@/lib/data-service';
 
 const TermsOfService = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -77,8 +75,8 @@ const TermsOfService = () => {
 
             <h3 className="text-brand-800 font-bold mt-8 mb-4">Disclaimer of Warranties</h3>
             <p className="mb-6">
-              Our services are provided &quot;as is&quot; without any warranties, express or implied. We do
-              not guarantee that the services will be uninterrupted or error-free.
+              Our services are provided &quot;as is&quot; without any warranties, express or
+              implied. We do not guarantee that the services will be uninterrupted or error-free.
             </p>
 
             <h3 className="text-brand-800 font-bold mt-8 mb-4">Limitation of Liability</h3>

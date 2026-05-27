@@ -17,7 +17,6 @@ import {
   Legend,
   ResponsiveContainer,
 } from '@/components/ui/charts';
-import { useSchoolStore } from '@/lib/store'; // For Auth if needed
 import {
   useStudents,
   useClasses,
@@ -25,7 +24,6 @@ import {
   useAttendance,
   usePayments,
   useExpenses,
-  useFees,
   useSettings,
 } from '@/lib/hooks/use-data';
 import { Card } from '@/components/ui/card';
@@ -44,7 +42,6 @@ export const AnalyticsView: React.FC = () => {
   const { data: attendance = [] } = useAttendance({ include_all_periods: true });
   const { data: payments = [] } = usePayments({ include_all_periods: true });
   const { data: expenses = [] } = useExpenses({ include_all_periods: true });
-  const { data: fees = [] } = useFees();
   const [activeTab, setActiveTab] = useState<'performance' | 'financial' | 'attendance'>(
     'performance'
   );

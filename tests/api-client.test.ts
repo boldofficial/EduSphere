@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { AxiosError, AxiosResponse } from 'axios';
 
 // Mock axios
 vi.mock('axios', async () => {

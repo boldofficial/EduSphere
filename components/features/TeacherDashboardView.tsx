@@ -8,9 +8,6 @@ import {
   CalendarCheck,
   TrendingUp,
   BookOpen,
-  TrendingDown,
-  PieChart as PieChartIcon,
-  DollarSign,
   AlertTriangle,
   Settings,
   Upload,
@@ -40,8 +37,9 @@ import { GradingView } from './GradingView';
 import { AttendanceView } from './AttendanceView';
 import { MessageInboxWidget } from './dashboard/MessageInboxWidget';
 import { NextLessonWidget } from './dashboard/NextLessonWidget';
-import { AttendanceAnalytics } from './dashboard/AttendanceAnalytics';
+
 import { ConductLogWidget } from './dashboard/ConductLogWidget';
+
 
 // Internal components for the modules
 const MySubjectsModule = ({ subjects, classes }: { subjects: any[]; classes: any[] }) => {

@@ -33,7 +33,7 @@ export async function generateMetadata(): Promise<Metadata> {
         schoolName = data.school_name || 'Registra';
         schoolTagline = data.school_tagline || 'The operating system for modern schools';
       }
-    } catch (e) {
+    } catch {
       // Fallback to defaults
     }
   }

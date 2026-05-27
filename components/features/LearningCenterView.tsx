@@ -19,8 +19,6 @@ import { Select } from '@/components/ui/select';
 import { useSchoolStore } from '@/lib/store';
 import { useLessons, useCreateLesson, useClasses, useSubjects } from '@/lib/hooks/use-data';
 import { useToast } from '@/components/providers/toast-provider';
-import * as Utils from '@/lib/utils';
-import * as Types from '@/lib/types';
 import { DiscussionThreadComponent } from './lms/DiscussionThread';
 
 export const LearningCenterView: React.FC = () => {
@@ -51,7 +49,6 @@ export const LearningCenterView: React.FC = () => {
 
   const isTeacher = currentUser?.role === 'teacher';
   const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'super_admin';
-  const canUpload = isTeacher || isAdmin;
 
   // Lesson ContentType ID is 25
   const LESSON_CONTENT_TYPE_ID = 25;
@@ -74,7 +71,7 @@ export const LearningCenterView: React.FC = () => {
       addToast('Learning material uploaded successfully', 'success');
       setShowUploadModal(false);
       setNewLesson({ title: '', subject: '', student_class: '', content: '', file_url: '' });
-    } catch (error) {
+    } catch {
       addToast('Failed to upload material', 'error');
     }
   };

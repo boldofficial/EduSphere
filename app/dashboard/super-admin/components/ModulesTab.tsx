@@ -22,7 +22,7 @@ export function ModulesTab({
       await apiClient.post('schools/modules/toggle/', { module_id: moduleId, action });
       await onModulesChanged?.();
       addToast(`Module turned ${action.toUpperCase()} successfully`, 'success');
-    } catch (error) {
+    } catch {
       addToast('Failed to toggle module', 'error');
     } finally {
       setTogglingId(null);

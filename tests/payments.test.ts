@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import React from 'react';
+import '@testing-library/react';
 
 // Mock window.PaystackPop
 const mockSetup = vi.fn();
@@ -27,7 +26,7 @@ describe('Paystack Payment Integration', () => {
       onClose: vi.fn(),
     };
 
-    const handler = (window as any).PaystackPop.setup(mockPaystackConfig);
+    (window as any).PaystackPop.setup(mockPaystackConfig);
     expect(mockSetup).toHaveBeenCalledWith(mockPaystackConfig);
   });
 
@@ -37,7 +36,7 @@ describe('Paystack Payment Integration', () => {
       open: vi.fn(),
     });
 
-    const handler = (window as any).PaystackPop.setup({
+    (window as any).PaystackPop.setup({
       callback: callback,
     });
 

@@ -8,9 +8,8 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
-import { Plus, Trash2, Calculator, Percent, DollarSign } from 'lucide-react';
+import { Plus, Trash2, Calculator } from 'lucide-react';
 import * as Types from '@/lib/types';
 import {
   useSalaryAllowances,
@@ -56,6 +55,7 @@ export const SalaryStructureEditor: React.FC<SalaryStructureEditorProps> = ({
   // Initialize from fetched structure
   useEffect(() => {
     if (isOpen && structure?.structure_data) {
+      /* eslint-disable react-hooks/set-state-in-effect */
       setAllowances(
         (structure.structure_data.allowances || []).map((a: any) => ({
           ...a,
@@ -70,6 +70,7 @@ export const SalaryStructureEditor: React.FC<SalaryStructureEditorProps> = ({
           amount: Number(d.amount) || 0,
         }))
       );
+      /* eslint-enable react-hooks/set-state-in-effect */
     } else if (isOpen) {
       setAllowances([]);
       setDeductions([]);
@@ -156,8 +157,7 @@ export const SalaryStructureEditor: React.FC<SalaryStructureEditorProps> = ({
   const renderItemRow = (
     item: StructureItem,
     idx: number,
-    type: 'allowance' | 'deduction',
-    masterList: Types.SalaryAllowance[] | Types.SalaryDeduction[]
+    type: 'allowance' | 'deduction'
   ) => (
     <div key={idx} className="flex gap-2 items-center p-2 bg-gray-50/50 rounded-lg">
       {/* Name with datalist suggestion */}
@@ -267,7 +267,7 @@ export const SalaryStructureEditor: React.FC<SalaryStructureEditorProps> = ({
                     </p>
                   )}
                   {allowances.map((item, idx) =>
-                    renderItemRow(item, idx, 'allowance', allowancesMaster)
+                    renderItemRow(item, idx, 'allowance')
                   )}
                   <datalist id="allowance-master">
                     {allowancesMaster.map((a) => (
@@ -300,7 +300,7 @@ export const SalaryStructureEditor: React.FC<SalaryStructureEditorProps> = ({
                     </p>
                   )}
                   {deductions.map((item, idx) =>
-                    renderItemRow(item, idx, 'deduction', deductionsMaster)
+                    renderItemRow(item, idx, 'deduction')
                   )}
                   <datalist id="deduction-master">
                     {deductionsMaster.map((d) => (

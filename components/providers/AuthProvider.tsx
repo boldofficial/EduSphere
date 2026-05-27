@@ -3,11 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useSchoolStore } from '@/lib/store';
 import apiClient from '@/lib/api-client';
-import { useRouter } from 'next/navigation';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { login, logout, currentUser } = useSchoolStore(); // Still using store for UI state
-  const router = useRouter();
 
   const [isChecking, setIsChecking] = useState(true);
 
@@ -39,9 +37,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             role: role,
           });
         }
-      } catch (error) {
+      } catch {
         // If 401, logout (cleanup store) - fail silently intended behavior for guest
-        // console.debug("Auth check failed (guest)", error);
         logout();
       } finally {
         setIsChecking(false);
@@ -49,7 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     checkAuth();
-  }, []); // Run on mount
+  }, [currentUser, login, logout]); // Run on mount — stable deps
 
   if (isChecking) {
     return (

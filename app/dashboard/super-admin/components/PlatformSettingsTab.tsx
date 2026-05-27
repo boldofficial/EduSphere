@@ -21,7 +21,7 @@ export function PlatformSettingsTab({ settings }: { settings: any }) {
     try {
       await updateMutation.mutateAsync(editedSettings);
       addToast('Settings updated successfully', 'success');
-    } catch (error) {
+    } catch {
       addToast('Failed to update settings', 'error');
     } finally {
       setIsSaving(false);

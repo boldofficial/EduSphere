@@ -5,7 +5,6 @@ import React, { useState } from 'react';
 import { Play, Download, FileText, Video } from 'lucide-react';
 import { LandingNav } from '@/components/features/landing/LandingNav';
 import { LandingFooter } from '@/components/features/landing/LandingContactFooter';
-import * as Utils from '@/lib/utils';
 
 export default function ResourcesPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);

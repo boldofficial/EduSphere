@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { AlertCircle, Rocket, X, ArrowRight } from 'lucide-react';
+import { Rocket, X, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
 export const DemoBanner = () => {

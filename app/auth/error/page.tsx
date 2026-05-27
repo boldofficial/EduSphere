@@ -13,8 +13,8 @@ export default function AuthErrorPage() {
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Authentication Error</h1>
           <p className="text-gray-600 mb-6">
-            We couldn&apos;t complete the sign-in process. This could happen if the link has expired or
-            was already used.
+            We couldn&apos;t complete the sign-in process. This could happen if the link has expired
+            or was already used.
           </p>
           <div className="space-y-3">
             <Link

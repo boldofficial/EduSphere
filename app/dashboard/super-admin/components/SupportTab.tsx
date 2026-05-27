@@ -8,7 +8,7 @@ import {
   useCreateSupportTicket,
   useAdminSchools,
 } from '@/lib/hooks/use-data';
-import * as Types from '@/lib/types';
+
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -61,7 +61,7 @@ export function SupportTab() {
         dateStyle: 'medium',
         timeStyle: 'short',
       }).format(new Date(dateStr));
-    } catch (e) {
+    } catch {
       return dateStr;
     }
   };
@@ -89,7 +89,7 @@ export function SupportTab() {
       });
       refetch();
       addToast('Ticket created successfully', 'success');
-    } catch (error) {
+    } catch {
       addToast('Failed to create ticket', 'error');
     } finally {
       setIsSubmitting(false);
@@ -106,7 +106,7 @@ export function SupportTab() {
       setMessage('');
       refetch();
       addToast('Response sent successfully', 'success');
-    } catch (error) {
+    } catch {
       addToast('Failed to send response', 'error');
     } finally {
       setIsSubmitting(false);
@@ -126,7 +126,7 @@ export function SupportTab() {
       refetch();
       setPendingResolveId(null);
       addToast('Ticket marked as resolved', 'success');
-    } catch (error) {
+    } catch {
       addToast('Failed to resolve ticket', 'error');
     } finally {
       setIsResolving(false);

@@ -11,15 +11,11 @@ import {
   Download,
   Wallet,
   CheckCircle2,
-  Clock,
-  AlertCircle,
 } from 'lucide-react';
 import {
-  BarChart,
-  Bar,
+  CartesianGrid,
   XAxis,
   YAxis,
-  CartesianGrid,
   Tooltip,
   ResponsiveContainer,
   AreaChart,

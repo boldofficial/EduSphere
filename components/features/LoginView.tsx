@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import * as Utils from '@/lib/utils';
 import { useSchoolStore } from '@/lib/store';
 import { UserRole } from '@/lib/types';
-import { ShieldCheck, Users, GraduationCap, Briefcase, ArrowRight } from 'lucide-react';
+import { ShieldCheck, Users, GraduationCap, Briefcase } from 'lucide-react';
 import { StaffLoginForm } from './login/StaffLoginForm';
 import { StudentLoginForm } from './login/StudentLoginForm';
 import { FindSchoolSection } from './login/FindSchoolSection';

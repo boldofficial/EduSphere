@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { Clock, AlertTriangle, CheckCircle, Lock, Unlock, FileText, Timer } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Clock, AlertTriangle, Lock, Unlock, FileText, Timer, CheckCircle } from 'lucide-react';
 import * as Types from '@/lib/types';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,9 +11,6 @@ import { useToast } from '@/components/providers/toast-provider';
 import {
   useScores,
   useUpdateScore,
-  useStudents,
-  useClasses,
-  useSettings,
 } from '@/lib/hooks/use-data';
 import * as Utils from '@/lib/utils';
 
@@ -36,7 +33,6 @@ interface ExamConfig {
 export const ExamMode: React.FC<ExamModeProps> = ({ students, classes, session, term }) => {
   const { addToast } = useToast();
   const { data: scores = [] } = useScores({ include_all_periods: true });
-  const { data: settings = Utils.INITIAL_SETTINGS } = useSettings();
   const { mutate: updateScore } = useUpdateScore();
 
   const [isExamActive, setIsExamActive] = useState(false);
@@ -52,12 +48,10 @@ export const ExamMode: React.FC<ExamModeProps> = ({ students, classes, session, 
   });
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [isLocked, setIsLocked] = useState(true);
-  const [startTime, setStartTime] = useState<number | null>(null);
 
   const resolvedSelectedClass = selectedClass || classes[0]?.id || '';
   const currentClass = classes.find((c) => Utils.sameId(c.id, resolvedSelectedClass));
   const classSubjects = currentClass?.subjects || [];
-  const resolvedSelectedSubject = selectedSubject || classSubjects[0] || '';
 
   const activeStudents = students.filter((s) => Utils.sameId(s.class_id, resolvedSelectedClass));
 
@@ -75,7 +69,7 @@ export const ExamMode: React.FC<ExamModeProps> = ({ students, classes, session, 
       }, 1000);
       return () => clearTimeout(timer);
     }
-  }, [isExamActive, timeRemaining]);
+  }, [isExamActive, timeRemaining, addToast]);
 
   const handleStartExam = () => {
     if (!selectedSubject) {
@@ -83,7 +77,6 @@ export const ExamMode: React.FC<ExamModeProps> = ({ students, classes, session, 
       return;
     }
     setIsExamActive(true);
-    setStartTime(Date.now());
     setTimeRemaining(examConfig.duration * 60);
     setIsLocked(false);
     addToast(`Exam started: ${examConfig.title || selectedSubject}`, 'success');
@@ -102,15 +95,12 @@ export const ExamMode: React.FC<ExamModeProps> = ({ students, classes, session, 
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const getExamScoreKey = (studentId: string): string => {
-    return `${studentId}_${selectedClass}_${selectedSubject}_${session}_${term}_exam`;
-  };
-
-  const calculateTotal = (ca1: number, ca2: number, exam: number): number => {
-    const totalCA = ca1 + ca2;
-    const scaledExam = (exam / 60) * examConfig.totalMarks - (examConfig.totalMarks - 100 + 60);
-    return Math.round(totalCA + scaledExam);
-  };
+  // calculateTotal is intentionally kept for reference
+  // const calculateTotal = (ca1: number, ca2: number, exam: number): number => {
+  //   const totalCA = ca1 + ca2;
+  //   const scaledExam = (exam / 60) * examConfig.totalMarks - (examConfig.totalMarks - 100 + 60);
+  //   return Math.round(totalCA + scaledExam);
+  // };
 
   if (!isExamActive) {
     return (
@@ -294,7 +284,6 @@ export const ExamMode: React.FC<ExamModeProps> = ({ students, classes, session, 
             </thead>
             <tbody>
               {activeStudents.map((student) => {
-                const scoreKey = getExamScoreKey(student.id);
                 const existingScore = scores.find(
                   (s) =>
                     s.student_id === student.id &&

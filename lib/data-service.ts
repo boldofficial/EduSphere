@@ -8,38 +8,6 @@
 import * as Types from '@/lib/types';
 import { INITIAL_SETTINGS } from '@/lib/utils';
 
-// Development-only logging
-const isDev = process.env.NODE_ENV === 'development';
-const devLog = (...args: any[]) => isDev && console.log(...args);
-
-// API Configuration
-const API_URL =
-  (
-    process.env.DJANGO_API_URL ||
-    process.env.NEXT_PUBLIC_API_URL ||
-    'http://localhost:8000'
-  ).replace(/\/$/, '') + '/api';
-
-/**
- * Helper for API requests
- */
-async function apiRequest(endpoint: string, options: RequestInit = {}) {
-  const response = await fetch(`${API_URL}${endpoint}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.message || `API request failed: ${response.statusText}`);
-  }
-
-  return response.json();
-}
-
 // =============================================
 // SETTINGS
 // =============================================

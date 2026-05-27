@@ -1,12 +1,11 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { TrendingUp, TrendingDown, Award, BookOpen, Users, Target, BarChart3 } from 'lucide-react';
+import { TrendingUp, TrendingDown, Users, Target, BarChart3 } from 'lucide-react';
 import * as Types from '@/lib/types';
 import * as Stats from '@/lib/statistics';
 import * as Utils from '@/lib/utils';
 import { Card } from '@/components/ui/card';
-import { Select } from '@/components/ui/select';
 import {
   ResponsiveContainer,
   BarChart,
@@ -16,8 +15,6 @@ import {
   CartesianGrid,
   Tooltip,
   Cell,
-  PieChart,
-  Pie,
 } from 'recharts';
 
 interface SubjectAnalyticsProps {
@@ -39,8 +36,8 @@ export const SubjectAnalytics: React.FC<SubjectAnalyticsProps> = ({
   term,
   gradingScheme,
 }) => {
-  const currentClass = classes.find((c) => Utils.sameId(c.id, classId));
-  const classSubjects = currentClass?.subjects || [];
+  const currentClass = useMemo(() => classes.find((c) => Utils.sameId(c.id, classId)), [classes, classId]);
+  const classSubjects = useMemo(() => currentClass?.subjects || [], [currentClass]);
 
   const overallScores = useMemo(() => {
     return scores

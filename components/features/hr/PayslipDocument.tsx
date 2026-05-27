@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Printer, Download, X } from 'lucide-react';
+import { Printer, X } from 'lucide-react';
 import * as Types from '@/lib/types';
 import { useSettings } from '@/lib/hooks/use-data';
 

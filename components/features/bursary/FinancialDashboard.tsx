@@ -1,14 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   TrendingUp,
   TrendingDown,
   DollarSign,
   Users,
   AlertTriangle,
-  FileText,
-  Download,
   PieChart as PieChartIcon,
-  BarChart as BarChartIcon,
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,12 +17,9 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   PieChart,
   Pie,
   Cell,
-  LineChart,
-  Line,
 } from 'recharts';
 import * as Types from '@/lib/types';
 import * as Utils from '@/lib/utils';
@@ -51,7 +45,7 @@ export const FinancialDashboard: React.FC<FinancialDashboardProps> = ({
   settings,
 }) => {
   // Phase 2: Use backend-calculated stats for performance
-  const { data: stats, isLoading } = useFinancialStats(
+  const { data: stats } = useFinancialStats(
     settings.current_session,
     settings.current_term
   );
@@ -87,6 +81,7 @@ export const FinancialDashboard: React.FC<FinancialDashboardProps> = ({
   const collectionRate = expectedIncome > 0 ? (totalIncome / expectedIncome) * 100 : 0;
 
   // Chart Data: Payment Methods from stats or fallback
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const paymentChartData = stats?.breakdown?.methods
     ? Object.entries(stats.breakdown.methods).map(([name, value]) => ({ name, value }))
     : Object.entries(

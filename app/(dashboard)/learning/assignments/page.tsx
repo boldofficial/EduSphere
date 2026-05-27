@@ -11,7 +11,7 @@ import { AssignmentDetailView } from '@/components/features/learning/AssignmentD
 import { useSchoolStore } from '@/lib/store';
 
 export default function AssignmentsPage() {
-  const { currentRole, currentUser } = useSchoolStore();
+  const { currentRole } = useSchoolStore();
   const isStudent = currentRole === 'student';
   const { data: assignments = [], isLoading } = useAssignments();
   const [gradingAssignment, setGradingAssignment] = useState<any | null>(null);

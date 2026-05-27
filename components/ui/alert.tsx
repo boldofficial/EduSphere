@@ -8,11 +8,6 @@ const Alert = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & { variant?: 'default' | 'destructive' }
 >(({ className, variant = 'default', ...props }, ref) => {
-  const variants = {
-    default: 'bg-background text-foreground',
-    destructive:
-      'border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive',
-  };
   const colorClass =
     variant === 'destructive'
       ? 'bg-red-50 text-red-900 border-red-200'

@@ -4,7 +4,6 @@ import {
   Layout,
   Filter,
   Calculator,
-  Save,
   AlertCircle,
   CheckCircle2,
   ArrowRight,
@@ -14,7 +13,6 @@ import {
   History as HistoryIcon,
   Clock,
   User,
-  X,
   Plus,
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
@@ -137,7 +135,7 @@ export const BulkDiscountManager: React.FC = () => {
       const data = await previewMutation.mutateAsync(payload);
       setPreviewData(data);
       setShowPreview(true);
-    } catch (error) {
+    } catch {
       addToast('Failed to generate preview', 'error');
     }
   };
@@ -167,7 +165,7 @@ export const BulkDiscountManager: React.FC = () => {
       addToast('Bulk discounts applied successfully', 'success');
       setShowPreview(false);
       resetForm();
-    } catch (error) {
+    } catch {
       addToast('Failed to apply bulk discounts', 'error');
     }
   };
@@ -189,7 +187,7 @@ export const BulkDiscountManager: React.FC = () => {
       setNewGroupName('');
       setNewGroupDesc('');
       refetchGroups();
-    } catch (error) {
+    } catch {
       addToast('Failed to create group', 'error');
     }
   };

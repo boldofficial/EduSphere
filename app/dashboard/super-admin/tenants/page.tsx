@@ -16,7 +16,7 @@ import { useToast } from '@/components/providers/toast-provider';
 function TenantsContent() {
   const { addToast } = useToast();
   const { data: schools = [], refetch: refetchSchools } = useAdminSchools();
-  const { data: plans = [], refetch: refetchPlans } = useAdminPlans();
+  const { data: plans = [] } = useAdminPlans();
 
   // Dependencies that might need refreshing after school edits
   const { refetch: refetchRevenue } = useAdminRevenue();
@@ -31,7 +31,7 @@ function TenantsContent() {
       await apiClient.put(`schools/manage/${id}/`, data);
       await Promise.all([refetchSchools(), refetchRevenue(), refetchStrategicAnalytics()]);
       addToast('School details updated successfully', 'success');
-    } catch (error) {
+    } catch {
       addToast('Failed to update school details', 'error');
     }
   };
@@ -57,7 +57,7 @@ function TenantsContent() {
       <TenantsTab
         schools={schools}
         plans={plans}
-        onImpersonate={(userId: number) => {
+        onImpersonate={(_userId: number) => {
           // Logic for impersonation selection
         }}
         onEdit={(school: any) => {

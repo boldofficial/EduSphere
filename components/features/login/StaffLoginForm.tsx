@@ -44,7 +44,6 @@ export const StaffLoginForm: React.FC<StaffLoginFormProps> = ({
   isLoading,
   onLogin,
   onDirectLogin,
-  onBack,
 }) => {
   const roleData = roles.find((r) => r.id === selectedRole);
 

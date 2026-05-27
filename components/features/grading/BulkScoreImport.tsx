@@ -4,11 +4,9 @@ import React, { useState, useRef } from 'react';
 import { Upload, FileSpreadsheet, Download, AlertCircle, Check, X } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { useToast } from '@/components/providers/toast-provider';
-import { useStudents, useBulkImportScores, type BulkScoreImportData } from '@/lib/hooks/use-data';
-import * as Utils from '@/lib/utils';
+import { useBulkImportScores, type BulkScoreImportData } from '@/lib/hooks/use-data';
 import * as Types from '@/lib/types';
 
 interface BulkScoreImportProps {

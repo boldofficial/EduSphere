@@ -11,7 +11,7 @@ export default async function DashboardPage() {
   let user;
   try {
     user = await fetchServer('/users/me/');
-  } catch (e) {
+  } catch {
     // If auth fails on server, middleware should have caught it,
     // but for safety redirect to login
     redirect('/login');

@@ -5,7 +5,6 @@ import React, { useState } from 'react';
 import { Quote, TrendingUp, Users, Award } from 'lucide-react';
 import { LandingNav } from '@/components/features/landing/LandingNav';
 import { LandingFooter } from '@/components/features/landing/LandingContactFooter';
-import * as Utils from '@/lib/utils';
 
 export default function SuccessStoriesPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -49,8 +48,8 @@ export default function SuccessStoriesPage() {
                 <div className="bg-brand-50 p-6 rounded-3xl border border-brand-100 relative">
                   <Quote className="absolute top-6 left-6 text-brand-200" size={48} />
                   <p className="relative z-10 text-xl font-bold text-brand-900 leading-relaxed italic">
-                    &quot;Registra completely automated our admissions process. We went from handling
-                    thousands of paper forms to a fully digital workflow in weeks.&quot;
+                    &quot;Registra completely automated our admissions process. We went from
+                    handling thousands of paper forms to a fully digital workflow in weeks.&quot;
                   </p>
                   <div className="mt-6 flex items-center gap-4">
                     <div className="h-12 w-12 bg-brand-200 rounded-full"></div>
@@ -89,8 +88,8 @@ export default function SuccessStoriesPage() {
                   </h2>
                   <p className="text-gray-600 text-lg leading-relaxed">
                     Facing challenges with fee collection and tracking, Greenfield turned to
-                    Registra&apos;s financial module. The result was improved cash flow and transparent
-                    reporting for parents.
+                    Registra&apos;s financial module. The result was improved cash flow and
+                    transparent reporting for parents.
                   </p>
                 </div>
                 <div className="grid grid-cols-3 gap-6">

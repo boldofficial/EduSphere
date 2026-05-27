@@ -36,7 +36,7 @@ export default function RevenueForecastingPage() {
   // Default to a term if one exists and we haven't selected one
   const activeTermId = selectedTerm || terms?.find((t) => t.is_current)?.id || terms?.[0]?.id;
 
-  const { data: summary, isLoading: summaryLoading } = useRevenueSummary(activeTermId?.toString());
+  const { data: summary } = useRevenueSummary(activeTermId?.toString());
   const { data: chartData, isLoading: chartLoading } = useRevenueChart(activeTermId?.toString());
 
   if (termsLoading || !settings) {

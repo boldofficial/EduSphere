@@ -6,14 +6,9 @@ import {
   Plus,
   Search,
   FileText,
-  ListChecks,
-  Edit,
   Download,
-  Trash2,
   Tags,
   Brain,
-  XCircle,
-  CheckCircle,
   HelpCircle,
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';

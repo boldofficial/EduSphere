@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Calendar, CheckCircle, XCircle, Clock, TrendingUp } from 'lucide-react';
 import * as Types from '@/lib/types';
 import { Card } from '@/components/ui/card';

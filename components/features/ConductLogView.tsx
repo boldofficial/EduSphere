@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { useSchoolStore } from '@/lib/store';
 import {
@@ -24,7 +23,6 @@ import {
 } from '@/lib/hooks/use-data';
 import { useToast } from '@/components/providers/toast-provider';
 import * as Utils from '@/lib/utils';
-import * as Types from '@/lib/types';
 
 export const ConductLogView: React.FC = () => {
   const { addToast } = useToast();

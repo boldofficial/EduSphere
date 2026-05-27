@@ -21,7 +21,7 @@ import {
   Shield,
   Radio,
 } from 'lucide-react';
-import { useSystemHealth, useAdminSchools, useGlobalSearch } from '@/lib/hooks/use-data';
+import { useAdminSchools, useGlobalSearch } from '@/lib/hooks/use-data';
 import apiClient from '@/lib/api-client';
 import { CommandPalette } from '@/components/features/CommandPalette';
 import { useToast } from '@/components/providers/toast-provider';
@@ -97,8 +97,8 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
       await fetch('/api/auth/logout', { method: 'POST' });
       logout();
       router.push('/');
-    } catch (error) {
-      console.error('Logout failed', error);
+    } catch {
+      console.error('Logout failed');
       logout();
       router.push('/login');
     }
@@ -121,7 +121,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
       } else {
         addToast('Impersonation failed', 'error');
       }
-    } catch (error) {
+    } catch {
       addToast('An error occurred while impersonating.', 'error');
     } finally {
       setIsImpersonating(false);
@@ -136,7 +136,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
       await apiClient.post('schools/maintenance/', { action: nextMode ? 'on' : 'off' });
       setIsMaintenanceMode(nextMode);
       addToast(`Maintenance mode turned ${nextMode ? 'ON' : 'OFF'}`, 'success');
-    } catch (error) {
+    } catch {
       addToast('Failed to toggle maintenance mode', 'error');
     } finally {
       setIsTogglingMaintenance(false);

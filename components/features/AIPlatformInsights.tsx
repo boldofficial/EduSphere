@@ -21,7 +21,6 @@ export const AIPlatformInsights: React.FC<AIPlatformInsightsProps> = ({
   useEffect(() => {
     // Simple logic to generate "insights"
     const schoolCount = schools.length;
-    const totalRevenue = parseFloat(revenue?.total_revenue || 0);
     const redisStatus = health?.redis_status === 'connected';
 
     let text = '';

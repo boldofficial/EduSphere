@@ -37,7 +37,7 @@ export const TermComparisonView: React.FC<TermComparisonViewProps> = ({
   const [compareMode, setCompareMode] = useState<'student' | 'class'>('student');
 
   const activeStudents = students.filter((s) => Utils.sameId(s.class_id, selectedClass));
-  const terms = settings.terms || ['First Term', 'Second Term', 'Third Term'];
+  const terms = useMemo(() => settings.terms || ['First Term', 'Second Term', 'Third Term'], [settings.terms]);
 
   // Calculate student performance across terms
   const studentTermData = useMemo(() => {

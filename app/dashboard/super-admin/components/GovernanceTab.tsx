@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ScrollText, Megaphone, Clock, Search, Filter } from 'lucide-react';
+import { ScrollText, Megaphone, Clock } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 import { useToast } from '@/components/providers/toast-provider';
 
@@ -71,7 +71,7 @@ export function BroadcastsTab({ announcements = [], onBroadcastChanged }: any) {
       setMessage('');
       setPriority('low');
       await onBroadcastChanged?.();
-    } catch (error) {
+    } catch {
       addToast('Broadcast failed', 'error');
     } finally {
       setIsProcessing(false);

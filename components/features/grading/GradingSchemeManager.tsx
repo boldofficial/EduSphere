@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from '@/lib/api-client';
-import { Plus, Trash2, Edit2, Save, X, Check } from 'lucide-react';
+import { Plus, Trash2, Edit2, Save, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import * as Utils from '@/lib/utils';
@@ -24,7 +24,7 @@ function useGradingSchemes() {
 export const GradingSchemeManager = () => {
   const { addToast } = useToast();
   const queryClient = useQueryClient();
-  const { data: schemes = [], isLoading } = useGradingSchemes();
+  const { data: schemes = [] } = useGradingSchemes();
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<Types.GradingScheme>>({});

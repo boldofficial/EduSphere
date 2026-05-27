@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { GraduationCap, Menu, X } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import * as Utils from '@/lib/utils';
 
 interface SiteHeaderProps {

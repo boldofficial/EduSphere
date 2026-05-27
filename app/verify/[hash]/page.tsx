@@ -170,9 +170,9 @@ export default function VerificationPage() {
         </Card>
 
         <p className="text-center text-xs text-gray-400 px-12">
-          Information provided on this page is an official digital verification of the student&apos;s
-          terminal report card. Any discrepancy between physical documents and this page should be
-          reported to the school administration.
+          Information provided on this page is an official digital verification of the
+          student&apos;s terminal report card. Any discrepancy between physical documents and this
+          page should be reported to the school administration.
         </p>
       </div>
     </div>

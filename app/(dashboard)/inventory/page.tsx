@@ -6,14 +6,12 @@ import {
   Plus,
   Search,
   Package,
-  AlertTriangle,
   CheckCircle,
   Monitor,
   Wrench,
   Car,
   GraduationCap,
   DollarSign,
-  Clock,
   Building2,
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -159,8 +157,6 @@ export default function InventoryPage() {
   const totalValue = assets.reduce((acc: number, a: any) => acc + (a.purchase_cost || 0), 0);
   const availableCount = assets.filter((a: any) => a.status === 'available').length;
   const inUseCount = assets.filter((a: any) => a.status === 'in_use').length;
-  const maintenanceCount = assets.filter((a: any) => a.status === 'maintenance').length;
-
   return (
     <div className="p-6 space-y-6">
       {/* Header */}

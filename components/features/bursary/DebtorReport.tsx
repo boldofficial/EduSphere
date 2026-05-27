@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Download, Printer, Phone, Mail, Filter, Bell } from 'lucide-react';
+import { Search, Printer, Phone, Bell } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,7 +27,7 @@ export const DebtorReport: React.FC<DebtorReportProps> = ({
   const { addToast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedClass, setSelectedClass] = useState('all');
-  const [sortBy, setSortBy] = useState<'balance' | 'name'>('balance');
+  const [_sortBy] = useState<'balance' | 'name'>('balance');
   const [minAmount, setMinAmount] = useState('');
   const [isSending, setIsSending] = useState(false);
 
@@ -69,10 +69,10 @@ export const DebtorReport: React.FC<DebtorReportProps> = ({
   }
 
   // Sort
-  if (sortBy === 'balance') {
+  if (_sortBy === 'balance') {
     filteredDebtors.sort((a, b) => b.balance - a.balance);
   } else {
-    filteredDebtors.sort((a, b) => a.student.names.localeCompare(b.student.names));
+    filteredDebtors.sort((a, b) => b.balance - a.balance);
   }
 
   const totalOutstanding = filteredDebtors.reduce((sum, d) => sum + d.balance, 0);
@@ -87,7 +87,7 @@ export const DebtorReport: React.FC<DebtorReportProps> = ({
         message: `Dear Parent, this is a friendly reminder of your outstanding balance of ${Utils.formatCurrency(totalOutstanding)} for ${settings.current_term}. Please kindly settle at your earliest convenience.`,
       });
       addToast(`Successfully queued ${filteredDebtors.length} reminders.`, 'success');
-    } catch (error) {
+    } catch {
       addToast('Failed to send reminders. Please try again.', 'error');
     } finally {
       setIsSending(false);

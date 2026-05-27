@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import {
   ShieldCheck,
   Users,
-  Globe,
   Database,
   Settings,
   Lock,
@@ -29,8 +28,7 @@ import { AdvancedAnalytics } from './dashboard/AdvancedAnalytics';
 import { AttendanceAnalytics } from './dashboard/AttendanceAnalytics';
 import { ExecutiveAcademicSummary } from './dashboard/ExecutiveAcademicSummary';
 
-// Dashboard tab components
-import { DashboardCmsTab } from './dashboard/DashboardCmsTab';
+
 import { DashboardRolesTab } from './dashboard/DashboardRolesTab';
 import {
   DashboardHealthTab,
@@ -114,7 +112,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const setSettings = (newSettings: Types.Settings) => updateSettings(newSettings);
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [editedSettings, setEditedSettings] = useState(settings);
-  const [newFeature, setNewFeature] = useState('');
   const [selectedRole, setSelectedRole] = useState<Types.UserRole>('admin');
   const [editedPlatformSettings, setEditedPlatformSettings] = useState(initialPlatformSettings);
   const [selectedSchool, setSelectedSchool] = useState<any>(null);
@@ -149,81 +146,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     const updatedSettings = { ...editedSettings, updated_at: Date.now() };
     setSettings(updatedSettings);
     addToast('System settings saved successfully!', 'success');
-  };
-
-  const handleChange = (field: keyof typeof settings, value: any) => {
-    setEditedSettings({ ...editedSettings, [field]: value });
-  };
-
-  const handleImageUpload = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    field: keyof typeof settings
-  ) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => handleChange(field, reader.result as string);
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const features = (editedSettings.landing_features || '')
-    .split(',')
-    .map((f) => f.trim())
-    .filter((f) => f);
-  const addFeature = () => {
-    if (newFeature.trim()) {
-      handleChange('landing_features', [...features, newFeature.trim()].join(', '));
-      setNewFeature('');
-    }
-  };
-  const removeFeature = (index: number) => {
-    handleChange('landing_features', features.filter((_, i) => i !== index).join(', '));
-  };
-
-  // CMS Handlers (Core Values & Academic Programs)
-  const handleCoreValueChange = (index: number, field: keyof Types.CoreValue, value: string) => {
-    const updated = [...(editedSettings.landing_core_values || [])];
-    if (!updated[index]) return;
-    updated[index] = { ...updated[index], [field]: value };
-    handleChange('landing_core_values', updated);
-  };
-
-  const addCoreValue = () => {
-    const updated = [
-      ...(editedSettings.landing_core_values || []),
-      { title: 'New Value', description: '', icon: 'Heart' },
-    ];
-    handleChange('landing_core_values', updated);
-  };
-
-  const removeCoreValue = (index: number) => {
-    const updated = (editedSettings.landing_core_values || []).filter((_, i) => i !== index);
-    handleChange('landing_core_values', updated);
-  };
-
-  const handleAcademicProgramChange = (
-    index: number,
-    field: keyof Types.AcademicProgram,
-    value: any
-  ) => {
-    const updated = [...(editedSettings.landing_academic_programs || [])];
-    if (!updated[index]) return;
-    updated[index] = { ...updated[index], [field]: value };
-    handleChange('landing_academic_programs', updated);
-  };
-
-  const addAcademicProgram = () => {
-    const updated = [
-      ...(editedSettings.landing_academic_programs || []),
-      { title: 'New Division', age_range: '', description: '', image: null },
-    ];
-    handleChange('landing_academic_programs', updated);
-  };
-
-  const removeAcademicProgram = (index: number) => {
-    const updated = (editedSettings.landing_academic_programs || []).filter((_, i) => i !== index);
-    handleChange('landing_academic_programs', updated);
   };
 
   // Super Admin Actions
@@ -340,13 +262,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       },
     });
   };
-
-  // ─── System Health Data ─────────────────────────────────────────────
-  const systemHealth = [
-    { name: 'Database Status', status: 'Healthy', ok: true },
-    { name: 'API Connectivity', status: 'Online', ok: true },
-    { name: 'Last Activity', status: new Date().toLocaleDateString(), ok: true },
-  ];
 
   const tabs = [
     { id: 'overview' as TabType, name: 'Executive Overview', icon: TrendingUp },

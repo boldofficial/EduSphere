@@ -6,7 +6,6 @@ import Link from 'next/link';
 import SiteHeader from '@/components/features/SiteHeader';
 import SiteFooter from '@/components/features/SiteFooter';
 import * as Utils from '@/lib/utils';
-import * as Types from '@/lib/types';
 import * as DataService from '@/lib/data-service';
 
 const AdmissionPage = () => {

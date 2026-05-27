@@ -2,9 +2,7 @@ import { Skeleton, CardSkeleton } from '@/components/ui/skeleton';
 import { useState } from 'react';
 
 export default function DashboardLoading() {
-  const [barHeights] = useState(() =>
-    [...Array(12)].map(() => `${Math.random() * 80 + 20}%`)
-  );
+  const [barHeights] = useState(() => [...Array(12)].map(() => `${Math.random() * 80 + 20}%`));
   return (
     <div className="space-y-8 p-1 sm:p-2">
       {/* Page Header Skeleton */}

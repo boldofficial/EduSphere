@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef } from 'react';
-import { Camera, X, User } from 'lucide-react';
+import { Camera, X } from 'lucide-react';
 import * as Utils from '@/lib/utils';
 
 interface PhotoUploadProps {

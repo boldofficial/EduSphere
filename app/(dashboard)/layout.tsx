@@ -104,7 +104,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       const isSuperAdmin = currentRole === 'super_admin';
       logout();
       window.location.href = isSuperAdmin ? '/' : '/login';
-    } catch (error) {
+    } catch {
       logout();
       window.location.href = '/login';
     }

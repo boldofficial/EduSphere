@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef } from 'react';
-import { Download, Upload, Database, Cloud } from 'lucide-react';
+import { Download, Upload, Cloud } from 'lucide-react';
 import * as Utils from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -78,7 +78,7 @@ export const DataManagementView: React.FC = () => {
         } else {
           addToast('Invalid backup file format', 'error');
         }
-      } catch (err) {
+      } catch {
         addToast('Error parsing file', 'error');
       }
     };

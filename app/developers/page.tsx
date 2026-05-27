@@ -2,10 +2,9 @@
 
 import React, { useState } from 'react';
 
-import { Terminal, Code, Cpu, Lock, ChevronRight } from 'lucide-react';
+import { Code, Cpu, Lock, ChevronRight } from 'lucide-react';
 import { LandingNav } from '@/components/features/landing/LandingNav';
 import { LandingFooter } from '@/components/features/landing/LandingContactFooter';
-import * as Utils from '@/lib/utils';
 
 export default function DevelopersPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -57,7 +56,10 @@ export default function DevelopersPage() {
                     &quot;https://api.myregistra.net/v1/students/ST-2024-001&quot;
                   </p>
                   <p className="pl-4 text-white">
-                    -H <span className="text-yellow-300">&quot;Authorization: Bearer sk_live_...&quot;</span>
+                    -H{' '}
+                    <span className="text-yellow-300">
+                      &quot;Authorization: Bearer sk_live_...&quot;
+                    </span>
                   </p>
 
                   <p className="text-slate-500 mt-4 animate-pulse"># Response...</p>

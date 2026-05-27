@@ -18,8 +18,6 @@ import {
   CreditCard,
   Trash2,
   FileText,
-  Calendar,
-  AlertCircle,
   ChevronDown,
   ChevronUp,
   Banknote,
@@ -43,7 +41,7 @@ interface PayrollWorkflowProps {
 
 export const PayrollWorkflow: React.FC<PayrollWorkflowProps> = ({ onViewPayslip }) => {
   const { addToast } = useToast();
-  const { data: payrolls = [], isLoading } = usePayrolls();
+  const { data: payrolls = [] } = usePayrolls();
 
   const { mutate: generatePayroll, isPending: isGenerating } = useGeneratePayroll();
   const { mutate: approvePayroll, isPending: isApproving } = useApprovePayroll();

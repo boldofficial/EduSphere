@@ -10,9 +10,7 @@ import {
   Users,
   CheckCircle,
   XCircle,
-  AlertCircle,
   Play,
-  Pause,
   Eye,
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -111,7 +109,6 @@ export default function ExamsPage() {
   };
 
   // Stats
-  const draftCount = exams.filter((e: any) => e.status === 'draft').length;
   const scheduledCount = exams.filter((e: any) => e.status === 'scheduled').length;
   const activeCount = exams.filter((e: any) => e.status === 'active').length;
   const completedCount = exams.filter((e: any) => e.status === 'completed').length;

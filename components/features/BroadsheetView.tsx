@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Printer, LayoutList, FileDown } from 'lucide-react';
+import { Printer, FileDown } from 'lucide-react';
 import * as Types from '@/lib/types';
 import * as Utils from '@/lib/utils';
 import { Button } from '@/components/ui/button';

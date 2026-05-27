@@ -83,7 +83,7 @@ export async function prefetchPaginatedList<T>(
   queryClient: QueryClient,
   key: readonly string[],
   fetcher: () => Promise<T[]>,
-  pageSize = 20
+  _pageSize = 20
 ): Promise<T[]> {
   const data = await queryClient.fetchQuery({
     queryKey: key,
@@ -184,7 +184,7 @@ interface BatchPrefetchOptions {
 }
 
 export async function batchPrefetch(queryClient: QueryClient, options: BatchPrefetchOptions) {
-  const { queries, priority = 'normal' } = options;
+  const { queries } = options;
 
   // Use Promise.allSettled to not fail entire batch if one query fails
   const results = await Promise.allSettled(

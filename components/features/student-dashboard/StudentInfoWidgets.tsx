@@ -85,8 +85,8 @@ export const StudentInfoWidgets: React.FC<StudentInfoWidgetsProps> = ({
         </div>
         <div className="space-y-2">
           {recentAttendance.length > 0 ? (
-            recentAttendance.map((record, i) => (
-              <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+            recentAttendance.map((record) => (
+              <div key={record.id || `att-${record.date}`} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
                 <span className="text-sm font-medium text-gray-700">
                   {new Date(record.date).toLocaleDateString('en-US', {
                     weekday: 'short',

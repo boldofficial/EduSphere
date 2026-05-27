@@ -263,7 +263,7 @@ export const StudentInvoiceView: React.FC<StudentInvoiceViewProps> = ({
 
           {studentFees.length > 0 ? (
             <div className="space-y-2 flex-grow">
-              {studentFees.map((fee, i) => (
+              {studentFees.map((fee) => (
                 <div
                   key={fee.id}
                   className="flex justify-between items-center p-3 bg-gray-50 rounded-xl border border-transparent"
@@ -342,7 +342,7 @@ export const StudentInvoiceView: React.FC<StudentInvoiceViewProps> = ({
               <div className="absolute left-1.5 top-0 bottom-0 w-0.5 bg-gray-100" />
 
               <div className="space-y-4">
-                {studentPayments.map((payment, i) => (
+                {studentPayments.map((payment) => (
                   <div key={payment.id} className="relative">
                     {/* Timeline dot */}
                     <div className="absolute -left-[1.35rem] top-1.5 w-2.5 h-2.5 bg-white rounded-full border-2 border-emerald-500 z-10" />

@@ -30,8 +30,8 @@ export default function GlobalError({
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Something went wrong</h1>
 
         <p className="text-gray-600 mb-8">
-          An unexpected error occurred in the application. We&apos;ve been notified and are looking into
-          it.
+          An unexpected error occurred in the application. We&apos;ve been notified and are looking
+          into it.
         </p>
 
         <div className="flex flex-col gap-3 justify-center">

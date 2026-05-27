@@ -2,7 +2,6 @@
 
 import React, { useState, useMemo } from 'react';
 import { ArrowUp, Check, X, AlertCircle, Save, RefreshCw } from 'lucide-react';
-import { useSchoolStore } from '@/lib/store';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
@@ -88,7 +87,7 @@ export const PromotionManager: React.FC = () => {
         };
       })
       .sort((a: any, b: any) => b.average - a.average);
-  }, [activeStudents, scores, settings, localThreshold, promotionResults]);
+  }, [activeStudents, scores, settings, localThreshold, promotionResults, students]);
 
   const eligibleCount = studentStats.filter((s: any) => s.eligible).length;
   const processedCount = studentStats.filter((s: any) => s.promotedTo !== null).length;

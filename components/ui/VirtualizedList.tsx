@@ -2,20 +2,6 @@
 
 import React, { useCallback, useRef, useMemo, forwardRef, useImperativeHandle } from 'react';
 
-interface VirtualItem<T> {
-  index: number;
-  data: T;
-  start: number;
-  size: number;
-  key: string;
-}
-
-interface VirtualizerOptions {
-  estimateSize?: number;
-  overscan?: number;
-  keyExtractor: (item: any, index: number) => string;
-}
-
 interface VirtualListProps<T> {
   items: T[];
   containerClassName?: string;
@@ -48,7 +34,6 @@ export const VirtualList = forwardRef<VirtualListRef, VirtualListProps<any>>(
       renderItem,
       renderEmpty,
       estimateSize = 56,
-      overscan = 5,
       keyExtractor,
       onEndReached,
       threshold = 200,
@@ -60,7 +45,6 @@ export const VirtualList = forwardRef<VirtualListRef, VirtualListProps<any>>(
   ) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const scrollRef = useRef<number>(0);
-    const mountedRef = useRef(false);
 
     const getItemKey = useCallback(
       (item: any, index: number) => {
@@ -203,8 +187,6 @@ export function VirtualTable<T>({
   onRowClick,
   renderEmpty,
 }: VirtualTableProps<T>) {
-  const totalHeight = data.length * rowHeight;
-
   const renderCell = useCallback((item: T, column: VirtualTableColumn<T>, index: number) => {
     if (column.render) {
       return column.render(item, index);

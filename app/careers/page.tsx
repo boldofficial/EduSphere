@@ -2,10 +2,9 @@
 
 import React, { useState } from 'react';
 
-import { Briefcase, Heart, Globe, Rocket, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Briefcase, Heart, Globe, Rocket, ArrowRight } from 'lucide-react';
 import { LandingNav } from '@/components/features/landing/LandingNav';
 import { LandingFooter } from '@/components/features/landing/LandingContactFooter';
-import * as Utils from '@/lib/utils';
 
 export default function CareersPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);

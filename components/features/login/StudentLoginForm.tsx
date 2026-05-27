@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { GraduationCap, Eye, EyeOff, AlertCircle, ArrowRight } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle, ArrowRight } from 'lucide-react';
 
 interface StudentLoginFormProps {
   studentNo: string;

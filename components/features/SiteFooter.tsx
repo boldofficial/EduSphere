@@ -1,7 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { School, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
-import * as Types from '@/lib/types';
+import { Mail, Phone, MapPin, Facebook, Instagram } from 'lucide-react';
 import * as Utils from '@/lib/utils';
 
 interface SiteFooterProps {

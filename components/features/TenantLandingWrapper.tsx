@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { LandingPage } from '@/components/features/LandingPage';
 import * as Utils from '@/lib/utils';
 import { useSettings, usePublicStats } from '@/lib/hooks/use-data';

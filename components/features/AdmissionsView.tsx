@@ -26,14 +26,12 @@ import * as DataService from '@/lib/data-service';
 
 interface AdmissionsViewProps {
   admissions: Types.Admission[];
-  intakes: any[];
   classes: any[];
   onUpdate: (admission: Types.Admission) => void;
 }
 
 export const AdmissionsView: React.FC<AdmissionsViewProps> = ({
   admissions,
-  intakes,
   classes,
   onUpdate,
 }) => {

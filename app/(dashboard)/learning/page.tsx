@@ -10,7 +10,7 @@ import { useSchoolStore } from '@/lib/store';
 
 export default function LearningCenterPage() {
   const router = useRouter();
-  const { currentRole, currentUser } = useSchoolStore();
+  const { currentRole } = useSchoolStore();
 
   return (
     <div className="p-6 space-y-6">

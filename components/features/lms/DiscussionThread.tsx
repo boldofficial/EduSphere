@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSchoolStore } from '@/lib/store';
-import { DiscussionThread, DiscussionMessage } from '@/lib/types';
+import { DiscussionThread } from '@/lib/types';
 import { DiscussionMessageComponent } from './DiscussionMessage';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';

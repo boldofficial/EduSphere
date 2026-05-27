@@ -231,7 +231,6 @@ From: www.fruitfulvineheritageschools.org.ng
   } catch (error) {
     // Log detailed error for debugging
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    const errorStack = error instanceof Error ? error.stack : undefined;
     logError('Contact form error', error, {
       errorMessage,
       smtpHost: process.env.SMTP_HOST,

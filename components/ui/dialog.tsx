@@ -28,7 +28,7 @@ const Dialog = ({
   );
 };
 
-const DialogTrigger = ({ children, asChild }: any) => {
+const DialogTrigger = ({ children }: any) => {
   const context = React.useContext(DialogContext);
   // Simplified trigger
   return <div onClick={() => context?.onOpenChange(true)}>{children}</div>;

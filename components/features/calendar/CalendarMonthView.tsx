@@ -25,7 +25,6 @@ interface CalendarMonthViewProps {
 
 export const CalendarMonthView: React.FC<CalendarMonthViewProps> = ({
   year,
-  month,
   monthName,
   onPrevMonth,
   onNextMonth,

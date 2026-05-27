@@ -2,7 +2,6 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import * as Types from './types';
 import * as Utils from './utils';
-import * as DataService from './data-service';
 
 interface SchoolState {
   currentUser: any | null;
@@ -27,7 +26,7 @@ const debouncedStorage = {
     try {
       if (typeof window === 'undefined') return null;
       return sessionStorage.getItem(name);
-    } catch (error) {
+    } catch {
       return null;
     }
   },
@@ -35,7 +34,7 @@ const debouncedStorage = {
     try {
       if (typeof window === 'undefined') return;
       sessionStorage.setItem(name, value);
-    } catch (error) {
+    } catch {
       // Silently fail
     }
   }, 500),
@@ -43,7 +42,7 @@ const debouncedStorage = {
     try {
       if (typeof window === 'undefined') return;
       sessionStorage.removeItem(name);
-    } catch (error) {
+    } catch {
       // Silently fail
     }
   },

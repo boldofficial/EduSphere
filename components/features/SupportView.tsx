@@ -9,8 +9,6 @@ import {
   Plus,
   Ghost,
   X,
-  User,
-  School,
   HelpCircle,
   ChevronRight,
   Hash,
@@ -21,7 +19,6 @@ import {
   useRespondToTicket,
   useResolveTicket,
 } from '@/lib/hooks/use-data';
-import * as Types from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -51,7 +48,7 @@ export const SupportView: React.FC = () => {
         dateStyle: 'medium',
         timeStyle: 'short',
       }).format(new Date(dateStr));
-    } catch (e) {
+    } catch {
       return dateStr;
     }
   };
@@ -64,7 +61,7 @@ export const SupportView: React.FC = () => {
       setIsCreateModalOpen(false);
       setNewTicket({ subject: '', category: 'technical', priority: 'medium', description: '' });
       refetch();
-    } catch (error) {
+    } catch {
       alert('Failed to create ticket');
     } finally {
       setIsSubmitting(false);
@@ -80,7 +77,7 @@ export const SupportView: React.FC = () => {
       await respondMutation.mutateAsync({ id: selectedTicketId, message: replyMessage });
       setReplyMessage('');
       refetch();
-    } catch (error) {
+    } catch {
       alert('Failed to send reply');
     } finally {
       setIsSubmitting(false);
@@ -92,7 +89,7 @@ export const SupportView: React.FC = () => {
     try {
       await resolveMutation.mutateAsync(id);
       refetch();
-    } catch (error) {
+    } catch {
       alert('Failed to resolve ticket');
     }
   };

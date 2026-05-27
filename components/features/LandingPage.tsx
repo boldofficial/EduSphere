@@ -14,14 +14,9 @@ import { ContactSection } from './landing-tenant/ContactSection';
 
 interface LandingPageProps {
   settings: import('@/lib/types').Settings;
-  stats: {
-    studentsCount: number;
-    teachersCount: number;
-    classesCount: number;
-  };
 }
 
-export const LandingPage: React.FC<LandingPageProps> = ({ settings, stats }) => {
+export const LandingPage: React.FC<LandingPageProps> = ({ settings }) => {
   return (
     <div className="min-h-screen bg-white overflow-x-hidden font-sans">
       <SiteHeader settings={settings} />

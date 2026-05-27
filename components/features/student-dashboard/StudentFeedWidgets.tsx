@@ -84,9 +84,9 @@ export const StudentFeedWidgets: React.FC<StudentFeedWidgetsProps> = ({
             payments
               .filter((p) => p.student_id === studentId)
               .slice(0, 3)
-              .map((p, i) => (
+              .map((p) => (
                 <div
-                  key={i}
+                  key={p.id || `payment-${p.amount}`}
                   className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-dashed"
                 >
                   <div>

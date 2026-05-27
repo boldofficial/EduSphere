@@ -1,11 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Shield, Lock, FileText, Globe } from 'lucide-react';
 import { LandingNav } from '@/components/features/landing/LandingNav';
 import { LandingFooter } from '@/components/features/landing/LandingContactFooter';
-import * as Utils from '@/lib/utils';
-import * as DataService from '@/lib/data-service';
 
 const PrivacyPolicy = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);

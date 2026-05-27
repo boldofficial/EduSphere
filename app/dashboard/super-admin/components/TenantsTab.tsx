@@ -32,7 +32,7 @@ const ACTION_PAST_TENSE: Record<TenantAction, string> = {
   approve: 'approved',
 };
 
-export function TenantsTab({ schools, plans, onImpersonate, onEdit, onDataChanged }: any) {
+export function TenantsTab({ schools, onImpersonate, onEdit, onDataChanged }: any) {
   const router = useRouter();
   const { addToast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -89,7 +89,7 @@ export function TenantsTab({ schools, plans, onImpersonate, onEdit, onDataChange
       await onDataChanged?.();
       addToast(`School ${ACTION_PAST_TENSE[pendingAction.action]} successfully`, 'success');
       setPendingAction(null);
-    } catch (error) {
+    } catch {
       addToast(`Failed to ${pendingAction.action} school`, 'error');
     } finally {
       setIsProcessing(false);
@@ -114,7 +114,7 @@ export function TenantsTab({ schools, plans, onImpersonate, onEdit, onDataChange
       });
       await onDataChanged?.();
       addToast('Payment recorded successfully', 'success');
-    } catch (error) {
+    } catch {
       addToast('Payment recording failed', 'error');
     } finally {
       setIsProcessing(false);
@@ -220,7 +220,8 @@ export function TenantsTab({ schools, plans, onImpersonate, onEdit, onDataChange
                   <a
                     href={`https://${school.domain}.${ROOT_DOMAIN}`}
                     target="_blank"
-                    className="text-sm text-brand-600 hover:text-brand-800 font-medium hover:underline transition-colors" rel="noreferrer"
+                    className="text-sm text-brand-600 hover:text-brand-800 font-medium hover:underline transition-colors"
+                    rel="noreferrer"
                   >
                     {school.domain}.{ROOT_DOMAIN}
                   </a>

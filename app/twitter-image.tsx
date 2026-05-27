@@ -38,7 +38,7 @@ export default async function Image() {
           logo_media: data.logo_media,
         };
       }
-    } catch (e) {
+    } catch {
       // Fallback
     }
   }
