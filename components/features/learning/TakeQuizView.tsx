@@ -34,9 +34,10 @@ export function TakeQuizView({ quiz }: TakeQuizViewProps) {
       try {
         const res = await apiClient.post(`learning/quizzes/${quiz.id}/start_attempt/`);
         setAttempt(res.data);
-      } catch (err: unknown) {
+      } catch (err) {
         console.error('Failed to start attempt:', err);
-        if (err.response?.data?.detail?.includes('already')) {
+        const axiosError = err as { response?: { data?: { detail?: string } } };
+        if (axiosError.response?.data?.detail?.includes('already')) {
           // Possible already started, try to fetch active attempt
           const attemptsRes = await apiClient.get(`learning/attempts/?quiz_id=${quiz.id}`);
           if (attemptsRes.data.length > 0) {

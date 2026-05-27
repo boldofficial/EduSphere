@@ -781,6 +781,8 @@ export interface Attempt extends Entity {
   end_time?: string;
   total_score: number;
   is_completed: boolean;
+  submit_time?: string;
+  is_violated?: boolean;
   answers: StudentAnswer[];
   student_name?: string;
 }
