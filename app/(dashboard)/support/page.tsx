@@ -3,5 +3,5 @@
 import { SupportView } from '@/components/features/SupportView';
 
 export default function SupportPage() {
-    return <SupportView />;
+  return <SupportView />;
 }

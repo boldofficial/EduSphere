@@ -12,20 +12,23 @@ export const TrendBadge: React.FC<TrendBadgeProps> = ({ trend, showText = true }
 
   const config = {
     improving: {
-      color: 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800',
+      color:
+        'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800',
       icon: <TrendingUp className="w-3 h-3 mr-1" />,
-      label: 'Improving'
+      label: 'Improving',
     },
     declining: {
-      color: 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800',
+      color:
+        'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800',
       icon: <TrendingDown className="w-3 h-3 mr-1" />,
-      label: 'Declining'
+      label: 'Declining',
     },
     stable: {
-      color: 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700',
+      color:
+        'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700',
       icon: <Minus className="w-3 h-3 mr-1" />,
-      label: 'Stable'
-    }
+      label: 'Stable',
+    },
   };
 
   const { color, icon, label } = config[trend];

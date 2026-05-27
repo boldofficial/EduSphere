@@ -7,16 +7,16 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
 export default function LessonPlannerPage() {
-    const { currentRole } = useSchoolStore();
-    const router = useRouter();
+  const { currentRole } = useSchoolStore();
+  const router = useRouter();
 
-    useEffect(() => {
-        if (currentRole === 'student') {
-            router.push('/dashboard');
-        }
-    }, [currentRole, router]);
+  useEffect(() => {
+    if (currentRole === 'student') {
+      router.push('/dashboard');
+    }
+  }, [currentRole, router]);
 
-    if (currentRole === 'student') return null;
+  if (currentRole === 'student') return null;
 
-    return <LessonPlanGenerator />;
+  return <LessonPlanGenerator />;
 }
