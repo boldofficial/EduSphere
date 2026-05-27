@@ -285,7 +285,9 @@ export const SupportTicketsTab: React.FC<SupportTicketsTabProps> = ({
                     >
                       <div className="flex items-center gap-2 flex-row-reverse">
                         <span className="font-black text-sm text-gray-900">
-                          {res.is_admin_response ? 'Support Team' : res.user_name}
+                          {res.is_admin_response
+                            ? 'Support Team'
+                            : (res as any).user_name || res.admin_name || 'User'}
                         </span>
                         <span className="text-[10px] font-bold text-gray-400">
                           {new Date(res.created_at).toLocaleTimeString([], {
@@ -301,7 +303,7 @@ export const SupportTicketsTab: React.FC<SupportTicketsTabProps> = ({
                             : 'bg-gray-50 text-gray-700 rounded-tl-none border border-gray-100'
                         }`}
                       >
-                        {res.message}
+                        {res.body}
                       </div>
                     </div>
                   </div>

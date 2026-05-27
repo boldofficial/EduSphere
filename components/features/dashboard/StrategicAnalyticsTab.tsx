@@ -169,7 +169,7 @@ export const StrategicAnalyticsTab: React.FC<AnalyticsTabProps> = ({ data }) => 
                     fontSize: '12px',
                     fontWeight: 'bold',
                   }}
-                  formatter={(v: number) => [`₦${v.toLocaleString()}`, 'Revenue']}
+                  formatter={(v: any) => `₦${Number(v).toLocaleString()}`}
                 />
                 <Area
                   type="monotone"

@@ -146,7 +146,7 @@ export const NotificationCenter: React.FC = () => {
       });
     }
 
-    return items.sort((a, b) => b.date - a.date);
+    return items.sort((a, b) => Number(b.date) - Number(a.date));
   }, [
     now,
     announcements,

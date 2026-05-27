@@ -73,7 +73,7 @@ export const MessageInboxWidget: React.FC<MessageInboxWidgetProps> = ({
     const payload = {
       conversation: viewingMessage.conversation,
       body: replyBody.trim(),
-    };
+    } as Types.Message;
 
     createMessage(payload, {
       onSuccess: () => {

@@ -111,8 +111,9 @@ export const TimetableBuilder = () => {
       window.location.reload();
     } catch (error) {
       console.error('AI Generation Failed:', error);
+      const axiosError = error as { response?: { data?: { error?: string } } };
       const message =
-        error.response?.data?.error ||
+        axiosError.response?.data?.error ||
         'Failed to generate timetable. Please ensure periods and teachers are set up.';
       addToast(message, 'error');
     } finally {

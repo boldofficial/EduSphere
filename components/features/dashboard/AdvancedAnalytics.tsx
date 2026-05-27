@@ -78,7 +78,7 @@ export const AdvancedAnalytics: React.FC<AdvancedAnalyticsProps> = ({
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Pie>
-              <Tooltip formatter={(value: number) => [Utils.formatCurrency(value), '']} />
+              <Tooltip formatter={(value: any) => Utils.formatCurrency(Number(value))} />
               <Legend verticalAlign="bottom" height={36} />
             </PieChart>
           </ResponsiveContainer>

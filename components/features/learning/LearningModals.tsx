@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useMutation, useQueryClient, MutationFunction } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from '@/lib/api-client';
 import { Modal } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
@@ -35,7 +35,7 @@ export function CreateAssignmentModal({ children }: CreateAssignmentModalProps) 
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (data: Parameters<MutationFunction>[0]) => {
+    mutationFn: async (data: Record<string, unknown>) => {
       const res = await apiClient.post('learning/assignments/', data);
       return res.data;
     },
@@ -212,7 +212,7 @@ export function CreateQuizModal({ children }: CreateQuizModalProps) {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (data: Parameters<MutationFunction>[0]) => {
+    mutationFn: async (data: Record<string, unknown>) => {
       const res = await apiClient.post('learning/quizzes/', data);
       return res.data;
     },
@@ -355,7 +355,7 @@ export function CreateQuestionModal({ quizId, onSuccess, children }: CreateQuest
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (data: Parameters<MutationFunction>[0]) => {
+    mutationFn: async (data: Record<string, unknown>) => {
       const payload = { ...data, quiz: quizId };
       const res = await apiClient.post('learning/questions/', payload);
       return res.data;
@@ -381,7 +381,9 @@ export function CreateQuestionModal({ quizId, onSuccess, children }: CreateQuest
 
   const handleOptionChange = (idx: number, field: string, value: string | boolean) => {
     const newOptions = [...formData.options];
-    newOptions[idx] = { ...newOptions[idx], [field]: value };
+    if (newOptions[idx]) {
+      newOptions[idx] = { ...newOptions[idx], [field]: value };
+    }
     setFormData({ ...formData, options: newOptions });
   };
 

@@ -21,7 +21,6 @@ interface SubmissionGradingViewProps {
 
 export const SubmissionGradingView: React.FC<SubmissionGradingViewProps> = ({
   assignmentId,
-  _assignmentTitle,
   maxPoints,
 }) => {
   const { data: submissions = [], isLoading } = useSubmissions(assignmentId);

@@ -47,8 +47,6 @@ const ACTION_ICONS: Record<string, React.ReactNode> = {
   SCHOOL_ACTIVATED: <CheckCircle2 className="text-emerald-500" size={16} />,
 };
 
-import { CreditCard } from 'lucide-react';
-
 export const PlatformGovernanceTab: React.FC<GovernanceTabProps> = ({
   activities: initialActivities,
   announcements,

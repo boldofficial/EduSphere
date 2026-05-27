@@ -253,6 +253,7 @@ export interface Student extends Entity {
   parent_phone: string;
   address: string;
   passport_url?: string | null;
+  passport_media?: string | null;
   signature_url?: string | null; // Base64 image or URL
   password?: string; // Portal login password (set by admin)
   assigned_fees?: string[]; // IDs of optional fees assigned to this student

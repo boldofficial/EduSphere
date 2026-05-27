@@ -502,7 +502,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               )}
               <QuickActions
                 onChangeView={onChangeView || (() => {})}
-                onTabChange={setActiveTab}
+                onTabChange={(tab: string) => setActiveTab(tab as TabType)}
                 userRole={user?.role?.toLowerCase()}
                 allowedModules={allowedModules}
               />

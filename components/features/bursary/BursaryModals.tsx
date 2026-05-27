@@ -21,6 +21,7 @@ interface BursaryModalsProps {
   students: Types.Student[];
   fees: Types.FeeStructure[];
   payments: Types.Payment[];
+  paymentOptions?: Types.SchoolPaymentSettings | null;
 
   showPayModal: boolean;
   setShowPayModal: (show: boolean) => void;
@@ -470,9 +471,12 @@ export const BursaryModals: React.FC<BursaryModalsProps> = ({
                         addToast(response.data?.message || 'Verification failed', 'error');
                       }
                     } catch (e) {
+                      const axiosError = e as {
+                        response?: { data?: { message?: string; error?: string } };
+                      };
                       const errorMsg =
-                        e.response?.data?.message ||
-                        e.response?.data?.error ||
+                        axiosError.response?.data?.message ||
+                        axiosError.response?.data?.error ||
                         'Payment successful but verification failed locally.';
                       addToast(errorMsg, 'error');
                     }
