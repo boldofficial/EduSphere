@@ -20,6 +20,7 @@ import {
   Wallet,
   Shield,
   Radio,
+  Star,
 } from 'lucide-react';
 import { useAdminSchools, useGlobalSearch } from '@/lib/hooks/use-data';
 import apiClient from '@/lib/api-client';
@@ -236,6 +237,12 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
             label="Support Tickets"
             href="/dashboard/super-admin/support"
             active={pathname.startsWith('/dashboard/super-admin/support')}
+          />
+          <SidebarItem
+            icon={Star}
+            label="User Feedback"
+            href="/dashboard/super-admin/feedback"
+            active={pathname.startsWith('/dashboard/super-admin/feedback')}
           />
           <SidebarItem
             icon={Settings}

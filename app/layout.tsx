@@ -8,6 +8,7 @@ import { PWAProvider } from '@/components/providers/pwa-provider';
 import { AuthProvider } from '@/components/providers/AuthProvider';
 import { ErrorBoundary } from '@/components/providers/error-boundary';
 import { resolveTenantFromHost } from '@/lib/tenant-host';
+import { FeedbackPortal } from '@/components/features/feedback/FeedbackPortal';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -104,6 +105,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <ToastProvider>
               <PWAProvider>
                 <AuthProvider>{children}</AuthProvider>
+                <FeedbackPortal />
               </PWAProvider>
             </ToastProvider>
           </QueryProvider>

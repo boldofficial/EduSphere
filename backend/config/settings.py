@@ -146,6 +146,7 @@ INSTALLED_APPS = [
     "inventory",
     "data_import",
     "transport",
+    "feedback",
 ]
 
 MIDDLEWARE = [

@@ -1,0 +1,146 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { Star, X } from 'lucide-react';
+import { useSubmitFeedback } from '@/lib/hooks/use-feedback';
+import { useToast } from '@/components/providers/toast-provider';
+import { usePathname } from 'next/navigation';
+
+const NUDGE_INTERVAL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+const MIN_SESSION_AGE_MS = 7 * 24 * 60 * 60 * 1000;  // 7 days since first login
+
+export function FeedbackNudge() {
+  const [visible, setVisible] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [hovered, setHovered] = useState(0);
+  const [comment, setComment] = useState('');
+  const pathname = usePathname();
+  const { mutate, isPending } = useSubmitFeedback();
+  const { addToast } = useToast();
+
+  useEffect(() => {
+    const firstLogin = localStorage.getItem('first_login_at');
+    if (!firstLogin) {
+      localStorage.setItem('first_login_at', Date.now().toString());
+      return;
+    }
+
+    const sessionAge = Date.now() - parseInt(firstLogin, 10);
+    if (sessionAge < MIN_SESSION_AGE_MS) return;
+
+    const lastSubmitted = localStorage.getItem('feedback_last_submitted');
+    const lastDismissed = localStorage.getItem('feedback_nudge_dismissed');
+    const lastCheck = Math.max(
+      lastSubmitted ? parseInt(lastSubmitted, 10) : 0,
+      lastDismissed ? parseInt(lastDismissed, 10) : 0,
+    );
+
+    if (Date.now() - lastCheck > NUDGE_INTERVAL_MS) {
+      // Delay a few seconds so it doesn't pop immediately on page load
+      const timer = setTimeout(() => setVisible(true), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  const handleDismiss = () => {
+    localStorage.setItem('feedback_nudge_dismissed', Date.now().toString());
+    setVisible(false);
+  };
+
+  const handleSubmit = () => {
+    if (!rating) return;
+    mutate(
+      { rating, comment, page_url: pathname },
+      {
+        onSuccess: () => {
+          localStorage.setItem('feedback_last_submitted', Date.now().toString());
+          addToast('Thank you for your feedback!', 'success');
+          setVisible(false);
+        },
+        onError: () => {
+          addToast('Failed to submit feedback. Please try again.', 'error');
+        },
+      }
+    );
+  };
+
+  if (!visible) return null;
+
+  const activeRating = hovered || rating;
+  const starLabels = ['Terrible', 'Poor', 'Okay', 'Good', 'Excellent'];
+
+  return (
+    <div className="fixed bottom-24 right-6 z-50 w-80 bg-white rounded-3xl shadow-2xl border border-gray-100 p-5 animate-in slide-in-from-bottom-4 fade-in duration-300">
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <p className="text-xs font-black text-brand-600 uppercase tracking-widest mb-0.5">Quick check-in</p>
+          <h4 className="text-base font-black text-gray-900">How are we doing?</h4>
+          <p className="text-xs text-gray-500 mt-0.5">Rate your experience with EduSphere.</p>
+        </div>
+        <button
+          onClick={handleDismiss}
+          className="p-1.5 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+        >
+          <X size={16} />
+        </button>
+      </div>
+
+      <div className="flex gap-1.5 justify-center mb-3">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <button
+            key={star}
+            onClick={() => setRating(star)}
+            onMouseEnter={() => setHovered(star)}
+            onMouseLeave={() => setHovered(0)}
+            className="transition-transform hover:scale-110"
+          >
+            <Star
+              size={28}
+              className={`transition-colors ${
+                star <= activeRating
+                  ? 'fill-amber-400 text-amber-400'
+                  : 'fill-gray-100 text-gray-300'
+              }`}
+            />
+          </button>
+        ))}
+      </div>
+
+      {activeRating > 0 && (
+        <p className="text-center text-xs font-bold text-brand-600 mb-3">
+          {starLabels[activeRating - 1]}
+        </p>
+      )}
+
+      {rating > 0 && (
+        <textarea
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          placeholder="Any additional thoughts? (optional)"
+          rows={2}
+          className="w-full bg-gray-50 border-2 border-transparent focus:border-brand-500 focus:bg-white rounded-xl px-3 py-2 text-sm text-gray-800 outline-none resize-none transition-all placeholder-gray-400 mb-3"
+        />
+      )}
+
+      <div className="flex gap-2">
+        <button
+          onClick={handleDismiss}
+          className="flex-1 py-2 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-50 transition-colors"
+        >
+          Maybe later
+        </button>
+        <button
+          onClick={handleSubmit}
+          disabled={!rating || isPending}
+          className="flex-1 py-2 rounded-xl bg-brand-600 text-white text-xs font-bold hover:bg-brand-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
+        >
+          {isPending ? (
+            <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          ) : (
+            'Send Feedback'
+          )}
+        </button>
+      </div>
+    </div>
+  );
+}

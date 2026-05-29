@@ -1,3 +1,5 @@
+'use client';
+
 import { Skeleton, CardSkeleton } from '@/components/ui/skeleton';
 import { useState } from 'react';
 
