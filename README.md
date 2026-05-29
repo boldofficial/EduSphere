@@ -16,7 +16,6 @@
   - [Usage](#usage)
   - [Run tests](#run-tests)
   - [Deployment](#deployment)
-- [👥 Authors](#authors)
 - [🔭 Future Features](#future-features)
 - [🤝 Contributing](#contributing)
 - [⭐️ Show your support](#support)
@@ -229,17 +228,6 @@ docker compose -f docker-compose.yaml up -d
 ```
 
 The production compose starts 8 services: `frontend`, `backend`, `db`, `db_replica`, `pgbouncer`, `redis`, `celery_worker`, and `celery_beat`.
-
-([back to top](#readme-top))
-
----
-
-## 👥 Authors <a name="authors"></a>
-
-👤 **Samuel Ozioma**
-
-- GitHub: [@zieeco](https://github.com/zieeco)
-- LinkedIn: [LinkedIn](https://linkedin.com/in/zieeco)
 
 ([back to top](#readme-top))
 
