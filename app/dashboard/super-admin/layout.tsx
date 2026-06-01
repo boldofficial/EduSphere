@@ -157,7 +157,9 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
       <aside className="w-72 bg-gradient-to-b from-brand-950 via-brand-900 to-brand-950 text-white fixed h-full z-10 flex flex-col border-r border-brand-800/30">
         <div className="p-6 border-b border-white/5 flex items-center gap-3">
           <div className="h-14 w-full flex items-center justify-start">
-            <img src="/footer-logo.png" alt="Registra" className="h-full w-auto object-contain" />
+            <Link href="/" className="h-full">
+              <img src="/footer-logo.png" alt="Registra" className="h-full w-auto object-contain cursor-pointer" />
+            </Link>
           </div>
         </div>
         <nav className="flex-1 px-3 py-2 space-y-0.5 overflow-y-auto custom-scrollbar">
