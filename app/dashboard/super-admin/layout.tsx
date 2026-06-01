@@ -249,7 +249,17 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
             icon={BookOpen}
             label="Blog"
             href="/dashboard/super-admin/blog"
-            active={pathname.startsWith('/dashboard/super-admin/blog')}
+            active={
+              pathname === '/dashboard/super-admin/blog' ||
+              (pathname.startsWith('/dashboard/super-admin/blog/') &&
+                !pathname.includes('/settings'))
+            }
+          />
+          <SidebarItem
+            icon={Settings}
+            label="Blog Settings"
+            href="/dashboard/super-admin/blog/settings"
+            active={pathname.startsWith('/dashboard/super-admin/blog/settings')}
           />
           <SidebarItem
             icon={Star}

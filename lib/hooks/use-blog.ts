@@ -1,6 +1,20 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from '@/lib/api-client';
 
+export interface Category {
+  id: number;
+  name: string;
+  slug: string;
+  description: string;
+  post_count: number;
+}
+
+export interface Tag {
+  id: number;
+  name: string;
+  slug: string;
+}
+
 export interface BlogPost {
   id: number;
   title: string;
@@ -9,6 +23,10 @@ export interface BlogPost {
   content_html: string;
   excerpt: string;
   featured_image: string | null;
+  category: number | null;
+  category_name: string | null;
+  tags: number[];
+  tags_list: Tag[];
   author_name: string;
   status: 'draft' | 'published';
   published_at: string | null;
@@ -28,7 +46,7 @@ export interface BlogListResponse {
 }
 
 /** Public: fetch published blog posts (paginated) */
-export function useBlogPosts(params?: { page?: number }) {
+export function useBlogPosts(params?: { page?: number; category?: number; tag?: number }) {
   return useQuery<BlogListResponse>({
     queryKey: ['blog', 'list', params],
     queryFn: () => apiClient.get('blog/', { params }).then((r) => r.data),
@@ -44,11 +62,93 @@ export function useBlogPost(slug: string) {
   });
 }
 
+/** Fetch all categories */
+export function useCategories() {
+  return useQuery<Category[]>({
+    queryKey: ['blog', 'categories'],
+    queryFn: () => apiClient.get('blog/categories/').then((r) => r.data),
+  });
+}
+
+/** Admin: create a category */
+export function useCreateCategory() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { name: string; description?: string }) =>
+      apiClient.post('blog/categories/', data).then((r) => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['blog', 'categories'] }),
+  });
+}
+
+/** Admin: update a category */
+export function useUpdateCategory() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...data }: { id: number; name?: string; description?: string }) =>
+      apiClient.put(`blog/categories/${id}/`, data).then((r) => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['blog', 'categories'] }),
+  });
+}
+
+/** Admin: delete a category */
+export function useDeleteCategory() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => apiClient.delete(`blog/categories/${id}/`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['blog', 'categories'] }),
+  });
+}
+
+/** Fetch all tags */
+export function useTags() {
+  return useQuery<Tag[]>({
+    queryKey: ['blog', 'tags'],
+    queryFn: () => apiClient.get('blog/tags/').then((r) => r.data),
+  });
+}
+
+/** Admin: create a tag */
+export function useCreateTag() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { name: string }) => apiClient.post('blog/tags/', data).then((r) => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['blog', 'tags'] }),
+  });
+}
+
+/** Admin: update a tag */
+export function useUpdateTag() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...data }: { id: number; name?: string }) =>
+      apiClient.put(`blog/tags/${id}/`, data).then((r) => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['blog', 'tags'] }),
+  });
+}
+
+/** Admin: delete a tag */
+export function useDeleteTag() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => apiClient.delete(`blog/tags/${id}/`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['blog', 'tags'] }),
+  });
+}
+
 /** Public: fetch latest 4 blog posts for homepage */
 export function useLatestBlogPosts() {
   return useQuery<BlogListResponse>({
     queryKey: ['blog', 'latest'],
     queryFn: () => apiClient.get('blog/', { params: { page_size: 4 } }).then((r) => r.data),
+  });
+}
+
+/** Public: fetch published blog posts filtered by category */
+export function useBlogPostsByCategory(category?: number | null) {
+  return useQuery<BlogListResponse>({
+    queryKey: ['blog', 'by-category', category],
+    queryFn: () => apiClient.get('blog/', { params: { category } }).then((r) => r.data),
+    enabled: !!category,
   });
 }
 
