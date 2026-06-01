@@ -2,7 +2,7 @@ from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from core.pagination import StandardPagination
+from core.pagination import SmallPagination
 from .models import Feedback
 from .serializers import FeedbackSerializer
 
@@ -43,7 +43,7 @@ class FeedbackListView(APIView):
         if school_id:
             qs = qs.filter(school_id=school_id)
 
-        paginator = StandardPagination()
+        paginator = SmallPagination()
         page = paginator.paginate_queryset(qs, request)
         serializer = FeedbackSerializer(page, many=True)
         return paginator.get_paginated_response(serializer.data)

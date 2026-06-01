@@ -25,6 +25,15 @@ class StandardPagination(PageNumberPagination):
         )
 
 
+class SmallPagination(StandardPagination):
+    """
+    Small pagination for dense/frequent lists with 5 items per page.
+    """
+
+    page_size = 5
+    max_page_size = 50
+
+
 class LargePagination(StandardPagination):
     """
     Large pagination for exports or large lists with ~100 items per page.
