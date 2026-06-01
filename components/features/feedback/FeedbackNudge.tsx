@@ -5,16 +5,23 @@ import { Star, X } from 'lucide-react';
 import { useSubmitFeedback } from '@/lib/hooks/use-feedback';
 import { useToast } from '@/components/providers/toast-provider';
 import { usePathname } from 'next/navigation';
+import { useSchoolStore } from '@/lib/store';
+import type { AxiosError } from 'axios';
 
-const NUDGE_INTERVAL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
-const MIN_SESSION_AGE_MS = 7 * 24 * 60 * 60 * 1000;  // 7 days since first login
+const NUDGE_INTERVAL_MS = 30 * 24 * 60 * 60 * 1000;
+const MIN_SESSION_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
 export function FeedbackNudge() {
   const [visible, setVisible] = useState(false);
   const [rating, setRating] = useState(0);
   const [hovered, setHovered] = useState(0);
   const [comment, setComment] = useState('');
+  const [guestName, setGuestName] = useState('');
+  const [guestEmail, setGuestEmail] = useState('');
+
   const pathname = usePathname();
+  const { currentUser } = useSchoolStore();
+  const isGuest = !currentUser;
   const { mutate, isPending } = useSubmitFeedback();
   const { addToast } = useToast();
 
@@ -32,33 +39,70 @@ export function FeedbackNudge() {
     const lastDismissed = localStorage.getItem('feedback_nudge_dismissed');
     const lastCheck = Math.max(
       lastSubmitted ? parseInt(lastSubmitted, 10) : 0,
-      lastDismissed ? parseInt(lastDismissed, 10) : 0,
+      lastDismissed ? parseInt(lastDismissed, 10) : 0
     );
 
     if (Date.now() - lastCheck > NUDGE_INTERVAL_MS) {
-      // Delay a few seconds so it doesn't pop immediately on page load
       const timer = setTimeout(() => setVisible(true), 4000);
       return () => clearTimeout(timer);
     }
   }, []);
 
   const handleDismiss = () => {
+    // eslint-disable-next-line react-hooks/purity
     localStorage.setItem('feedback_nudge_dismissed', Date.now().toString());
     setVisible(false);
+    setNameError('');
+    setEmailError('');
   };
+
+  const [nameError, setNameError] = useState('');
+  const [emailError, setEmailError] = useState('');
 
   const handleSubmit = () => {
     if (!rating) return;
+
+    // Validate required guest fields
+    if (isGuest) {
+      let valid = true;
+      if (!guestName.trim()) {
+        setNameError('Name is required');
+        valid = false;
+      } else {
+        setNameError('');
+      }
+      if (!guestEmail.trim()) {
+        setEmailError('Email is required');
+        valid = false;
+      } else {
+        setEmailError('');
+      }
+      if (!valid) return;
+    }
+
     mutate(
-      { rating, comment, page_url: pathname },
+      {
+        rating,
+        comment,
+        page_url: pathname,
+        ...(isGuest && { guest_name: guestName, guest_email: guestEmail }),
+      },
       {
         onSuccess: () => {
           localStorage.setItem('feedback_last_submitted', Date.now().toString());
           addToast('Thank you for your feedback!', 'success');
           setVisible(false);
         },
-        onError: () => {
-          addToast('Failed to submit feedback. Please try again.', 'error');
+        onError: (err) => {
+          const axiosErr = err as AxiosError<{ error?: string; errors?: Record<string, string> }>;
+          const message =
+            axiosErr.response?.data?.error ||
+            axiosErr.response?.data?.errors ||
+            'Failed to submit feedback. Please try again.';
+          addToast(
+            typeof message === 'string' ? message : 'Failed to submit feedback. Please try again.',
+            'error'
+          );
         },
       }
     );
@@ -73,22 +117,68 @@ export function FeedbackNudge() {
     <div className="fixed bottom-24 right-6 z-50 w-80 bg-white rounded-3xl shadow-2xl border border-gray-100 p-5 animate-in slide-in-from-bottom-4 fade-in duration-300">
       <div className="flex items-start justify-between mb-4">
         <div>
-          <p className="text-xs font-black text-brand-600 uppercase tracking-widest mb-0.5">Quick check-in</p>
+          <p className="text-xs font-black text-brand-600 uppercase tracking-widest mb-0.5">
+            Quick check-in
+          </p>
           <h4 className="text-base font-black text-gray-900">How are we doing?</h4>
           <p className="text-xs text-gray-500 mt-0.5">Rate your experience with EduSphere.</p>
         </div>
         <button
+          type="button"
           onClick={handleDismiss}
+          aria-label="Dismiss feedback prompt"
           className="p-1.5 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
         >
           <X size={16} />
         </button>
       </div>
 
+      {/* Guest identity fields */}
+      {isGuest && (
+        <div className="space-y-2 mb-4">
+          <div>
+            <input
+              type="text"
+              value={guestName}
+              onChange={(e) => {
+                setGuestName(e.target.value);
+                setNameError('');
+              }}
+              placeholder="Your name *"
+              className={`w-full bg-gray-50 border-2 rounded-xl px-3 py-2 text-sm text-gray-800 outline-none transition-all placeholder-gray-400 ${
+                nameError
+                  ? 'border-red-300 focus:border-red-500'
+                  : 'border-transparent focus:border-brand-500 focus:bg-white'
+              }`}
+            />
+            {nameError && <p className="text-xs text-red-500 mt-1 ml-1">{nameError}</p>}
+          </div>
+          <div>
+            <input
+              type="email"
+              value={guestEmail}
+              onChange={(e) => {
+                setGuestEmail(e.target.value);
+                setEmailError('');
+              }}
+              placeholder="Email address *"
+              className={`w-full bg-gray-50 border-2 rounded-xl px-3 py-2 text-sm text-gray-800 outline-none transition-all placeholder-gray-400 ${
+                emailError
+                  ? 'border-red-300 focus:border-red-500'
+                  : 'border-transparent focus:border-brand-500 focus:bg-white'
+              }`}
+            />
+            {emailError && <p className="text-xs text-red-500 mt-1 ml-1">{emailError}</p>}
+          </div>
+        </div>
+      )}
+
       <div className="flex gap-1.5 justify-center mb-3">
         {[1, 2, 3, 4, 5].map((star) => (
           <button
             key={star}
+            type="button"
+            aria-label={`Rate ${star} star${star !== 1 ? 's' : ''}`}
             onClick={() => setRating(star)}
             onMouseEnter={() => setHovered(star)}
             onMouseLeave={() => setHovered(0)}
@@ -124,12 +214,14 @@ export function FeedbackNudge() {
 
       <div className="flex gap-2">
         <button
+          type="button"
           onClick={handleDismiss}
           className="flex-1 py-2 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-50 transition-colors"
         >
           Maybe later
         </button>
         <button
+          type="button"
           onClick={handleSubmit}
           disabled={!rating || isPending}
           className="flex-1 py-2 rounded-xl bg-brand-600 text-white text-xs font-bold hover:bg-brand-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"

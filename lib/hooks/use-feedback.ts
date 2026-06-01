@@ -1,10 +1,12 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import apiClient from '@/lib/api-client';
 
 export interface FeedbackPayload {
   rating: number;
   comment?: string;
   page_url?: string;
+  guest_name?: string;
+  guest_email?: string;
 }
 
 export interface FeedbackItem {
@@ -15,6 +17,8 @@ export interface FeedbackItem {
   user_role: string;
   school_name: string;
   username: string;
+  guest_name: string;
+  guest_email: string;
   created_at: string;
 }
 
@@ -35,20 +39,21 @@ export interface FeedbackListResponse {
 
 export function useSubmitFeedback() {
   return useMutation({
-    mutationFn: (payload: FeedbackPayload) => apiClient.post('feedback/', payload).then((r) => r.data),
+    mutationFn: (payload: FeedbackPayload) =>
+      apiClient.post('feedback', payload).then((r) => r.data),
   });
 }
 
 export function useFeedbackList(params?: { rating?: number; school?: number; page?: number }) {
   return useQuery<FeedbackListResponse>({
     queryKey: ['feedback', 'list', params],
-    queryFn: () => apiClient.get('feedback/list/', { params }).then((r) => r.data),
+    queryFn: () => apiClient.get('feedback/list', { params }).then((r) => r.data),
   });
 }
 
 export function useFeedbackStats() {
   return useQuery<FeedbackStats>({
     queryKey: ['feedback', 'stats'],
-    queryFn: () => apiClient.get('feedback/stats/').then((r) => r.data),
+    queryFn: () => apiClient.get('feedback/stats').then((r) => r.data),
   });
 }
