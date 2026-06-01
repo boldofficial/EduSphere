@@ -21,6 +21,7 @@ import {
   Shield,
   Radio,
   Star,
+  BookOpen,
 } from 'lucide-react';
 import { useAdminSchools, useGlobalSearch } from '@/lib/hooks/use-data';
 import apiClient from '@/lib/api-client';
@@ -158,7 +159,11 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
         <div className="p-6 border-b border-white/5 flex items-center gap-3">
           <div className="h-14 w-full flex items-center justify-start">
             <Link href="/" className="h-full">
-              <img src="/footer-logo.png" alt="Registra" className="h-full w-auto object-contain cursor-pointer" />
+              <img
+                src="/footer-logo.png"
+                alt="Registra"
+                className="h-full w-auto object-contain cursor-pointer"
+              />
             </Link>
           </div>
         </div>
@@ -239,6 +244,12 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
             label="Support Tickets"
             href="/dashboard/super-admin/support"
             active={pathname.startsWith('/dashboard/super-admin/support')}
+          />
+          <SidebarItem
+            icon={BookOpen}
+            label="Blog"
+            href="/dashboard/super-admin/blog"
+            active={pathname.startsWith('/dashboard/super-admin/blog')}
           />
           <SidebarItem
             icon={Star}

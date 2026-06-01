@@ -21,6 +21,7 @@ const navItems = [
   { id: 'features', label: 'Features', href: '#features' },
   { id: 'ai-features', label: 'AI', href: '#ai-features' },
   { id: 'about', label: 'About Us', href: '#about' },
+  { id: 'blog', label: 'Blog', href: '/blog' },
   { id: 'testimonials', label: 'Testimonials', href: '#testimonials' },
   { id: 'pricing', label: 'Pricing', href: '#pricing' },
   { id: 'faq', label: 'FAQ', href: '#faq' },

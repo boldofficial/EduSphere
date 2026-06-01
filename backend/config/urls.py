@@ -33,6 +33,7 @@ urlpatterns = [
     path("api/token/", CustomTokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/users/", include("users.urls")),
+    path("api/blog/", include("blog.urls")),
     path("api/academic/", include("academic.urls")),
     path("api/admissions/", include("admissions.urls")),
     path("api/bursary/", include("bursary.urls")),

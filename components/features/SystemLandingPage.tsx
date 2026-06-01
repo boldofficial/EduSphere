@@ -20,6 +20,7 @@ import { EcosystemSection } from './landing/EcosystemSection';
 import { AIShowcaseSection } from './landing/AIShowcaseSection';
 import { ContactSection, LandingFooter } from './landing/LandingContactFooter';
 import { DemoRequestModal } from './landing/DemoRequestModal';
+import { BlogSection } from './BlogSection';
 
 export const SystemLandingPage = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -32,6 +33,7 @@ export const SystemLandingPage = () => {
       <FeaturesSection />
       <EcosystemSection />
       <AIShowcaseSection />
+      <BlogSection />
       <HowItWorksSection />
       <TestimonialsSection />
       <PricingSection />
