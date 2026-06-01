@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Save, Send, Eye, Trash2 } from 'lucide-react';
+import { ArrowLeft, Save, Send, Trash2, Upload, X, ImageIcon, Loader2 } from 'lucide-react';
 import { RichTextEditor } from './RichTextEditor';
 import {
   useCreateBlogPost,
@@ -66,6 +66,14 @@ export function BlogEditor({ postId }: BlogEditorProps) {
     setContentJson(json);
   };
 
+  if (postId && loadingPost) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-600" />
+      </div>
+    );
+  }
+
   const handleSave = async (status: 'draft' | 'published') => {
     if (!title.trim()) {
       addToast('Title is required', 'error');
@@ -102,14 +110,6 @@ export function BlogEditor({ postId }: BlogEditorProps) {
       setSaving(false);
     }
   };
-
-  if (postId && loadingPost) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-600" />
-      </div>
-    );
-  }
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -163,14 +163,8 @@ export function BlogEditor({ postId }: BlogEditorProps) {
         className="w-full text-3xl font-black text-gray-900 bg-transparent border-none outline-none placeholder-gray-300"
       />
 
-      {/* Featured Image URL */}
-      <input
-        type="text"
-        value={featuredImage}
-        onChange={(e) => setFeaturedImage(e.target.value)}
-        placeholder="Featured image URL (optional) — paste an image link..."
-        className="w-full bg-gray-50 border-2 border-transparent focus:border-brand-500 focus:bg-white rounded-2xl px-4 py-3 text-sm outline-none transition-all placeholder-gray-400"
-      />
+      {/* Featured Image Upload */}
+      <FeaturedImageUpload value={featuredImage} onChange={setFeaturedImage} />
 
       {/* Rich Text Editor */}
       <RichTextEditor
@@ -365,6 +359,192 @@ export function BlogEditor({ postId }: BlogEditorProps) {
             <Trash2 size={16} />
             Delete Post
           </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function FeaturedImageUpload({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (url: string) => void;
+}) {
+  const { addToast } = useToast();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [preview, setPreview] = useState(value || '');
+  const [dragOver, setDragOver] = useState(false);
+
+  useEffect(() => {
+    setPreview(value || '');
+  }, [value]);
+
+  const uploadToR2 = async (file: File) => {
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      addToast('Please select an image file', 'error');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      addToast('Image must be less than 5MB', 'error');
+      return;
+    }
+
+    // Show local preview immediately
+    const localPreview = URL.createObjectURL(file);
+    setPreview(localPreview);
+    setUploading(true);
+
+    try {
+      // Read file as base64
+      const reader = new FileReader();
+      const base64Data = await new Promise<string>((resolve, reject) => {
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      // Upload to R2 via API
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          base64Data,
+          folder: 'blog',
+          fileName: file.name,
+          contentType: file.type,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+
+      const data = await response.json();
+      onChange(data.url);
+      addToast('Featured image uploaded', 'success');
+    } catch (err) {
+      console.error('Upload error:', err);
+      addToast('Failed to upload image', 'error');
+      setPreview(value || ''); // Revert to previous
+    } finally {
+      setUploading(false);
+      URL.revokeObjectURL(localPreview);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) uploadToR2(file);
+    // Reset input so the same file can be re-selected
+    e.target.value = '';
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) uploadToR2(file);
+  };
+
+  const handleRemove = () => {
+    onChange('');
+    setPreview('');
+  };
+
+  return (
+    <div className="space-y-2">
+      <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">
+        Featured Image
+      </label>
+
+      {preview ? (
+        <div className="relative group rounded-2xl overflow-hidden bg-gray-100">
+          <img
+            src={preview}
+            alt="Featured image preview"
+            className="w-full h-64 object-cover"
+            onError={() => setPreview('')}
+          />
+          {/* Overlay on hover */}
+          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+            <button
+              type="button"
+              onClick={() => inputRef.current?.click()}
+              disabled={uploading}
+              className="px-4 py-2 bg-white/90 rounded-xl text-sm font-bold text-gray-800 hover:bg-white transition-colors flex items-center gap-2 disabled:opacity-50"
+            >
+              <Upload size={16} />
+              Change
+            </button>
+            <button
+              type="button"
+              onClick={handleRemove}
+              disabled={uploading}
+              className="px-4 py-2 bg-red-500/90 rounded-xl text-sm font-bold text-white hover:bg-red-600 transition-colors flex items-center gap-2 disabled:opacity-50"
+            >
+              <X size={16} />
+              Remove
+            </button>
+          </div>
+          {uploading && (
+            <div className="absolute inset-0 bg-white/60 flex items-center justify-center">
+              <div className="flex items-center gap-2 bg-white rounded-xl px-4 py-2 shadow-lg">
+                <Loader2 size={18} className="animate-spin text-brand-600" />
+                <span className="text-sm font-medium text-gray-700">Uploading...</span>
+              </div>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragOver(true);
+          }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={handleDrop}
+          onClick={() => inputRef.current?.click()}
+          className={`
+            relative h-48 rounded-2xl border-2 border-dashed cursor-pointer
+            flex flex-col items-center justify-center gap-3 transition-all
+            ${
+              dragOver
+                ? 'border-brand-500 bg-brand-50 scale-[1.02]'
+                : 'border-gray-300 bg-gray-50 hover:border-brand-400 hover:bg-brand-50/50'
+            }
+          `}
+        >
+          {uploading ? (
+            <>
+              <Loader2 size={32} className="animate-spin text-brand-600" />
+              <span className="text-sm font-medium text-gray-500">Uploading image...</span>
+            </>
+          ) : (
+            <>
+              <div className="h-14 w-14 rounded-2xl bg-gray-100 flex items-center justify-center group-hover:bg-brand-100 transition-colors">
+                <ImageIcon size={28} className="text-gray-400" />
+              </div>
+              <div className="text-center">
+                <p className="text-sm font-bold text-gray-700">Click to upload</p>
+                <p className="text-xs text-gray-400 mt-1">or drag & drop an image</p>
+                <p className="text-[10px] text-gray-400 mt-2">PNG, JPG, WebP — Max 5MB</p>
+              </div>
+            </>
+          )}
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/webp,image/gif"
+            onChange={handleFileChange}
+            className="hidden"
+            disabled={uploading}
+          />
         </div>
       )}
     </div>
