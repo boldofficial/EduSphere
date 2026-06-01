@@ -6,7 +6,7 @@
 
 $SERVER_IP = "72.62.160.70"
 $SERVER_USER = "root"
-$PROD_CONTAINER = "db-rckswgkwswcck0gokswk0s8s-174706343313"
+$PROD_CONTAINER = "db-rckswgkwswcck0gokswk0s8s-163755142058"
 $DB_NAME = "registra_db"
 $DB_USER = "registra_admin"
 $BACKUP_FILE = "$env:USERPROFILE\registra_backup.sql"

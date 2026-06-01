@@ -9,7 +9,7 @@
 # --- CONFIG ---
 SERVER_IP="72.62.160.70"
 SERVER_USER="root"
-PROD_CONTAINER="db-rckswgkwswcck0gokswk0s8s-120054959616"
+PROD_CONTAINER="db-rckswgkwswcck0gokswk0s8s-163755142058"
 DB_NAME="registra_db"
 DB_USER="registra_admin"
 BACKUP_FILE="$HOME/registra_backup.sql"
@@ -85,7 +85,7 @@ echo -e "${GREEN}✅ PostgreSQL is ready.${NC}"
 # --- STEP 6: Restore backup into local DB ---
 echo ""
 echo -e "${YELLOW}[6/6] Restoring production data into local database...${NC}"
-cat ${BACKUP_FILE} | docker exec -i ${LOCAL_CONTAINER} psql -U ${DB_USER} -d ${DB_NAME} > /dev/null 2>&1
+cat ${BACKUP_FILE} | docker exec -i ${LOCAL_CONTAINER} psql -U ${DB_USER} -d ${DB_NAME} 2>&1 | grep -E "ERROR|FATAL" | head -20
 if [ $? -ne 0 ]; then
   echo -e "${RED}❌ Failed to restore backup.${NC}"
   exit 1
