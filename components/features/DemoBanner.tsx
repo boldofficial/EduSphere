@@ -8,7 +8,7 @@ export const DemoBanner = () => {
   return (
     <div className="bg-gradient-to-r from-brand-600 via-purple-600 to-brand-700 text-white px-4 py-3 shadow-lg relative overflow-hidden group">
       {/* Animated background element */}
-      <div className="absolute inset-0 bg-[url('/noise.png')] opacity-10 mix-blend-overlay"></div>
+      <div className="absolute inset-0 bg-[url('/noise.svg')] opacity-10 mix-blend-overlay"></div>
       <div className="absolute -right-4 -top-8 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-1000"></div>
 
       <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 relative z-10">

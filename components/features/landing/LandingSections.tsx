@@ -267,7 +267,7 @@ export const TestimonialsSection: React.FC = () => (
     id="testimonials"
     className="py-24 bg-gradient-to-br from-brand-900 via-purple-900 to-brand-800 text-white relative overflow-hidden"
   >
-    <div className="absolute inset-0 bg-[url('/noise.png')] opacity-10 mix-blend-overlay"></div>
+    <div className="absolute inset-0 bg-[url('/noise.svg')] opacity-10 mix-blend-overlay"></div>
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
