@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Calendar, User, Clock, ArrowRight } from 'lucide-react';
+import { ArrowLeft, Calendar, User, Clock, ArrowRight, BookOpen, Tag } from 'lucide-react';
 import { LandingNav } from '@/components/features/landing/LandingNav';
 import { LandingFooter } from '@/components/features/landing/LandingContactFooter';
 import { useBlogPost, useBlogPosts } from '@/lib/hooks/use-blog';
@@ -98,7 +98,26 @@ export default function SingleBlogPostPage() {
                   year: 'numeric',
                 })}
               </span>
+              {post.category_name && (
+                <span className="flex items-center gap-1.5 text-brand-600 font-bold">
+                  <BookOpen size={16} />
+                  {post.category_name}
+                </span>
+              )}
             </div>
+            {post.tags_list?.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2 mt-4">
+                <Tag size={14} className="text-gray-400" />
+                {post.tags_list.map((tag) => (
+                  <span
+                    key={tag.id}
+                    className="text-xs font-bold text-brand-600 bg-brand-50 px-3 py-1 rounded-full"
+                  >
+                    #{tag.name}
+                  </span>
+                ))}
+              </div>
+            )}
           </header>
 
           {/* Featured Image */}

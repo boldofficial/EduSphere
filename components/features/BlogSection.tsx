@@ -80,7 +80,12 @@ export function BlogSection() {
 
                   {/* Content */}
                   <div className="p-6 flex-1 flex flex-col">
-                    <div className="flex items-center gap-3 text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+                    <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 flex-wrap">
+                      {post.category_name && (
+                        <span className="px-2 py-0.5 rounded-full bg-brand-100 text-brand-700 text-[10px] tracking-wide">
+                          {post.category_name}
+                        </span>
+                      )}
                       <span className="flex items-center gap-1">
                         <Calendar size={11} />
                         {new Date(post.published_at || post.created_at).toLocaleDateString(

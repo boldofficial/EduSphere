@@ -4,7 +4,15 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Save, Send, Eye, Trash2 } from 'lucide-react';
 import { RichTextEditor } from './RichTextEditor';
-import { useCreateBlogPost, useUpdateBlogPost, useAdminBlogPost } from '@/lib/hooks/use-blog';
+import {
+  useCreateBlogPost,
+  useUpdateBlogPost,
+  useAdminBlogPost,
+  useCategories,
+  useTags,
+  useCreateCategory,
+  useCreateTag,
+} from '@/lib/hooks/use-blog';
 import { useToast } from '@/components/providers/toast-provider';
 
 interface BlogEditorProps {
@@ -27,6 +35,15 @@ export function BlogEditor({ postId }: BlogEditorProps) {
   const [featuredImage, setFeaturedImage] = useState('');
   const [seoTitle, setSeoTitle] = useState('');
   const [seoDescription, setSeoDescription] = useState('');
+  const { data: categories = [] } = useCategories();
+  const { data: tags = [] } = useTags();
+  const createCategory = useCreateCategory();
+  const createTag = useCreateTag();
+
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+  const [selectedTags, setSelectedTags] = useState<number[]>([]);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [newTagName, setNewTagName] = useState('');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -37,6 +54,8 @@ export function BlogEditor({ postId }: BlogEditorProps) {
       setContentHtml(existingPost.content_html);
       setContentJson(existingPost.content_json);
       setFeaturedImage(existingPost.featured_image || '');
+      setSelectedCategory(existingPost.category);
+      setSelectedTags(existingPost.tags);
       setSeoTitle(existingPost.seo_title);
       setSeoDescription(existingPost.seo_description);
     }
@@ -55,13 +74,15 @@ export function BlogEditor({ postId }: BlogEditorProps) {
 
     setSaving(true);
     try {
-      const payload = {
+      const payload: Record<string, unknown> = {
         title,
         excerpt,
         author_name: authorName,
         content_html: contentHtml,
         content_json: contentJson,
         featured_image: featuredImage || null,
+        category: selectedCategory,
+        tags: selectedTags,
         seo_title: seoTitle,
         seo_description: seoDescription,
         status,
@@ -172,19 +193,128 @@ export function BlogEditor({ postId }: BlogEditorProps) {
         />
       </div>
 
-      {/* Author */}
+      {/* Category & Tags */}
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">
-            Author Name
+            Category
           </label>
-          <input
-            type="text"
-            value={authorName}
-            onChange={(e) => setAuthorName(e.target.value)}
-            className="w-full bg-gray-50 border-2 border-transparent focus:border-brand-500 focus:bg-white rounded-2xl px-4 py-3 text-sm outline-none transition-all"
-          />
+          <div className="flex gap-2">
+            <select
+              value={selectedCategory ?? ''}
+              onChange={(e) => setSelectedCategory(e.target.value ? Number(e.target.value) : null)}
+              className="flex-1 bg-gray-50 border-2 border-transparent focus:border-brand-500 focus:bg-white rounded-2xl px-4 py-3 text-sm outline-none transition-all"
+            >
+              <option value="">Uncategorized</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
+            <div className="flex gap-1">
+              <input
+                type="text"
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                placeholder="New..."
+                className="w-24 bg-gray-50 border-2 border-transparent focus:border-brand-500 rounded-2xl px-3 py-3 text-sm outline-none transition-all"
+              />
+              <button
+                type="button"
+                onClick={async () => {
+                  if (!newCategoryName.trim()) return;
+                  try {
+                    await createCategory.mutateAsync({ name: newCategoryName });
+                    setNewCategoryName('');
+                    addToast('Category created', 'success');
+                  } catch {
+                    addToast('Failed', 'error');
+                  }
+                }}
+                className="px-3 py-2 rounded-xl bg-brand-600 text-white text-xs font-bold hover:bg-brand-700 transition-colors"
+              >
+                +
+              </button>
+            </div>
+          </div>
         </div>
+        <div>
+          <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">
+            Tags
+          </label>
+          <div className="flex gap-2">
+            <div className="flex-1 flex flex-wrap gap-1 items-center bg-gray-50 rounded-2xl px-3 py-2 min-h-[44px]">
+              {tags
+                .filter((t) => selectedTags.includes(t.id))
+                .map((tag) => (
+                  <span
+                    key={tag.id}
+                    className="inline-flex items-center gap-1 bg-brand-100 text-brand-700 text-[10px] font-bold px-2 py-1 rounded-full"
+                  >
+                    {tag.name}
+                    <button
+                      type="button"
+                      onClick={() => setSelectedTags((prev) => prev.filter((id) => id !== tag.id))}
+                      className="hover:text-brand-900"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              <select
+                value=""
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  if (val && !selectedTags.includes(val)) {
+                    setSelectedTags((prev) => [...prev, val]);
+                  }
+                }}
+                className="bg-transparent text-sm outline-none text-gray-500 min-w-[80px]"
+              >
+                <option value="">+ Add tag</option>
+                {tags
+                  .filter((t) => !selectedTags.includes(t.id))
+                  .map((tag) => (
+                    <option key={tag.id} value={tag.id}>
+                      {tag.name}
+                    </option>
+                  ))}
+              </select>
+            </div>
+            <input
+              type="text"
+              value={newTagName}
+              onChange={(e) => setNewTagName(e.target.value)}
+              placeholder="New..."
+              className="w-20 bg-gray-50 border-2 border-transparent focus:border-brand-500 rounded-2xl px-3 py-3 text-sm outline-none transition-all"
+              onKeyDown={async (e) => {
+                if (e.key === 'Enter' && newTagName.trim()) {
+                  try {
+                    const res = await createTag.mutateAsync({ name: newTagName });
+                    setSelectedTags((prev) => [...prev, res.id]);
+                    setNewTagName('');
+                  } catch {
+                    addToast('Failed', 'error');
+                  }
+                }
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Author */}
+      <div>
+        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">
+          Author Name
+        </label>
+        <input
+          type="text"
+          value={authorName}
+          onChange={(e) => setAuthorName(e.target.value)}
+          className="w-full bg-gray-50 border-2 border-transparent focus:border-brand-500 focus:bg-white rounded-2xl px-4 py-3 text-sm outline-none transition-all"
+        />
       </div>
 
       {/* SEO Section */}

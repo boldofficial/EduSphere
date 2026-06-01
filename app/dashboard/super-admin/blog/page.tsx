@@ -12,7 +12,12 @@ import {
   Calendar,
   Image as ImageIcon,
 } from 'lucide-react';
-import { useAdminBlogPosts, useDeleteBlogPost, usePublishBlogPost } from '@/lib/hooks/use-blog';
+import {
+  useAdminBlogPosts,
+  useDeleteBlogPost,
+  usePublishBlogPost,
+  useCategories,
+} from '@/lib/hooks/use-blog';
 import { useToast } from '@/components/providers/toast-provider';
 
 export default function SuperAdminBlogPage() {
@@ -20,6 +25,7 @@ export default function SuperAdminBlogPage() {
   const { addToast } = useToast();
   const [page, setPage] = useState(1);
   const { data, isLoading } = useAdminBlogPosts({ page });
+  const { data: categories = [] } = useCategories();
   const deleteMutation = useDeleteBlogPost();
   const publishMutation = usePublishBlogPost();
 
@@ -117,7 +123,7 @@ export default function SuperAdminBlogPage() {
 
               {/* Info */}
               <div className="flex-1 min-w-0 overflow-hidden">
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
                   <h3 className="text-sm font-bold text-gray-900 truncate">{post.title}</h3>
                   <span
                     className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase ${
@@ -128,6 +134,11 @@ export default function SuperAdminBlogPage() {
                   >
                     {post.status}
                   </span>
+                  {post.category_name && (
+                    <span className="text-[10px] font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full">
+                      {post.category_name}
+                    </span>
+                  )}
                 </div>
                 <div className="flex items-center gap-3 text-xs text-gray-400">
                   <span className="flex items-center gap-1">
@@ -135,7 +146,18 @@ export default function SuperAdminBlogPage() {
                     {formatDate(post.published_at || post.created_at)}
                   </span>
                   <span>{post.author_name}</span>
-                  {post.excerpt && <span className="truncate text-gray-300">{post.excerpt}</span>}
+                  {post.tags_list?.length > 0 && (
+                    <span className="flex gap-1">
+                      {post.tags_list.map((tag) => (
+                        <span
+                          key={tag.id}
+                          className="text-[10px] text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded"
+                        >
+                          #{tag.name}
+                        </span>
+                      ))}
+                    </span>
+                  )}
                 </div>
               </div>
 

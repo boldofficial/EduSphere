@@ -9,7 +9,7 @@ import { LandingFooter } from '@/components/features/landing/LandingContactFoote
 export default function SuccessStoriesPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col font-primary pt-20">
+    <div className="min-h-screen bg-gray-50 flex flex-col font-primary">
       <LandingNav mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} />
 
       <main className="flex-grow pt-10">

@@ -3,6 +3,40 @@ from django.utils.text import slugify
 from django.utils import timezone
 
 
+class Category(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    slug = models.SlugField(max_length=120, unique=True, blank=True)
+    description = models.TextField(blank=True)
+
+    class Meta:
+        verbose_name_plural = "Categories"
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+
+class Tag(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    slug = models.SlugField(max_length=60, unique=True, blank=True)
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+
 class BlogPost(models.Model):
     STATUS_CHOICES = [
         ("draft", "Draft"),
@@ -15,6 +49,8 @@ class BlogPost(models.Model):
     content_html = models.TextField(blank=True)
     excerpt = models.TextField(blank=True, help_text="Short summary shown in cards")
     featured_image = models.URLField(max_length=500, blank=True, default="", help_text="URL for the featured image (R2 or external)")
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name="posts")
+    tags = models.ManyToManyField(Tag, blank=True, related_name="posts")
     author_name = models.CharField(max_length=150, blank=True, default="EduSphere Team")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="draft")
     published_at = models.DateTimeField(null=True, blank=True)
