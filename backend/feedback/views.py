@@ -11,14 +11,19 @@ class FeedbackCreateView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
-        serializer = FeedbackSerializer(data=request.data)
+        serializer = FeedbackSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         user = request.user if request.user.is_authenticated else None
-        serializer.save(
+        feedback = serializer.save(
             user=user,
             school=user.school if user else None,
             user_role=user.role if user else "",
         )
+        # Send acknowledgment + notification emails synchronously
+        from .tasks import send_feedback_emails
+
+        send_feedback_emails(feedback)
+
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
