@@ -13,10 +13,10 @@ export default function BlogPage() {
   const { data, isLoading } = useBlogPosts({ page });
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col font-primary pt-20">
+    <div className="min-h-screen bg-gray-50 flex flex-col font-primary">
       <LandingNav mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} />
 
-      <main className="flex-grow pt-10 lg:pt-20 pb-20 px-4">
+      <main className="flex-grow pt-28 pb-20 px-4">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <span className="text-brand-600 font-black uppercase tracking-widest text-sm bg-brand-50 px-4 py-2 rounded-full mb-4 inline-block">

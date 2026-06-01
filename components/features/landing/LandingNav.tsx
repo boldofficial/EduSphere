@@ -54,13 +54,14 @@ export const LandingNav: React.FC<LandingNavProps> = ({ mobileMenuOpen, setMobil
               whileHover={{ scale: 1.05 }}
               transition={{ type: 'spring', stiffness: 400, damping: 17 }}
             >
-              <div className="h-16 relative">
+              <div className="h-16 w-48 relative">
                 <Image
                   src="/full-logo.png"
                   alt="Registra"
                   fill
                   className="object-contain"
                   unoptimized
+                  priority
                 />
               </div>
             </motion.div>

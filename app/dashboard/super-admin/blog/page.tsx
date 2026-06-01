@@ -102,7 +102,7 @@ export default function SuperAdminBlogPage() {
           {data?.results?.map((post) => (
             <div
               key={post.id}
-              className="bg-white rounded-2xl border border-gray-100 p-5 flex items-center gap-4 hover:shadow-md transition-shadow"
+              className="bg-white rounded-2xl border border-gray-100 p-5 flex items-center gap-4 hover:shadow-md transition-shadow overflow-hidden"
             >
               {/* Thumbnail */}
               <div className="w-16 h-16 rounded-xl bg-gray-50 flex-shrink-0 overflow-hidden">
@@ -116,7 +116,7 @@ export default function SuperAdminBlogPage() {
               </div>
 
               {/* Info */}
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 overflow-hidden">
                 <div className="flex items-center gap-2 mb-1">
                   <h3 className="text-sm font-bold text-gray-900 truncate">{post.title}</h3>
                   <span

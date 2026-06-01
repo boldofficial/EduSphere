@@ -18,9 +18,9 @@ export default function SingleBlogPostPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white flex flex-col font-primary pt-20">
+      <div className="min-h-screen bg-white flex flex-col font-primary">
         <LandingNav mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} />
-        <main className="flex-grow max-w-3xl mx-auto px-4 py-16 w-full">
+        <main className="flex-grow max-w-3xl mx-auto px-4 pt-28 pb-16 w-full">
           <div className="animate-pulse space-y-6">
             <div className="h-8 bg-gray-100 rounded w-3/4" />
             <div className="h-4 bg-gray-100 rounded w-1/4" />
@@ -41,9 +41,9 @@ export default function SingleBlogPostPage() {
 
   if (!post) {
     return (
-      <div className="min-h-screen bg-white flex flex-col font-primary pt-20">
+      <div className="min-h-screen bg-white flex flex-col font-primary">
         <LandingNav mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} />
-        <main className="flex-grow flex items-center justify-center px-4">
+        <main className="flex-grow flex items-center justify-center px-4 pt-28">
           <div className="text-center">
             <h1 className="text-4xl font-black text-gray-900 mb-4">Post not found</h1>
             <p className="text-gray-500 mb-8">
@@ -66,10 +66,10 @@ export default function SingleBlogPostPage() {
   const relatedPosts = related?.results?.filter((p) => p.slug !== slug).slice(0, 3) || [];
 
   return (
-    <div className="min-h-screen bg-white flex flex-col font-primary pt-20">
+    <div className="min-h-screen bg-white flex flex-col font-primary">
       <LandingNav mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} />
 
-      <main className="flex-grow">
+      <main className="flex-grow pt-28">
         <article className="max-w-3xl mx-auto px-4 py-16">
           {/* Back link */}
           <Link
