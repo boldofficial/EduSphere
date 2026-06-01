@@ -74,7 +74,11 @@ export function RichTextEditor({
         HTMLAttributes: { target: '_blank', rel: 'noopener noreferrer' },
       }),
       Placeholder.configure({ placeholder }),
-      Markdown,
+      Markdown.configure({
+        html: true,
+        transformPastedText: true,
+        transformCopiedText: true,
+      }),
     ],
     content,
     immediatelyRender: false,
@@ -86,12 +90,6 @@ export function RichTextEditor({
     editorProps: {
       attributes: {
         class: 'prose prose-sm sm:prose max-w-none focus:outline-none min-h-[300px] px-4 py-3',
-      },
-      handlePaste: (view, event) => {
-        const html = event.clipboardData?.getData('text/html');
-        const text = event.clipboardData?.getData('text/plain');
-        // Let TipTap handle it naturally - it auto-converts HTML and markdown
-        return false;
       },
     },
   });
