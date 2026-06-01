@@ -34,7 +34,7 @@ export function calculateMode(scores: number[]): number | null {
 export function calculateStdDev(scores: number[]): number {
   if (scores.length === 0) return 0;
   const mean = calculateMean(scores);
-  const squaredDiffs = scores.map(score => Math.pow(score - mean, 2));
+  const squaredDiffs = scores.map((score) => Math.pow(score - mean, 2));
   const variance = squaredDiffs.reduce((a, b) => a + b, 0) / scores.length;
   return Math.round(Math.sqrt(variance) * 100) / 100;
 }
@@ -42,14 +42,14 @@ export function calculateStdDev(scores: number[]): number {
 export function calculateVariance(scores: number[]): number {
   if (scores.length === 0) return 0;
   const mean = calculateMean(scores);
-  const squaredDiffs = scores.map(score => Math.pow(score - mean, 2));
+  const squaredDiffs = scores.map((score) => Math.pow(score - mean, 2));
   return Math.round((squaredDiffs.reduce((a, b) => a + b, 0) / scores.length) * 100) / 100;
 }
 
 export function calculatePercentile(score: number, scores: number[]): number {
   if (scores.length === 0) return 0;
   const sorted = [...scores].sort((a, b) => a - b);
-  const below = sorted.filter(s => s < score).length;
+  const below = sorted.filter((s) => s < score).length;
   return Math.round((below / sorted.length) * 100);
 }
 
@@ -57,8 +57,8 @@ export function getQuartiles(scores: number[]): { q1: number; q2: number; q3: nu
   if (scores.length === 0) return { q1: 0, q2: 0, q3: 0 };
   const sorted = [...scores].sort((a, b) => a - b);
   const q2 = calculateMedian(sorted);
-  const lowerHalf = sorted.filter(s => s <= q2);
-  const upperHalf = sorted.filter(s => s >= q2);
+  const lowerHalf = sorted.filter((s) => s <= q2);
+  const upperHalf = sorted.filter((s) => s >= q2);
   return {
     q1: calculateMedian(lowerHalf),
     q2,
@@ -77,7 +77,7 @@ export function getSkewness(scores: number[]): 'left' | 'symmetric' | 'right' {
 
 export function calculatePassRate(scores: number[], passingMark: number = 50): number {
   if (scores.length === 0) return 0;
-  const passed = scores.filter(s => s >= passingMark).length;
+  const passed = scores.filter((s) => s >= passingMark).length;
   return Math.round((passed / scores.length) * 100);
 }
 
@@ -88,23 +88,24 @@ export interface GradeCount {
   color: string;
 }
 
-export function getGradeDistribution(
-  scores: number[],
-  scheme: Types.GradingScheme
-): GradeCount[] {
+export function getGradeDistribution(scores: number[], scheme: Types.GradingScheme): GradeCount[] {
   if (!scheme.ranges || scores.length === 0) return [];
-  const distribution = scheme.ranges.map(range => {
-    const count = scores.filter(
-      s => s >= range.min_score && s <= range.max_score
-    ).length;
+  const distribution = scheme.ranges.map((range) => {
+    const count = scores.filter((s) => s >= range.min_score && s <= range.max_score).length;
     return {
       grade: range.grade,
       count,
       percentage: Math.round((count / scores.length) * 100),
-      color: range.grade === 'A' ? '#10b981' :
-             range.grade === 'B' ? '#3b82f6' :
-             range.grade === 'C' ? '#f59e0b' :
-             range.grade === 'D' ? '#f97316' : '#ef4444',
+      color:
+        range.grade === 'A'
+          ? '#10b981'
+          : range.grade === 'B'
+            ? '#3b82f6'
+            : range.grade === 'C'
+              ? '#f59e0b'
+              : range.grade === 'D'
+                ? '#f97316'
+                : '#ef4444',
     };
   });
   return distribution.sort((a, b) => b.count - a.count);
@@ -123,9 +124,9 @@ export function getSubjectStats(
   subjectScores: number[];
 } {
   const subjectScores = scores
-    .flatMap(s => s.rows?.find(r => r.subject === subject))
-    .map(r => r?.total || 0)
-    .filter(s => s > 0);
+    .flatMap((s) => s.rows?.find((r) => r.subject === subject))
+    .map((r) => r?.total || 0)
+    .filter((s) => s > 0);
 
   if (subjectScores.length === 0) {
     return {
@@ -162,16 +163,13 @@ export function rankStudents(
   percentile: number;
 }> {
   return students
-    .map(student => {
+    .map((student) => {
       const studentScores = scores.filter(
-        s => s.student_id === student.id &&
-             s.session === session &&
-             s.term === term
+        (s) => s.student_id === student.id && s.session === session && s.term === term
       );
-      const averages = studentScores.map(s => s.average || 0).filter(a => a > 0);
-      const average = averages.length > 0
-        ? averages.reduce((a, b) => a + b, 0) / averages.length
-        : 0;
+      const averages = studentScores.map((s) => s.average || 0).filter((a) => a > 0);
+      const average =
+        averages.length > 0 ? averages.reduce((a, b) => a + b, 0) / averages.length : 0;
 
       return { student, average };
     })
@@ -183,10 +181,7 @@ export function rankStudents(
     }));
 }
 
-export function getDifficultyIndex(
-  subjectScores: number[],
-  overallScores: number[]
-): number {
+export function getDifficultyIndex(subjectScores: number[], overallScores: number[]): number {
   if (subjectScores.length === 0 || overallScores.length === 0) return 0;
   const subjectMean = calculateMean(subjectScores);
   const overallMean = calculateMean(overallScores);
@@ -203,14 +198,14 @@ export function getTopPerformers(
   total: number;
 }> {
   return scores
-    .map(score => {
-      const row = score.rows?.find(r => r.subject === subject);
+    .map((score) => {
+      const row = score.rows?.find((r) => r.subject === subject);
       return {
         studentId: score.student_id,
         total: row?.total || 0,
       };
     })
-    .filter(s => s.total > 0)
+    .filter((s) => s.total > 0)
     .sort((a, b) => b.total - a.total)
     .slice(0, limit);
 }

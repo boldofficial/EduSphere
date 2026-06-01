@@ -1,12 +1,15 @@
 # feat: smart attendance alerts — instant parent notification on absence
 
 ## Summary
+
 When a student is marked absent, an automated message is instantly sent to their parent/guardian.
 
 ## Branch Name
+
 `feature/smart-attendance-alerts`
 
 ## PR Title
+
 `feat: add instant parent notification when student is marked absent`
 
 ---
@@ -70,13 +73,14 @@ class AbsenceAlert(models.Model):
 
 ## API Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/attendance/alerts/?date=` | List absence alerts for a date |
-| PATCH | `/api/attendance/alerts/:id/acknowledge/` | Parent acknowledges alert |
-| GET | `/api/attendance/alerts/?student_id=` | Alert history for a student |
+| Method | Endpoint                                  | Description                    |
+| ------ | ----------------------------------------- | ------------------------------ |
+| GET    | `/api/attendance/alerts/?date=`           | List absence alerts for a date |
+| PATCH  | `/api/attendance/alerts/:id/acknowledge/` | Parent acknowledges alert      |
+| GET    | `/api/attendance/alerts/?student_id=`     | Alert history for a student    |
 
 ## Acceptance Criteria
+
 - [ ] Parent receives notification within seconds of absence being marked
 - [ ] Duplicate alerts blocked — one per student per day
 - [ ] Alert includes student name, date, and school contact prompt

@@ -57,6 +57,7 @@ ReportCard.objects.prefetch_related('scores__subject').all()
 ### Existing Indexes (Automatically Created via Meta)
 
 #### Academic App
+
 ```python
 # In model Meta:
 indexes = [
@@ -65,7 +66,8 @@ indexes = [
 ]
 ```
 
-#### Bursary App  
+#### Bursary App
+
 ```python
 # Payment lookup by student + school
 indexes = [
@@ -74,6 +76,7 @@ indexes = [
 ```
 
 #### Core App
+
 ```python
 # Message inbox lookup (frequently queried)
 indexes = [
@@ -96,6 +99,7 @@ pip install django-debug-toolbar
 ```
 
 Add to `settings.py`:
+
 ```python
 INSTALLED_APPS += ['debug_toolbar']
 MIDDLEWARE += ['debug_toolbar.middleware.DebugToolbarMiddleware']
@@ -103,6 +107,7 @@ INTERNAL_IPS = ['127.0.0.1']
 ```
 
 Add to `urls.py`:
+
 ```python
 if DEBUG:
     import debug_toolbar
@@ -135,13 +140,13 @@ For production queries:
 EXPLAIN ANALYZE SELECT * FROM academic_student WHERE school_id = 1;
 
 -- View index usage
-SELECT schemaname, tablename, indexname, idx_scan 
-FROM pg_stat_user_indexes 
+SELECT schemaname, tablename, indexname, idx_scan
+FROM pg_stat_user_indexes
 WHERE schemaname = 'public';
 
 -- Find missing indexes
-SELECT schemaname, tablename, attname 
-FROM pg_stat_user_tab_io 
+SELECT schemaname, tablename, attname
+FROM pg_stat_user_tab_io
 WHERE seq_scan > idx_scan;
 ```
 
@@ -183,7 +188,7 @@ for class_obj in classes:
 # ❌ BAD - Serializer without optimization
 class StudentSerializer(serializers.ModelSerializer):
     user_email = serializers.CharField(source='user.email')  # Query per student!
-    
+
     class Meta:
         model = Student
         fields = ['user_email', ...]
@@ -212,6 +217,7 @@ pagination_class = StandardPagination # 50 items per page
 ```
 
 ### Benefits:
+
 - **Reduces memory usage**: Only loads requested page into memory
 - **Improves response time**: Smaller payloads transmitted
 - **Enables scalability**: Can handle millions of records
@@ -242,6 +248,7 @@ CACHE_POLICIES = {
 ### Cache Invalidation
 
 Cache is automatically invalidated on:
+
 - **Create**: New object added
 - **Update**: Existing object modified
 - **Delete**: Object removed
@@ -266,6 +273,7 @@ DATABASES = {
 ```
 
 ### Benefits:
+
 - Reuses database connections
 - Reduces connection overhead
 - Improves throughput under load
@@ -306,13 +314,13 @@ Student.objects.bulk_update(students, ['status'], batch_size=100)
 
 ### Expected Response Times
 
-| Endpoint | Page Size | Optimizations | Expected Time |
-|----------|-----------|---------------|---------------|
-| `/api/students/` | 50 | select_related + pagination | < 100ms |
-| `/api/payments/` | 100 | select_related + pagination | < 150ms |
-| `/api/attendance/` | 50 | select_related + pagination | < 120ms |
-| `/api/messages/` | 50 | select_related + pagination + cache | < 50ms |
-| `/api/events/` | 50 | select_related + pagination + cache | < 80ms |
+| Endpoint           | Page Size | Optimizations                       | Expected Time |
+| ------------------ | --------- | ----------------------------------- | ------------- |
+| `/api/students/`   | 50        | select_related + pagination         | < 100ms       |
+| `/api/payments/`   | 100       | select_related + pagination         | < 150ms       |
+| `/api/attendance/` | 50        | select_related + pagination         | < 120ms       |
+| `/api/messages/`   | 50        | select_related + pagination + cache | < 50ms        |
+| `/api/events/`     | 50        | select_related + pagination + cache | < 80ms        |
 
 ### Scalability Targets
 
@@ -365,9 +373,9 @@ print(f"SQL: {queryset.query}")  # Shows generated SQL
 SET log_min_duration_statement = 1000;  -- Log queries > 1 second
 
 -- View in logs
-SELECT query, calls, total_time 
-FROM pg_stat_statements 
-ORDER BY total_time DESC 
+SELECT query, calls, total_time
+FROM pg_stat_statements
+ORDER BY total_time DESC
 LIMIT 10;
 ```
 
@@ -413,6 +421,7 @@ Provides real-time request/response analysis with query visualization.
 **Current Optimization Status**: ✅ PRODUCTION READY
 
 All ViewSets have been optimized with:
+
 1. ✅ Select/Prefetch related for N+1 prevention
 2. ✅ Pagination on all list endpoints
 3. ✅ Redis caching with intelligent invalidation
@@ -420,4 +429,3 @@ All ViewSets have been optimized with:
 5. ✅ Connection pooling configured
 
 **Expected Performance Improvement**: 60-70% reduction in response times vs. unoptimized baseline.
-

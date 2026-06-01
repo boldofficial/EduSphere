@@ -8,127 +8,132 @@ const RATE_LIMIT_WINDOW = 60 * 60 * 1000; // 1 hour
 const MAX_SUBMISSIONS = 5; // Max 5 submissions per hour per IP
 
 function isRateLimited(ip: string): boolean {
-    const now = Date.now();
-    const userSubmissions = submissions.get(ip) || [];
+  const now = Date.now();
+  const userSubmissions = submissions.get(ip) || [];
 
-    // Filter out old submissions
-    const recentSubmissions = userSubmissions.filter(time => now - time < RATE_LIMIT_WINDOW);
-    submissions.set(ip, recentSubmissions);
+  // Filter out old submissions
+  const recentSubmissions = userSubmissions.filter((time) => now - time < RATE_LIMIT_WINDOW);
+  submissions.set(ip, recentSubmissions);
 
-    return recentSubmissions.length >= MAX_SUBMISSIONS;
+  return recentSubmissions.length >= MAX_SUBMISSIONS;
 }
 
 function recordSubmission(ip: string): void {
-    const userSubmissions = submissions.get(ip) || [];
-    userSubmissions.push(Date.now());
-    submissions.set(ip, userSubmissions);
+  const userSubmissions = submissions.get(ip) || [];
+  userSubmissions.push(Date.now());
+  submissions.set(ip, userSubmissions);
 }
 
 // Email validation
 function isValidEmail(email: string): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
 }
 
 // Sanitize input to prevent injection
 function sanitize(input: string): string {
-    return input
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#x27;')
-        .trim();
+  return input
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    .trim();
 }
 
 export async function POST(request: NextRequest) {
+  try {
+    // Get client IP for rate limiting
+    const forwarded = request.headers.get('x-forwarded-for');
+    const ip = forwarded ? forwarded.split(',')[0].trim() : 'unknown';
+
+    // Check rate limit
+    if (isRateLimited(ip)) {
+      logWarn('Contact form rate limited', { ip });
+      return NextResponse.json(
+        { error: 'Too many submissions. Please try again later.' },
+        { status: 429 }
+      );
+    }
+
+    const body = await request.json();
+    const { name, email, phone, subject, message } = body;
+
+    // Validate required fields
+    if (!name || !email || !message) {
+      return NextResponse.json(
+        { error: 'Name, email, and message are required.' },
+        { status: 400 }
+      );
+    }
+
+    // Validate email format
+    if (!isValidEmail(email)) {
+      return NextResponse.json({ error: 'Please provide a valid email address.' }, { status: 400 });
+    }
+
+    // Validate field lengths
+    if (
+      name.length > 100 ||
+      email.length > 100 ||
+      (phone && phone.length > 20) ||
+      (subject && subject.length > 200) ||
+      message.length > 5000
+    ) {
+      return NextResponse.json(
+        { error: 'One or more fields exceed maximum length.' },
+        { status: 400 }
+      );
+    }
+
+    // Sanitize inputs
+    const sanitizedData = {
+      name: sanitize(name),
+      email: sanitize(email),
+      phone: phone ? sanitize(phone) : 'Not provided',
+      subject: subject ? sanitize(subject) : 'Website Contact Form',
+      message: sanitize(message),
+    };
+
+    // Configure SMTP transporter with multiple fallback options
+    const port = parseInt(process.env.SMTP_PORT || '465');
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: port,
+      secure: port === 465, // true for 465, false for other ports
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+      tls: {
+        // Do not fail on invalid certs (common with cPanel)
+        rejectUnauthorized: false,
+      },
+      connectionTimeout: 10000, // 10 seconds
+      greetingTimeout: 10000,
+      socketTimeout: 15000,
+    });
+
+    // Verify SMTP connection before sending
     try {
-        // Get client IP for rate limiting
-        const forwarded = request.headers.get('x-forwarded-for');
-        const ip = forwarded ? forwarded.split(',')[0].trim() : 'unknown';
+      await transporter.verify();
+    } catch (verifyError) {
+      logError('SMTP connection verification failed', verifyError);
+      return NextResponse.json(
+        {
+          error:
+            'Email service temporarily unavailable. Please try again later or contact us by phone.',
+        },
+        { status: 503 }
+      );
+    }
 
-        // Check rate limit
-        if (isRateLimited(ip)) {
-            logWarn('Contact form rate limited', { ip });
-            return NextResponse.json(
-                { error: 'Too many submissions. Please try again later.' },
-                { status: 429 }
-            );
-        }
-
-        const body = await request.json();
-        const { name, email, phone, subject, message } = body;
-
-        // Validate required fields
-        if (!name || !email || !message) {
-            return NextResponse.json(
-                { error: 'Name, email, and message are required.' },
-                { status: 400 }
-            );
-        }
-
-        // Validate email format
-        if (!isValidEmail(email)) {
-            return NextResponse.json(
-                { error: 'Please provide a valid email address.' },
-                { status: 400 }
-            );
-        }
-
-        // Validate field lengths
-        if (name.length > 100 || email.length > 100 || (phone && phone.length > 20) ||
-            (subject && subject.length > 200) || message.length > 5000) {
-            return NextResponse.json(
-                { error: 'One or more fields exceed maximum length.' },
-                { status: 400 }
-            );
-        }
-
-        // Sanitize inputs
-        const sanitizedData = {
-            name: sanitize(name),
-            email: sanitize(email),
-            phone: phone ? sanitize(phone) : 'Not provided',
-            subject: subject ? sanitize(subject) : 'Website Contact Form',
-            message: sanitize(message),
-        };
-
-        // Configure SMTP transporter with multiple fallback options
-        const port = parseInt(process.env.SMTP_PORT || '465');
-        const transporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST,
-            port: port,
-            secure: port === 465, // true for 465, false for other ports
-            auth: {
-                user: process.env.SMTP_USER,
-                pass: process.env.SMTP_PASS,
-            },
-            tls: {
-                // Do not fail on invalid certs (common with cPanel)
-                rejectUnauthorized: false,
-            },
-            connectionTimeout: 10000, // 10 seconds
-            greetingTimeout: 10000,
-            socketTimeout: 15000,
-        });
-
-        // Verify SMTP connection before sending
-        try {
-            await transporter.verify();
-        } catch (verifyError) {
-            logError('SMTP connection verification failed', verifyError);
-            return NextResponse.json(
-                { error: 'Email service temporarily unavailable. Please try again later or contact us by phone.' },
-                { status: 503 }
-            );
-        }
-
-        // Email content
-        const mailOptions = {
-            from: `"Website Contact Form" <${process.env.SMTP_FROM}>`,
-            to: 'info@fruitfulvineheritageschools.org.ng',
-            replyTo: sanitizedData.email,
-            subject: `📬 ${sanitizedData.subject}`,
-            html: `
+    // Email content
+    const mailOptions = {
+      from: `"Website Contact Form" <${process.env.SMTP_FROM}>`,
+      to: 'info@fruitfulvineheritageschools.org.ng',
+      replyTo: sanitizedData.email,
+      subject: `📬 ${sanitizedData.subject}`,
+      html: `
                 <!DOCTYPE html>
                 <html>
                 <head>
@@ -190,7 +195,7 @@ export async function POST(request: NextRequest) {
                 </body>
                 </html>
             `,
-            text: `
+      text: `
 New Contact Form Submission
 ===========================
 
@@ -206,52 +211,53 @@ ${sanitizedData.message}
 Submitted on ${new Date().toLocaleString('en-NG', { timeZone: 'Africa/Lagos' })}
 From: www.fruitfulvineheritageschools.org.ng
             `,
-        };
+    };
 
-        // Send email
-        await transporter.sendMail(mailOptions);
+    // Send email
+    await transporter.sendMail(mailOptions);
 
-        // Record successful submission for rate limiting
-        recordSubmission(ip);
+    // Record successful submission for rate limiting
+    recordSubmission(ip);
 
-        logInfo('Contact form submitted successfully', {
-            name: sanitizedData.name,
-            email: sanitizedData.email
-        });
+    logInfo('Contact form submitted successfully', {
+      name: sanitizedData.name,
+      email: sanitizedData.email,
+    });
 
-        return NextResponse.json({
-            success: true,
-            message: 'Thank you! Your message has been sent successfully.'
-        });
+    return NextResponse.json({
+      success: true,
+      message: 'Thank you! Your message has been sent successfully.',
+    });
+  } catch (error) {
+    // Log detailed error for debugging
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logError('Contact form error', error, {
+      errorMessage,
+      smtpHost: process.env.SMTP_HOST,
+      smtpPort: process.env.SMTP_PORT,
+    });
 
-    } catch (error) {
-        // Log detailed error for debugging
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        const errorStack = error instanceof Error ? error.stack : undefined;
-        logError('Contact form error', error, {
-            errorMessage,
-            smtpHost: process.env.SMTP_HOST,
-            smtpPort: process.env.SMTP_PORT,
-        });
-
-        // Check for specific error types
-        if (errorMessage.includes('ECONNREFUSED') || errorMessage.includes('ETIMEDOUT')) {
-            return NextResponse.json(
-                { error: 'Could not connect to email server. Please try again later or contact us by phone.' },
-                { status: 503 }
-            );
-        }
-
-        if (errorMessage.includes('authentication') || errorMessage.includes('auth')) {
-            return NextResponse.json(
-                { error: 'Email service configuration error. Please contact us by phone.' },
-                { status: 503 }
-            );
-        }
-
-        return NextResponse.json(
-            { error: 'Failed to send message. Please try again later.' },
-            { status: 500 }
-        );
+    // Check for specific error types
+    if (errorMessage.includes('ECONNREFUSED') || errorMessage.includes('ETIMEDOUT')) {
+      return NextResponse.json(
+        {
+          error:
+            'Could not connect to email server. Please try again later or contact us by phone.',
+        },
+        { status: 503 }
+      );
     }
+
+    if (errorMessage.includes('authentication') || errorMessage.includes('auth')) {
+      return NextResponse.json(
+        { error: 'Email service configuration error. Please contact us by phone.' },
+        { status: 503 }
+      );
+    }
+
+    return NextResponse.json(
+      { error: 'Failed to send message. Please try again later.' },
+      { status: 500 }
+    );
+  }
 }

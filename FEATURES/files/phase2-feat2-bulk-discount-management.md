@@ -1,12 +1,15 @@
 # feat: bulk discount and fee waiver management
 
 ## Summary
+
 Admins can apply fee waivers or scholarships to entire classes or student groups in a single action.
 
 ## Branch Name
+
 `feature/bulk-discount-management`
 
 ## PR Title
+
 `feat: add bulk fee waiver and scholarship application to bursary module`
 
 ---
@@ -67,11 +70,11 @@ def apply_bulk_discount(scope, fee_assignment_id, discount_type, value, reason, 
 
 ## API Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/finance/discounts/bulk/` | Apply bulk discount |
-| GET | `/api/finance/discounts/preview/` | Preview affected students + total impact |
-| GET | `/api/finance/discounts/?student_id=` | List discounts for a student |
+| Method | Endpoint                              | Description                              |
+| ------ | ------------------------------------- | ---------------------------------------- |
+| POST   | `/api/finance/discounts/bulk/`        | Apply bulk discount                      |
+| GET    | `/api/finance/discounts/preview/`     | Preview affected students + total impact |
+| GET    | `/api/finance/discounts/?student_id=` | List discounts for a student             |
 
 ## Progress Tracking
 
@@ -84,11 +87,12 @@ def apply_bulk_discount(scope, fee_assignment_id, discount_type, value, reason, 
 - [x] Implement Frontend UI (Scope selection, Preview modal, Apply action)
 
 ## Acceptance Criteria
+
 - [x] Admin can select class or custom group as target scope
 - [x] Preview step shows list of affected students and net discount impact
 - [x] Bulk create applies discount to all students in scope atomically (Backend done)
 - [x] Audit log records who applied the discount, when, and to how many students (Backend done)
 
-Now, follow my implementation files. for each implementation you want to implement, use that file as the entry point. do not create any artifact on .gemini file or folder. example, use `FEATURES/files/phase2-feat2-bulk-discount-management.md` as you entry point for that implementation and use it to track all of your ahanges. 
+Now, follow my implementation files. for each implementation you want to implement, use that file as the entry point. do not create any artifact on .gemini file or folder. example, use `FEATURES/files/phase2-feat2-bulk-discount-management.md` as you entry point for that implementation and use it to track all of your ahanges.
 
 DO NOT CREATE ANY ARTIFACT IN THE GEMINI FOLDER OR FILE. FOLLOW THIS STRICT RULE

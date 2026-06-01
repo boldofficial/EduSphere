@@ -13,29 +13,24 @@ import { CTASection } from './landing-tenant/CTASection';
 import { ContactSection } from './landing-tenant/ContactSection';
 
 interface LandingPageProps {
-    settings: import('@/lib/types').Settings;
-    stats: {
-        studentsCount: number;
-        teachersCount: number;
-        classesCount: number;
-    };
+  settings: import('@/lib/types').Settings;
 }
 
-export const LandingPage: React.FC<LandingPageProps> = ({ settings, stats }) => {
-    return (
-        <div className="min-h-screen bg-white overflow-x-hidden font-sans">
-            <SiteHeader settings={settings} />
+export const LandingPage: React.FC<LandingPageProps> = ({ settings }) => {
+  return (
+    <div className="min-h-screen bg-white overflow-x-hidden font-sans">
+      <SiteHeader settings={settings} />
 
-            <main>
-                <HeroSection settings={settings} />
-                <AboutSection settings={settings} />
-                <CoreValuesSection settings={settings} />
-                <ProgramsSection settings={settings} />
-                <CTASection />
-                <ContactSection settings={settings} />
-            </main>
+      <main>
+        <HeroSection settings={settings} />
+        <AboutSection settings={settings} />
+        <CoreValuesSection settings={settings} />
+        <ProgramsSection settings={settings} />
+        <CTASection />
+        <ContactSection settings={settings} />
+      </main>
 
-            <SiteFooter settings={settings} />
-        </div>
-    );
+      <SiteFooter settings={settings} />
+    </div>
+  );
 };

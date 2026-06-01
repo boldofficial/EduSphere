@@ -1,12 +1,15 @@
 # feat: CBT exam security — tab-switch detection
 
 ## Summary
+
 Browser tab-switch detection to flag or auto-submit exams when a student navigates away, ensuring exam integrity.
 
 ## Branch Name
+
 `feature/cbt-tab-switch-detection`
 
 ## PR Title
+
 `feat: add tab-switch detection and exam integrity enforcement to CBT module`
 
 ---
@@ -24,11 +27,11 @@ Browser tab-switch detection to flag or auto-submit exams when a student navigat
 const MAX_VIOLATIONS = 3;
 let violations = 0;
 
-document.addEventListener("visibilitychange", () => {
+document.addEventListener('visibilitychange', () => {
   if (document.hidden) handleViolation();
 });
 
-window.addEventListener("blur", () => handleViolation());
+window.addEventListener('blur', () => handleViolation());
 
 function handleViolation() {
   violations++;
@@ -41,9 +44,9 @@ function handleViolation() {
 
 async function reportViolation(count) {
   await fetch(`/api/cbt/sessions/${SESSION_ID}/violations/`, {
-    method: "POST",
+    method: 'POST',
     body: JSON.stringify({ count, timestamp: new Date().toISOString() }),
-    headers: { "Content-Type": "application/json" }
+    headers: { 'Content-Type': 'application/json' },
   });
 }
 ```
@@ -60,10 +63,10 @@ class ExamViolation(models.Model):
 
 ## API Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/cbt/sessions/:id/violations/` | Log a tab-switch violation |
-| GET | `/api/cbt/sessions/:id/violations/` | Fetch violation log (admin/teacher) |
+| Method | Endpoint                            | Description                         |
+| ------ | ----------------------------------- | ----------------------------------- |
+| POST   | `/api/cbt/sessions/:id/violations/` | Log a tab-switch violation          |
+| GET    | `/api/cbt/sessions/:id/violations/` | Fetch violation log (admin/teacher) |
 
 ## Configuration
 
@@ -75,31 +78,33 @@ CBT_LOCK_ON_EXCEED = False      # lock vs auto-submit
 ```
 
 ## Acceptance Criteria
+
 - [x] Tab switch / window blur triggers a violation event
 - [x] Warning overlay shown with remaining attempts
 - [x] Violations logged server-side with timestamps
 - [x] Exam auto-submits after max violations reached
 - [x] Admin/teacher can view violation log per session
 
-
-
-Now, follow my implementation files. for each implementation you want to implement, use that file as the entry point. do not create any artifact on .gemini file or folder. example, use `FEATURES/files/phase1-feat3-cbt-tab-switch-detection.md` as you entry point for that implementation and use it to track all of your ahanges. 
+Now, follow my implementation files. for each implementation you want to implement, use that file as the entry point. do not create any artifact on .gemini file or folder. example, use `FEATURES/files/phase1-feat3-cbt-tab-switch-detection.md` as you entry point for that implementation and use it to track all of your ahanges.
 
 DO NOT CREATE ANY ARTIFACT IN THE GEMINI FOLDER OR FILE. FOLLOW THIS STRICT RULE
 
 ## Implementation Plan
 
 ### 1. Backend Settings & Models
+
 - [x] Add config `CBT_MAX_VIOLATIONS`, `CBT_VIOLATION_WARN`, `CBT_LOCK_ON_EXCEED` to `backend/config/settings.py`.
 - [x] Create `ExamViolation` model in `backend/learning/models.py` linking to `Attempt` (the CBT session).
 - [x] Make and apply database migrations.
 
 ### 2. Backend APIs
+
 - [x] Create `ExamViolationSerializer` in `backend/learning/serializers.py`.
 - [x] Add `violations` POST/GET action to `AttemptViewSet` in `backend/learning/views.py`.
 - [x] Ensure `auto_submit` triggers automatically if violations reach the threshold.
 
 ### 3. Frontend Types & Integration
+
 - [x] Update `lib/types.ts` to include `ExamViolation` type and include violations count on `Attempt`.
 - [x] Identify/Create the student CBT-taking UI (`TakeQuizView` or equivalent).
 - [x] Implement `visibilitychange` and `blur` event listeners directly in the active test taking component.

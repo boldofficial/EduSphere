@@ -1,6 +1,7 @@
 # Grading Module Enhancement Implementation Plan
 
 ## Overview
+
 Comprehensive implementation plan for all grading module enhancements with prioritized phases.
 
 ---
@@ -8,15 +9,18 @@ Comprehensive implementation plan for all grading module enhancements with prior
 ## Phase 1: High Priority (Critical)
 
 ### 1.1 Bulk Score Import with Excel/CSV
+
 **Priority**: High | **Estimated Time**: 2-3 days
 
 **Files to Create/Modify**:
+
 - `components/features/grading/BulkScoreImport.tsx` (NEW)
 - `components/features/grading/ScoreImportModal.tsx` (NEW)
 - `lib/utils.ts` - Add CSV parsing utilities
 - `lib/hooks/use-data.ts` - Add `useBulkImportScores` mutation
 
 **Steps**:
+
 1. Create CSV/Excel template with columns: `student_no`, `subject`, `ca1`, `ca2`, `exam`
 2. Create upload component with drag-and-drop
 3. Parse file and validate data
@@ -26,6 +30,7 @@ Comprehensive implementation plan for all grading module enhancements with prior
 7. Handle duplicates (update vs create option)
 
 **Template Structure**:
+
 ```csv
 student_no,subject,ca1_score,ca2_score,exam_score
 STU001,Mathematics,15,18,45
@@ -33,6 +38,7 @@ STU001,English,12,14,38
 ```
 
 **API Endpoint**:
+
 ```
 POST /api/scores/bulk-import/
 {
@@ -45,14 +51,17 @@ POST /api/scores/bulk-import/
 ---
 
 ### 1.2 Subject Analytics Dashboard
+
 **Priority**: High | **Estimated Time**: 2 days
 
 **Files to Create/Modify**:
+
 - `components/features/grading/SubjectAnalytics.tsx` (NEW)
 - `components/features/grading/ClassAnalytics.tsx` (NEW)
 - `components/features/grading/AnalyticsCharts.tsx` (NEW)
 
 **Features**:
+
 1. Per-subject class average comparison
 2. Subject difficulty index (correlation with overall average)
 3. Top performers per subject
@@ -60,6 +69,7 @@ POST /api/scores/bulk-import/
 5. Score spread visualization
 
 **Component Structure**:
+
 ```
 SubjectAnalytics:
 ├── SubjectSelector
@@ -72,9 +82,11 @@ SubjectAnalytics:
 ---
 
 ### 1.3 Exam Mode
+
 **Priority**: High | **Estimated Time**: 2-3 days
 
 **Files to Create/Modify**:
+
 - `components/features/grading/ExamMode.tsx` (NEW)
 - `components/features/grading/ExamTimer.tsx` (NEW)
 - `components/features/grading/ExamSettings.tsx` (NEW)
@@ -82,6 +94,7 @@ SubjectAnalytics:
 - Update `ScoreEntryTab.tsx` - Add exam mode toggle
 
 **Features**:
+
 1. Separate exam score entry view
 2. Configurable time limits per exam
 3. Countdown timer with auto-submit
@@ -90,6 +103,7 @@ SubjectAnalytics:
 6. Grade lock after submission
 
 **Type Definitions**:
+
 ```typescript
 interface Exam {
   id: string;
@@ -120,13 +134,16 @@ interface ExamScore {
 ---
 
 ### 1.4 Statistical Analysis
+
 **Priority**: High | **Estimated Time**: 1-2 days
 
 **Files to Create/Modify**:
+
 - `components/features/grading/StatisticsPanel.tsx` (NEW)
 - `lib/statistics.ts` (NEW - statistical utility functions)
 
 **Statistics to Implement**:
+
 1. Mean (average)
 2. Median
 3. Mode
@@ -138,6 +155,7 @@ interface ExamScore {
 9. Pass rate percentage
 
 **Utility Functions**:
+
 ```typescript
 // lib/statistics.ts
 export function calculateMean(scores: number[]): number;
@@ -151,13 +169,16 @@ export function getGradeDistribution(scores: number[], scheme: GradingScheme): G
 ---
 
 ### 1.5 Auto-Save for Score Entry
+
 **Priority**: High | **Estimated Time**: 1 day
 
 **Files to Modify**:
+
 - `components/features/grading/ScoreEntryTab.tsx`
 - `lib/hooks/use-data.ts`
 
 **Implementation**:
+
 1. Add debounced save on score change (500ms delay)
 2. Show "Saving..." indicator
 3. Show "Saved" confirmation
@@ -180,21 +201,25 @@ useEffect(() => {
 ## Phase 2: Medium Priority
 
 ### 2.1 Weighted Score Categories
+
 **Priority**: Medium | **Estimated Time**: 2 days
 
 **Files to Create/Modify**:
+
 - `components/features/grading/WeightConfig.tsx` (NEW)
 - Update `lib/types.ts` - Add WeightConfig
 - Update `ScoreRow` in types
 - Update `ScoreEntryTab.tsx` - Apply weights
 
 **Features**:
+
 1. Configure CA1/CA2/Exam weights per subject
 2. Default weights (20/20/60)
 3. Subject-specific overrides
 4. Total calculation preview
 
 **Type**:
+
 ```typescript
 interface WeightConfig {
   id: string;
@@ -210,14 +235,17 @@ interface WeightConfig {
 ---
 
 ### 2.2 Course Catalog
+
 **Priority**: Medium | **Estimated Time**: 2-3 days
 
 **Files to Create/Modify**:
+
 - `components/features/grading/CourseCatalog.tsx` (NEW)
 - `components/features/grading/SyllabusView.tsx` (NEW)
 - Update `lib/types.ts` - Add Course/Syllabus types
 
 **Features**:
+
 1. Define subjects per class
 2. Set topics per term/subject
 3. Mark topics as covered/not covered
@@ -225,6 +253,7 @@ interface WeightConfig {
 5. Progress tracking
 
 **Type**:
+
 ```typescript
 interface Course {
   id: string;
@@ -250,13 +279,16 @@ interface Topic {
 ---
 
 ### 2.3 Bulk Print Report Cards
+
 **Priority**: Medium | **Estimated Time**: 1-2 days
 
 **Files to Create/Modify**:
+
 - `components/features/grading/BulkReportPrint.tsx` (NEW)
 - `components/features/grading/ReportPrintQueue.tsx` (NEW)
 
 **Features**:
+
 1. Select class/filter students
 2. Preview all reports in grid
 3. Print all / Print selected
@@ -266,14 +298,17 @@ interface Topic {
 ---
 
 ### 2.4 Skills Categories Customization
+
 **Priority**: Medium | **Estimated Time**: 1 day
 
 **Files to Modify**:
+
 - `components/features/grading/SkillsTab.tsx` - Add CRUD for skills
 - `components/features/grading/SkillCategoryManager.tsx` (NEW)
 - Update `lib/types.ts` - Update AffectiveDomain type
 
 **Features**:
+
 1. Add/edit/delete skill categories
 2. Reorder skills via drag-drop
 3. Set default ratings (1-5 scale)
@@ -282,9 +317,11 @@ interface Topic {
 ---
 
 ### 2.5 Fix TypeScript Issues
+
 **Priority**: Medium | **Estimated Time**: 1 day
 
 **Files to Modify**:
+
 - `ScoreEntryTab.tsx:14` - Type ScoreInput props
 - `ReportCardTemplate.tsx:83` - Type gradingKey properly
 - `GradingSchemeManager.tsx:92` - Type updateRange
@@ -292,6 +329,7 @@ interface Topic {
 - `PromotionManager.tsx` - Remove any types
 
 **Approach**:
+
 1. Create `GradeRangeInput` component with proper types
 2. Use `ScoreRow` type instead of inline `any`
 3. Add inference for grading scheme ranges
@@ -301,13 +339,16 @@ interface Topic {
 ## Phase 3: Low Priority
 
 ### 3.1 Year-over-Year Analytics
+
 **Priority**: Low | **Estimated Time**: 2 days
 
 **Files to Create/Modify**:
+
 - `components/features/grading/YearComparison.tsx` (NEW)
 - `components/features/grading/TrendAnalysis.tsx` (NEW)
 
 **Features**:
+
 1. Compare performance across sessions
 2. Track class promotion rates
 3. Subject trend over years
@@ -316,15 +357,18 @@ interface Topic {
 ---
 
 ### 3.2 Custom Report Templates
+
 **Priority**: Low | **Estimated Time**: 2-3 days
 
 **Files to Create/Modify**:
+
 - `components/features/grading/templates/CompactTemplate.tsx`
 - `components/features/grading/templates/DetailedTemplate.tsx`
 - `components/features/grading/templates/SimpleTemplate.tsx`
 - `components/features/grading/ReportTemplateSelector.tsx`
 
 **Templates**:
+
 1. Standard (current - detailed)
 2. Compact (minimal info)
 3. Parent-friendly (simple language)
@@ -333,13 +377,16 @@ interface Topic {
 ---
 
 ### 3.3 Behavior/Conduct Tracking
+
 **Priority**: Low | **Estimated Time**: 2 days
 
 **Files to Create/Modify**:
+
 - `components/features/conduct/ConductCard.tsx` (NEW - integrate with grading)
 - Add conduct scores to report card
 
 **Features**:
+
 1. Add conduct/behavior grade per student
 2. Include in report card
 3. Conduct history tracking
@@ -347,9 +394,11 @@ interface Topic {
 ---
 
 ### 3.4 Error Boundaries & Loading States
+
 **Priority**: Medium | **Estimated Time**: 1 day
 
 **Files to Create/Modify**:
+
 - `components/features/grading/GradingErrorBoundary.tsx` (NEW)
 - Update each tab with Suspense fallback
 
@@ -383,18 +432,18 @@ Phase 3 (Week 3-4):
 
 ## API Endpoints Required
 
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `/scores/bulk-import/` | POST | Bulk score import |
-| `/scores/statistics/` | GET | Get score statistics |
-| `/exams/` | GET/POST | Exam CRUD |
-| `/exams/{id}/submit/` | POST | Submit exam |
-| `/exams/{id}/scores/` | GET | Get exam scores |
-| `/subjects/analytics/` | GET | Subject analytics |
-| `/courses/` | GET/POST | Course catalog CRUD |
-| `/courses/{id}/topics/` | GET/POST | Topics CRUD |
-| `/weight-configs/` | GET/POST | Weight configuration |
-| `/skills/categories/` | GET/POST | Skills categories |
+| Endpoint                | Method   | Purpose              |
+| ----------------------- | -------- | -------------------- |
+| `/scores/bulk-import/`  | POST     | Bulk score import    |
+| `/scores/statistics/`   | GET      | Get score statistics |
+| `/exams/`               | GET/POST | Exam CRUD            |
+| `/exams/{id}/submit/`   | POST     | Submit exam          |
+| `/exams/{id}/scores/`   | GET      | Get exam scores      |
+| `/subjects/analytics/`  | GET      | Subject analytics    |
+| `/courses/`             | GET/POST | Course catalog CRUD  |
+| `/courses/{id}/topics/` | GET/POST | Topics CRUD          |
+| `/weight-configs/`      | GET/POST | Weight configuration |
+| `/skills/categories/`   | GET/POST | Skills categories    |
 
 ---
 

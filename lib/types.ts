@@ -116,7 +116,7 @@ export interface Settings extends Entity {
 
 // Role-based permissions for navigation and dashboard widgets
 export interface RolePermissions {
-  navigation: string[];       // List of navigation item IDs allowed for this role
+  navigation: string[]; // List of navigation item IDs allowed for this role
   dashboardWidgets: string[]; // List of dashboard widget IDs to show for this role
 }
 
@@ -253,6 +253,7 @@ export interface Student extends Entity {
   parent_phone: string;
   address: string;
   passport_url?: string | null;
+  passport_media?: string | null;
   signature_url?: string | null; // Base64 image or URL
   password?: string; // Portal login password (set by admin)
   assigned_fees?: string[]; // IDs of optional fees assigned to this student
@@ -410,22 +411,22 @@ export interface FeeStructure extends Entity {
   category?: FeeCategory;
 }
 
-export type FeeCategory = 
-  | 'tuition'           // School fess
-  | 'uniform'          // Uniform
-  | 'books'            // Textbooks
-  | 'pta'              // Parent-Teacher Association
-  | 'development'      // Development levy
-  | 'medical'          // Medical fee
-  | 'ict'              // ICT fee
-  | 'security'         // Security levy
-  | 'transport'         // Bus/transport
-  | 'feeding'          // Lunch/feeding
-  | 'activity'          // Activity fee
-  | 'exam'             // Exam fee
-  | 'registration'     // Registration
-  | 'card'             // ID card
-  | 'other';          // Other
+export type FeeCategory =
+  | 'tuition' // School fess
+  | 'uniform' // Uniform
+  | 'books' // Textbooks
+  | 'pta' // Parent-Teacher Association
+  | 'development' // Development levy
+  | 'medical' // Medical fee
+  | 'ict' // ICT fee
+  | 'security' // Security levy
+  | 'transport' // Bus/transport
+  | 'feeding' // Lunch/feeding
+  | 'activity' // Activity fee
+  | 'exam' // Exam fee
+  | 'registration' // Registration
+  | 'card' // ID card
+  | 'other'; // Other
 
 export const NIGERIAN_FEE_CATEGORIES: { value: FeeCategory; label: string }[] = [
   { value: 'tuition', label: 'Tuition/School Fee' },
@@ -798,6 +799,8 @@ export interface Attempt extends Entity {
   end_time?: string;
   total_score: number;
   is_completed: boolean;
+  submit_time?: string;
+  is_violated?: boolean;
   answers: StudentAnswer[];
   student_name?: string;
 }
@@ -829,7 +832,6 @@ export interface DiscussionMessage extends Entity {
   body: string;
   replies: DiscussionMessage[];
 }
-
 
 export interface TicketResponse extends Omit<Entity, 'created_at' | 'updated_at'> {
   username: string;
@@ -1062,4 +1064,3 @@ export interface ScoreImportResult {
     exam: number;
   }>;
 }
-

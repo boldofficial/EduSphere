@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 const formatRelativeTime = (date: Date) => {
   const now = new Date();
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-  
+
   if (diffInSeconds < 60) return 'just now';
   const diffInMinutes = Math.floor(diffInSeconds / 60);
   if (diffInMinutes < 60) return `${diffInMinutes}m`;
@@ -16,7 +16,7 @@ const formatRelativeTime = (date: Date) => {
   if (diffInHours < 24) return `${diffInHours}h`;
   const diffInDays = Math.floor(diffInHours / 24);
   if (diffInDays < 7) return `${diffInDays}d`;
-  
+
   return date.toLocaleDateString();
 };
 import { Trash2, Reply, CornerDownRight, Pencil } from 'lucide-react';
@@ -80,7 +80,7 @@ export const DiscussionMessageComponent: React.FC<DiscussionMessageProps> = ({
             {message.author_name?.charAt(0) || '?'}
           </div>
         </div>
-        
+
         <div className="flex-1 space-y-1">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -89,7 +89,7 @@ export const DiscussionMessageComponent: React.FC<DiscussionMessageProps> = ({
                 {formatRelativeTime(new Date(message.created_at as string))} ago
               </span>
             </div>
-            
+
             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
               <Button
                 variant="ghost"
@@ -102,7 +102,7 @@ export const DiscussionMessageComponent: React.FC<DiscussionMessageProps> = ({
               >
                 <Reply className="h-4 w-4" />
               </Button>
-              
+
               {currentUserId === message.author && (
                 <>
                   <Button
@@ -129,7 +129,7 @@ export const DiscussionMessageComponent: React.FC<DiscussionMessageProps> = ({
               )}
             </div>
           </div>
-          
+
           {isEditing ? (
             <div className="mt-2 space-y-2">
               <textarea
@@ -138,9 +138,11 @@ export const DiscussionMessageComponent: React.FC<DiscussionMessageProps> = ({
                 onChange={(e) => setEditBody(e.target.value)}
               />
               <div className="flex justify-end gap-2">
-                <Button variant="ghost" size="sm" onClick={() => setIsEditing(false)}>Cancel</Button>
-                <Button 
-                  size="sm" 
+                <Button variant="ghost" size="sm" onClick={() => setIsEditing(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  size="sm"
                   className="bg-brand-600 hover:bg-brand-700 text-white"
                   disabled={isSubmitting || !editBody.trim()}
                   onClick={handleEditSubmit}
@@ -164,15 +166,11 @@ export const DiscussionMessageComponent: React.FC<DiscussionMessageProps> = ({
                 onChange={(e) => setReplyBody(e.target.value)}
               />
               <div className="flex justify-end gap-2">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => setIsReplying(false)}
-                >
+                <Button variant="ghost" size="sm" onClick={() => setIsReplying(false)}>
                   Cancel
                 </Button>
-                <Button 
-                  size="sm" 
+                <Button
+                  size="sm"
                   className="bg-brand-600 hover:bg-brand-700 text-white"
                   disabled={isSubmitting || !replyBody.trim()}
                   onClick={handleReplySubmit}
@@ -190,7 +188,9 @@ export const DiscussionMessageComponent: React.FC<DiscussionMessageProps> = ({
         <div className="ml-8 mt-4 space-y-4 border-l border-gray-100 pl-4">
           <div className="flex items-center gap-2 text-xs text-gray-400 mb-2">
             <CornerDownRight className="h-3 w-3" />
-            <span>{message.replies.length} {message.replies.length === 1 ? 'reply' : 'replies'}</span>
+            <span>
+              {message.replies.length} {message.replies.length === 1 ? 'reply' : 'replies'}
+            </span>
           </div>
           {message.replies.map((reply) => (
             <DiscussionMessageComponent

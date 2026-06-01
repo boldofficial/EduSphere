@@ -1,12 +1,15 @@
 # feat: dashboard performance optimization — query tuning and indices
 
 ## Summary
+
 Accelerate dashboard load times with optimized database indices and query refactoring for real-time reporting.
 
 ## Branch Name
+
 `feature/dashboard-performance-optimization`
 
 ## PR Title
+
 `perf: add optimized indices and query improvements for real-time dashboard reporting`
 
 ---
@@ -90,14 +93,15 @@ def cache_for(seconds):
 
 ## Target Benchmarks
 
-| View | Before | Target |
-|------|--------|--------|
-| Executive Dashboard | ~1800ms | < 400ms |
-| Fee Collection Summary | ~900ms | < 200ms |
-| Attendance Report | ~1200ms | < 300ms |
-| Grade Analytics | ~1500ms | < 350ms |
+| View                   | Before  | Target  |
+| ---------------------- | ------- | ------- |
+| Executive Dashboard    | ~1800ms | < 400ms |
+| Fee Collection Summary | ~900ms  | < 200ms |
+| Attendance Report      | ~1200ms | < 300ms |
+| Grade Analytics        | ~1500ms | < 350ms |
 
 ## Acceptance Criteria
+
 - [ ] Migration applies cleanly with no downtime
 - [ ] Django Debug Toolbar (dev) shows no N+1 queries on dashboard views
 - [ ] Executive dashboard loads in under 400ms on production hardware

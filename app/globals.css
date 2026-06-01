@@ -1,284 +1,250 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Playfair+Display:wght@400;700;900&family=Roboto:wght@400;700;900&display=swap');
 
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @theme {
-    /* BRAND PALETTE (Navy Blue - Premium, Stable) */
-    --color-brand-50: #f4f7fa;
-    --color-brand-100: #e9eff5;
-    --color-brand-200: #cad9e8;
-    --color-brand-300: #9cb8d6;
-    --color-brand-400: #6791bd;
-    --color-brand-500: #4670a2;
-    --color-brand-600: #365784;
-    --color-brand-700: #2c466b;
-    --color-brand-800: #1a2e47;
-    /* Base Color: Premium Navy */
-    --color-brand-900: #0b1e3b;
-    --color-brand-950: #071326;
+  /* BRAND PALETTE (Navy Blue - Premium, Stable) */
+  --color-brand-50: #f4f7fa;
+  --color-brand-100: #e9eff5;
+  --color-brand-200: #cad9e8;
+  --color-brand-300: #9cb8d6;
+  --color-brand-400: #6791bd;
+  --color-brand-500: #4670a2;
+  --color-brand-600: #365784;
+  --color-brand-700: #2c466b;
+  --color-brand-800: #1a2e47;
+  /* Base Color: Premium Navy */
+  --color-brand-900: #0b1e3b;
+  --color-brand-950: #071326;
 
-    /* ACCENT PALETTE (Premium Gold - Excellence, Success) */
-    --color-accent-50: #fdfbe8;
-    --color-accent-100: #fbf6c1;
-    --color-accent-200: #f7eb85;
-    --color-accent-300: #f1db4b;
-    --color-accent-400: #e9c424;
-    /* Base Color: Gold */
-    --color-accent-500: #d4af37;
-    --color-accent-600: #b8922a;
-    --color-accent-700: #916e24;
-    --color-accent-800: #755922;
-    --color-accent-900: #644c21;
-    --color-accent-950: #39290f;
+  /* ACCENT PALETTE (Premium Gold - Excellence, Success) */
+  --color-accent-50: #fdfbe8;
+  --color-accent-100: #fbf6c1;
+  --color-accent-200: #f7eb85;
+  --color-accent-300: #f1db4b;
+  --color-accent-400: #e9c424;
+  /* Base Color: Gold */
+  --color-accent-500: #d4af37;
+  --color-accent-600: #b8922a;
+  --color-accent-700: #916e24;
+  --color-accent-800: #755922;
+  --color-accent-900: #644c21;
+  --color-accent-950: #39290f;
 
-    /* SUPPORT PALETTE */
-    --color-accent-red: #DC2626;
-    --color-accent-amber: #F59E0B;
+  /* SUPPORT PALETTE */
+  --color-accent-red: #dc2626;
+  --color-accent-amber: #f59e0b;
 }
 
 @layer base {
-    body {
-        @apply antialiased text-gray-900 bg-gray-50;
-        font-family: 'Inter', sans-serif;
-    }
+  body {
+    @apply antialiased text-gray-900 bg-gray-50;
+    font-family: 'Inter', sans-serif;
+  }
 }
 
 @layer utilities {
-    @media print {
-        @page {
-            size: A4;
-            margin: 10mm;
-        }
-
-        body {
-            background-color: white !important;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-            margin: 0;
-            padding: 0;
-        }
-
-        /* Hide ALL non-print elements */
-        .no-print,
-        aside,
-        header,
-        nav,
-        button,
-        [class*="bg-gray-100"][class*="p-1"][class*="rounded-lg"],
-        .space-y-6>div:first-child:has(button) {
-            display: none !important;
-        }
-
-        /* Force main content to be full width */
-        main {
-            margin: 0 !important;
-            padding: 0 !important;
-            width: 100% !important;
-            max-width: none !important;
-            position: static !important;
-            left: auto !important;
-            top: auto !important;
-        }
-
-        /* Remove padding/max-width from the main wrapper div in layout */
-        main>div {
-            padding: 0 !important;
-            margin: 0 !important;
-            max-width: none !important;
-        }
-
-        /* Report card container - allow natural flow for multi-page */
-        #report-card {
-            border: none !important;
-            box-shadow: none !important;
-            padding: 5mm !important;
-            width: 100% !important;
-            min-height: auto !important;
-            height: auto !important;
-            display: block !important;
-            overflow: visible !important;
-        }
-
-        /* Allow content to flow to multiple pages */
-        #report-card table {
-            margin-bottom: 5mm !important;
-        }
-
-        #report-card .grid {
-            margin-bottom: 5mm !important;
-        }
-
-        /* Report page containers */
-        .report-page {
-            page-break-inside: avoid !important;
-            break-inside: avoid !important;
-        }
-
-        /* Force page 2 to start on a new page */
-        .print\:break-before-page {
-            page-break-before: always !important;
-            break-before: page !important;
-        }
-
-        /* Legacy page break classes */
-        .page-break {
-            display: block !important;
-            page-break-after: always !important;
-            break-after: page !important;
-            height: 0 !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            border: none !important;
-            visibility: hidden !important;
-        }
-
-        .page-break-before {
-            page-break-before: always !important;
-            break-before: page !important;
-        }
+  @media print {
+    @page {
+      size: A4;
+      margin: 10mm;
     }
+
+    body {
+      background-color: white !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Hide ALL non-print elements */
+    .no-print,
+    aside,
+    header,
+    nav,
+    button,
+    [class*='bg-gray-100'][class*='p-1'][class*='rounded-lg'],
+    .space-y-6 > div:first-child:has(button) {
+      display: none !important;
+    }
+
+    /* Force main content to be full width */
+    main {
+      margin: 0 !important;
+      padding: 0 !important;
+      width: 100% !important;
+      max-width: none !important;
+      position: static !important;
+      left: auto !important;
+      top: auto !important;
+    }
+
+    /* Remove padding/max-width from the main wrapper div in layout */
+    main > div {
+      padding: 0 !important;
+      margin: 0 !important;
+      max-width: none !important;
+    }
+
+    /* Report card container - allow natural flow for multi-page */
+    #report-card {
+      border: none !important;
+      box-shadow: none !important;
+      padding: 5mm !important;
+      width: 100% !important;
+      min-height: auto !important;
+      height: auto !important;
+      display: block !important;
+      overflow: visible !important;
+    }
+
+    /* Allow content to flow to multiple pages */
+    #report-card table {
+      margin-bottom: 5mm !important;
+    }
+
+    #report-card .grid {
+      margin-bottom: 5mm !important;
+    }
+
+    /* Report page containers */
+    .report-page {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+    }
+
+    /* Force page 2 to start on a new page */
+    .print\:break-before-page {
+      page-break-before: always !important;
+      break-before: page !important;
+    }
+
+    /* Legacy page break classes */
+    .page-break {
+      display: block !important;
+      page-break-after: always !important;
+      break-after: page !important;
+      height: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      border: none !important;
+      visibility: hidden !important;
+    }
+
+    .page-break-before {
+      page-break-before: always !important;
+      break-before: page !important;
+    }
+  }
 }
 
 /* Custom Scrollbar */
 .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
+  width: 6px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
+  background: transparent;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 10px;
-    border: 1px solid transparent;
-    background-clip: content-box;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background-clip: content-box;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.4);
-    background-clip: content-box;
+  background: rgba(255, 255, 255, 0.4);
+  background-clip: content-box;
 }
 
 /* PWA Install Banner Animations */
 @keyframes slide-up {
-    from {
-        transform: translateY(100%);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 @keyframes scale-in {
-    from {
-        transform: scale(0.9);
-        opacity: 0;
-    }
-    to {
-        transform: scale(1);
-        opacity: 1;
-    }
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .animate-slide-up {
-    animation: slide-up 0.4s ease-out forwards;
+  animation: slide-up 0.4s ease-out forwards;
 }
 
 .animate-scale-in {
-    animation: scale-in 0.3s ease-out forwards;
+  animation: scale-in 0.3s ease-out forwards;
 }
 
 @media print {
+  /* Specific styles for Invoice Printing */
+  /* Use :has to only apply when the invoice modal is present */
+  body:has(#invoice-print) * {
+    visibility: hidden;
+  }
 
-    /* Specific styles for Invoice Printing */
-    /* Use :has to only apply when the invoice modal is present */
-    body:has(#invoice-print) * {
-        visibility: hidden;
-    }
+  body:has(#invoice-print) #invoice-print,
+  body:has(#invoice-print) #invoice-print * {
+    visibility: visible;
+  }
 
-    body:has(#invoice-print) #invoice-print,
-    body:has(#invoice-print) #invoice-print * {
-        visibility: visible;
-    }
+  body:has(#invoice-print) #invoice-print {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background: white;
+    z-index: 99999;
+  }
 
-    body:has(#invoice-print) #invoice-print {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-        margin: 0;
-        padding: 0;
-        background: white;
-        z-index: 99999;
-    }
-
-    /* Ensure the modal wrapper doesn't constrain it */
-    body:has(#invoice-print) .fixed {
-        position: static !important;
-        overflow: visible !important;
-    }
+  /* Ensure the modal wrapper doesn't constrain it */
+  body:has(#invoice-print) .fixed {
+    position: static !important;
+    overflow: visible !important;
+  }
 }
 
 /* Background blob animation */
 @keyframes blob {
-    0% {
-        transform: translate(0px, 0px) scale(1);
-    }
-    33% {
-        transform: translate(30px, -50px) scale(1.1);
-    }
-    66% {
-        transform: translate(-20px, 20px) scale(0.9);
-    }
-    100% {
-        transform: translate(0px, 0px) scale(1);
-    }
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
 }
 
 .animate-blob {
-    animation: blob 7s infinite;
+  animation: blob 7s infinite;
 }
 
 .animation-delay-2000 {
-    animation-delay: 2s;
+  animation-delay: 2s;
 }
 
 .animation-delay-4000 {
-    animation-delay: 4s;
-}
-
-@layer utilities {
-    /* Mobile-first touch optimizations */
-    .touch-target {
-        @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
-    }
-
-    /* Hide scrollbar but allow scrolling */
-    .scrollbar-hide {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-    }
-    .scrollbar-hide::-webkit-scrollbar {
-        display: none;
-    }
-
-    /* Mobile grid optimizations */
-    .mobile-grid-cols-1 {
-        @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
-    }
-
-    /* Safe area bottom padding for devices with home indicators */
-    .pb-safe {
-        padding-bottom: env(safe-area-inset-bottom);
-    }
-}
-
-/* Optimize forms for mobile */
-@media (max-width: 640px) {
-    input, select, textarea {
-        font-size: 16px !important; /* Prevent iOS zoom on focus */
-    }
+  animation-delay: 4s;
 }

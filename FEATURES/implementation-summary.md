@@ -1,4 +1,5 @@
 # Modernizing the School Management Portal
+
 ### Project Implementation Summary
 
 We have successfully completed a comprehensive upgrade to the school management portal, spanning across 5 key phases of development. This transformation focuses on **Intelligence**, **Analytics**, **Operational Efficiency**, and robust **User Experience**.
@@ -7,13 +8,13 @@ We have successfully completed a comprehensive upgrade to the school management 
 
 ## 🚀 Key Highlights at a Glance
 
-| Phase | Focus Area |
-|-------|------------|
-| Phase 1 | Academic & AI Intelligence |
+| Phase   | Focus Area                      |
+| ------- | ------------------------------- |
+| Phase 1 | Academic & AI Intelligence      |
 | Phase 2 | Financial Business Intelligence |
-| Phase 3 | Operations & Welfare |
-| Phase 4 | Administrative Hardening |
-| Phase 5 | PWA & Offline Excellence |
+| Phase 3 | Operations & Welfare            |
+| Phase 4 | Administrative Hardening        |
+| Phase 5 | PWA & Offline Excellence        |
 
 ---
 
@@ -89,4 +90,4 @@ The AI service is now ultra-resilient. If one model (like Gemini) is unavailable
 
 ---
 
-*Confidential — School Management Portal Upgrade Report*
+_Confidential — School Management Portal Upgrade Report_

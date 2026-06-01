@@ -1,12 +1,15 @@
 # feat: threaded LMS discussions
 
 ## Summary
+
 Students and teachers can engage in context-aware discussions directly within study materials and assignments.
 
 ## Branch Name
+
 `feature/threaded-lms-discussions`
 
 ## PR Title
+
 `feat: add threaded discussions to LMS study materials and assignments`
 
 ---
@@ -37,26 +40,26 @@ class DiscussionMessage(models.Model):
 
 ## API Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/threads/?content_type=&object_id=` | Fetch thread for a resource |
-| POST | `/api/threads/messages/` | Post a new message or reply |
-| DELETE | `/api/threads/messages/:id/` | Delete own message |
+| Method | Endpoint                                 | Description                 |
+| ------ | ---------------------------------------- | --------------------------- |
+| GET    | `/api/threads/?content_type=&object_id=` | Fetch thread for a resource |
+| POST   | `/api/threads/messages/`                 | Post a new message or reply |
+| DELETE | `/api/threads/messages/:id/`             | Delete own message          |
 
 ## Acceptance Criteria
+
 - [x] Thread loads inline below assignment/study material
 - [x] Users can post top-level comments
 - [x] Users can reply to any comment (recursive nesting supported)
 - [x] Authors can Edit and Delete their own messages
 - [x] Thread is scoped — each material/assignment has its own thread
 
-
-
 ==========================
 
 ## Status Tracker [x]
 
 ### Environment & Tools
+
 - [x] Configure `package.json` with correct `.venv` path and port 8000
 - [x] Migrate `requirements.txt` to `pyproject.toml` for `uv` workspace
 - [x] Add missing `drf-spectacular-sidecar` to dependencies
@@ -64,6 +67,7 @@ class DiscussionMessage(models.Model):
 - [x] Verify backend connectivity
 
 ### Backend Implementation
+
 - [x] Create `DiscussionThread` and `DiscussionMessage` models in `lms/models.py`
 - [x] Create serializers in `lms/serializers.py`
 - [x] Create API ViewSets in `lms/views.py`
@@ -74,6 +78,7 @@ class DiscussionMessage(models.Model):
 - [x] Enforce author-only permissions for `update` and `delete`
 
 ### Frontend Implementation
+
 - [x] Create `DiscussionThread.tsx` component
 - [x] Create `DiscussionMessage.tsx` recursive component (with Edit/Delete/Reply)
 - [x] Integrate into `Assignment` detail page (`AssignmentDetailView.tsx`)
@@ -82,6 +87,7 @@ class DiscussionMessage(models.Model):
 - [x] Create `/learning/lessons` route and lesson detail modal
 
 ### Verification
+
 - [x] Automated build check (resolved useToast/date-fns/lint errors)
 - [x] Manual verification of multi-tenant isolation logic
 - [x] Manual verification of recursive reply rendering
@@ -89,7 +95,7 @@ class DiscussionMessage(models.Model):
 
 ==========================
 
-Now, follow my implementation files. for each implementation you want to implement, use that file as the entry point. do not create any artifact on .gemini file or folder. example, use `FEATURES/files/phase1-feat1-threaded-lms-discussions.md` as you entry point for that implementation and use it to track all of your ahanges. 
+Now, follow my implementation files. for each implementation you want to implement, use that file as the entry point. do not create any artifact on .gemini file or folder. example, use `FEATURES/files/phase1-feat1-threaded-lms-discussions.md` as you entry point for that implementation and use it to track all of your ahanges.
 
 DO NOT CREATE ANY ARTIFACT IN THE GEMINI FOLDER OR FILE. FOLLOW THIS STRICT RULE
 

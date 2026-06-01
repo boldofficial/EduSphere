@@ -45,6 +45,7 @@ urlpatterns = [
     path("api/inventory/", include("inventory.urls")),
     path("api/transport/", include("transport.urls")),
     path("api/data-import/", include("data_import.urls")),
+    path("api/feedback/", include("feedback.urls")),
 ]
 
 from django.conf import settings

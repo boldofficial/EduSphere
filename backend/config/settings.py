@@ -146,6 +146,7 @@ INSTALLED_APPS = [
     "inventory",
     "data_import",
     "transport",
+    "feedback",
 ]
 
 MIDDLEWARE = [
@@ -643,6 +644,7 @@ EMAIL_HOST_USER = os.environ.get("SMTP_USER")
 EMAIL_HOST_PASSWORD = os.environ.get("SMTP_PASS")
 DEFAULT_FROM_EMAIL = os.environ.get("SMTP_FROM", "noreply@myregistra.net")
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
+SUPPORT_EMAIL = os.environ.get("SUPPORT_EMAIL", "support@myregistra.net")
 
 # If credentials are not set (e.g. in dev), fallback to console backend
 if not EMAIL_HOST_USER or not EMAIL_HOST_PASSWORD:

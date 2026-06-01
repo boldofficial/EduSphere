@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSchoolStore } from '@/lib/store';
-import { DiscussionThread, DiscussionMessage } from '@/lib/types';
+import { DiscussionThread } from '@/lib/types';
 import { DiscussionMessageComponent } from './DiscussionMessage';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -18,7 +18,7 @@ interface DiscussionThreadProps {
 export const DiscussionThreadComponent: React.FC<DiscussionThreadProps> = ({
   contentTypeId,
   objectId,
-  title = "Discussion",
+  title = 'Discussion',
 }) => {
   const [thread, setThread] = useState<DiscussionThread | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -51,7 +51,7 @@ export const DiscussionThreadComponent: React.FC<DiscussionThreadProps> = ({
 
   const handlePostMessage = async (parentId: string | number | null = null, body: string) => {
     if (!thread) return;
-    
+
     try {
       await apiClient.post('lms/messages/', {
         thread: thread.id,
@@ -68,7 +68,7 @@ export const DiscussionThreadComponent: React.FC<DiscussionThreadProps> = ({
 
   const handleDeleteMessage = async (messageId: string | number) => {
     if (!confirm('Are you sure you want to delete this message?')) return;
-    
+
     try {
       await apiClient.delete(`lms/messages/${messageId}/`);
       await fetchThread();
@@ -112,7 +112,7 @@ export const DiscussionThreadComponent: React.FC<DiscussionThreadProps> = ({
             onChange={(e) => setNewCommentBody(e.target.value)}
           />
           <div className="flex justify-end pt-2 border-t border-gray-50">
-            <Button 
+            <Button
               className="bg-brand-600 hover:bg-brand-700 text-white gap-2 px-6"
               disabled={isSubmitting || !newCommentBody.trim()}
               onClick={async () => {
@@ -136,7 +136,9 @@ export const DiscussionThreadComponent: React.FC<DiscussionThreadProps> = ({
           {thread?.messages.length === 0 ? (
             <div className="text-center py-12 bg-gray-50/50 rounded-2xl border-2 border-dashed border-gray-100">
               <MessageSquare className="h-10 w-10 text-gray-200 mx-auto mb-3" />
-              <p className="text-sm text-gray-400">No discussions yet. Be the first to start one!</p>
+              <p className="text-sm text-gray-400">
+                No discussions yet. Be the first to start one!
+              </p>
             </div>
           ) : (
             thread?.messages.map((message) => (

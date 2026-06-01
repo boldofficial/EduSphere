@@ -1,12 +1,15 @@
 # feat: health clinical registry (sick-bay module)
 
 ## Summary
+
 A dedicated module for tracking sick-bay visits, treatments administered, and parent notifications for medical follow-ups.
 
 ## Branch Name
+
 `feature/health-clinical-registry`
 
 ## PR Title
+
 `feat: add health clinical registry for sick-bay visit tracking and parent notifications`
 
 ---
@@ -70,14 +73,15 @@ def notify_parent_on_discharge(sender, instance, **kwargs):
 
 ## API Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/health/visits/` | List visits (filter by status, student, date) |
-| POST | `/api/health/visits/` | Log a new sick-bay visit |
-| PATCH | `/api/health/visits/:id/` | Update treatment/notes/discharge |
-| GET | `/api/health/visits/?requires_followup=true` | Follow-up queue |
+| Method | Endpoint                                     | Description                                   |
+| ------ | -------------------------------------------- | --------------------------------------------- |
+| GET    | `/api/health/visits/`                        | List visits (filter by status, student, date) |
+| POST   | `/api/health/visits/`                        | Log a new sick-bay visit                      |
+| PATCH  | `/api/health/visits/:id/`                    | Update treatment/notes/discharge              |
+| GET    | `/api/health/visits/?requires_followup=true` | Follow-up queue                               |
 
 ## Acceptance Criteria
+
 - [ ] Nurse can log a new visit with symptoms and initial treatment
 - [ ] Parent is notified automatically on visit creation
 - [ ] Parent is notified on discharge

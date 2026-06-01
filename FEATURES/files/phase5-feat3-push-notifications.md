@@ -1,12 +1,15 @@
 # feat: push notifications — announcements and critical alerts
 
 ## Summary
+
 Real-time push notifications for announcements, absence alerts, fee reminders, and critical system events.
 
 ## Branch Name
+
 `feature/push-notifications`
 
 ## PR Title
+
 `feat: add web push notifications for announcements and critical system alerts`
 
 ---
@@ -28,17 +31,17 @@ export async function subscribeToPush() {
     userVisibleOnly: true,
     applicationServerKey: urlBase64ToUint8Array(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY),
   });
-  await fetch("/api/push/subscribe/", {
-    method: "POST",
+  await fetch('/api/push/subscribe/', {
+    method: 'POST',
     body: JSON.stringify(subscription),
-    headers: { "Content-Type": "application/json" },
+    headers: { 'Content-Type': 'application/json' },
   });
   return subscription;
 }
 
 function urlBase64ToUint8Array(base64String) {
-  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
   return Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
 }
 ```
@@ -47,20 +50,20 @@ function urlBase64ToUint8Array(base64String) {
 
 ```javascript
 // public/sw.js (or handled by next-pwa)
-self.addEventListener("push", (event) => {
+self.addEventListener('push', (event) => {
   const data = event.data?.json() ?? {};
   event.waitUntil(
-    self.registration.showNotification(data.title || "myregistra", {
+    self.registration.showNotification(data.title || 'myregistra', {
       body: data.body,
-      icon: "/icons/icon-192.png",
-      badge: "/icons/badge-72.png",
-      tag: data.tag || "general",
-      data: { url: data.url || "/dashboard" },
+      icon: '/icons/icon-192.png',
+      badge: '/icons/badge-72.png',
+      tag: data.tag || 'general',
+      data: { url: data.url || '/dashboard' },
     })
   );
 });
 
-self.addEventListener("notificationclick", (event) => {
+self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   event.waitUntil(clients.openWindow(event.notification.data.url));
 });
@@ -111,14 +114,15 @@ class NotificationPreference(models.Model):
 
 ## API Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/push/subscribe/` | Save push subscription |
-| DELETE | `/api/push/unsubscribe/` | Remove subscription |
-| GET/PATCH | `/api/push/preferences/` | Get or update notification preferences |
-| POST | `/api/push/send/` | Send push to a user or role (admin only) |
+| Method    | Endpoint                 | Description                              |
+| --------- | ------------------------ | ---------------------------------------- |
+| POST      | `/api/push/subscribe/`   | Save push subscription                   |
+| DELETE    | `/api/push/unsubscribe/` | Remove subscription                      |
+| GET/PATCH | `/api/push/preferences/` | Get or update notification preferences   |
+| POST      | `/api/push/send/`        | Send push to a user or role (admin only) |
 
 ## Acceptance Criteria
+
 - [ ] Permission prompt shown on first login (not on every page load)
 - [ ] Subscription saved server-side on accept
 - [ ] Push delivered within 3 seconds of trigger event

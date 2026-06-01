@@ -1,12 +1,15 @@
 # feat: executive dashboard — unified admin view
 
 ## Summary
+
 A premium "Unified View" for administrators with high-level academic and financial health indicators on a single screen.
 
 ## Branch Name
+
 `feature/executive-dashboard`
 
 ## PR Title
+
 `feat: add executive dashboard with unified academic and financial health indicators`
 
 ---
@@ -55,19 +58,19 @@ def get_executive_summary(school, term):
 
 ## Dashboard Panels
 
-| Panel | Metrics |
-|-------|---------|
-| Academic Health | Attendance %, Average Grade, CBT Completion %, Students Flagged |
-| Financial Health | Collection Rate %, Total Collected, Outstanding, Forecast |
-| Welfare | Active Sick-Bay Cases, Absence Alerts Today, Follow-ups Pending |
-| Activity Feed | Last 20 system events across all modules |
+| Panel            | Metrics                                                         |
+| ---------------- | --------------------------------------------------------------- |
+| Academic Health  | Attendance %, Average Grade, CBT Completion %, Students Flagged |
+| Financial Health | Collection Rate %, Total Collected, Outstanding, Forecast       |
+| Welfare          | Active Sick-Bay Cases, Absence Alerts Today, Follow-ups Pending |
+| Activity Feed    | Last 20 system events across all modules                        |
 
 ## API Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/dashboard/executive/?term_id=` | Full summary payload |
-| GET | `/api/dashboard/activity-feed/` | Recent system activity |
+| Method | Endpoint                             | Description            |
+| ------ | ------------------------------------ | ---------------------- |
+| GET    | `/api/dashboard/executive/?term_id=` | Full summary payload   |
+| GET    | `/api/dashboard/activity-feed/`      | Recent system activity |
 
 ## Access Control
 
@@ -77,6 +80,7 @@ class ExecutiveDashboardView(APIView):
 ```
 
 ## Acceptance Criteria
+
 - [ ] Dashboard accessible only to admin and principal roles
 - [ ] All four panels render with live data
 - [ ] Page load under 1 second using aggregate queries (no per-student loops)
