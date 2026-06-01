@@ -66,7 +66,13 @@ export function FeedbackTab() {
   const { data: schools = [] } = useAdminSchools();
 
   const formatDate = (dateStr: string) =>
-    new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(dateStr));
+    new Intl.DateTimeFormat('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(new Date(dateStr));
 
   const ratingColor = (r: number) => {
     if (r >= 4) return 'text-emerald-600 bg-emerald-50';
@@ -83,19 +89,29 @@ export function FeedbackTab() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-black text-gray-900 tracking-tight">User Feedback</h1>
-        <p className="text-gray-500 mt-1 font-medium">Platform feedback submitted by school users.</p>
+        <p className="text-gray-500 mt-1 font-medium">
+          Platform feedback submitted by school users.
+        </p>
       </div>
 
       {/* Stats */}
       {statsLoading ? (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="bg-white rounded-2xl border border-gray-100 p-5 h-24 animate-pulse bg-gray-50" />
+            <div
+              key={i}
+              className="bg-gray-50 rounded-2xl border border-gray-100 p-5 h-24 animate-pulse"
+            />
           ))}
         </div>
       ) : (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard icon={MessageSquare} label="Total Responses" value={stats?.total ?? 0} color="brand" />
+          <StatCard
+            icon={MessageSquare}
+            label="Total Responses"
+            value={stats?.total ?? 0}
+            color="brand"
+          />
           <StatCard
             icon={Star}
             label="Average Rating"
@@ -106,7 +122,11 @@ export function FeedbackTab() {
             icon={TrendingUp}
             label="5-Star Responses"
             value={stats?.distribution?.['5'] ?? 0}
-            sub={stats?.total ? `${Math.round(((stats.distribution?.['5'] ?? 0) / stats.total) * 100)}% of total` : undefined}
+            sub={
+              stats?.total
+                ? `${Math.round(((stats.distribution?.['5'] ?? 0) / stats.total) * 100)}% of total`
+                : undefined
+            }
             color="green"
           />
           <StatCard
@@ -121,7 +141,9 @@ export function FeedbackTab() {
       {/* Rating Distribution */}
       {stats && stats.total > 0 && (
         <div className="bg-white rounded-2xl border border-gray-100 p-5">
-          <h3 className="text-sm font-black text-gray-700 uppercase tracking-widest mb-4">Rating Distribution</h3>
+          <h3 className="text-sm font-black text-gray-700 uppercase tracking-widest mb-4">
+            Rating Distribution
+          </h3>
           <div className="space-y-2">
             {[5, 4, 3, 2, 1].map((star) => {
               const count = stats.distribution?.[String(star)] ?? 0;
@@ -137,7 +159,9 @@ export function FeedbackTab() {
                       style={{ width: ratingBarWidth(count) }}
                     />
                   </div>
-                  <span className="text-sm font-semibold text-gray-500 w-8 text-right">{count}</span>
+                  <span className="text-sm font-semibold text-gray-500 w-8 text-right">
+                    {count}
+                  </span>
                 </div>
               );
             })}
@@ -152,28 +176,45 @@ export function FeedbackTab() {
           <span className="font-semibold">Filter by:</span>
         </div>
         <select
+          aria-label="Filter by rating"
           value={ratingFilter ?? ''}
-          onChange={(e) => { setRatingFilter(e.target.value ? Number(e.target.value) : undefined); setPage(1); }}
+          onChange={(e) => {
+            setRatingFilter(e.target.value ? Number(e.target.value) : undefined);
+            setPage(1);
+          }}
           className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm font-medium text-gray-700 outline-none focus:border-brand-500"
         >
           <option value="">All ratings</option>
           {[5, 4, 3, 2, 1].map((r) => (
-            <option key={r} value={r}>{r} star{r !== 1 ? 's' : ''}</option>
+            <option key={r} value={r}>
+              {r} star{r !== 1 ? 's' : ''}
+            </option>
           ))}
         </select>
         <select
+          aria-label="Filter by school"
           value={schoolFilter ?? ''}
-          onChange={(e) => { setSchoolFilter(e.target.value ? Number(e.target.value) : undefined); setPage(1); }}
+          onChange={(e) => {
+            setSchoolFilter(e.target.value ? Number(e.target.value) : undefined);
+            setPage(1);
+          }}
           className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm font-medium text-gray-700 outline-none focus:border-brand-500"
         >
           <option value="">All schools</option>
           {schools.map((s: any) => (
-            <option key={s.id} value={s.id}>{s.name}</option>
+            <option key={s.id} value={s.id}>
+              {s.name}
+            </option>
           ))}
         </select>
         {(ratingFilter || schoolFilter) && (
           <button
-            onClick={() => { setRatingFilter(undefined); setSchoolFilter(undefined); setPage(1); }}
+            type="button"
+            onClick={() => {
+              setRatingFilter(undefined);
+              setSchoolFilter(undefined);
+              setPage(1);
+            }}
             className="text-sm font-bold text-brand-600 hover:underline"
           >
             Clear filters
@@ -185,14 +226,19 @@ export function FeedbackTab() {
       {listLoading ? (
         <div className="space-y-3">
           {[...Array(5)].map((_, i) => (
-            <div key={i} className="bg-white rounded-2xl border border-gray-100 p-5 h-24 animate-pulse" />
+            <div
+              key={i}
+              className="bg-white rounded-2xl border border-gray-100 p-5 h-24 animate-pulse"
+            />
           ))}
         </div>
       ) : list?.results?.length === 0 ? (
         <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
           <MessageSquare size={40} className="mx-auto text-gray-300 mb-3" />
           <p className="font-bold text-gray-500">No feedback yet</p>
-          <p className="text-sm text-gray-400 mt-1">Feedback submitted by users will appear here.</p>
+          <p className="text-sm text-gray-400 mt-1">
+            Feedback submitted by users will appear here.
+          </p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -202,7 +248,9 @@ export function FeedbackTab() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-2 flex-wrap">
                     <StarDisplay rating={item.rating} />
-                    <span className={`text-xs font-black px-2.5 py-1 rounded-full uppercase tracking-wide ${ratingColor(item.rating)}`}>
+                    <span
+                      className={`text-xs font-black px-2.5 py-1 rounded-full uppercase tracking-wide ${ratingColor(item.rating)}`}
+                    >
                       {item.rating} / 5
                     </span>
                     {item.school_name && (
@@ -227,7 +275,12 @@ export function FeedbackTab() {
                   )}
                 </div>
                 <div className="text-right shrink-0">
-                  <p className="text-xs font-bold text-gray-500">{item.username || 'Anonymous'}</p>
+                  <p className="text-xs font-bold text-gray-500">
+                    {item.username || item.guest_name || 'Anonymous'}
+                  </p>
+                  {item.guest_email && (
+                    <p className="text-xs text-brand-500 mt-0.5">{item.guest_email}</p>
+                  )}
                   <p className="text-xs text-gray-400 mt-0.5">{formatDate(item.created_at)}</p>
                 </div>
               </div>
@@ -240,6 +293,7 @@ export function FeedbackTab() {
       {list && list.total_pages > 1 && (
         <div className="flex items-center justify-center gap-3">
           <button
+            type="button"
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
             className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-bold text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
@@ -250,6 +304,7 @@ export function FeedbackTab() {
             Page {list.current_page} of {list.total_pages}
           </span>
           <button
+            type="button"
             onClick={() => setPage((p) => Math.min(list.total_pages, p + 1))}
             disabled={page === list.total_pages}
             className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-bold text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
