@@ -11,6 +11,9 @@ class Feedback(models.Model):
     comment = models.TextField(blank=True)
     page_url = models.CharField(max_length=500, blank=True)
     user_role = models.CharField(max_length=30, blank=True)
+    # Guest-only fields (null for authenticated users)
+    guest_name = models.CharField(max_length=150, blank=True)
+    guest_email = models.EmailField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
