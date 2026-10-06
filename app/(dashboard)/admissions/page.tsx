@@ -42,12 +42,5 @@ export default function AdmissionsPage() {
     );
   }
 
-  return (
-    <AdmissionsView
-      admissions={admissions}
-      intakes={intakes}
-      classes={classes}
-      onUpdate={handleUpdate}
-    />
-  );
+  return <AdmissionsView admissions={admissions} classes={classes} onUpdate={handleUpdate} />;
 }

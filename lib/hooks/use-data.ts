@@ -70,6 +70,7 @@ export const queryKeys = {
   bursaryDashboard: (session: string, term: string) =>
     ['bursary', 'dashboard', session, term] as const,
   activityLogs: (action?: string) => ['activity_logs', action] as const,
+  notifications: ['notifications'] as const,
 };
 
 // Generic fetcher

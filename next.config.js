@@ -124,15 +124,17 @@ const nextConfig = {
   },
 
   // Required to silence Turbopack/Webpack conflict error in Next.js 16
-  // when using plugins like next-pwa that rely on Webpack.
+  // when using plugins like @ducanh2912/next-pwa that rely on Webpack.
   turbopack: {},
 };
 
-const withPWA = require('next-pwa')({
+const withPWA = require('@ducanh2912/next-pwa').default({
   dest: 'public',
   disable: process.env.NODE_ENV === 'development',
   register: true,
-  skipWaiting: true,
+  workboxOptions: {
+    skipWaiting: true,
+  },
 });
 
 module.exports = withPWA(nextConfig);

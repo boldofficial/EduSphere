@@ -79,7 +79,7 @@ export function TenantLandingWrapper() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(getStructuredData(settings)) }}
       />
-      <LandingPage settings={settings} stats={stats} />
+      <LandingPage settings={settings} />
     </>
   );
 }
