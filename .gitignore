@@ -83,3 +83,4 @@ dev-output.txt
 tsc_errors_utf8.txt
 scan_lines.py
 .npm-cache/
+.freebuff/
