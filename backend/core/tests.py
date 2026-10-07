@@ -8,7 +8,7 @@ from rest_framework.test import APIClient, APITestCase
 
 from schools.models import School
 
-from .models import ActivityLog, Announcement, GlobalActivityLog, SchoolSettings
+from .models import GlobalActivityLog, SchoolAnnouncement
 
 
 class SchoolSettingsTests(APITestCase):
@@ -57,7 +57,7 @@ class AnnouncementTests(APITestCase):
             {
                 "title": "Test Announcement",
                 "content": "This is a test announcement",
-                "audience": "all",
+                "target": "all",
             },
             format="json",
             HTTP_X_TENANT_ID=self.school.domain,
@@ -66,11 +66,11 @@ class AnnouncementTests(APITestCase):
         self.assertEqual(response.data["title"], "Test Announcement")
 
     def test_list_announcements(self):
-        Announcement.objects.create(
+        SchoolAnnouncement.objects.create(
             school=self.school,
             title="Test",
             content="Content",
-            audience="all",
+            target="all",
         )
         response = self.client.get("/api/core/announcements/", HTTP_X_TENANT_ID=self.school.domain)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -93,7 +93,7 @@ class ActivityLogTests(APITestCase):
         self.client.get("/api/core/settings/", HTTP_X_TENANT_ID=self.school.domain)
         
         # Check if activity log was created
-        logs = ActivityLog.objects.filter(school=self.school)
+        logs = GlobalActivityLog.objects.filter(school=self.school)
         # Some endpoints may not log, this is just to verify the model works
         self.assertIsNotNone(logs)
 
@@ -133,6 +133,7 @@ class TenantIsolationTests(APITestCase):
         # School A should not see School B's settings
         self.client.force_authenticate(user=self.admin_a)
         response = self.client.get("/api/core/settings/", HTTP_X_TENANT_ID=self.school_a.domain)
-        
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotEqual(response.data.get("school_name"), "School B Private")
         self.assertNotEqual(response.data.get("school_name"), "School B Private")

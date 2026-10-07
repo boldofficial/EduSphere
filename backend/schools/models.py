@@ -232,13 +232,11 @@ class SchoolSettings(models.Model):
 
 
 class SchoolPaymentConfig(models.Model):
-    """Per-school payment gateway and method configuration."""
+    """Per-school payment methods and manually entered bank account details."""
 
     PAYMENT_METHOD_CHOICES = (
         ("cash", "Cash"),
         ("bank_transfer", "Bank Transfer"),
-        ("paystack", "Paystack"),
-        ("flutterwave", "Flutterwave"),
     )
 
     school = models.OneToOneField(School, on_delete=models.CASCADE, related_name="payment_config")
@@ -246,21 +244,9 @@ class SchoolPaymentConfig(models.Model):
     # Method toggles
     enable_cash = models.BooleanField(default=True)
     enable_bank_transfer = models.BooleanField(default=True)
-    enable_paystack = models.BooleanField(default=False)
-    enable_flutterwave = models.BooleanField(default=False)
 
     # Preferred method shown first on checkout surfaces
     default_payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, default="bank_transfer")
-
-    # Paystack credentials (school-owned)
-    paystack_public_key = models.CharField(max_length=255, null=True, blank=True)
-    paystack_secret_key = models.CharField(max_length=255, null=True, blank=True)
-    paystack_webhook_secret = models.CharField(max_length=255, null=True, blank=True)
-
-    # Flutterwave credentials (school-owned)
-    flutterwave_public_key = models.CharField(max_length=255, null=True, blank=True)
-    flutterwave_secret_key = models.CharField(max_length=255, null=True, blank=True)
-    flutterwave_webhook_secret = models.CharField(max_length=255, null=True, blank=True)
 
     # Bank transfer details
     bank_name = models.CharField(max_length=255, null=True, blank=True)
@@ -269,9 +255,6 @@ class SchoolPaymentConfig(models.Model):
     bank_sort_code = models.CharField(max_length=20, null=True, blank=True)
     transfer_instructions = models.TextField(null=True, blank=True)
     require_transfer_proof = models.BooleanField(default=True)
-
-    # Fee absorption: if True, the ~1.5% gateway processing fee is added to the parent's total
-    pass_processing_fee_to_parents = models.BooleanField(default=False)
 
     updated_at = models.DateTimeField(auto_now=True)
 

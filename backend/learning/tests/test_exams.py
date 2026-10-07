@@ -10,7 +10,7 @@ from rest_framework.test import APIClient, APITestCase
 from academic.models import Class, Student, Subject, Teacher
 from schools.models import School
 
-from .models import (
+from learning.models import (
     Assignment, BankQuestion, Exam, ExamPaper, ExamQuestion,
     Question, QuestionBank, Quiz, Submission
 )
@@ -65,12 +65,15 @@ class ExamAPITests(APITestCase):
             {
                 "title": "First Term Exam",
                 "description": "Mathematics first term",
-                "exam_class": self.student_class.id,
+                "student_class": self.student_class.id,
                 "subject": self.subject.id,
                 "session": "2025/2026",
                 "term": "First Term",
+                "exam_date": "2026-01-15",
+                "start_time": "09:00",
+                "end_time": "10:00",
                 "duration_minutes": 60,
-                "pass_mark": 50,
+                "passing_marks": 50,
             },
             format="json",
             HTTP_X_TENANT_ID=self.school.domain,
@@ -82,10 +85,13 @@ class ExamAPITests(APITestCase):
         Exam.objects.create(
             school=self.school,
             title="Test Exam",
-            exam_class=self.student_class,
+            student_class=self.student_class,
             subject=self.subject,
             session="2025/2026",
             term="First Term",
+            exam_date="2026-01-15",
+            start_time="09:00",
+            end_time="10:00",
         )
         response = self.client.get("/api/learning/exams/", HTTP_X_TENANT_ID=self.school.domain)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -113,9 +119,9 @@ class QuizAPITests(APITestCase):
                 "description": "Quick math quiz",
                 "student_class": self.student_class.id,
                 "subject": self.subject.id,
-                "session": "2025/2026",
-                "term": "First Term",
-                "time_limit": 15,
+                "duration_minutes": 15,
+                "start_time": "2026-01-15T09:00:00Z",
+                "end_time": "2026-01-15T09:15:00Z",
             },
             format="json",
             HTTP_X_TENANT_ID=self.school.domain,
@@ -195,10 +201,13 @@ class TenantIsolationTests(APITestCase):
         exam_a = Exam.objects.create(
             school=self.school_a,
             title="Exam A",
-            exam_class=class_a,
+            student_class=class_a,
             subject=self.subject_a,
             session="2025/2026",
             term="First Term",
+            exam_date="2026-01-15",
+            start_time="09:00",
+            end_time="10:00",
         )
         
         self.client.force_authenticate(user=self.admin_a)

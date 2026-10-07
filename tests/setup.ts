@@ -26,12 +26,5 @@ vi.mock('next/navigation', () => ({
 }));
 
 // Mock environment variables
-Object.defineProperty(process.env, 'NODE_ENV', {
-  value: 'test',
-  writable: true,
-});
-
-Object.defineProperty(process.env, 'NEXT_PUBLIC_ROOT_DOMAIN', {
-  value: 'localhost',
-  writable: true,
-});
+vi.stubEnv('NODE_ENV', 'test');
+vi.stubEnv('NEXT_PUBLIC_ROOT_DOMAIN', 'localhost');

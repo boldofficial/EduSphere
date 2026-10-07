@@ -6,8 +6,8 @@ from users.models import User
 class AdmissionIntake(TenantModel):
     name = models.CharField(max_length=100)  # e.g. "Fall 2025"
     description = models.TextField(blank=True)
-    start_date = models.DateField(default=timezone.now)
-    end_date = models.DateField(default=timezone.now)
+    start_date = models.DateField(default=timezone.localdate)
+    end_date = models.DateField(default=timezone.localdate)
     is_active = models.BooleanField(default=True)
 
     class Meta:
@@ -22,7 +22,7 @@ class Admission(TenantModel):
         AdmissionIntake, on_delete=models.CASCADE, related_name="applications", null=True, blank=True
     )
     child_name = models.CharField(max_length=255)
-    child_dob = models.DateField(default=timezone.now)
+    child_dob = models.DateField(default=timezone.localdate)
     child_gender = models.CharField(max_length=10, choices=[("Male", "Male"), ("Female", "Female")])
     previous_school = models.CharField(max_length=255, blank=True)
     program = models.CharField(max_length=50)  # 'creche', 'pre-school', 'primary'

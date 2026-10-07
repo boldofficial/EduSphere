@@ -9,7 +9,7 @@ from core.tenant_utils import get_request_school
 
 from ..models import Class, Student, StudentAchievement, StudentHistory
 from ..serializers import StudentAchievementSerializer, StudentHistorySerializer, StudentSerializer
-from .base import TenantViewSet
+from .base import TenantViewSet, scope_to_learner
 
 
 class StudentViewSet(TenantViewSet):
@@ -18,11 +18,7 @@ class StudentViewSet(TenantViewSet):
     pagination_class = LargePagination
 
     def get_queryset(self):
-        import logging
-        logger = logging.getLogger(__name__)
-        qs = super().get_queryset()
-        logger.info(f"[StudentViewSet] User={self.request.user}, Tenant={getattr(self.request, 'tenant', 'NONE')}, "
-                     f"UserSchool={getattr(self.request.user, 'school', 'NONE')}, QS count={qs.count()}")
+        qs = scope_to_learner(super().get_queryset(), self.request.user, student_path="pk")
         class_id = self.request.query_params.get("class")
         search = self.request.query_params.get("search")
 

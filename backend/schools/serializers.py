@@ -148,94 +148,6 @@ class SupportTicketSerializer(serializers.ModelSerializer):
 
 
 class SchoolPaymentConfigAdminSerializer(serializers.ModelSerializer):
-    supports_online_payment = serializers.SerializerMethodField()
-    has_paystack_secret = serializers.SerializerMethodField()
-    has_flutterwave_secret = serializers.SerializerMethodField()
-
-    class Meta:
-        model = SchoolPaymentConfig
-        fields = [
-            "enable_cash",
-            "enable_bank_transfer",
-            "enable_paystack",
-            "enable_flutterwave",
-            "default_payment_method",
-            "paystack_public_key",
-            "paystack_secret_key",
-            "paystack_webhook_secret",
-            "flutterwave_public_key",
-            "flutterwave_secret_key",
-            "flutterwave_webhook_secret",
-            "bank_name",
-            "bank_account_name",
-            "bank_account_number",
-            "bank_sort_code",
-            "transfer_instructions",
-            "require_transfer_proof",
-            "pass_processing_fee_to_parents",
-            "supports_online_payment",
-            "has_paystack_secret",
-            "has_flutterwave_secret",
-            "updated_at",
-        ]
-        read_only_fields = ["supports_online_payment", "has_paystack_secret", "has_flutterwave_secret", "updated_at"]
-        extra_kwargs = {
-            "paystack_secret_key": {"write_only": True, "required": False, "allow_blank": True},
-            "paystack_webhook_secret": {"write_only": True, "required": False, "allow_blank": True},
-            "flutterwave_secret_key": {"write_only": True, "required": False, "allow_blank": True},
-            "flutterwave_webhook_secret": {"write_only": True, "required": False, "allow_blank": True},
-        }
-
-    def get_supports_online_payment(self, obj):
-        return bool(obj.enable_paystack or obj.enable_flutterwave)
-
-    def get_has_paystack_secret(self, obj):
-        return bool(obj.paystack_secret_key)
-
-    def get_has_flutterwave_secret(self, obj):
-        return bool(obj.flutterwave_secret_key)
-
-    def validate(self, attrs):
-        instance = getattr(self, "instance", None)
-
-        enable_cash = attrs.get("enable_cash", instance.enable_cash if instance else True)
-        enable_bank_transfer = attrs.get("enable_bank_transfer", instance.enable_bank_transfer if instance else True)
-        enable_paystack = attrs.get("enable_paystack", instance.enable_paystack if instance else False)
-        enable_flutterwave = attrs.get("enable_flutterwave", instance.enable_flutterwave if instance else False)
-        default_payment_method = attrs.get(
-            "default_payment_method", instance.default_payment_method if instance else "bank_transfer"
-        )
-
-        if not any([enable_cash, enable_bank_transfer, enable_paystack, enable_flutterwave]):
-            raise serializers.ValidationError("At least one payment method must be enabled.")
-
-        enabled_map = {
-            "cash": enable_cash,
-            "bank_transfer": enable_bank_transfer,
-            "paystack": enable_paystack,
-            "flutterwave": enable_flutterwave,
-        }
-        if not enabled_map.get(default_payment_method):
-            raise serializers.ValidationError(
-                {"default_payment_method": "Default payment method must be one of the enabled methods."}
-            )
-
-        # When enabling gateways, public keys are required.
-        paystack_public_key = attrs.get("paystack_public_key", instance.paystack_public_key if instance else "")
-        flutterwave_public_key = attrs.get("flutterwave_public_key", instance.flutterwave_public_key if instance else "")
-
-        if enable_paystack and not paystack_public_key:
-            raise serializers.ValidationError({"paystack_public_key": "Paystack public key is required when enabled."})
-        if enable_flutterwave and not flutterwave_public_key:
-            raise serializers.ValidationError(
-                {"flutterwave_public_key": "Flutterwave public key is required when enabled."}
-            )
-
-        return attrs
-
-
-class SchoolPaymentConfigPublicSerializer(serializers.ModelSerializer):
-    supports_online_payment = serializers.SerializerMethodField()
     enabled_methods = serializers.SerializerMethodField()
 
     class Meta:
@@ -243,38 +155,83 @@ class SchoolPaymentConfigPublicSerializer(serializers.ModelSerializer):
         fields = [
             "enable_cash",
             "enable_bank_transfer",
-            "enable_paystack",
-            "enable_flutterwave",
             "default_payment_method",
-            "supports_online_payment",
             "enabled_methods",
-            "paystack_public_key",
-            "flutterwave_public_key",
             "bank_name",
             "bank_account_name",
             "bank_account_number",
             "bank_sort_code",
             "transfer_instructions",
             "require_transfer_proof",
-            "pass_processing_fee_to_parents",
+            "updated_at",
+        ]
+        read_only_fields = ["enabled_methods", "updated_at"]
+
+    def get_enabled_methods(self, obj):
+        return _enabled_methods(obj)
+
+    def validate(self, attrs):
+        instance = getattr(self, "instance", None)
+
+        def current(field, default):
+            return attrs.get(field, getattr(instance, field, default) if instance else default)
+
+        enable_cash = current("enable_cash", True)
+        enable_bank_transfer = current("enable_bank_transfer", True)
+        default_payment_method = current("default_payment_method", "bank_transfer")
+
+        if not (enable_cash or enable_bank_transfer):
+            raise serializers.ValidationError("At least one payment method must be enabled.")
+
+        enabled_map = {"cash": enable_cash, "bank_transfer": enable_bank_transfer}
+        if not enabled_map.get(default_payment_method):
+            raise serializers.ValidationError(
+                {"default_payment_method": "Default payment method must be one of the enabled methods."}
+            )
+
+        if enable_bank_transfer:
+            missing = {
+                field: "Required when bank transfer is enabled."
+                for field in ("bank_name", "bank_account_name", "bank_account_number")
+                if not (current(field, "") or "").strip()
+            }
+            if missing:
+                raise serializers.ValidationError(missing)
+
+        return attrs
+
+
+class SchoolPaymentConfigPublicSerializer(serializers.ModelSerializer):
+    enabled_methods = serializers.SerializerMethodField()
+
+    class Meta:
+        model = SchoolPaymentConfig
+        fields = [
+            "enable_cash",
+            "enable_bank_transfer",
+            "default_payment_method",
+            "enabled_methods",
+            "bank_name",
+            "bank_account_name",
+            "bank_account_number",
+            "bank_sort_code",
+            "transfer_instructions",
+            "require_transfer_proof",
             "updated_at",
         ]
         read_only_fields = fields
 
-    def get_supports_online_payment(self, obj):
-        return bool(obj.enable_paystack or obj.enable_flutterwave)
-
     def get_enabled_methods(self, obj):
-        methods = []
-        if obj.enable_cash:
-            methods.append("cash")
-        if obj.enable_bank_transfer:
-            methods.append("bank_transfer")
-        if obj.enable_paystack:
-            methods.append("paystack")
-        if obj.enable_flutterwave:
-            methods.append("flutterwave")
-        return methods
+        return _enabled_methods(obj)
+
+
+def _enabled_methods(obj):
+    methods = []
+    if obj.enable_cash:
+        methods.append("cash")
+    if obj.enable_bank_transfer:
+        methods.append("bank_transfer")
+    return methods
 
 
 from academic.serializers import Base64ImageField

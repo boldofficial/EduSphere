@@ -528,31 +528,19 @@ export interface FinancialStats {
   };
 }
 
-export type SchoolPaymentMethod = 'cash' | 'bank_transfer' | 'paystack' | 'flutterwave';
+export type SchoolPaymentMethod = 'cash' | 'bank_transfer';
 
 export interface SchoolPaymentSettings {
   enable_cash: boolean;
   enable_bank_transfer: boolean;
-  enable_paystack: boolean;
-  enable_flutterwave: boolean;
   default_payment_method: SchoolPaymentMethod;
-  supports_online_payment?: boolean;
   enabled_methods?: SchoolPaymentMethod[];
-  paystack_public_key?: string;
-  paystack_secret_key?: string;
-  paystack_webhook_secret?: string;
-  has_paystack_secret?: boolean;
-  flutterwave_public_key?: string;
-  flutterwave_secret_key?: string;
-  flutterwave_webhook_secret?: string;
-  has_flutterwave_secret?: boolean;
   bank_name?: string;
   bank_account_name?: string;
   bank_account_number?: string;
   bank_sort_code?: string;
   transfer_instructions?: string;
   require_transfer_proof?: boolean;
-  pass_processing_fee_to_parents?: boolean;
   updated_at?: string;
 }
 

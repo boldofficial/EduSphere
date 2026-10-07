@@ -21,7 +21,7 @@ class TenantMiddleware(MiddlewareMixin):
         # 1. Get tenant identifier from header (set by Next.js middleware)
         tenant_domain = request.headers.get("X-Tenant-ID")
 
-        logger.info(f"[TenantMW] host={request.get_host()}, X-Tenant-ID={tenant_domain}")
+        logger.debug(f"[TenantMW] host={request.get_host()}, X-Tenant-ID={tenant_domain}")
 
         # 2. Fallback for Local Dev / No Header (e.g. direct API calls)
         from django.conf import settings
@@ -46,16 +46,20 @@ class TenantMiddleware(MiddlewareMixin):
                 from django.core.cache import cache
                 
                 cache_key = f"tenant_domain_lookup:{tenant_domain}"
-                school = cache.get(cache_key)
+                # Cache only the id (0 = no match) so a cached lookup can never serve a stale School
+                # (renamed domain, deactivation, settings). The pk fetch is a cheap indexed query.
+                domain_match = Q(domain=tenant_domain) | Q(custom_domain=tenant_domain)
+                school_id = cache.get(cache_key)
+                school = School.objects.filter(domain_match, pk=school_id).first() if school_id else None
 
-                if school is None:
-                    school = School.objects.filter(Q(domain=tenant_domain) | Q(custom_domain=tenant_domain)).first()
-                    # Cache the result for 5 minutes (300 seconds), even if None (to cache negative lookups)
-                    cache.set(cache_key, school, timeout=300)
+                if school is None and school_id != 0:
+                    # Cache miss, or the cached id no longer matches this domain
+                    school = School.objects.filter(domain_match).first()
+                    cache.set(cache_key, school.id if school else 0, timeout=300)
 
                 request.tenant = school
                 if request.tenant:
-                    logger.info(f"[TenantMW] Resolved tenant: {request.tenant.domain} (cached)")
+                    logger.debug(f"[TenantMW] Resolved tenant: {request.tenant.domain} (cached)")
                     request.subdomain = tenant_domain
                 else:
                     logger.warning(f"[TenantMW] No tenant found for domain: {tenant_domain}")

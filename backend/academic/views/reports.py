@@ -19,7 +19,7 @@ from ..models import (
 )
 from ..serializers import ReportCardSerializer, SubjectScoreSerializer
 from ..utils import ReportCardPDFGenerator
-from .base import TenantViewSet
+from .base import IsSchoolStaff, TenantViewSet, is_school_staff, scope_to_learner
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +38,14 @@ class ReportCardViewSet(TenantViewSet):
     )
     serializer_class = ReportCardSerializer
     pagination_class = StandardPagination
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        user = self.request.user
+        if is_school_staff(user):
+            return qs
+        # Students/parents only see their own published report cards.
+        return scope_to_learner(qs, user).filter(is_passed=True)
 
     @action(detail=True, methods=["get"], url_path="export-pdf")
     def export_pdf(self, request, pk=None):
@@ -174,9 +182,9 @@ class SubjectScoreViewSet(TenantViewSet):
     def get_queryset(self):
         qs = super().get_queryset()
         user = self.request.user
-        if user.role == "STUDENT" and hasattr(user, "student_profile"):
-            qs = qs.filter(report_card__student=user.student_profile)
-        return qs
+        if is_school_staff(user):
+            return qs
+        return scope_to_learner(qs, user, "report_card__student").filter(report_card__is_passed=True)
 
 
 class BroadsheetView(viewsets.ViewSet):
@@ -185,7 +193,7 @@ class BroadsheetView(viewsets.ViewSet):
     for a class in a given session and term. Returns a pivoted table.
     """
 
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsSchoolStaff]
 
     def list(self, request):
         school = get_request_school(request)

@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import Script from 'next/script';
 import * as Utils from '@/lib/utils';
 
 interface LineItem {
@@ -29,10 +28,13 @@ interface InvoiceData {
     email: string | null;
     phone: string | null;
   };
-  checkout: {
-    paystack_public_key: string | null;
-    pass_processing_fee_to_parents: boolean;
-  };
+  bank_details: {
+    bank_name: string | null;
+    account_name: string | null;
+    account_number: string | null;
+    sort_code: string | null;
+    instructions: string | null;
+  } | null;
 }
 
 export default function QuickPayPage({ params }: { params: Promise<{ hash: string }> }) {
@@ -87,10 +89,6 @@ export default function QuickPayPage({ params }: { params: Promise<{ hash: strin
 
   const isPaid = invoice.status === 'completed';
   const amount = parseFloat(invoice.amount);
-  const processingFee = invoice.checkout.pass_processing_fee_to_parents
-    ? Math.ceil(amount * 0.015 * 100) / 100
-    : 0;
-  const totalWithFee = amount + processingFee;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50 py-8 px-4">
@@ -154,17 +152,10 @@ export default function QuickPayPage({ params }: { params: Promise<{ hash: strin
                 </div>
               )}
 
-              {processingFee > 0 && (
-                <div className="flex justify-between text-sm mt-2 pt-2 border-t border-dashed border-gray-200">
-                  <span className="text-gray-500">Processing Fee (1.5%)</span>
-                  <span className="text-gray-600">₦{processingFee.toLocaleString()}</span>
-                </div>
-              )}
-
               <div className="flex justify-between mt-3 pt-3 border-t-2 border-gray-200">
                 <span className="font-bold text-gray-900">Total</span>
                 <span className="text-xl font-bold text-indigo-600">
-                  ₦{totalWithFee.toLocaleString()}
+                  ₦{amount.toLocaleString()}
                 </span>
               </div>
             </div>
@@ -187,29 +178,48 @@ export default function QuickPayPage({ params }: { params: Promise<{ hash: strin
               </div>
             )}
 
-            {/* Pay Button */}
-            {!isPaid && invoice.checkout.paystack_public_key && (
-              <button
-                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-xl transition-colors shadow-lg shadow-indigo-200"
-                onClick={() => {
-                  // Paystack Inline integration
-                  const handler = (window as any).PaystackPop?.setup({
-                    key: invoice.checkout.paystack_public_key,
-                    email: invoice.school.email || 'parent@school.com',
-                    amount: Math.round(totalWithFee * 100), // Paystack uses kobo
-                    ref: invoice.reference,
-                    callback: () => {
-                      window.location.reload();
-                    },
-                    onClose: () => {
-                      // Payment window closed
-                    },
-                  });
-                  handler?.openIframe();
-                }}
-              >
-                Pay ₦{totalWithFee.toLocaleString()} with Paystack
-              </button>
+            {/* Bank transfer details */}
+            {!isPaid && invoice.bank_details && (
+              <div className="rounded-xl border border-indigo-100 bg-indigo-50 p-4 space-y-2 text-sm">
+                <p className="font-semibold text-indigo-900">Pay by bank transfer</p>
+                {invoice.bank_details.bank_name && (
+                  <div className="flex justify-between gap-3">
+                    <span className="text-gray-500">Bank</span>
+                    <span className="font-medium text-gray-800">
+                      {invoice.bank_details.bank_name}
+                    </span>
+                  </div>
+                )}
+                {invoice.bank_details.account_name && (
+                  <div className="flex justify-between gap-3">
+                    <span className="text-gray-500">Account name</span>
+                    <span className="font-medium text-gray-800">
+                      {invoice.bank_details.account_name}
+                    </span>
+                  </div>
+                )}
+                {invoice.bank_details.account_number && (
+                  <div className="flex justify-between gap-3">
+                    <span className="text-gray-500">Account number</span>
+                    <span className="font-mono font-semibold text-gray-900">
+                      {invoice.bank_details.account_number}
+                    </span>
+                  </div>
+                )}
+                {invoice.bank_details.sort_code && (
+                  <div className="flex justify-between gap-3">
+                    <span className="text-gray-500">Sort code</span>
+                    <span className="font-medium text-gray-800">
+                      {invoice.bank_details.sort_code}
+                    </span>
+                  </div>
+                )}
+                <p className="text-xs text-indigo-800 pt-1">
+                  Use <span className="font-mono">{invoice.reference}</span> as the transfer
+                  narration.
+                  {invoice.bank_details.instructions ? ` ${invoice.bank_details.instructions}` : ''}
+                </p>
+              </div>
             )}
 
             {isPaid && (
@@ -224,8 +234,6 @@ export default function QuickPayPage({ params }: { params: Promise<{ hash: strin
 
         <p className="text-center text-xs text-gray-400 mt-6">Powered by Registra</p>
       </div>
-      {/* Paystack Inline Script */}
-      <Script src="https://js.paystack.co/v2/inline.js" strategy="afterInteractive" />
     </div>
   );
 }

@@ -54,7 +54,7 @@ class AcademicRegressionTests(APITestCase):
 
     def test_broadsheet_uses_report_card_scores_fields(self):
         response = self.client.get(
-            "/api/broadsheet/",
+            "/api/academic/broadsheet/",
             {
                 "class_id": self.student_class.id,
                 "session": "2025/2026",
@@ -97,7 +97,7 @@ class AcademicRegressionTests(APITestCase):
         )
 
         response = self.client.post(
-            f"/api/reports/{self.report.id}/suggest-remark/",
+            f"/api/academic/reports/{self.report.id}/suggest-remark/",
             {},
             format="json",
             HTTP_X_TENANT_ID=self.school.domain,
@@ -105,3 +105,44 @@ class AcademicRegressionTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("suggestion", response.data)
         self.assertEqual(response.data["data"]["attendance"]["present"], 1)
+
+
+class AcademicLearnerScopeTests(APITestCase):
+    def setUp(self):
+        self.school = School.objects.create(name="Scope School", domain="demo-scope")
+        self.student_class = Class.objects.create(name="JSS 2", school=self.school)
+        self.student_user = get_user_model().objects.create_user(
+            username="student@demo-scope", password="password123", role="STUDENT", school=self.school
+        )
+        self.parent_user = get_user_model().objects.create_user(
+            username="parent@demo-scope", email="parent@example.com", password="password123",
+            role="PARENT", school=self.school,
+        )
+        self.me = Student.objects.create(
+            school=self.school, student_no="S1", names="Me", gender="Male",
+            current_class=self.student_class, user=self.student_user, parent_email="parent@example.com",
+        )
+        self.other = Student.objects.create(
+            school=self.school, student_no="S2", names="Other", gender="Female", current_class=self.student_class,
+        )
+
+    def _student_ids(self, user):
+        self.client.force_authenticate(user=user)
+        response = self.client.get("/api/academic/students/", HTTP_X_TENANT_ID=self.school.domain)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        return {row["id"] for row in response.data["results"]}
+
+    def test_student_sees_only_self(self):
+        self.assertEqual(self._student_ids(self.student_user), {self.me.id})
+
+    def test_parent_sees_only_own_children(self):
+        self.assertEqual(self._student_ids(self.parent_user), {self.me.id})
+
+    def test_student_cannot_view_broadsheet(self):
+        self.client.force_authenticate(user=self.student_user)
+        response = self.client.get(
+            "/api/academic/broadsheet/",
+            {"class_id": self.student_class.id, "session": "2025/2026", "term": "First Term"},
+            HTTP_X_TENANT_ID=self.school.domain,
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

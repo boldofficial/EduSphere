@@ -32,16 +32,17 @@ class PublicInvoiceView(APIView):
 
         school = payment.school
 
-        # Get school's payment config for checkout info
-        paystack_public_key = None
-        pass_fee = False
-        try:
-            config = SchoolPaymentConfig.objects.get(school=school)
-            if config.enable_paystack:
-                paystack_public_key = config.paystack_public_key
-            pass_fee = config.pass_processing_fee_to_parents
-        except SchoolPaymentConfig.DoesNotExist:
-            pass
+        # Bank transfer details the school entered manually in payment settings
+        bank_details = None
+        config = SchoolPaymentConfig.objects.filter(school=school).first()
+        if config and config.enable_bank_transfer and config.bank_account_number:
+            bank_details = {
+                "bank_name": config.bank_name,
+                "account_name": config.bank_account_name,
+                "account_number": config.bank_account_number,
+                "sort_code": config.bank_sort_code,
+                "instructions": config.transfer_instructions,
+            }
 
         # Build line items
         line_items = list(
@@ -72,10 +73,7 @@ class PublicInvoiceView(APIView):
                 "email": school.email,
                 "phone": school.phone,
             },
-            "checkout": {
-                "paystack_public_key": paystack_public_key,
-                "pass_processing_fee_to_parents": pass_fee,
-            },
+            "bank_details": bank_details,
         }
 
         return Response(data)

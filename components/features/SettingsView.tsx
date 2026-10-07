@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Save, Lock } from 'lucide-react';
 import * as Types from '@/lib/types';
 import * as Utils from '@/lib/utils';
@@ -64,19 +64,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   ): Types.SchoolPaymentSettings => ({
     enable_cash: s?.enable_cash ?? true,
     enable_bank_transfer: s?.enable_bank_transfer ?? true,
-    enable_paystack: s?.enable_paystack ?? false,
-    enable_flutterwave: s?.enable_flutterwave ?? false,
     default_payment_method: s?.default_payment_method ?? 'bank_transfer',
-    supports_online_payment: s?.supports_online_payment ?? false,
     enabled_methods: s?.enabled_methods ?? ['cash', 'bank_transfer'],
-    paystack_public_key: s?.paystack_public_key ?? '',
-    paystack_secret_key: '',
-    paystack_webhook_secret: '',
-    has_paystack_secret: s?.has_paystack_secret ?? false,
-    flutterwave_public_key: s?.flutterwave_public_key ?? '',
-    flutterwave_secret_key: '',
-    flutterwave_webhook_secret: '',
-    has_flutterwave_secret: s?.has_flutterwave_secret ?? false,
     bank_name: s?.bank_name ?? '',
     bank_account_name: s?.bank_account_name ?? '',
     bank_account_number: s?.bank_account_number ?? '',
@@ -160,13 +149,18 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     };
   };
 
-  // Update form data when settings prop changes (e.g. data loaded)
-  useEffect(() => {
+  // Reset the forms when the settings props change (e.g. data loaded), during render rather than
+  // in an effect to avoid a cascading re-render.
+  const [loadedSettings, setLoadedSettings] = useState(settings);
+  if (settings !== loadedSettings) {
+    setLoadedSettings(settings);
     setFormData(initializeForm(settings));
-  }, [settings]);
-  useEffect(() => {
+  }
+  const [loadedPaymentSettings, setLoadedPaymentSettings] = useState(paymentSettings);
+  if (paymentSettings !== loadedPaymentSettings) {
+    setLoadedPaymentSettings(paymentSettings);
     setPaymentForm(initializePaymentSettings(paymentSettings));
-  }, [paymentSettings]);
+  }
   const { addToast } = useToast();
   const handleChange = (field: keyof Types.Settings, value: unknown) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -199,8 +193,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       const enabledMethods: Types.SchoolPaymentMethod[] = [];
       if (next.enable_cash) enabledMethods.push('cash');
       if (next.enable_bank_transfer) enabledMethods.push('bank_transfer');
-      if (next.enable_paystack) enabledMethods.push('paystack');
-      if (next.enable_flutterwave) enabledMethods.push('flutterwave');
       if (!enabledMethods.includes(next.default_payment_method)) {
         next.default_payment_method = enabledMethods[0] || 'bank_transfer';
       }
@@ -209,22 +201,18 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   };
   const handleSavePaymentSettings = async () => {
     if (!onUpdatePaymentSettings) return;
-    const hasEnabledMethod = [
-      paymentForm.enable_cash,
-      paymentForm.enable_bank_transfer,
-      paymentForm.enable_paystack,
-      paymentForm.enable_flutterwave,
-    ].some(Boolean);
+    const hasEnabledMethod = paymentForm.enable_cash || paymentForm.enable_bank_transfer;
     if (!hasEnabledMethod) {
       addToast('Enable at least one payment method before saving.', 'error');
       return;
     }
-    if (paymentForm.enable_paystack && !paymentForm.paystack_public_key?.trim()) {
-      addToast('Paystack public key is required when Paystack is enabled.', 'error');
-      return;
-    }
-    if (paymentForm.enable_flutterwave && !paymentForm.flutterwave_public_key?.trim()) {
-      addToast('Flutterwave public key is required when Flutterwave is enabled.', 'error');
+    if (
+      paymentForm.enable_bank_transfer &&
+      (!paymentForm.bank_name?.trim() ||
+        !paymentForm.bank_account_name?.trim() ||
+        !paymentForm.bank_account_number?.trim())
+    ) {
+      addToast('Enter the bank name, account name and account number for bank transfer.', 'error');
       return;
     }
     try {

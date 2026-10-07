@@ -8,7 +8,6 @@ import { ReceiptTemplate } from './ReceiptTemplate';
 import { InvoiceTemplate } from './InvoiceTemplate';
 import * as Types from '@/lib/types';
 import * as Utils from '@/lib/utils';
-import apiClient from '@/lib/api-client';
 
 type MutationOptions = {
   onSuccess?: () => void;
@@ -426,82 +425,17 @@ export const BursaryModals: React.FC<BursaryModalsProps> = ({
             <option value="cash">Cash</option>
             <option value="transfer">Bank Transfer</option>
             <option value="pos">POS</option>
-            <option value="online_paystack">Online (Paystack)</option>
-            <option value="online_flutterwave">Online (Flutterwave)</option>
           </Select>
 
-          {payMethod.startsWith('online_') ? (
-            <div className="bg-brand-50 border border-brand-200 rounded-lg p-4 space-y-3">
-              <p className="text-sm text-brand-800 font-medium">
-                Clicking &lsquo;Pay Now&rsquo; will open the secure payment gateway.
-              </p>
-              <Button
-                type="button"
-                onClick={async () => {
-                  const total = getTotalAmount();
-                  if (total <= 0) return addToast('Please add items first', 'error');
-
-                  addToast('Opening payment gateway...', 'info');
-                  // Simulation delay
-                  await new Promise((r) => setTimeout(r, 1500));
-
-                  const reference = `PAY-${Date.now()}`;
-                  const isSuccess = window.confirm(
-                    `[SIMULATED GATEWAY]\nTotal: ${Utils.formatCurrency(total)}\n\nReference: ${reference}\n\nClick OK to simulate SUCCESSFUL payment.`
-                  );
-
-                  if (isSuccess) {
-                    addToast('Verifying transaction...', 'info');
-                    try {
-                      // USE apiClient instead of raw fetch to inherit proxy and auth headers
-                      const response = await apiClient.post('/payments/verify-online/', {
-                        reference,
-                        student_id: selectedStudent,
-                        amount: total,
-                        session: settings.current_session,
-                        term: settings.current_term,
-                      });
-
-                      if (response.data && response.data.id) {
-                        addToast('Payment verified and recorded!', 'success');
-                        onAddPayment(response.data);
-                        setShowPayModal(false);
-                        setLineItems([{ purpose: 'tuition', amount: '' }]);
-                      } else {
-                        addToast(response.data?.message || 'Verification failed', 'error');
-                      }
-                    } catch (e) {
-                      const axiosError = e as {
-                        response?: { data?: { message?: string; error?: string } };
-                      };
-                      const errorMsg =
-                        axiosError.response?.data?.message ||
-                        axiosError.response?.data?.error ||
-                        'Payment successful but verification failed locally.';
-                      addToast(errorMsg, 'error');
-                    }
-                  } else {
-                    addToast('Payment cancelled by user', 'warning');
-                  }
-                }}
-                className="w-full bg-brand-600 hover:bg-brand-700 font-bold"
-              >
-                Pay Now {Utils.formatCurrency(getTotalAmount())}
-              </Button>
-            </div>
-          ) : (
-            <>
-              <Input
-                label="Remark/Note (Optional)"
-                value={payRemark}
-                onChange={(e) => setPayRemark(e.target.value)}
-                disabled={isSubmitting}
-              />
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? 'Processing...' : 'Save Payment'}
-              </Button>
-            </>
-          )}
+          <Input
+            label="Remark/Note (Optional)"
+            value={payRemark}
+            onChange={(e) => setPayRemark(e.target.value)}
+            disabled={isSubmitting}
+          />
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? 'Processing...' : 'Save Payment'}
+          </Button>
         </form>
       </Modal>
 

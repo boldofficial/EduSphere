@@ -33,7 +33,7 @@ class FeeCategoryAPITests(APITestCase):
 
     def test_create_fee_category(self):
         response = self.client.post(
-            "/api/fee-categories/",
+            "/api/bursary/fee-categories/",
             {"name": "Tuition Fee", "description": "Core tuition", "is_optional": False},
             format="json",
             HTTP_X_TENANT_ID=self.school.domain,
@@ -43,14 +43,14 @@ class FeeCategoryAPITests(APITestCase):
 
     def test_list_fee_categories(self):
         FeeCategory.objects.create(school=self.school, name="Test Category", is_optional=False)
-        response = self.client.get("/api/fee-categories/", HTTP_X_TENANT_ID=self.school.domain)
+        response = self.client.get("/api/bursary/fee-categories/", HTTP_X_TENANT_ID=self.school.domain)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertGreaterEqual(len(response.data["results"]), 1)
 
     def test_update_fee_category(self):
         category = FeeCategory.objects.create(school=self.school, name="Original", is_optional=False)
         response = self.client.put(
-            f"/api/fee-categories/{category.id}/",
+            f"/api/bursary/fee-categories/{category.id}/",
             {"name": "Updated", "description": "Changed", "is_optional": True},
             format="json",
             HTTP_X_TENANT_ID=self.school.domain,
@@ -60,7 +60,7 @@ class FeeCategoryAPITests(APITestCase):
 
     def test_delete_fee_category(self):
         category = FeeCategory.objects.create(school=self.school, name="To Delete", is_optional=False)
-        response = self.client.delete(f"/api/fee-categories/{category.id}/", HTTP_X_TENANT_ID=self.school.domain)
+        response = self.client.delete(f"/api/bursary/fee-categories/{category.id}/", HTTP_X_TENANT_ID=self.school.domain)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(FeeCategory.objects.filter(id=category.id).exists())
 
@@ -81,7 +81,7 @@ class FeeItemAPITests(APITestCase):
 
     def test_create_fee_item(self):
         response = self.client.post(
-            "/api/fee-items/",
+            "/api/bursary/fee-items/",
             {
                 "category": self.category.id,
                 "amount": 50000.00,
@@ -105,7 +105,7 @@ class FeeItemAPITests(APITestCase):
             term="First Term",
             target_class=self.student_class,
         )
-        response = self.client.get("/api/fee-items/", HTTP_X_TENANT_ID=self.school.domain)
+        response = self.client.get("/api/bursary/fee-items/", HTTP_X_TENANT_ID=self.school.domain)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
@@ -133,11 +133,11 @@ class PaymentAPITests(APITestCase):
 
     def test_create_payment(self):
         response = self.client.post(
-            "/api/payments/",
+            "/api/bursary/payments/",
             {
                 "student": self.student.id,
                 "amount": 25000.00,
-                "method": "bank_transfer",
+                "method": "transfer",
                 "status": "completed",
                 "category": self.category.id,
                 "remark": "First term payment",
@@ -162,7 +162,7 @@ class PaymentAPITests(APITestCase):
             session="2025/2026",
             term="First Term",
         )
-        response = self.client.get("/api/payments/", HTTP_X_TENANT_ID=self.school.domain)
+        response = self.client.get("/api/bursary/payments/", HTTP_X_TENANT_ID=self.school.domain)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertGreaterEqual(len(response.data["results"]), 1)
 
@@ -181,7 +181,7 @@ class ExpenseAPITests(APITestCase):
 
     def test_create_expense(self):
         response = self.client.post(
-            "/api/expenses/",
+            "/api/bursary/expenses/",
             {
                 "title": "Office Supplies",
                 "amount": 15000.00,
@@ -205,7 +205,7 @@ class ExpenseAPITests(APITestCase):
             session="2025/2026",
             term="First Term",
         )
-        response = self.client.get("/api/expenses/", HTTP_X_TENANT_ID=self.school.domain)
+        response = self.client.get("/api/bursary/expenses/", HTTP_X_TENANT_ID=self.school.domain)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
@@ -241,7 +241,7 @@ class StudentFeeAPITests(APITestCase):
 
     def test_assign_fee_to_student(self):
         response = self.client.post(
-            "/api/student-fees/",
+            "/api/bursary/student-fees/",
             {"student": self.student.id, "fee_item": self.fee_item.id, "discount_amount": 5000},
             format="json",
             HTTP_X_TENANT_ID=self.school.domain,
@@ -256,7 +256,7 @@ class StudentFeeAPITests(APITestCase):
             fee_item=self.fee_item,
             discount_amount=5000,
         )
-        response = self.client.get("/api/student-fees/", HTTP_X_TENANT_ID=self.school.domain)
+        response = self.client.get("/api/bursary/student-fees/", HTTP_X_TENANT_ID=self.school.domain)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
@@ -286,7 +286,7 @@ class TenantIsolationTests(APITestCase):
         category_b = FeeCategory.objects.create(school=self.school_b, name="School B Fee", is_optional=False)
         
         self.client.force_authenticate(user=self.admin_a)
-        response = self.client.get("/api/fee-categories/", HTTP_X_TENANT_ID=self.school_a.domain)
+        response = self.client.get("/api/bursary/fee-categories/", HTTP_X_TENANT_ID=self.school_a.domain)
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         category_ids = [c["id"] for c in response.data.get("results", [])]
@@ -313,10 +313,53 @@ class TenantIsolationTests(APITestCase):
         )
         
         self.client.force_authenticate(user=self.admin_a)
-        response = self.client.get(f"/api/payments/{payment_a.id}/", HTTP_X_TENANT_ID=self.school_a.domain)
+        response = self.client.get(f"/api/bursary/payments/{payment_a.id}/", HTTP_X_TENANT_ID=self.school_a.domain)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         
         # School B admin should not see School A's payment
         self.client.force_authenticate(user=self.admin_b)
-        response = self.client.get(f"/api/payments/{payment_a.id}/", HTTP_X_TENANT_ID=self.school_b.domain)
+        response = self.client.get(f"/api/bursary/payments/{payment_a.id}/", HTTP_X_TENANT_ID=self.school_b.domain)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+class BursaryRolePermissionTests(APITestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.school = School.objects.create(name="Role School", domain="test-bursary-roles")
+        self.student_user = get_user_model().objects.create_user(
+            username="student@test-bursary-roles",
+            password="password123",
+            role="STUDENT",
+            school=self.school,
+        )
+        self.student = Student.objects.create(
+            school=self.school,
+            student_no="ST100",
+            names="Ada Student",
+            gender="Female",
+            user=self.student_user,
+        )
+        self.other = Student.objects.create(school=self.school, student_no="ST101", names="Other Kid", gender="Male")
+        Payment.objects.create(
+            school=self.school, student=self.other, amount=1000, method="cash",
+            session="2025/2026", term="First Term", reference="R-OTHER", recorded_by="admin",
+        )
+        self.client.force_authenticate(user=self.student_user)
+
+    def test_student_cannot_record_payment(self):
+        response = self.client.post(
+            "/api/bursary/payments/",
+            {"student": self.student.id, "amount": 5000, "method": "cash", "session": "2025/2026", "term": "First Term"},
+            format="json",
+            HTTP_X_TENANT_ID=self.school.domain,
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_student_only_sees_own_payments(self):
+        response = self.client.get("/api/bursary/payments/", HTTP_X_TENANT_ID=self.school.domain)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["results"], [])
+
+    def test_student_cannot_view_expenses_or_dashboard(self):
+        for url in ("/api/bursary/expenses/", "/api/bursary/dashboard/"):
+            response = self.client.get(url, HTTP_X_TENANT_ID=self.school.domain)
+            self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN, url)

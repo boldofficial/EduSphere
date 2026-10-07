@@ -74,16 +74,28 @@ export const queryKeys = {
 };
 
 // Generic fetcher
+// Fetches every page of a DRF list endpoint. Prefer server-side pagination (fetchPaginated) for
+// large collections; this keeps "load everything" screens correct instead of silently truncating.
+const FETCH_ALL_PAGE_SIZE = 200;
+const FETCH_ALL_MAX_PAGES = 100;
+
 export const fetchAll = async <T>(
   endpoint: string,
   params?: Record<string, unknown>
 ): Promise<T[]> => {
-  const response = await apiClient.get(endpoint, { params });
-  // Handle paginated DRF responses
-  if (response.data && typeof response.data === 'object' && 'results' in response.data) {
-    return response.data.results;
+  const results: T[] = [];
+  for (let page = 1; page <= FETCH_ALL_MAX_PAGES; page++) {
+    const response = await apiClient.get(endpoint, {
+      params: { page_size: FETCH_ALL_PAGE_SIZE, ...params, page },
+    });
+    const data = response.data;
+    if (!data || typeof data !== 'object' || !('results' in data)) {
+      return Array.isArray(data) ? data : results;
+    }
+    results.push(...data.results);
+    if (!data.next) break;
   }
-  return Array.isArray(response.data) ? response.data : [];
+  return results;
 };
 
 // Paginated fetcher

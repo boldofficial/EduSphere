@@ -95,7 +95,7 @@ class Payment(AuditTrailMixin, TenantModel):
 
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name="payments")
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    date = models.DateField(default=timezone.now)
+    date = models.DateField(default=timezone.localdate)
     reference = models.CharField(max_length=100, unique=True)  # Receipt No or Gateway Reference
     method = models.CharField(max_length=20, choices=PAYMENT_METHODS, default="cash")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="completed")
@@ -150,7 +150,7 @@ class Expense(TenantModel):
     title = models.CharField(max_length=255)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
-    date = models.DateField(default=timezone.now)
+    date = models.DateField(default=timezone.localdate)
     description = models.TextField(blank=True)
     recorded_by = models.CharField(max_length=100)
 

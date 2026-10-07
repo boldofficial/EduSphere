@@ -120,7 +120,7 @@ class BusAttendance(TenantModel):
     """Daily bus attendance tracking."""
     
     route = models.ForeignKey(BusRoute, on_delete=models.CASCADE, related_name="attendance_records")
-    date = models.DateField(default=timezone.now)
+    date = models.DateField(default=timezone.localdate)
     
     # Morning
     morning_present = models.ManyToManyField(Student, blank=True, related_name="bus_morning_attendance")

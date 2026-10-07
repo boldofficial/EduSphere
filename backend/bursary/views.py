@@ -1,16 +1,11 @@
-import json
 
-from django.conf import settings
-from django.db import transaction
 from django.db.models import Case, Count, DecimalField, ExpressionWrapper, F, Q, Sum, Value, When
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 import logging
 logger = logging.getLogger(__name__)
@@ -100,10 +95,33 @@ def _resolve_period_filters(request, school):
     return session, term
 
 
+FINANCE_ROLES = ("SUPER_ADMIN", "SCHOOL_ADMIN", "STAFF")
+
+
+def _is_finance_user(user):
+    return bool(user and user.is_authenticated and (user.is_superuser or user.role in FINANCE_ROLES))
+
+
+class IsAdminOrReadOnly(permissions.BasePermission):
+    """Allow read access to all authenticated users, but write access only to admins and finance staff."""
+
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return _is_finance_user(request.user)
+
+
+class IsFinanceStaff(permissions.BasePermission):
+    """Internal finance data (expenses, dashboards): admins and finance staff only."""
+
+    def has_permission(self, request, view):
+        return _is_finance_user(request.user)
+
+
 class TenantViewSet(viewsets.ModelViewSet):
     """Base ViewSet ensuring data isolation by School."""
 
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsAdminOrReadOnly]
 
     def _enforce_related_school(self, value, school, field_name="field"):
         if value is None or school is None:
@@ -137,22 +155,18 @@ class TenantViewSet(viewsets.ModelViewSet):
             self._enforce_related_school(value, school, field_name)
         if not school:
             raise PermissionDenied("School context not found.")
-        serializer.save(school=school)
+        extra = {}
+        if "recorded_by" in {f.name for f in serializer.Meta.model._meta.fields}:
+            # Always attribute records to the authenticated user, never a client-supplied name.
+            user = self.request.user
+            extra["recorded_by"] = (user.get_full_name() or user.username)[:100]
+        serializer.save(school=school, **extra)
 
     def perform_update(self, serializer):
         school = get_request_school(self.request)
         for field_name, value in serializer.validated_data.items():
             self._enforce_related_school(value, school, field_name)
         super().perform_update(serializer)
-
-
-class IsAdminOrReadOnly(permissions.BasePermission):
-    """Allow read access to all authenticated users, but write access only to admins and staff."""
-
-    def has_permission(self, request, view):
-        if request.method in permissions.SAFE_METHODS:
-            return True
-        return request.user.role in ("SUPER_ADMIN", "SCHOOL_ADMIN", "STAFF")
 
 
 class FeeCategoryViewSet(TenantViewSet):
@@ -198,8 +212,11 @@ class StudentFeeViewSet(TenantViewSet):
     def get_queryset(self):
         qs = super().get_queryset()
         user = self.request.user
-        if user.role == "STUDENT" and hasattr(user, "student_profile"):
-            qs = qs.filter(student=user.student_profile)
+        if user.role == "STUDENT":
+            student = getattr(user, "student_profile", None)
+            qs = qs.filter(student=student) if student else qs.none()
+        elif user.role == "PARENT":
+            qs = qs.filter(student__parent_email__iexact=user.email)
         return qs
 
 
@@ -215,10 +232,11 @@ class PaymentViewSet(TenantViewSet):
         session, term = _resolve_period_filters(self.request, school)
         student_id = self.request.query_params.get("student")
 
-        if user.role == "STUDENT" and hasattr(user, "student_profile"):
-            qs = qs.filter(student=user.student_profile)
+        if user.role == "STUDENT":
+            student = getattr(user, "student_profile", None)
+            qs = qs.filter(student=student) if student else qs.none()
         elif user.role == "PARENT":
-            qs = qs.filter(student__parent_email=user.email)
+            qs = qs.filter(student__parent_email__iexact=user.email)
 
         if student_id:
             qs = qs.filter(student_id=student_id)
@@ -229,222 +247,11 @@ class PaymentViewSet(TenantViewSet):
         return qs
 
 
-class InitializePaystackPayment(APIView):
-    """
-    Initialize a Paystack payment for school fees.
-    """
-    permission_classes = [IsAuthenticated]
-    
-    def post(self, request):
-        from core.payment_utils import get_paystack_service, PaystackError
-        
-        try:
-            paystack = get_paystack_service()
-        except PaystackError as e:
-            return Response({"error": str(e)}, status=400)
-        
-        # Get parameters
-        student_id = request.data.get("student_id")
-        amount = request.data.get("amount")
-        term = request.data.get("term")
-        session = request.data.get("session")
-        
-        if not all([student_id, amount, term, session]):
-            return Response(
-                {"error": "Missing required fields: student_id, amount, term, session"},
-                status=400
-            )
-        
-        # Get student
-        from academic.models import Student
-        try:
-            student = Student.objects.get(id=student_id, school=request.tenant)
-        except Student.DoesNotExist:
-            return Response({"error": "Student not found"}, status=404)
-        
-        # Generate unique reference
-        reference = paystack.generate_reference(
-            request.tenant.id,
-            student.id,
-            term
-        )
-        
-        # Build callback URL
-        callback_url = f"{settings.FRONTEND_URL}/api/bursary/payment/callback"
-        
-        # Get user email/phone
-        email = student.parent_email or (student.user.email if hasattr(student, 'user') else None)
-        if not email:
-            return Response({"error": "No email on file for student"}, status=400)
-        
-        phone = student.parent_phone or ""
-        
-        # Initialize payment
-        try:
-            result = paystack.initialize_payment(
-                email=email,
-                amount=float(amount),
-                reference=reference,
-                callback_url=callback_url,
-                name=student.names,
-                phone=phone,
-                metadata={
-                    "student_id": student.id,
-                    "student_name": student.names,
-                    "school_id": request.tenant.id,
-                    "term": term,
-                    "session": session,
-                }
-            )
-            
-            return Response({
-                "authorization_url": result.get("authorization_url"),
-                "reference": reference,
-                "access_code": result.get("access_code"),
-            })
-            
-        except PaystackError as e:
-            return Response({"error": str(e)}, status=500)
-
-
-class VerifyPaystackPayment(APIView):
-    """
-    Verify a Paystack payment and create Payment record.
-    """
-    permission_classes = [IsAuthenticated]
-    
-    def post(self, request):
-        from core.payment_utils import get_paystack_service, PaystackError
-        
-        reference = request.data.get("reference")
-        if not reference:
-            return Response({"error": "Reference required"}, status=400)
-        
-        try:
-            paystack = get_paystack_service()
-            result = paystack.verify_payment(reference)
-        except PaystackError as e:
-            return Response({"error": str(e)}, status=400)
-        
-        # Check payment status
-        status = result.get("status")
-        if status != "success":
-            return Response(
-                {"error": "Payment not successful", "status": status},
-                status=400
-            )
-        
-        # Get payment data
-        amount = result.get("amount", 0) / 100  # Convert from kobo
-        metadata = result.get("metadata", {})
-        
-        student_id = metadata.get("student_id")
-        term = metadata.get("term")
-        session = metadata.get("session")
-        
-        if not student_id:
-            return Response({"error": "Invalid payment metadata"}, status=400)
-        
-        # Create or update payment record
-        try:
-            with transaction.atomic():
-                # Check if payment already exists
-                payment, created = Payment.objects.get_or_create(
-                    gateway_reference=reference,
-                    defaults={
-                        "student_id": student_id,
-                        "amount": amount,
-                        "method": "online",
-                        "status": "completed",
-                        "term": term,
-                        "session": session,
-                        "reference": f"ONL-{reference[:8]}",
-                        "verification_data": result,
-                        "recorded_by": request.user.username,
-                    }
-                )
-                
-                if not created:
-                    payment.status = "completed"
-                    payment.verification_data = result
-                    payment.save()
-                
-                return Response({
-                    "success": True,
-                    "payment_id": payment.id,
-                    "amount": amount,
-                    "status": payment.status,
-                })
-                
-        except Exception as e:
-            logger.error(f"Payment record creation failed: {e}")
-            return Response({"error": "Failed to record payment"}, status=500)
-
-
-class PaystackWebhook(APIView):
-    """
-    Handle Paystack webhook events.
-    """
-    permission_classes = [AllowAny]
-    
-    def post(self, request):
-        from core.payment_utils import get_paystack_service, PaystackError, PaystackService
-
-        # Verify webhook signature
-        signature = request.headers.get("x-paystack-signature")
-        if not signature:
-            return Response({"error": "No signature"}, status=400)
-
-        # Get raw body
-        body = request.body
-
-        try:
-            paystack = get_paystack_service()
-            if not PaystackService.verify_webhook_signature(
-                body,
-                signature,
-                paystack.webhook_secret
-            ):
-                logger.warning("Paystack webhook signature verification failed")
-                return Response({"error": "Invalid signature"}, status=401)
-        except PaystackError as e:
-            logger.error(f"Paystack service error during webhook verification: {e}")
-            return Response({"error": "Payment service not configured"}, status=503)
-
-        # Parse event
-        try:
-            event = json.loads(body)
-        except (ValueError, json.JSONDecodeError):
-            return Response({"error": "Invalid JSON"}, status=400)
-        
-        event_type = event.get("event")
-        data = event.get("data", {})
-        
-        logger.info(f"Paystack webhook: {event_type}")
-        
-        if event_type == "charge.success":
-            reference = data.get("reference")
-            status = data.get("status")
-            
-            if status == "success":
-                # Update payment record
-                try:
-                    payment = Payment.objects.get(gateway_reference=reference)
-                    payment.status = "completed"
-                    payment.verification_data = data
-                    payment.save()
-                    logger.info(f"Payment confirmed: {reference}")
-                except Payment.DoesNotExist:
-                    logger.warning(f"Payment not found: {reference}")
-        
-        return Response({"status": "received"})
-
-
 class ExpenseViewSet(TenantViewSet):
     queryset = Expense.objects.all()
     serializer_class = ExpenseSerializer
     pagination_class = StandardPagination
-    permission_classes = [permissions.IsAuthenticated, IsAdminOrReadOnly]
+    permission_classes = [permissions.IsAuthenticated, IsFinanceStaff]
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -468,7 +275,7 @@ class AdmissionPackageViewSet(TenantViewSet):
 
 
 class DashboardViewSet(viewsets.ViewSet):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsFinanceStaff]
 
     def list(self, request):
         school = get_request_school(request)

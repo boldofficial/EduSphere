@@ -90,8 +90,7 @@ class AuditTrailMixin:
         if not self.pk or not self._original_values:
             return
 
-        from core.models import FieldChangeLog
-        from schools.models import School
+        from core.models import log_field_change
 
         school = getattr(self, "school", None)
 

@@ -127,8 +127,14 @@ class CachingMixin:
         )
         return f"api:{model_name}"
 
+    # No list/detail responses are cached under these keys today. Pattern deletes SCAN the whole
+    # Redis keyspace, so only run them for viewsets that opt in by caching their responses.
+    cache_enabled = False
+
     def invalidate_cache(self):
         """Invalidate cache for this model"""
+        if not self.cache_enabled:
+            return
         prefix = self.get_cache_key_prefix()
         try:
             if hasattr(cache, "delete_pattern"):

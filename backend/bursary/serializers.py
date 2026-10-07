@@ -192,7 +192,7 @@ class PaymentSerializer(serializers.ModelSerializer):
             "items_input",
             "created_at",
         ]
-        read_only_fields = ("school", "reference")
+        read_only_fields = ("school", "reference", "recorded_by")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -232,7 +232,7 @@ class ExpenseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Expense
         fields = "__all__"
-        read_only_fields = ("school",)
+        read_only_fields = ("school", "recorded_by")
 
 
 class AdmissionPackageSerializer(serializers.ModelSerializer):

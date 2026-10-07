@@ -38,9 +38,7 @@ export async function updateSettings(settings: Types.Settings): Promise<Types.Se
 
 export async function fetchAll<T>(table: string, params?: any): Promise<T[]> {
   try {
-    const response = await apiClient.get(`${table}/`, { params });
-    // Handle DRF pagination results
-    return response.data.results || response.data;
+    return await fetchAllPages<T>(`${table}/`, params);
   } catch (err) {
     console.error(`[DataService] Unexpected error fetching ${table}:`, err);
     return [];
@@ -97,6 +95,7 @@ export async function convertAdmissionToStudent(admissionId: string | number, da
 // =============================================
 
 import apiClient from '@/lib/api-client';
+import { fetchAll as fetchAllPages } from '@/lib/hooks/use-data';
 
 export async function uploadFile(
   file: File, // Changed to accept File object directly

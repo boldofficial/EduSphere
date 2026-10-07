@@ -1,28 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import { logInfo, logWarn, logError } from '@/lib/logger';
+import { checkRateLimit } from '@/lib/rate-limit';
 
-// Rate limiting: simple in-memory store (for production, use Redis)
-const submissions = new Map<string, number[]>();
-const RATE_LIMIT_WINDOW = 60 * 60 * 1000; // 1 hour
-const MAX_SUBMISSIONS = 5; // Max 5 submissions per hour per IP
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now();
-  const userSubmissions = submissions.get(ip) || [];
-
-  // Filter out old submissions
-  const recentSubmissions = userSubmissions.filter((time) => now - time < RATE_LIMIT_WINDOW);
-  submissions.set(ip, recentSubmissions);
-
-  return recentSubmissions.length >= MAX_SUBMISSIONS;
-}
-
-function recordSubmission(ip: string): void {
-  const userSubmissions = submissions.get(ip) || [];
-  userSubmissions.push(Date.now());
-  submissions.set(ip, userSubmissions);
-}
+// 5 submissions per hour per IP, shared across instances when Upstash Redis is configured
+const CONTACT_RATE_LIMIT = { limit: 5, window: '1 h' };
 
 // Email validation
 function isValidEmail(email: string): boolean {
@@ -47,7 +29,8 @@ export async function POST(request: NextRequest) {
     const ip = forwarded ? forwarded.split(',')[0].trim() : 'unknown';
 
     // Check rate limit
-    if (isRateLimited(ip)) {
+    const rateLimit = await checkRateLimit(`contact:${ip}`, CONTACT_RATE_LIMIT);
+    if (!rateLimit.success) {
       logWarn('Contact form rate limited', { ip });
       return NextResponse.json(
         { error: 'Too many submissions. Please try again later.' },
@@ -215,9 +198,6 @@ From: www.fruitfulvineheritageschools.org.ng
 
     // Send email
     await transporter.sendMail(mailOptions);
-
-    // Record successful submission for rate limiting
-    recordSubmission(ip);
 
     logInfo('Contact form submitted successfully', {
       name: sanitizedData.name,

@@ -92,19 +92,6 @@ OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
 
 
 # =============================================================================
-# PAYMENT GATEWAY CONFIGURATION (Paystack)
-# =============================================================================
-
-PAYSTACK_SECRET_KEY = os.environ.get("PAYSTACK_SECRET_KEY", "")
-PAYSTACK_PUBLIC_KEY = os.environ.get("PAYSTACK_PUBLIC_KEY", "")
-PAYSTACK_REFERENCE_PREFIX = "EDU"
-PAYSTACK_WEBHOOK_SECRET = os.environ.get("PAYSTACK_WEBHOOK_SECRET", "")
-
-# Enable test mode if not in production
-PAYSTACK_TEST_MODE = DEBUG
-
-
-# =============================================================================
 # SMS/WhatsApp CONFIGURATION (Termii)
 # =============================================================================
 
@@ -577,7 +564,16 @@ if REDIS_URL and USE_REDIS_CACHE:
         }
     }
 else:
-    # Fallback to local memory cache if Redis is not configured
+    # Fallback to local memory cache if Redis is not configured. Each gunicorn worker gets its own
+    # cache, so throttles and tenant lookups are not shared — never acceptable in production.
+    if not DEBUG:
+        import warnings
+
+        warnings.warn(
+            "REDIS_URL is not set: falling back to per-process LocMemCache. "
+            "Rate limits and caches will not be shared across workers.",
+            RuntimeWarning,
+        )
     CACHES = {
         "default": {
             "BACKEND": "django.core.cache.backends.locmem.LocMemCache",

@@ -28,6 +28,31 @@ class IsAdminOrReadOnly(permissions.BasePermission):
         return request.user.role in ("SCHOOL_ADMIN", "SUPER_ADMIN", "TEACHER") or request.user.is_superuser
 
 
+STAFF_ROLES = ("SUPER_ADMIN", "SCHOOL_ADMIN", "TEACHER", "STAFF")
+
+
+def is_school_staff(user):
+    return bool(user and user.is_authenticated and (user.is_superuser or user.role in STAFF_ROLES))
+
+
+def scope_to_learner(qs, user, student_path="student"):
+    """Limit a queryset to the requesting student's own records, or a parent's children."""
+    if is_school_staff(user):
+        return qs
+    if user.role == "STUDENT":
+        student = getattr(user, "student_profile", None)
+        return qs.filter(**{student_path: student.pk}) if student else qs.none()
+    if user.role == "PARENT":
+        prefix = f"{student_path}__" if student_path != "pk" else ""
+        return qs.filter(**{f"{prefix}parent_email__iexact": user.email}) if user.email else qs.none()
+    return qs.none()
+
+
+class IsSchoolStaff(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return is_school_staff(request.user)
+
+
 class TenantViewSet(CachingMixin, viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, IsAdminOrReadOnly]
 
