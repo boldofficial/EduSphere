@@ -29,6 +29,29 @@ Paystack button. Platform subscription payments (onboarding, super-admin setting
 | Frontend unit tests                                              | Runner fixed (`vi.stubEnv`); 19 of 28 tests are still stale and fail — rewrite pending                                        |
 | P1 #1, #8, #9 (server-side pagination, PgBouncer, CI type-check) | Open                                                                                                                          |
 
+## Status update 2 (7 Oct 2026)
+
+| Item                     | Status                                                                                                                                                                   |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Teacher access           | Teachers see only students (and their fees/payments, history, achievements) in classes they teach                                                                        |
+| Report cards             | Removed a duplicate `get_queryset`; the live one already limits students/parents to published cards                                                                      |
+| Whole-collection loading | New `/api/academic/analytics/` aggregates in SQL; Analytics page, header bell, staff dashboard and conduct log no longer download all records                            |
+| Runtime NameErrors       | Fixed `inch` (broadsheet + QR PDFs) and `models`/`date` (library views)                                                                                                  |
+| CI                       | Runs on `main` + `development`, Node 22, Redis service; ruff pinned to correctness rules; black + Prettier applied; ESLint 0 errors; 14 frontend + 70 backend tests pass |
+| PgBouncer                | App traffic goes through `pgbouncer:6432` (scram auth, transaction pooling)                                                                                              |
+| Exposed ports            | Postgres, Redis and PgBouncer are no longer published on the host                                                                                                        |
+| Repo hygiene             | README rewritten; reports moved to `docs/archive/`; passport photos, `scratch/` and generated service-worker files untracked                                             |
+
+Still open:
+
+- Remaining full-list screens for staff: messages, announcements, ID cards, broadsheet, grading,
+  teacher dashboard (correct, but heavier than needed for large schools).
+- `core/password_validators.py` password-history check never works (wrong data source, and its
+  `ValidationError` is swallowed by `except Exception`). Needs a password-history table.
+- Ruff ignores (E402, E741, F841) and 441 ESLint warnings (mostly React Compiler advisories) are debt.
+- Passport photos remain in git history; purge with `git filter-repo` if the repo is ever shared.
+- Load test has not been run; needs a seeded staging environment.
+
 ## Verdict
 
 The architecture is sound for a multi-tenant SaaS (shared DB with a `school` FK, JWT, Redis cache,
