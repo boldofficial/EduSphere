@@ -19,7 +19,7 @@ import {
   useExpenses,
   usePayments,
   useAnnouncements,
-  useStudents,
+  usePaginatedStudents,
 } from '@/lib/hooks/use-data';
 import * as Utils from '@/lib/utils';
 import { MessageInboxWidget } from './dashboard/MessageInboxWidget';
@@ -31,7 +31,9 @@ export const StaffDashboardView = () => {
   const { data: expenses = [] } = useExpenses({ include_all_periods: true });
   const { data: payments = [] } = usePayments({ include_all_periods: true });
   const { data: announcements = [] } = useAnnouncements();
-  const { data: students = [] } = useStudents();
+  // Only the count is shown, so request a single row and read the total.
+  const { data: studentPage } = usePaginatedStudents(1, 1);
+  const studentCount = studentPage?.count ?? 0;
   const [selectedSession, setSelectedSession] = useState(settings.current_session || '');
   const [selectedTerm, setSelectedTerm] = useState(settings.current_term || '');
 
@@ -160,7 +162,7 @@ export const StaffDashboardView = () => {
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
               Total Students
             </p>
-            <p className="text-2xl font-black text-gray-900">{students.length}</p>
+            <p className="text-2xl font-black text-gray-900">{studentCount}</p>
           </div>
         </div>
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">

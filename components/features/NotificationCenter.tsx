@@ -34,13 +34,15 @@ export const NotificationCenter: React.FC = () => {
   // Auth State (Store)
   const { currentRole, currentUser } = useSchoolStore();
 
-  // Data Hooks
-  const { data: students = [] } = useStudents();
+  // Data Hooks — student, fee and payment lists are only needed for the learner's own fee reminder,
+  // so don't load the whole school's records in the header for staff.
+  const isLearner = currentRole === 'student' || currentRole === 'parent';
+  const { data: students = [] } = useStudents(isLearner);
   const { data: announcements = [] } = useAnnouncements();
   const { data: events = [] } = useEvents();
   const { data: newsletters = [] } = useNewsletters();
-  const { data: fees = [] } = useFees();
-  const { data: payments = [] } = usePayments();
+  const { data: fees = [] } = useFees(undefined, isLearner);
+  const { data: payments = [] } = usePayments(undefined, isLearner);
   const { data: settings = Utils.INITIAL_SETTINGS } = useSettings();
 
   // In a real app, notifications would be their own entity in DB

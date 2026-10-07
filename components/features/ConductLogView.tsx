@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
 import { useSchoolStore } from '@/lib/store';
 import {
-  useStudents,
+  usePaginatedStudents,
   useConductEntries,
   useCreateConductEntry,
   useClasses,
@@ -29,7 +29,6 @@ export const ConductLogView: React.FC = () => {
   const { currentUser } = useSchoolStore();
 
   // Data
-  const { data: students = [] } = useStudents();
   const { data: classes = [] } = useClasses();
   const { data: conductEntries = [] } = useConductEntries();
 
@@ -50,8 +49,16 @@ export const ConductLogView: React.FC = () => {
     remark: '',
   });
 
-  const activeStudents = students.filter((s) => s.class_id === selectedClass);
-  const selectedStudent = students.find((s) => s.id === selectedStudentId);
+  // Load only the selected class's students from the server.
+  const { data: classStudentPage } = usePaginatedStudents(
+    1,
+    500,
+    '',
+    selectedClass,
+    !!selectedClass
+  );
+  const activeStudents = classStudentPage?.results ?? [];
+  const selectedStudent = activeStudents.find((s) => s.id === selectedStudentId);
   const studentLogs = conductEntries.filter((entry: any) => entry.student === selectedStudentId);
 
   const handleAddLog = (e: React.FormEvent) => {

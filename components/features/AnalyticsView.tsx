@@ -17,160 +17,54 @@ import {
   Legend,
   ResponsiveContainer,
 } from '@/components/ui/charts';
-import {
-  useStudents,
-  useClasses,
-  useScores,
-  useAttendance,
-  usePayments,
-  useExpenses,
-  useSettings,
-} from '@/lib/hooks/use-data';
+import { useQuery } from '@tanstack/react-query';
+import { useSettings } from '@/lib/hooks/use-data';
+import apiClient from '@/lib/api-client';
 import { Card } from '@/components/ui/card';
 import { Select } from '@/components/ui/select';
 import * as Utils from '@/lib/utils';
-import * as Types from '@/lib/types';
+
+interface SchoolAnalytics {
+  session: string;
+  total_students: number;
+  performance: { term: string; average: number; studentsScored: number }[];
+  class_comparison: { class: string; average: number; students: number }[];
+  financial: { term: string; revenue: number; expenses: number; profit: number }[];
+  expense_breakdown: { name: string; value: number }[];
+  attendance: { term: string; attendanceRate: number; daysRecorded: number }[];
+}
 
 const COLORS = ['#16a34a', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
 
 export const AnalyticsView: React.FC = () => {
   // Data Hooks
   const { data: settings = Utils.INITIAL_SETTINGS } = useSettings();
-  const { data: students = [] } = useStudents();
-  const { data: classes = [] } = useClasses();
-  const { data: scores = [] } = useScores({ include_all_periods: true });
-  const { data: attendance = [] } = useAttendance({ include_all_periods: true });
-  const { data: payments = [] } = usePayments({ include_all_periods: true });
-  const { data: expenses = [] } = useExpenses({ include_all_periods: true });
+  const [selectedSession, setSelectedSession] = useState(settings.current_session);
   const [activeTab, setActiveTab] = useState<'performance' | 'financial' | 'attendance'>(
     'performance'
   );
-  const [selectedSession, setSelectedSession] = useState(settings.current_session);
 
-  // Performance Analytics
-  const performanceData = useMemo(() => {
-    const terms = settings.terms || ['First Term', 'Second Term', 'Third Term'];
-
-    return terms.map((term: string) => {
-      const termScores = scores.filter((s) => s.session === selectedSession && s.term === term);
-      const averages = termScores.map((s) => s.average).filter((a) => a > 0);
-      const avgScore =
-        averages.length > 0 ? averages.reduce((a, b) => a + b, 0) / averages.length : 0;
-
-      return {
-        term: term.replace(' Term', ''),
-        average: Math.round(avgScore * 10) / 10,
-        studentsScored: termScores.length,
-      };
-    });
-  }, [scores, settings, selectedSession]);
-
-  // Class comparison data
-  const classComparisonData = useMemo(() => {
-    return classes
-      .map((cls) => {
-        const classStudents = students.filter((s: Types.Student) => s.class_id === cls.id);
-        const classScores = scores.filter(
-          (s: Types.Score) =>
-            classStudents.some((st: Types.Student) => st.id === s.student_id) &&
-            s.session === selectedSession &&
-            s.term === settings.current_term
-        );
-
-        const averages = classScores.map((s) => s.average).filter((a) => a > 0);
-        const avgScore =
-          averages.length > 0 ? averages.reduce((a, b) => a + b, 0) / averages.length : 0;
-
-        return {
-          class: cls.name,
-          average: Math.round(avgScore * 10) / 10,
-          students: classStudents.length,
-        };
-      })
-      .filter((c) => c.students > 0);
-  }, [classes, students, scores, settings, selectedSession]);
-
-  // Financial Analytics
-  const financialData = useMemo(() => {
-    const terms = settings.terms || ['First Term', 'Second Term', 'Third Term'];
-
-    return terms.map((term: string) => {
-      const termPayments = payments.filter((p) => p.session === selectedSession && p.term === term);
-      const termExpenses = expenses.filter((e) => e.session === selectedSession && e.term === term);
-
-      const totalRevenue = termPayments.reduce((sum: number, p: any) => sum + p.amount, 0);
-      const totalExpenses = termExpenses.reduce((sum: number, e: any) => sum + e.amount, 0);
-
-      return {
-        term: term.replace(' Term', ''),
-        revenue: totalRevenue,
-        expenses: totalExpenses,
-        profit: totalRevenue - totalExpenses,
-      };
-    });
-  }, [payments, expenses, settings, selectedSession]);
-
-  // Expense breakdown
-  const expenseBreakdown = useMemo(() => {
-    const categories: Record<string, number> = {
-      salary: 0,
-      maintenance: 0,
-      supplies: 0,
-      utilities: 0,
-      other: 0,
-    };
-
-    expenses
-      .filter((e) => e.session === selectedSession)
-      .forEach((e) => {
-        categories[e.category] += e.amount;
-      });
-
-    return Object.entries(categories)
-      .filter(([_, val]) => val > 0)
-      .map(([name, value]) => ({
-        name: name.charAt(0).toUpperCase() + name.slice(1),
-        value,
-      }));
-  }, [expenses, selectedSession]);
-
-  // Attendance Analytics
-  const attendanceData = useMemo(() => {
-    const terms = settings.terms || ['First Term', 'Second Term', 'Third Term'];
-
-    return terms.map((term: string) => {
-      const termAttendance = attendance.filter(
-        (a) => a.session === selectedSession && a.term === term
-      );
-
-      let totalPresent = 0;
-      let totalRecords = 0;
-
-      termAttendance.forEach((a) => {
-        a.records.forEach((r) => {
-          totalRecords++;
-          if (r.status === 'present') totalPresent++;
-        });
-      });
-
-      const rate = totalRecords > 0 ? (totalPresent / totalRecords) * 100 : 0;
-
-      return {
-        term: term.replace(' Term', ''),
-        attendanceRate: Math.round(rate * 10) / 10,
-        daysRecorded: termAttendance.length,
-      };
-    });
-  }, [attendance, settings, selectedSession]);
+  // Aggregates are computed by the backend so this page never downloads raw records.
+  const { data: analytics } = useQuery({
+    queryKey: ['school-analytics', selectedSession],
+    queryFn: async () =>
+      (
+        await apiClient.get<SchoolAnalytics>('academic/analytics/', {
+          params: { session: selectedSession },
+        })
+      ).data,
+    enabled: !!selectedSession,
+  });
+  const performanceData = analytics?.performance ?? [];
+  const classComparisonData = analytics?.class_comparison ?? [];
+  const financialData = analytics?.financial ?? [];
+  const expenseBreakdown = analytics?.expense_breakdown ?? [];
+  const attendanceData = analytics?.attendance ?? [];
 
   // Stats summary
   const stats = useMemo(() => {
-    const totalRevenue = payments
-      .filter((p) => p.session === selectedSession)
-      .reduce((sum: number, p: any) => sum + p.amount, 0);
-    const totalExpenses = expenses
-      .filter((e) => e.session === selectedSession)
-      .reduce((sum: number, e: any) => sum + e.amount, 0);
+    const totalRevenue = financialData.reduce((sum, row) => sum + row.revenue, 0);
+    const totalExpenses = financialData.reduce((sum, row) => sum + row.expenses, 0);
     const avgPerformance =
       performanceData.length > 0
         ? performanceData.reduce((sum: number, p: any) => sum + p.average, 0) /
@@ -183,7 +77,7 @@ export const AnalyticsView: React.FC = () => {
         : 0;
 
     return { totalRevenue, totalExpenses, avgPerformance, avgAttendance };
-  }, [payments, expenses, performanceData, attendanceData, selectedSession]);
+  }, [financialData, performanceData, attendanceData]);
 
   return (
     <div className="space-y-6">
@@ -242,7 +136,7 @@ export const AnalyticsView: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500">Total Students</p>
-              <p className="text-2xl font-bold text-gray-900">{students.length}</p>
+              <p className="text-2xl font-bold text-gray-900">{analytics?.total_students ?? 0}</p>
             </div>
             <div className="h-12 w-12 bg-orange-100 rounded-lg flex items-center justify-center">
               <Users className="h-6 w-6 text-orange-600" />

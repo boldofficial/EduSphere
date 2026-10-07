@@ -171,3 +171,49 @@ class TeacherScopeTests(APITestCase):
         response = self.client.get("/api/academic/students/", HTTP_X_TENANT_ID=self.school.domain)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual({row["id"] for row in response.data["results"]}, {self.mine.id})
+
+
+class SchoolAnalyticsTests(APITestCase):
+    def setUp(self):
+        from bursary.models import Expense, Payment
+
+        self.school = School.objects.create(name="Analytics School", domain="demo-analytics")
+        self.admin = get_user_model().objects.create_user(
+            username="admin@demo-analytics", password="password123", role="SCHOOL_ADMIN", school=self.school
+        )
+        cls = Class.objects.create(name="SS 1", school=self.school)
+        student = Student.objects.create(
+            school=self.school, student_no="A1", names="Ana", gender="Female", current_class=cls
+        )
+        ReportCard.objects.create(
+            school=self.school, student=student, student_class=cls, session="2025/2026", term="First Term", average=70
+        )
+        Payment.objects.create(
+            school=self.school, student=student, amount=50000, method="cash", session="2025/2026",
+            term="First Term", reference="AN-1", recorded_by="admin",
+        )
+        Expense.objects.create(
+            school=self.school, title="Chalk", amount=2000, category="supplies", session="2025/2026",
+            term="First Term", recorded_by="admin",
+        )
+
+    def test_summary_aggregates_in_database(self):
+        self.client.force_authenticate(user=self.admin)
+        response = self.client.get(
+            "/api/academic/analytics/", {"session": "2025/2026"}, HTTP_X_TENANT_ID=self.school.domain
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        first = response.data["financial"][0]
+        self.assertEqual((first["term"], first["revenue"], first["expenses"]), ("First", 50000.0, 2000.0))
+        self.assertEqual(response.data["performance"][0]["average"], 70.0)
+        self.assertEqual(response.data["class_comparison"], [{"class": "SS 1", "average": 70.0, "students": 1}])
+        self.assertEqual(response.data["expense_breakdown"], [{"name": "Supplies", "value": 2000.0}])
+        self.assertEqual(response.data["total_students"], 1)
+
+    def test_teacher_cannot_view_school_analytics(self):
+        teacher = get_user_model().objects.create_user(
+            username="t@demo-analytics", password="password123", role="TEACHER", school=self.school
+        )
+        self.client.force_authenticate(user=teacher)
+        response = self.client.get("/api/academic/analytics/", HTTP_X_TENANT_ID=self.school.domain)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

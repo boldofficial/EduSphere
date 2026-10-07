@@ -115,10 +115,11 @@ const normalizeTerm = (
 // =============================================
 // FEES
 // =============================================
-export function useFees(filters?: BursaryPeriodFilters) {
+export function useFees(filters?: BursaryPeriodFilters, enabled = true) {
   return useQuery({
     queryKey: [...queryKeys.fees, filters || {}],
     queryFn: () => fetchAll<Types.FeeStructure>('bursary/fees/', filters),
+    enabled,
   });
 }
 
@@ -167,13 +168,14 @@ export interface PaymentFilters extends BursaryPeriodFilters {
   student?: string;
 }
 
-export function usePayments(filters?: PaymentFilters) {
+export function usePayments(filters?: PaymentFilters, enabled = true) {
   return useQuery({
     queryKey: [...queryKeys.payments, filters || {}],
     queryFn: async () => {
       const rows = await fetchAll<PaymentApiResponse>('bursary/payments/', filters);
       return rows.map(normalizePayment);
     },
+    enabled,
   });
 }
 

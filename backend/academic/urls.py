@@ -76,5 +76,6 @@ urlpatterns = [
     path("predictive-insights/", views.AIPredictiveInsightsView.as_view(), name="predictive-insights"),
     path("ai-lesson-plan/", views.AILessonPlanView.as_view(), name="ai-lesson-plan"),
     path("grades/trends/", views.GradeTrendView.as_view(), name="grade-trends"),
+    path("analytics/", views.SchoolAnalyticsView.as_view(), name="school-analytics"),
     path("", include(router.urls)),
 ]
