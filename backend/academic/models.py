@@ -1,6 +1,5 @@
 import uuid
 from django.db import models
-from django.utils import timezone
 
 from schools.models import School
 from users.models import User
@@ -63,7 +62,9 @@ class Teacher(TenantModel):
     assigned_modules = models.JSONField(default=list, blank=True, help_text="List of module IDs they can access")
 
     # Verification & Signatures
-    signature_url = models.CharField(max_length=512, blank=True, null=True, help_text="Teacher's digital signature image URL")
+    signature_url = models.CharField(
+        max_length=512, blank=True, null=True, help_text="Teacher's digital signature image URL"
+    )
 
     def __str__(self):
         return f"{self.name} ({self.school.name}) - {self.staff_type}"
@@ -176,6 +177,7 @@ class StudentGroup(TenantModel):
     Custom groupings for students (e.g. Sports Teams, Hostels, Scholarship cohorts).
     Used for bulk discounts and targeted messaging.
     """
+
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     students = models.ManyToManyField(Student, related_name="groups")
@@ -256,7 +258,7 @@ class ReportCard(AuditTrailMixin, TenantModel):
     teacher_remark = models.TextField(blank=True)
     head_teacher_remark = models.TextField(blank=True)
     ai_performance_remark = models.TextField(blank=True, help_text="AI-generated analysis of student performance")
-    
+
     # Verification
     verification_hash = models.UUIDField(default=uuid.uuid4, unique=True, editable=False, db_index=True)
 
@@ -316,10 +318,10 @@ class ReportCard(AuditTrailMixin, TenantModel):
         else:
             self.total_score = 0
             self.average = 0
-        
+
         # Calculate trend based on historical data
         self.calculate_trend(save=False)
-        
+
         if save:
             self.save()
 
@@ -328,19 +330,20 @@ class ReportCard(AuditTrailMixin, TenantModel):
         Calculates performance trend based on historical term averages.
         """
         from .utils import compute_performance_trend
-        
+
         # Fetch historical reports for this student in this school
         # Ordering by created_at is a safe proxy for chronological order of terms
-        past_reports = ReportCard.objects.filter(
-            student=self.student,
-            school=self.school
-        ).exclude(id=self.id).order_by("created_at")
-        
+        past_reports = (
+            ReportCard.objects.filter(student=self.student, school=self.school)
+            .exclude(id=self.id)
+            .order_by("created_at")
+        )
+
         averages = [r.average for r in past_reports]
         averages.append(self.average)
-        
+
         self.performance_trend = compute_performance_trend(averages)
-        
+
         if save:
             self.save(update_fields=["performance_trend"])
 
@@ -513,7 +516,7 @@ class ConductEntry(TenantModel):
 
 class Commendation(TenantModel):
     """Student commendations/rewards for positive behavior."""
-    
+
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name="commendations")
     title = models.CharField(max_length=255, help_text="e.g., 'Best Student Award', 'Perfect Attendance'")
     description = models.TextField(blank=True)
@@ -528,39 +531,39 @@ class Commendation(TenantModel):
             ("service", "Service"),
             ("other", "Other"),
         ),
-        default="academic"
+        default="academic",
     )
-    
+
     points = models.IntegerField(default=5)
     award_date = models.DateField(auto_now_add=True)
     awarded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="awarded_commendations")
-    
+
     # Evidence
     evidence_url = models.CharField(max_length=512, blank=True)
     certificate_number = models.CharField(max_length=50, blank=True, unique=True, null=True)
-    
+
     session = models.CharField(max_length=50)
     term = models.CharField(max_length=50)
-    
+
     class Meta:
         ordering = ["-award_date"]
-    
+
     def __str__(self):
         return f"{self.student.names} - {self.title}"
 
 
 class ConductWarning(TenantModel):
     """Behavioral warnings/infractions."""
-    
+
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name="conduct_warnings")
-    
+
     SEVERITY_CHOICES = (
         ("minor", "Minor"),
         ("moderate", "Moderate"),
         ("serious", "Serious"),
         ("severe", "Severe"),
     )
-    
+
     TYPE_CHOICES = (
         ("late_arrival", "Late Arrival"),
         ("absenteeism", "Absenteeism"),
@@ -572,20 +575,22 @@ class ConductWarning(TenantModel):
         ("damage_property", "Damage to Property"),
         ("other", "Other"),
     )
-    
+
     incident_type = models.CharField(max_length=30, choices=TYPE_CHOICES)
     severity = models.CharField(max_length=20, choices=SEVERITY_CHOICES, default="minor")
     description = models.TextField()
     incident_date = models.DateField()
-    
+
     # Response
     action_taken = models.TextField(blank=True)
     parent_notified = models.BooleanField(default=False)
-    parent_notification_method = models.CharField(max_length=20, blank=True, choices=(
-        ("sms", "SMS"), ("whatsapp", "WhatsApp"), ("phone", "Phone"), ("meeting", "In-Person Meeting")
-    ))
+    parent_notification_method = models.CharField(
+        max_length=20,
+        blank=True,
+        choices=(("sms", "SMS"), ("whatsapp", "WhatsApp"), ("phone", "Phone"), ("meeting", "In-Person Meeting")),
+    )
     parent_response = models.TextField(blank=True)
-    
+
     # Status
     STATUS_CHOICES = (
         ("pending", "Pending"),
@@ -593,37 +598,37 @@ class ConductWarning(TenantModel):
         ("escalated", "Escalated"),
     )
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
-    
+
     recorded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     session = models.CharField(max_length=50)
     term = models.CharField(max_length=50)
-    
+
     class Meta:
         ordering = ["-incident_date"]
-    
+
     def __str__(self):
         return f"{self.student.names} - {self.incident_type} ({self.severity})"
 
 
 class BehaviorAnalytics(TenantModel):
     """Aggregated behavior analytics per student per term."""
-    
+
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name="behavior_analytics")
     session = models.CharField(max_length=50)
     term = models.CharField(max_length=50)
-    
+
     # Averages
     avg_conduct_score = models.FloatField(default=0.0)  # From ConductEntry
     total_commendations = models.IntegerField(default=0)
     total_warnings = models.IntegerField(default=0)
-    
+
     # Traits breakdown (JSON)
     trait_scores = models.JSONField(default=dict, blank=True)  # {Punctuality: 4, Neatness: 3}
-    
+
     # Categorized counts
     commendation_points = models.IntegerField(default=0)
     warning_points = models.IntegerField(default=0)  # Weighted by severity
-    
+
     # Computed
     BEHAVIOR_CHOICES = (
         ("excellent", "Excellent"),
@@ -633,16 +638,16 @@ class BehaviorAnalytics(TenantModel):
         ("poor", "Poor"),
     )
     overall_rating = models.CharField(max_length=20, choices=BEHAVIOR_CHOICES, default="average")
-    
+
     # Parent engagement
     parent_meetings = models.IntegerField(default=0)
     parent_complaints = models.IntegerField(default=0)
-    
+
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
         unique_together = ("student", "session", "term")
-    
+
     def __str__(self):
         return f"{self.student.names} - {self.term} ({self.overall_rating})"
 
@@ -709,8 +714,9 @@ class AcademicTerm(TenantModel):
     Specific academic periods with start and end dates.
     Essential for fee collection forecasting and term-based analytics.
     """
-    session = models.CharField(max_length=50) # e.g. "2025/2026"
-    name = models.CharField(max_length=50)    # e.g. "First Term"
+
+    session = models.CharField(max_length=50)  # e.g. "2025/2026"
+    name = models.CharField(max_length=50)  # e.g. "First Term"
     start_date = models.DateField()
     end_date = models.DateField()
     is_current = models.BooleanField(default=False)
@@ -723,4 +729,3 @@ class AcademicTerm(TenantModel):
 
     def __str__(self):
         return f"{self.name} {self.session} ({self.school.name})"
-

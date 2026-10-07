@@ -10,6 +10,7 @@ class AuthRateThrottle(SimpleRateThrottle):
     Strict rate limiting for authentication endpoints (login, password reset).
     Limits: 5 attempts per minute per IP
     """
+
     scope = "auth"
     rate = "5/minute"
 
@@ -19,10 +20,7 @@ class AuthRateThrottle(SimpleRateThrottle):
         else:
             ident = self.get_ident(request)
 
-        return self.cache_format % {
-            "scope": self.scope,
-            "ident": ident
-        }
+        return self.cache_format % {"scope": self.scope, "ident": ident}
 
 
 class LoginFailRateThrottle(SimpleRateThrottle):
@@ -30,6 +28,7 @@ class LoginFailRateThrottle(SimpleRateThrottle):
     Track failed login attempts to prevent brute force.
     Locks out after 10 failed attempts.
     """
+
     scope = "login_fail"
     rate = "10/minute"
 
@@ -43,6 +42,7 @@ class APIRateThrottle(SimpleRateThrottle):
     General API rate limiting.
     Limits: 100 requests per minute per user
     """
+
     scope = "api"
     rate = "100/minute"
 
@@ -52,10 +52,7 @@ class APIRateThrottle(SimpleRateThrottle):
         else:
             ident = request.user.pk
 
-        return self.cache_format % {
-            "scope": self.scope,
-            "ident": ident
-        }
+        return self.cache_format % {"scope": self.scope, "ident": ident}
 
 
 class BurstRateThrottle(SimpleRateThrottle):
@@ -63,6 +60,7 @@ class BurstRateThrottle(SimpleRateThrottle):
     Burst rate limiting for short-term spikes.
     Limits: 20 requests per minute
     """
+
     scope = "burst"
     rate = "20/minute"
 
@@ -72,10 +70,7 @@ class BurstRateThrottle(SimpleRateThrottle):
         else:
             ident = request.user.pk
 
-        return self.cache_format % {
-            "scope": self.scope,
-            "ident": ident
-        }
+        return self.cache_format % {"scope": self.scope, "ident": ident}
 
 
 class SustainedRateThrottle(SimpleRateThrottle):
@@ -83,6 +78,7 @@ class SustainedRateThrottle(SimpleRateThrottle):
     Sustained rate limiting for prolonged usage.
     Limits: 500 requests per hour
     """
+
     scope = "sustained"
     rate = "500/hour"
 
@@ -92,7 +88,4 @@ class SustainedRateThrottle(SimpleRateThrottle):
         else:
             ident = request.user.pk
 
-        return self.cache_format % {
-            "scope": self.scope,
-            "ident": ident
-        }
+        return self.cache_format % {"scope": self.scope, "ident": ident}

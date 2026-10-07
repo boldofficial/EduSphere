@@ -2,11 +2,10 @@ import io
 import os
 
 from django.conf import settings as django_settings
-from django.core.files.storage import default_storage
 
 from schools.models import SchoolSettings
 
-from .models import GradingScheme, ReportCard, Student, Subject
+from .models import ReportCard, Student
 
 
 def compute_performance_trend(averages: list[float]) -> str:
@@ -16,10 +15,10 @@ def compute_performance_trend(averages: list[float]) -> str:
     """
     if len(averages) < 2:
         return "stable"
-    
+
     # Simple delta between latest and first in series
     delta = averages[-1] - averages[0]
-    
+
     if delta >= 5:
         return "improving"
     elif delta <= -5:
@@ -44,8 +43,9 @@ class BroadsheetPDFGenerator:
         from reportlab.lib import colors
         from reportlab.lib.enums import TA_CENTER
         from reportlab.lib.pagesizes import A4, landscape
-        from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+        from reportlab.lib.styles import ParagraphStyle
         from reportlab.platypus import Paragraph, SimpleDocTemplate, Table, TableStyle
+        from reportlab.lib.units import inch
 
         buffer = io.BytesIO()
         doc = SimpleDocTemplate(
@@ -216,8 +216,7 @@ class ReportCardPDFGenerator:
         elements = []
         student = report.student
         is_early_years = (
-            bool(report.student_class)
-            and getattr(report.student_class, "report_mode", "numeric") == "early_years"
+            bool(report.student_class) and getattr(report.student_class, "report_mode", "numeric") == "early_years"
         )
 
         # 1. Header Section
@@ -251,7 +250,7 @@ class ReportCardPDFGenerator:
 
         # 2. Student Bio & Unified Info
         passport = self._get_image(student.passport_url if hasattr(student, "passport_url") else None, width=1.0 * inch)
-        
+
         # Consolidation of ALL student and term info as requested
         bio_data = [
             [
@@ -259,16 +258,19 @@ class ReportCardPDFGenerator:
                 [
                     Paragraph(f"<b>NAME:</b> {student.names.upper()}", styles["Normal"]),
                     Paragraph(f"<b>GENDER:</b> {getattr(student, 'gender', 'N/A')}", styles["Normal"]),
-                    Paragraph(f"<b>CLASS:</b> {report.student_class.name if report.student_class else 'N/A'}", styles["Normal"]),
+                    Paragraph(
+                        f"<b>CLASS:</b> {report.student_class.name if report.student_class else 'N/A'}",
+                        styles["Normal"],
+                    ),
                 ],
                 [
                     Paragraph(f"<b>TERM:</b> {report.term}", styles["Normal"]),
                     Paragraph(f"<b>YEAR:</b> {report.session}", styles["Normal"]),
                     Paragraph(f"<b>ADM NO:</b> {student.student_no}", styles["Normal"]),
-                ]
+                ],
             ]
         ]
-        
+
         bio_table = Table(bio_data, colWidths=[1.2 * inch, 2.5 * inch, 2.3 * inch])
         bio_table.setStyle(
             TableStyle(
@@ -296,9 +298,11 @@ class ReportCardPDFGenerator:
                 borderPadding=8,
                 borderWidth=1,
                 borderColor=colors.HexColor("#e2e8f0"),
-                borderRadius=4
+                borderRadius=4,
             )
-            elements.append(Paragraph(f"<b>ACADEMIC PERFORMANCE OUTLOOK (AI ANALYSIS):</b><br/>{ai_intro}", intro_style))
+            elements.append(
+                Paragraph(f"<b>ACADEMIC PERFORMANCE OUTLOOK (AI ANALYSIS):</b><br/>{ai_intro}", intro_style)
+            )
             elements.append(Spacer(1, 0.2 * inch))
 
         # 3. Academic/Learning Table
@@ -316,7 +320,12 @@ class ReportCardPDFGenerator:
 
             if len(observation_rows) == 1:
                 observation_rows.append(
-                    ["General Development", "Developing", "Observation pending.", "Continue guided classroom activities."]
+                    [
+                        "General Development",
+                        "Developing",
+                        "Observation pending.",
+                        "Continue guided classroom activities.",
+                    ]
                 )
 
             observation_table = Table(
@@ -385,7 +394,7 @@ class ReportCardPDFGenerator:
                 [
                     f"TOTAL SCORE: {report.total_score}",
                     f"AVERAGE: {report.average:.1f}%",
-                    "", # Position removed as requested
+                    "",  # Position removed as requested
                 ],
                 [
                     f"ATTENDANCE: {report.attendance_present}/{report.attendance_total}",
@@ -521,21 +530,31 @@ class ReportCardPDFGenerator:
             borderWidth=0.5,
             borderColor=colors.HexColor("#cbd5e1"),
             borderRadius=5,
-            spaceAfter=15
+            spaceAfter=15,
         )
-        
-        elements.append(Paragraph(f"<b>Class Teacher's Remark:</b><br/>{report.teacher_remark or 'Consult class teacher for detailed feedback.'}", remark_box_style))
-        elements.append(Paragraph(f"<b>Head Teacher's Remark:</b><br/>{report.head_teacher_remark or 'Satisfactory performance.'}", remark_box_style))
+
+        elements.append(
+            Paragraph(
+                f"<b>Class Teacher's Remark:</b><br/>{report.teacher_remark or 'Consult class teacher for detailed feedback.'}",
+                remark_box_style,
+            )
+        )
+        elements.append(
+            Paragraph(
+                f"<b>Head Teacher's Remark:</b><br/>{report.head_teacher_remark or 'Satisfactory performance.'}",
+                remark_box_style,
+            )
+        )
 
         # Signatures & Verification (QR Code)
         sig_data = []
-        
+
         # Get Teacher Signature
         teacher_sig = None
         if report.student_class and report.student_class.class_teacher:
             # We use the signature_url field which we just added
             teacher_sig = self._get_image(report.student_class.class_teacher.signature_url, width=0.8 * inch)
-            
+
         head_sig = self._get_image(self.settings.head_of_school_signature if self.settings else None, width=0.8 * inch)
 
         # Generate QR Code for Verification
@@ -543,9 +562,20 @@ class ReportCardPDFGenerator:
 
         sig_table_data = [
             [
-                [teacher_sig or Spacer(1, 0.4 * inch), Paragraph("________________", styles["Normal"]), Paragraph("Class Teacher", styles["Normal"])],
-                [qr_image or Spacer(1, 0.8 * inch), Paragraph("<font size='7' color='#64748b'>SCAN TO VERIFY</font>", styles["Normal"])],
-                [head_sig or Spacer(1, 0.4 * inch), Paragraph("________________", styles["Normal"]), Paragraph("Head of School (Stamp)", styles["Normal"])]
+                [
+                    teacher_sig or Spacer(1, 0.4 * inch),
+                    Paragraph("________________", styles["Normal"]),
+                    Paragraph("Class Teacher", styles["Normal"]),
+                ],
+                [
+                    qr_image or Spacer(1, 0.8 * inch),
+                    Paragraph("<font size='7' color='#64748b'>SCAN TO VERIFY</font>", styles["Normal"]),
+                ],
+                [
+                    head_sig or Spacer(1, 0.4 * inch),
+                    Paragraph("________________", styles["Normal"]),
+                    Paragraph("Head of School (Stamp)", styles["Normal"]),
+                ],
             ]
         ]
 
@@ -566,21 +596,21 @@ class ReportCardPDFGenerator:
     def _generate_qr_code(self, report):
         """Generates a QR code for report card verification."""
         import qrcode
+        from reportlab.lib.units import inch
         from reportlab.platypus import Image
-        
+
         # Build verification URL
-        from django.conf import settings as django_settings
         domain = getattr(django_settings, "ROOT_DOMAIN", "myregistra.net")
         verify_url = f"https://{domain}/verify/{report.verification_hash}"
-        
+
         qr = qrcode.QRCode(version=1, box_size=10, border=0)
         qr.add_data(verify_url)
         qr.make(fit=True)
         img = qr.make_image(fill_color="black", back_color="transparent")
-        
+
         # Save to buffer
         qr_buffer = io.BytesIO()
         img.save(qr_buffer, format="PNG")
         qr_buffer.seek(0)
-        
+
         return Image(qr_buffer, width=0.8 * inch, height=0.8 * inch)

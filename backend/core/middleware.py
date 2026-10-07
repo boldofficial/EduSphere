@@ -1,23 +1,20 @@
 import logging
-import os
 
-from django.http import JsonResponse
 from django.utils.deprecation import MiddlewareMixin
 
 from schools.models import School
-from core.security_utils import sanitize_log_data
 
 logger = logging.getLogger(__name__)
 
-SENSITIVE_QUERY_PARAMS = ['password', 'token', 'secret', 'api_key', 'key']
-SENSITIVE_HEADERS = ['authorization', 'x-api-key', 'x-auth-token']
+SENSITIVE_QUERY_PARAMS = ["password", "token", "secret", "api_key", "key"]
+SENSITIVE_HEADERS = ["authorization", "x-api-key", "x-auth-token"]
 
 
 class TenantMiddleware(MiddlewareMixin):
     def process_request(self, request):
         request.tenant = None
         request.tenant_id = None
-        
+
         # 1. Get tenant identifier from header (set by Next.js middleware)
         tenant_domain = request.headers.get("X-Tenant-ID")
 
@@ -44,7 +41,7 @@ class TenantMiddleware(MiddlewareMixin):
             try:
                 from django.db.models import Q
                 from django.core.cache import cache
-                
+
                 cache_key = f"tenant_domain_lookup:{tenant_domain}"
                 # Cache only the id (0 = no match) so a cached lookup can never serve a stale School
                 # (renamed domain, deactivation, settings). The pk fetch is a cheap indexed query.
@@ -122,6 +119,7 @@ class AuditLogMiddleware:
                 "ip": self.get_client_ip(request),
             }
             from core.security_utils import sanitize_log_data
+
             metadata = sanitize_log_data(metadata)
 
             action = "RECORDS_MUTATED" if response.status_code < 400 else "ACCESS_DENIED"

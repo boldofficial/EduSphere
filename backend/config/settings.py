@@ -23,22 +23,22 @@ _settings_logger = logging.getLogger(__name__)
 # We look for .env.local first, then .env in the root directory
 try:
     from dotenv import load_dotenv
-    
+
     # root_path is two levels up from settings.py (backend/config/settings.py -> backend/ -> ./)
     root_path = Path(__file__).resolve().parent.parent.parent
-    
+
     # Load .env.local first (local overrides)
     local_env = root_path / ".env.local"
     if local_env.exists():
         load_dotenv(local_env)
         _settings_logger.info(f"Loaded environment from {local_env}")
-    
+
     # Then load .env (base config)
     base_env = root_path / ".env"
     if base_env.exists():
         load_dotenv(base_env)
         _settings_logger.info(f"Loaded environment from {base_env}")
-        
+
 except ImportError:
     pass  # python-dotenv not installed, using system env vars
 
@@ -193,7 +193,6 @@ DATABASES = {
         conn_max_age=int(os.environ.get("DB_CONN_MAX_AGE", 60)),
         conn_health_checks=True,
     ),
-
 }
 
 DATABASE_ROUTERS = ["config.routers.DbRouter"]
@@ -223,6 +222,7 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10MB
 # with no durability, no concurrency, and data loss on container restart.
 if not DEBUG and DATABASES["default"]["ENGINE"] == "django.db.backends.sqlite3":
     from django.core.exceptions import ImproperlyConfigured
+
     raise ImproperlyConfigured(
         "DATABASE_URL must be set in production. SQLite is not supported. "
         "Set DATABASE_URL to a PostgreSQL connection string and redeploy."
@@ -346,9 +346,7 @@ SPECTACULAR_SETTINGS = {
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=int(os.environ.get("JWT_ACCESS_TOKEN_LIFETIME_MINUTES", 15))),
-    "REFRESH_TOKEN_LIFETIME": timedelta(
-        hours=int(os.environ.get("JWT_REFRESH_TOKEN_LIFETIME_HOURS", 24))
-    ),
+    "REFRESH_TOKEN_LIFETIME": timedelta(hours=int(os.environ.get("JWT_REFRESH_TOKEN_LIFETIME_HOURS", 24))),
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
     "UPDATE_LAST_LOGIN": True,
@@ -543,10 +541,12 @@ LOGGING = {
 # REDIS / CACHING CONFIGURATION
 # =============================================================================
 
+
 def _as_bool(value: str | None, default: bool = False) -> bool:
     if value is None:
         return default
     return value.strip().lower() in {"1", "true", "yes", "on"}
+
 
 # Default to None to allow fallback to LocMemCache if not provided.
 REDIS_URL = os.environ.get("REDIS_URL")
@@ -608,25 +608,25 @@ CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes
 
 from celery.schedules import crontab
+
 CELERY_BEAT_SCHEDULE = {
-    'check-subscription-expiry-daily': {
-        'task': 'schools.tasks.check_subscription_expiry',
-        'schedule': crontab(hour=0, minute=0),  # Run daily at midnight
+    "check-subscription-expiry-daily": {
+        "task": "schools.tasks.check_subscription_expiry",
+        "schedule": crontab(hour=0, minute=0),  # Run daily at midnight
     },
-    'cleanup-expired-sessions-daily': {
-        'task': 'core.tasks.cleanup_expired_sessions',
-        'schedule': crontab(hour=3, minute=0),  # Run daily at 3 AM
+    "cleanup-expired-sessions-daily": {
+        "task": "core.tasks.cleanup_expired_sessions",
+        "schedule": crontab(hour=3, minute=0),  # Run daily at 3 AM
     },
-    'auto-report-generation-monthly': {
-        'task': 'schools.tasks.auto_report_generation',
-        'schedule': crontab(day_of_month=28, hour=0, minute=0), 
+    "auto-report-generation-monthly": {
+        "task": "schools.tasks.auto_report_generation",
+        "schedule": crontab(day_of_month=28, hour=0, minute=0),
     },
-    'monitor-pgbouncer-pools': {
-        'task': 'core.tasks.monitor_pgbouncer_pools',
-        'schedule': crontab(minute='*/5'),  # Every 5 minutes
+    "monitor-pgbouncer-pools": {
+        "task": "core.tasks.monitor_pgbouncer_pools",
+        "schedule": crontab(minute="*/5"),  # Every 5 minutes
     },
 }
-
 
 
 # =============================================================================
@@ -652,6 +652,6 @@ if not EMAIL_HOST_USER or not EMAIL_HOST_PASSWORD:
 # =============================================================================
 # CBT CONFIGURATION
 # =============================================================================
-CBT_MAX_VIOLATIONS = 3          # auto-submit threshold
-CBT_VIOLATION_WARN = True       # show warning overlay
-CBT_LOCK_ON_EXCEED = False      # lock vs auto-submit
+CBT_MAX_VIOLATIONS = 3  # auto-submit threshold
+CBT_VIOLATION_WARN = True  # show warning overlay
+CBT_LOCK_ON_EXCEED = False  # lock vs auto-submit

@@ -60,7 +60,9 @@ class FeeCategoryAPITests(APITestCase):
 
     def test_delete_fee_category(self):
         category = FeeCategory.objects.create(school=self.school, name="To Delete", is_optional=False)
-        response = self.client.delete(f"/api/bursary/fee-categories/{category.id}/", HTTP_X_TENANT_ID=self.school.domain)
+        response = self.client.delete(
+            f"/api/bursary/fee-categories/{category.id}/", HTTP_X_TENANT_ID=self.school.domain
+        )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(FeeCategory.objects.filter(id=category.id).exists())
 
@@ -120,7 +122,7 @@ class PaymentAPITests(APITestCase):
             school=self.school,
         )
         self.client.force_authenticate(user=self.admin)
-        
+
         self.student_class = Class.objects.create(name="JSS 1", school=self.school)
         self.student = Student.objects.create(
             school=self.school,
@@ -220,7 +222,7 @@ class StudentFeeAPITests(APITestCase):
             school=self.school,
         )
         self.client.force_authenticate(user=self.admin)
-        
+
         self.student_class = Class.objects.create(name="JSS 1", school=self.school)
         self.student = Student.objects.create(
             school=self.school,
@@ -267,7 +269,7 @@ class TenantIsolationTests(APITestCase):
         self.client = APIClient()
         self.school_a = School.objects.create(name="School A", domain="school-a")
         self.school_b = School.objects.create(name="School B", domain="school-b")
-        
+
         self.admin_a = get_user_model().objects.create_user(
             username="admin-a",
             password="password123",
@@ -284,10 +286,10 @@ class TenantIsolationTests(APITestCase):
     def test_school_a_cannot_see_school_b_fees(self):
         """School A admin should not see School B's fee categories"""
         category_b = FeeCategory.objects.create(school=self.school_b, name="School B Fee", is_optional=False)
-        
+
         self.client.force_authenticate(user=self.admin_a)
         response = self.client.get("/api/bursary/fee-categories/", HTTP_X_TENANT_ID=self.school_a.domain)
-        
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         category_ids = [c["id"] for c in response.data.get("results", [])]
         self.assertNotIn(category_b.id, category_ids)
@@ -311,15 +313,16 @@ class TenantIsolationTests(APITestCase):
             session="2025/2026",
             term="First Term",
         )
-        
+
         self.client.force_authenticate(user=self.admin_a)
         response = self.client.get(f"/api/bursary/payments/{payment_a.id}/", HTTP_X_TENANT_ID=self.school_a.domain)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        
+
         # School B admin should not see School A's payment
         self.client.force_authenticate(user=self.admin_b)
         response = self.client.get(f"/api/bursary/payments/{payment_a.id}/", HTTP_X_TENANT_ID=self.school_b.domain)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
 
 class BursaryRolePermissionTests(APITestCase):
     def setUp(self):
@@ -340,15 +343,27 @@ class BursaryRolePermissionTests(APITestCase):
         )
         self.other = Student.objects.create(school=self.school, student_no="ST101", names="Other Kid", gender="Male")
         Payment.objects.create(
-            school=self.school, student=self.other, amount=1000, method="cash",
-            session="2025/2026", term="First Term", reference="R-OTHER", recorded_by="admin",
+            school=self.school,
+            student=self.other,
+            amount=1000,
+            method="cash",
+            session="2025/2026",
+            term="First Term",
+            reference="R-OTHER",
+            recorded_by="admin",
         )
         self.client.force_authenticate(user=self.student_user)
 
     def test_student_cannot_record_payment(self):
         response = self.client.post(
             "/api/bursary/payments/",
-            {"student": self.student.id, "amount": 5000, "method": "cash", "session": "2025/2026", "term": "First Term"},
+            {
+                "student": self.student.id,
+                "amount": 5000,
+                "method": "cash",
+                "session": "2025/2026",
+                "term": "First Term",
+            },
             format="json",
             HTTP_X_TENANT_ID=self.school.domain,
         )

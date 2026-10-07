@@ -5,6 +5,7 @@ from academic.models import Teacher, TenantModel
 # PAYROLL SYSTEM MODELS
 # ==========================================
 
+
 class SalaryAllowance(TenantModel):
     """
     Master list of allowance types (e.g. Transport, Housing, Hazard)

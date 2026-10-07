@@ -39,7 +39,9 @@ class AttendanceSessionViewSet(TenantViewSet):
         if not include_all_periods:
             school = get_request_school(self.request)
             if school:
-                settings_obj = SchoolSettings.objects.filter(school=school).only("current_session", "current_term").first()
+                settings_obj = (
+                    SchoolSettings.objects.filter(school=school).only("current_session", "current_term").first()
+                )
                 if settings_obj:
                     session = session or settings_obj.current_session
                     term = term or settings_obj.current_term
@@ -75,7 +77,9 @@ class AttendanceRecordViewSet(TenantViewSet):
         if not include_all_periods:
             school = get_request_school(self.request)
             if school:
-                settings_obj = SchoolSettings.objects.filter(school=school).only("current_session", "current_term").first()
+                settings_obj = (
+                    SchoolSettings.objects.filter(school=school).only("current_session", "current_term").first()
+                )
                 if settings_obj:
                     session = session or settings_obj.current_session
                     term = term or settings_obj.current_term

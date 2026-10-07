@@ -96,4 +96,3 @@ class MessagingApiTests(APITestCase):
             HTTP_X_TENANT_ID=self.school.domain,
         )
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-

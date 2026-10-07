@@ -6,6 +6,7 @@ from ..ai_utils import AcademicAI
 
 logger = logging.getLogger(__name__)
 
+
 class ReportCardAIService:
     """
     Service for student performance analysis and remark generation.
@@ -123,15 +124,19 @@ class ReportCardAIService:
         Generates a dynamic academic summary intro for the report card.
         """
         scores = report_card.scores.all()
-        
+
         # Data preparation
         performance_data = {
             "name": report_card.student.names,
             "class": report_card.student_class.name if report_card.student_class else "N/A",
             "scores": [{"subject": s.subject.name, "score": s.total, "grade": s.grade} for s in scores],
             "average": report_card.average,
-            "attendance_rate": (report_card.attendance_present / report_card.attendance_total * 100) if report_card.attendance_total > 0 else 0,
-            "trend": report_card.performance_trend
+            "attendance_rate": (
+                (report_card.attendance_present / report_card.attendance_total * 100)
+                if report_card.attendance_total > 0
+                else 0
+            ),
+            "trend": report_card.performance_trend,
         }
 
         try:

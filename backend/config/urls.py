@@ -17,7 +17,6 @@ Including another URLconf
 
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
     TokenRefreshView,
 )
 
@@ -58,11 +57,17 @@ from rest_framework.permissions import IsAuthenticated
 if settings.DEBUG:
     urlpatterns += [
         path("api/schema/", SpectacularAPIView.as_view(permission_classes=[IsAuthenticated]), name="schema"),
-        path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema", permission_classes=[IsAuthenticated]), name="swagger-ui"),
-        path("api/redoc/", SpectacularRedocView.as_view(url_name="schema", permission_classes=[IsAuthenticated]), name="redoc"),
+        path(
+            "api/docs/",
+            SpectacularSwaggerView.as_view(url_name="schema", permission_classes=[IsAuthenticated]),
+            name="swagger-ui",
+        ),
+        path(
+            "api/redoc/",
+            SpectacularRedocView.as_view(url_name="schema", permission_classes=[IsAuthenticated]),
+            name="redoc",
+        ),
     ]
-
-
 
 
 # NOTE: Media files are served via Cloudflare R2 in production (pre-signed URLs).

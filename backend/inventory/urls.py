@@ -2,8 +2,12 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
 from .views import (
-    AssetCategoryViewSet, AssetViewSet, AssetAssignmentViewSet,
-    AssetMaintenanceViewSet, InventoryItemViewSet, InventoryTransactionViewSet
+    AssetCategoryViewSet,
+    AssetViewSet,
+    AssetAssignmentViewSet,
+    AssetMaintenanceViewSet,
+    InventoryItemViewSet,
+    InventoryTransactionViewSet,
 )
 
 router = DefaultRouter()

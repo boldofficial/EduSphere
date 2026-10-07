@@ -45,23 +45,25 @@ def ensure_unique_reportcard_hashes(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('academic', '0029_reportcard_ai_academic_outlook'),
+        ("academic", "0029_reportcard_ai_academic_outlook"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='reportcard',
-            name='ai_academic_outlook',
+            model_name="reportcard",
+            name="ai_academic_outlook",
         ),
         migrations.RunPython(ensure_unique_reportcard_hashes, migrations.RunPython.noop),
         migrations.AlterField(
-            model_name='reportcard',
-            name='verification_hash',
+            model_name="reportcard",
+            name="verification_hash",
             field=models.UUIDField(db_index=True, default=uuid.uuid4, editable=False, unique=True),
         ),
         migrations.AlterField(
-            model_name='teacher',
-            name='signature_url',
-            field=models.CharField(blank=True, help_text="Teacher's digital signature image URL", max_length=512, null=True),
+            model_name="teacher",
+            name="signature_url",
+            field=models.CharField(
+                blank=True, help_text="Teacher's digital signature image URL", max_length=512, null=True
+            ),
         ),
     ]

@@ -7,53 +7,65 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('academic', '0021_student_assigned_subjects'),
+        ("academic", "0021_student_assigned_subjects"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='studenthistory',
-            name='action',
+            model_name="studenthistory",
+            name="action",
         ),
         migrations.RemoveField(
-            model_name='studenthistory',
-            name='from_value',
+            model_name="studenthistory",
+            name="from_value",
         ),
         migrations.RemoveField(
-            model_name='studenthistory',
-            name='recorded_by',
+            model_name="studenthistory",
+            name="recorded_by",
         ),
         migrations.RemoveField(
-            model_name='studenthistory',
-            name='term',
+            model_name="studenthistory",
+            name="term",
         ),
         migrations.RemoveField(
-            model_name='studenthistory',
-            name='to_value',
+            model_name="studenthistory",
+            name="to_value",
         ),
         migrations.AddField(
-            model_name='studenthistory',
-            name='event_type',
-            field=models.CharField(choices=[('promotion', 'Promotion'), ('graduation', 'Graduation'), ('withdrawal', 'Withdrawal'), ('suspension', 'Suspension'), ('reactivation', 'Reactivation')], default='promotion', max_length=50),
+            model_name="studenthistory",
+            name="event_type",
+            field=models.CharField(
+                choices=[
+                    ("promotion", "Promotion"),
+                    ("graduation", "Graduation"),
+                    ("withdrawal", "Withdrawal"),
+                    ("suspension", "Suspension"),
+                    ("reactivation", "Reactivation"),
+                ],
+                default="promotion",
+                max_length=50,
+            ),
         ),
         migrations.AddField(
-            model_name='studenthistory',
-            name='metadata',
+            model_name="studenthistory",
+            name="metadata",
             field=models.JSONField(blank=True, default=dict),
         ),
         migrations.AddField(
-            model_name='studenthistory',
-            name='remarks',
+            model_name="studenthistory",
+            name="remarks",
             field=models.TextField(blank=True),
         ),
         migrations.AddField(
-            model_name='studenthistory',
-            name='student_class',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='academic.class'),
+            model_name="studenthistory",
+            name="student_class",
+            field=models.ForeignKey(
+                blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to="academic.class"
+            ),
         ),
         migrations.AlterField(
-            model_name='studenthistory',
-            name='session',
+            model_name="studenthistory",
+            name="session",
             field=models.CharField(max_length=50),
         ),
     ]

@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('schools', '0021_schoolpaymentconfig'),
+        ("schools", "0021_schoolpaymentconfig"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='schoolpaymentconfig',
-            name='pass_processing_fee_to_parents',
+            model_name="schoolpaymentconfig",
+            name="pass_processing_fee_to_parents",
             field=models.BooleanField(default=False),
         ),
     ]

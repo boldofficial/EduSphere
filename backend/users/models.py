@@ -1,4 +1,4 @@
-from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 from schools.models import School
@@ -30,6 +30,7 @@ class User(AbstractUser):
     def generate_backup_codes(self):
         """Generate 8 backup codes for 2FA recovery"""
         import secrets
+
         codes = [secrets.token_hex(4).upper() for _ in range(8)]
         self.two_factor_backup_codes = codes
         return codes
@@ -38,13 +39,13 @@ class User(AbstractUser):
         """Verify a backup code and remove it if valid"""
         if not self.two_factor_backup_codes:
             return False
-        
+
         code = code.upper()
         if code in self.two_factor_backup_codes:
             # Remove used code
             codes = self.two_factor_backup_codes
             codes.remove(code)
             self.two_factor_backup_codes = codes
-            self.save(update_fields=['two_factor_backup_codes'])
+            self.save(update_fields=["two_factor_backup_codes"])
             return True
         return False

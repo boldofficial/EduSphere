@@ -39,14 +39,6 @@ class ReportCardViewSet(TenantViewSet):
     serializer_class = ReportCardSerializer
     pagination_class = StandardPagination
 
-    def get_queryset(self):
-        qs = super().get_queryset()
-        user = self.request.user
-        if is_school_staff(user):
-            return qs
-        # Students/parents only see their own published report cards.
-        return scope_to_learner(qs, user).filter(is_passed=True)
-
     @action(detail=True, methods=["get"], url_path="export-pdf")
     def export_pdf(self, request, pk=None):
         """
@@ -87,7 +79,9 @@ class ReportCardViewSet(TenantViewSet):
         if not include_all_periods:
             school = get_request_school(self.request)
             if school:
-                settings_obj = SchoolSettings.objects.filter(school=school).only("current_session", "current_term").first()
+                settings_obj = (
+                    SchoolSettings.objects.filter(school=school).only("current_session", "current_term").first()
+                )
                 if settings_obj:
                     session = session or settings_obj.current_session
                     term = term or settings_obj.current_term
@@ -148,14 +142,18 @@ class ReportCardViewSet(TenantViewSet):
         ).count()
         return Response({"success": True, "message": f"Positions recalculated for {count} students"})
 
-    @action(detail=False, methods=["get"], url_path="verify/(?P<hash>[^/.]+)", permission_classes=[permissions.AllowAny])
+    @action(
+        detail=False, methods=["get"], url_path="verify/(?P<hash>[^/.]+)", permission_classes=[permissions.AllowAny]
+    )
     def verify(self, request, hash=None):
         """
         Public verification endpoint to check report card authenticity via hash.
         """
         try:
-            instance = ReportCard.objects.select_related("student", "student_class", "school", "student_class__class_teacher").get(verification_hash=hash)
-            
+            instance = ReportCard.objects.select_related(
+                "student", "student_class", "school", "student_class__class_teacher"
+            ).get(verification_hash=hash)
+
             # Prepare public verification data
             data = {
                 "student_name": instance.student.names,
@@ -167,7 +165,11 @@ class ReportCardViewSet(TenantViewSet):
                 "is_passed": instance.is_passed,
                 "school_name": instance.school.name,
                 "verified_at": instance.updated_at.isoformat() if hasattr(instance, "updated_at") else None,
-                "teacher_name": instance.student_class.class_teacher.name if instance.student_class and instance.student_class.class_teacher else "Internal Authority"
+                "teacher_name": (
+                    instance.student_class.class_teacher.name
+                    if instance.student_class and instance.student_class.class_teacher
+                    else "Internal Authority"
+                ),
             }
             return Response(data)
         except ReportCard.DoesNotExist:
@@ -175,7 +177,9 @@ class ReportCardViewSet(TenantViewSet):
 
 
 class SubjectScoreViewSet(TenantViewSet):
-    queryset = SubjectScore.objects.select_related("report_card__student", "report_card__student_class", "subject", "school").all()
+    queryset = SubjectScore.objects.select_related(
+        "report_card__student", "report_card__student_class", "subject", "school"
+    ).all()
     serializer_class = SubjectScoreSerializer
     pagination_class = StandardPagination
 

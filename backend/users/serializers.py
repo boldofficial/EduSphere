@@ -5,7 +5,6 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework import serializers
 from rest_framework.exceptions import AuthenticationFailed
 
-from schools.models import School
 
 from .models import User
 
@@ -119,21 +118,21 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         data["user"] = {"id": self.user.id, "username": self.user.username, "role": self.user.role}
 
         # 3. 2FA Enforcement Gate
-        if getattr(self.user, 'two_factor_enabled', False):
+        if getattr(self.user, "two_factor_enabled", False):
             from rest_framework_simplejwt.tokens import RefreshToken
             from datetime import timedelta
-            
+
             token = RefreshToken()
-            token['user_id'] = self.user.id
-            token['token_type'] = 'two_factor_pending'
+            token["user_id"] = self.user.id
+            token["token_type"] = "two_factor_pending"
             token.set_exp(lifetime=timedelta(minutes=5))
-            
+
             logger.info(f"[AUTH_DEBUG] 2FA required for user: {self.user.username}")
             return {
                 "requires_2fa": True,
                 "two_factor_token": str(token),
                 "user_id": self.user.id,
-                "message": "2FA required"
+                "message": "2FA required",
             }
 
         logger.info("[AUTH_DEBUG] Login Successful")

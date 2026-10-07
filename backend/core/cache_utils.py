@@ -7,9 +7,7 @@ import logging
 from functools import wraps
 
 from django.core.cache import cache
-from django.utils.decorators import method_decorator
 from rest_framework.response import Response
-from rest_framework.decorators import action
 
 logger = logging.getLogger(__name__)
 

@@ -23,8 +23,10 @@ class SupportTicketViewSet(viewsets.ModelViewSet):
             return SupportTicket.objects.none()
 
         # School admins only see their own school's tickets
-        return SupportTicket.objects.filter(school=user.school).select_related("school", "user").prefetch_related(
-            "responses", "responses__user"
+        return (
+            SupportTicket.objects.filter(school=user.school)
+            .select_related("school", "user")
+            .prefetch_related("responses", "responses__user")
         )
 
     def perform_create(self, serializer):

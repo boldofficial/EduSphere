@@ -1,8 +1,7 @@
 from rest_framework import serializers
 
-from academic.models import Class, Student, Teacher
+from academic.models import Class, Student
 from admissions.models import AdmissionIntake
-from academic.serializers import ClassSerializer, StudentSerializer, TeacherSerializer
 from core.tenant_utils import get_request_school
 
 from .models import (

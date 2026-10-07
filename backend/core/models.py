@@ -11,18 +11,16 @@ class FieldChangeLog(models.Model):
     Track individual field changes on any model.
     Provides field-level audit trail for compliance.
     """
+
     ACTION_CHOICES = (
         ("CREATE", "Created"),
         ("UPDATE", "Updated"),
         ("DELETE", "Deleted"),
     )
 
-    school = models.ForeignKey(
-        School, on_delete=models.SET_NULL, null=True, blank=True, related_name="change_logs"
-    )
+    school = models.ForeignKey(School, on_delete=models.SET_NULL, null=True, blank=True, related_name="change_logs")
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
-        related_name="change_logs"
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="change_logs"
     )
 
     # What was changed
@@ -92,6 +90,7 @@ def log_field_change(
         )
     except Exception as e:
         import logging
+
         logging.getLogger(__name__).error(f"Failed to log field change: {e}")
 
 

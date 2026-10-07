@@ -9,6 +9,7 @@ from schools.models import School
 
 User = get_user_model()
 
+
 class QuizLogicTests(APITestCase):
     def setUp(self):
         # Setup Schools
@@ -27,7 +28,11 @@ class QuizLogicTests(APITestCase):
             username="student_a", password="password123", role="STUDENT", school=self.school_a
         )
         self.student_profile_a = Student.objects.create(
-            school=self.school_a, user=self.student_user_a, student_no="ST001", names="Alice", current_class=self.class_a
+            school=self.school_a,
+            user=self.student_user_a,
+            student_no="ST001",
+            names="Alice",
+            current_class=self.class_a,
         )
 
         # Setup Student B (School B)
@@ -47,7 +52,7 @@ class QuizLogicTests(APITestCase):
             teacher=self.teacher_a,
             start_time=timezone.now(),
             end_time=timezone.now() + timezone.timedelta(hours=2),
-            is_published=True
+            is_published=True,
         )
 
         # Setup MCQ Question
@@ -60,21 +65,14 @@ class QuizLogicTests(APITestCase):
     def test_student_can_submit_quiz_and_get_score(self):
         """Verify that a student can take a quiz and the system calculates points correctly."""
         self.client.force_authenticate(user=self.student_user_a)
-        
-        data = {
-            "answers": [
-                {
-                    "question_id": self.q1.id,
-                    "selected_option_id": self.opt_correct.id
-                }
-            ]
-        }
-        
-        response = self.client.post(f"/api/learning/quizzes/{self.quiz.id}/submit/", data, format='json')
-        
+
+        data = {"answers": [{"question_id": self.q1.id, "selected_option_id": self.opt_correct.id}]}
+
+        response = self.client.post(f"/api/learning/quizzes/{self.quiz.id}/submit/", data, format="json")
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["score"], 5)
-        
+
         # Verify attempt record
         attempt = Attempt.objects.get(quiz=self.quiz, student=self.student_profile_a)
         self.assertEqual(attempt.total_score, 5.0)
@@ -83,39 +81,32 @@ class QuizLogicTests(APITestCase):
     def test_student_gets_zero_for_wrong_answers(self):
         """Verify that wrong answers result in 0 score."""
         self.client.force_authenticate(user=self.student_user_a)
-        
-        data = {
-            "answers": [
-                {
-                    "question_id": self.q1.id,
-                    "selected_option_id": self.opt_wrong.id
-                }
-            ]
-        }
-        
-        response = self.client.post(f"/api/learning/quizzes/{self.quiz.id}/submit/", data, format='json')
+
+        data = {"answers": [{"question_id": self.q1.id, "selected_option_id": self.opt_wrong.id}]}
+
+        response = self.client.post(f"/api/learning/quizzes/{self.quiz.id}/submit/", data, format="json")
         self.assertEqual(response.data["score"], 0)
 
     def test_cross_tenant_submission_is_blocked(self):
         """Security check: Student from School B cannot take Quiz in School A."""
         self.client.force_authenticate(user=self.student_user_b)
-        
+
         data = {"answers": []}
-        response = self.client.post(f"/api/learning/quizzes/{self.quiz.id}/submit/", data, format='json')
-        
+        response = self.client.post(f"/api/learning/quizzes/{self.quiz.id}/submit/", data, format="json")
+
         # Note: TenantViewSet filters queryset by school, so non-owned quizes return 404
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_duplicate_submission_is_prevented(self):
         """A student should only be able to submit a quiz once."""
         self.client.force_authenticate(user=self.student_user_a)
-        
+
         data = {"answers": [{"question_id": self.q1.id, "selected_option_id": self.opt_correct.id}]}
-        
+
         # First submission
-        self.client.post(f"/api/learning/quizzes/{self.quiz.id}/submit/", data, format='json')
-        
+        self.client.post(f"/api/learning/quizzes/{self.quiz.id}/submit/", data, format="json")
+
         # Second submission
-        response = self.client.post(f"/api/learning/quizzes/{self.quiz.id}/submit/", data, format='json')
+        response = self.client.post(f"/api/learning/quizzes/{self.quiz.id}/submit/", data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("already submitted", str(response.data))

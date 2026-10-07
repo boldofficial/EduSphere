@@ -24,6 +24,7 @@ def cleanup_old_logs():
     # Add cleanup logic here
     return "Cleaned"
 
+
 @shared_task
 def cleanup_expired_sessions():
     """
@@ -31,13 +32,15 @@ def cleanup_expired_sessions():
     Runs daily via Celery Beat.
     """
     from django.core.management import call_command
+
     try:
-        call_command('clearsessions')
+        call_command("clearsessions")
         logger.info("Successfully cleaned up expired sessions.")
         return True
     except Exception as e:
         logger.error(f"Failed to clean up expired sessions: {e}")
         return False
+
 
 @shared_task(ignore_result=True)
 def log_activity_async(action, school_id, user_id, description, metadata):
@@ -45,6 +48,7 @@ def log_activity_async(action, school_id, user_id, description, metadata):
     Asynchronously write an audit log entry to prevent blocking API requests.
     """
     from core.models import GlobalActivityLog
+
     GlobalActivityLog.objects.create(
         action=action,
         school_id=school_id,
@@ -62,7 +66,6 @@ def monitor_pgbouncer_pools():
     """
     import os
     import psycopg2
-    from django.conf import settings
 
     # Use the pgbouncer virtual database for stats
     # We use the same credentials as the main DB but connect to port 6432
@@ -92,7 +95,7 @@ def monitor_pgbouncer_pools():
             cl_active = pool.get("cl_active", 0)
             cl_waiting = pool.get("cl_waiting", 0)
             maxwait = pool.get("maxwait", 0)
-            
+
             # Use MAX_CLIENT_CONN from env or default
             max_conn = int(os.environ.get("MAX_CLIENT_CONN", 500))
             utilization = cl_active / max_conn if max_conn > 0 else 0
@@ -106,19 +109,19 @@ def monitor_pgbouncer_pools():
         if alerts:
             message = "CRITICAL: PgBouncer Load Alert!\n" + "\n".join(alerts)
             logger.error(message)
-            
+
             # Fire Termii SMS alert to ops number
             ops_number = os.environ.get("OPS_PHONE_NUMBER")
             if ops_number:
                 from core.notification_utils import get_termii_service
+
                 try:
                     termii = get_termii_service()
                     termii.send_sms(to=ops_number, message=message)
                 except Exception as sms_err:
                     logger.error(f"Failed to send PgBouncer alert SMS: {sms_err}")
-            
-            return f"Alerted: {len(alerts)} pools"
 
+            return f"Alerted: {len(alerts)} pools"
 
         return "Healthy"
 

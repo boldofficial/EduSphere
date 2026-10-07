@@ -6,9 +6,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bursary', '0011_feediscount'),
-        ('bursary', '0011_remove_expense_bursary_exp_school__2a5f50_idx_and_more'),
+        ("bursary", "0011_feediscount"),
+        ("bursary", "0011_remove_expense_bursary_exp_school__2a5f50_idx_and_more"),
     ]
 
-    operations = [
-    ]
+    operations = []

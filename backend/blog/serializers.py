@@ -52,6 +52,7 @@ class BlogPostSerializer(serializers.ModelSerializer):
 
 class BlogPostPublicSerializer(serializers.ModelSerializer):
     """Lightweight serializer for public listing (no draft content leaked)."""
+
     category_name = serializers.CharField(source="category.name", read_only=True, default=None)
     tags_list = TagSerializer(source="tags", many=True, read_only=True)
 

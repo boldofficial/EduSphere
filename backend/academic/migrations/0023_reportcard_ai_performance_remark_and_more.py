@@ -6,18 +6,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('academic', '0022_remove_studenthistory_action_and_more'),
+        ("academic", "0022_remove_studenthistory_action_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='reportcard',
-            name='ai_performance_remark',
-            field=models.TextField(blank=True, help_text='AI-generated analysis of student performance'),
+            model_name="reportcard",
+            name="ai_performance_remark",
+            field=models.TextField(blank=True, help_text="AI-generated analysis of student performance"),
         ),
         migrations.AddField(
-            model_name='reportcard',
-            name='performance_trend',
-            field=models.CharField(choices=[('improving', 'Improving'), ('declining', 'Declining'), ('stable', 'Stable')], default='stable', max_length=20),
+            model_name="reportcard",
+            name="performance_trend",
+            field=models.CharField(
+                choices=[("improving", "Improving"), ("declining", "Declining"), ("stable", "Stable")],
+                default="stable",
+                max_length=20,
+            ),
         ),
     ]

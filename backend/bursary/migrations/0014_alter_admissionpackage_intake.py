@@ -7,14 +7,16 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('admissions', '0001_initial'),
-        ('bursary', '0013_alter_payrollentry_unique_together_and_more'),
+        ("admissions", "0001_initial"),
+        ("bursary", "0013_alter_payrollentry_unique_together_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='admissionpackage',
-            name='intake',
-            field=models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='package', to='admissions.admissionintake'),
+            model_name="admissionpackage",
+            name="intake",
+            field=models.OneToOneField(
+                on_delete=django.db.models.deletion.CASCADE, related_name="package", to="admissions.admissionintake"
+            ),
         ),
     ]

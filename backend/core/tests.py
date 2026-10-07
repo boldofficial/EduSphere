@@ -91,7 +91,7 @@ class ActivityLogTests(APITestCase):
     def test_activity_log_created_on_action(self):
         # Trigger an action that creates activity log
         self.client.get("/api/core/settings/", HTTP_X_TENANT_ID=self.school.domain)
-        
+
         # Check if activity log was created
         logs = GlobalActivityLog.objects.filter(school=self.school)
         # Some endpoints may not log, this is just to verify the model works
@@ -105,7 +105,7 @@ class TenantIsolationTests(APITestCase):
         self.client = APIClient()
         self.school_a = School.objects.create(name="School A", domain="school-a-logs")
         self.school_b = School.objects.create(name="School B", domain="school-b-logs")
-        
+
         self.admin_a = get_user_model().objects.create_user(
             username="admin-a-logs",
             password="password123",
@@ -129,7 +129,7 @@ class TenantIsolationTests(APITestCase):
             format="json",
             HTTP_X_TENANT_ID=self.school_b.domain,
         )
-        
+
         # School A should not see School B's settings
         self.client.force_authenticate(user=self.admin_a)
         response = self.client.get("/api/core/settings/", HTTP_X_TENANT_ID=self.school_a.domain)

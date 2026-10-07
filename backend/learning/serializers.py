@@ -238,8 +238,16 @@ class AttemptSerializer(serializers.ModelSerializer):
     class Meta:
         model = Attempt
         fields = [
-            "id", "quiz", "student", "start_time", "submit_time", 
-            "total_score", "answers", "school", "violation_count", "is_violated"
+            "id",
+            "quiz",
+            "student",
+            "start_time",
+            "submit_time",
+            "total_score",
+            "answers",
+            "school",
+            "violation_count",
+            "is_violated",
         ]
         read_only_fields = ("school",)
 

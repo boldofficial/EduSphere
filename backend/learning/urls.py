@@ -2,10 +2,7 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 from .views import AssignmentViewSet, AttemptViewSet, QuestionViewSet, QuizViewSet, SubmissionViewSet
-from .views_exam import (
-    QuestionBankViewSet, BankQuestionViewSet,
-    ExamViewSet, ExamPaperViewSet, ExamAnswerViewSet
-)
+from .views_exam import QuestionBankViewSet, BankQuestionViewSet, ExamViewSet, ExamPaperViewSet, ExamAnswerViewSet
 
 router = DefaultRouter()
 router.register(r"assignments", AssignmentViewSet)

@@ -6,18 +6,18 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('academic', '0031_conductwarning_commendation_behavioranalytics'),
+        ("academic", "0031_conductwarning_commendation_behavioranalytics"),
     ]
 
     operations = [
         migrations.SeparateDatabaseAndState(
             state_operations=[
                 migrations.RemoveField(
-                    model_name='admissionintake',
-                    name='school',
+                    model_name="admissionintake",
+                    name="school",
                 ),
                 migrations.DeleteModel(
-                    name='Admission',
+                    name="Admission",
                 ),
             ],
             database_operations=[],

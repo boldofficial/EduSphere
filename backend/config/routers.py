@@ -28,10 +28,7 @@ class DbRouter:
         """
         Allow relations if a model in the academic app is involved.
         """
-        if (
-            obj1._meta.app_label in self.route_app_labels
-            or obj2._meta.app_label in self.route_app_labels
-        ):
+        if obj1._meta.app_label in self.route_app_labels or obj2._meta.app_label in self.route_app_labels:
             return True
         return None
 

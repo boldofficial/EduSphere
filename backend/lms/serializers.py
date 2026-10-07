@@ -1,6 +1,6 @@
 from rest_framework import serializers
-from django.contrib.contenttypes.models import ContentType
 from .models import DiscussionThread, DiscussionMessage
+
 
 class DiscussionMessageSerializer(serializers.ModelSerializer):
     author_name = serializers.ReadOnlyField(source="author.names")
@@ -8,10 +8,7 @@ class DiscussionMessageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DiscussionMessage
-        fields = [
-            "id", "thread", "author", "author_name", "parent", 
-            "body", "created_at", "replies"
-        ]
+        fields = ["id", "thread", "author", "author_name", "parent", "body", "created_at", "replies"]
         read_only_fields = ["author", "created_at"]
 
     def get_replies(self, obj):
@@ -19,6 +16,7 @@ class DiscussionMessageSerializer(serializers.ModelSerializer):
         # For a start, we'll return immediate children
         serializer = DiscussionMessageSerializer(obj.replies.all(), many=True)
         return serializer.data
+
 
 class DiscussionThreadSerializer(serializers.ModelSerializer):
     messages = serializers.SerializerMethodField()

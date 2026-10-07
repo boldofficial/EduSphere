@@ -270,8 +270,9 @@ class StudentSerializer(serializers.ModelSerializer):
 
     def get_performance_trend(self, obj):
         from .models import ReportCard
+
         # Fetch the latest report card for this student to get their most recent trend
-        latest_report = ReportCard.objects.filter(student=obj).order_by('-created_at').first()
+        latest_report = ReportCard.objects.filter(student=obj).order_by("-created_at").first()
         if latest_report:
             return latest_report.performance_trend
         return "stable"
@@ -699,4 +700,3 @@ class AcademicTermSerializer(serializers.ModelSerializer):
         model = AcademicTerm
         fields = "__all__"
         read_only_fields = ("school",)
-

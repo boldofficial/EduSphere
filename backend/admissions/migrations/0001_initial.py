@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('schools', '0023_performance_indexes'),
+        ("schools", "0023_performance_indexes"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
@@ -19,49 +19,111 @@ class Migration(migrations.Migration):
         migrations.SeparateDatabaseAndState(
             state_operations=[
                 migrations.CreateModel(
-                    name='AdmissionIntake',
+                    name="AdmissionIntake",
                     fields=[
-                        ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                        ('created_at', models.DateTimeField(auto_now_add=True, db_index=True)),
-                        ('updated_at', models.DateTimeField(auto_now=True)),
-                        ('name', models.CharField(max_length=100)),
-                        ('description', models.TextField(blank=True)),
-                        ('start_date', models.DateField(default=django.utils.timezone.now)),
-                        ('end_date', models.DateField(default=django.utils.timezone.now)),
-                        ('is_active', models.BooleanField(default=True)),
-                        ('school', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='%(class)s_related', to='schools.school')),
+                        (
+                            "id",
+                            models.BigAutoField(
+                                auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                            ),
+                        ),
+                        ("created_at", models.DateTimeField(auto_now_add=True, db_index=True)),
+                        ("updated_at", models.DateTimeField(auto_now=True)),
+                        ("name", models.CharField(max_length=100)),
+                        ("description", models.TextField(blank=True)),
+                        ("start_date", models.DateField(default=django.utils.timezone.now)),
+                        ("end_date", models.DateField(default=django.utils.timezone.now)),
+                        ("is_active", models.BooleanField(default=True)),
+                        (
+                            "school",
+                            models.ForeignKey(
+                                on_delete=django.db.models.deletion.CASCADE,
+                                related_name="%(class)s_related",
+                                to="schools.school",
+                            ),
+                        ),
                     ],
                     options={
-                        'db_table': 'academic_admissionintake',
+                        "db_table": "academic_admissionintake",
                     },
                 ),
                 migrations.CreateModel(
-                    name='Admission',
+                    name="Admission",
                     fields=[
-                        ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                        ('created_at', models.DateTimeField(auto_now_add=True, db_index=True)),
-                        ('updated_at', models.DateTimeField(auto_now=True)),
-                        ('child_name', models.CharField(max_length=255)),
-                        ('child_dob', models.DateField(default=django.utils.timezone.now)),
-                        ('child_gender', models.CharField(choices=[('Male', 'Male'), ('Female', 'Female')], max_length=10)),
-                        ('previous_school', models.CharField(blank=True, max_length=255)),
-                        ('program', models.CharField(max_length=50)),
-                        ('class_applied', models.CharField(max_length=100)),
-                        ('parent_name', models.CharField(max_length=255)),
-                        ('parent_email', models.EmailField(max_length=254)),
-                        ('parent_phone', models.CharField(max_length=50)),
-                        ('parent_address', models.TextField()),
-                        ('relationship', models.CharField(choices=[('Father', 'Father'), ('Mother', 'Mother'), ('Guardian', 'Guardian')], max_length=20)),
-                        ('status', models.CharField(choices=[('pending', 'Pending'), ('reviewed', 'Reviewed'), ('accepted', 'Accepted'), ('rejected', 'Rejected')], default='pending', max_length=20)),
-                        ('admin_notes', models.TextField(blank=True)),
-                        ('reviewed_at', models.DateTimeField(blank=True, null=True)),
-                        ('selected_package_items', models.JSONField(blank=True, default=list)),
-                        ('intake', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='applications', to='admissions.admissionintake')),
-                        ('reviewed_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL)),
-                        ('school', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='%(class)s_related', to='schools.school')),
+                        (
+                            "id",
+                            models.BigAutoField(
+                                auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                            ),
+                        ),
+                        ("created_at", models.DateTimeField(auto_now_add=True, db_index=True)),
+                        ("updated_at", models.DateTimeField(auto_now=True)),
+                        ("child_name", models.CharField(max_length=255)),
+                        ("child_dob", models.DateField(default=django.utils.timezone.now)),
+                        (
+                            "child_gender",
+                            models.CharField(choices=[("Male", "Male"), ("Female", "Female")], max_length=10),
+                        ),
+                        ("previous_school", models.CharField(blank=True, max_length=255)),
+                        ("program", models.CharField(max_length=50)),
+                        ("class_applied", models.CharField(max_length=100)),
+                        ("parent_name", models.CharField(max_length=255)),
+                        ("parent_email", models.EmailField(max_length=254)),
+                        ("parent_phone", models.CharField(max_length=50)),
+                        ("parent_address", models.TextField()),
+                        (
+                            "relationship",
+                            models.CharField(
+                                choices=[("Father", "Father"), ("Mother", "Mother"), ("Guardian", "Guardian")],
+                                max_length=20,
+                            ),
+                        ),
+                        (
+                            "status",
+                            models.CharField(
+                                choices=[
+                                    ("pending", "Pending"),
+                                    ("reviewed", "Reviewed"),
+                                    ("accepted", "Accepted"),
+                                    ("rejected", "Rejected"),
+                                ],
+                                default="pending",
+                                max_length=20,
+                            ),
+                        ),
+                        ("admin_notes", models.TextField(blank=True)),
+                        ("reviewed_at", models.DateTimeField(blank=True, null=True)),
+                        ("selected_package_items", models.JSONField(blank=True, default=list)),
+                        (
+                            "intake",
+                            models.ForeignKey(
+                                blank=True,
+                                null=True,
+                                on_delete=django.db.models.deletion.CASCADE,
+                                related_name="applications",
+                                to="admissions.admissionintake",
+                            ),
+                        ),
+                        (
+                            "reviewed_by",
+                            models.ForeignKey(
+                                blank=True,
+                                null=True,
+                                on_delete=django.db.models.deletion.SET_NULL,
+                                to=settings.AUTH_USER_MODEL,
+                            ),
+                        ),
+                        (
+                            "school",
+                            models.ForeignKey(
+                                on_delete=django.db.models.deletion.CASCADE,
+                                related_name="%(class)s_related",
+                                to="schools.school",
+                            ),
+                        ),
                     ],
                     options={
-                        'db_table': 'academic_admission',
+                        "db_table": "academic_admission",
                     },
                 ),
             ],

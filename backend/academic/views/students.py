@@ -45,19 +45,19 @@ class StudentViewSet(TenantViewSet):
         # 1. Fetch all students in one query
         student_ids = list(promotions.keys())
         students = Student.objects.filter(pk__in=student_ids).select_related("school")
-        
+
         # 2. Fetch all unique target classes in one query
         target_class_ids = set(cid for cid in promotions.values() if cid != "graduate")
         classes = {str(c.id): c for c in Class.objects.filter(pk__in=target_class_ids)}
-        
+
         updated_students = []
         for student in students:
             # Check tenant isolation
             if school and student.school != school:
                 continue
-                
+
             next_class_id = str(promotions.get(str(student.id)))
-            
+
             if next_class_id == "graduate":
                 student.current_class = None
                 updated_students.append(student)

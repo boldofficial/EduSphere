@@ -25,6 +25,7 @@ def _school_from_request(serializer):
 # SALARY COMPONENT SERIALIZERS
 # ==========================================
 
+
 class SalaryAllowanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = SalaryAllowance
@@ -42,6 +43,7 @@ class SalaryDeductionSerializer(serializers.ModelSerializer):
 # ==========================================
 # SALARY STRUCTURE SERIALIZER
 # ==========================================
+
 
 class StaffSalaryStructureSerializer(serializers.ModelSerializer):
     staff_name = serializers.CharField(source="staff.name", read_only=True)
@@ -92,6 +94,7 @@ class StaffSalaryStructureSerializer(serializers.ModelSerializer):
 # PAYROLL ENTRY (PAYSLIP) SERIALIZER
 # ==========================================
 
+
 class PayrollEntrySerializer(serializers.ModelSerializer):
     staff_name = serializers.CharField(source="staff.name", read_only=True)
     staff_role = serializers.CharField(source="staff.role", read_only=True)
@@ -133,6 +136,7 @@ class PayrollEntrySerializer(serializers.ModelSerializer):
 # ==========================================
 # PAYROLL RUN SERIALIZER
 # ==========================================
+
 
 class PayrollSerializer(serializers.ModelSerializer):
     generated_by_name = serializers.CharField(source="generated_by.username", read_only=True, default="")

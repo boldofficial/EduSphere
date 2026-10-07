@@ -3,6 +3,7 @@ from django.utils import timezone
 from academic.models import TenantModel
 from users.models import User
 
+
 class AdmissionIntake(TenantModel):
     name = models.CharField(max_length=100)  # e.g. "Fall 2025"
     description = models.TextField(blank=True)

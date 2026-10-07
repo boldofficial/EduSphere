@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import GlobalActivityLog, PlatformAnnouncement, SchoolMessage
+from .models import GlobalActivityLog, PlatformAnnouncement
 
 
 @admin.register(GlobalActivityLog)

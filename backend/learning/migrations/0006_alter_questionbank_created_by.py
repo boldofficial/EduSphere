@@ -7,14 +7,20 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('academic', '0031_conductwarning_commendation_behavioranalytics'),
-        ('learning', '0005_add_question_bank_exam'),
+        ("academic", "0031_conductwarning_commendation_behavioranalytics"),
+        ("learning", "0005_add_question_bank_exam"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='questionbank',
-            name='created_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='created_banks', to='academic.teacher'),
+            model_name="questionbank",
+            name="created_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="created_banks",
+                to="academic.teacher",
+            ),
         ),
     ]

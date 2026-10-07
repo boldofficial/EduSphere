@@ -115,15 +115,27 @@ class AcademicLearnerScopeTests(APITestCase):
             username="student@demo-scope", password="password123", role="STUDENT", school=self.school
         )
         self.parent_user = get_user_model().objects.create_user(
-            username="parent@demo-scope", email="parent@example.com", password="password123",
-            role="PARENT", school=self.school,
+            username="parent@demo-scope",
+            email="parent@example.com",
+            password="password123",
+            role="PARENT",
+            school=self.school,
         )
         self.me = Student.objects.create(
-            school=self.school, student_no="S1", names="Me", gender="Male",
-            current_class=self.student_class, user=self.student_user, parent_email="parent@example.com",
+            school=self.school,
+            student_no="S1",
+            names="Me",
+            gender="Male",
+            current_class=self.student_class,
+            user=self.student_user,
+            parent_email="parent@example.com",
         )
         self.other = Student.objects.create(
-            school=self.school, student_no="S2", names="Other", gender="Female", current_class=self.student_class,
+            school=self.school,
+            student_no="S2",
+            names="Other",
+            gender="Female",
+            current_class=self.student_class,
         )
 
     def _student_ids(self, user):
@@ -189,12 +201,23 @@ class SchoolAnalyticsTests(APITestCase):
             school=self.school, student=student, student_class=cls, session="2025/2026", term="First Term", average=70
         )
         Payment.objects.create(
-            school=self.school, student=student, amount=50000, method="cash", session="2025/2026",
-            term="First Term", reference="AN-1", recorded_by="admin",
+            school=self.school,
+            student=student,
+            amount=50000,
+            method="cash",
+            session="2025/2026",
+            term="First Term",
+            reference="AN-1",
+            recorded_by="admin",
         )
         Expense.objects.create(
-            school=self.school, title="Chalk", amount=2000, category="supplies", session="2025/2026",
-            term="First Term", recorded_by="admin",
+            school=self.school,
+            title="Chalk",
+            amount=2000,
+            category="supplies",
+            session="2025/2026",
+            term="First Term",
+            recorded_by="admin",
         )
 
     def test_summary_aggregates_in_database(self):

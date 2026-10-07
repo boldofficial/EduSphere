@@ -2,10 +2,6 @@ from rest_framework import serializers
 from .models import Feedback
 
 
-from rest_framework import serializers
-from .models import Feedback
-
-
 class FeedbackSerializer(serializers.ModelSerializer):
     school_name = serializers.CharField(source="school.name", read_only=True, default="")
     username = serializers.CharField(source="user.username", read_only=True, default="")

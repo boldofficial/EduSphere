@@ -1,6 +1,5 @@
 import logging
 
-from django.db import models
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 
@@ -76,4 +75,3 @@ def send_school_status_email(sender, instance, created, **kwargs):
             )
         except Exception as e:
             logger.error(f"Failed to queue approval email for {instance.name}: {e}")
-

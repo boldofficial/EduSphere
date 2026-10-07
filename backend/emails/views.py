@@ -1,11 +1,10 @@
-from django.db.models import Count, Q, Sum
-from rest_framework import permissions, viewsets
+from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from .models import EmailCampaign, EmailLog, EmailTemplate
 from .serializers import EmailCampaignSerializer, EmailLogSerializer, EmailTemplateSerializer
-from .tasks import process_campaign_task, send_custom_email_task
+from .tasks import process_campaign_task
 
 
 from users.permissions import IsSuperAdmin

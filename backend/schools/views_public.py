@@ -153,7 +153,7 @@ class RegisterSchoolView(APIView):
                         title="New School Registration",
                         message=f"School '{school.name}' has registered and is active.",
                         category="system",
-                        link=f"/super-admin/schools",
+                        link="/super-admin/schools",
                     )
 
                 # 5. Log the event
@@ -175,7 +175,6 @@ class RegisterSchoolView(APIView):
             raise ValidationError({"detail": "Registration failed. Please try again."})
 
 
-from .models import DemoRequest
 from .serializers import DemoRequestSerializer
 
 

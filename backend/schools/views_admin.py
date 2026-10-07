@@ -25,8 +25,7 @@ from core.pagination import StandardPagination
 from core.tenant_utils import get_request_school
 from core.models import GlobalActivityLog
 from emails.tasks import send_custom_email_task, send_email_task
-from users.permissions import IsSuperAdmin, IsSchoolAdmin
-from users.permissions import IsSuperAdmin, IsSchoolAdmin
+from users.permissions import IsSuperAdmin
 
 from .models import PlatformModule, School, SchoolPayment, SchoolPaymentConfig, Subscription, SubscriptionPlan
 from .serializers import SchoolPaymentConfigAdminSerializer, SchoolSerializer, SubscriptionPlanSerializer
@@ -498,7 +497,6 @@ class AdminDemoRequestView(APIView):
         from emails.utils import send_template_email
 
         from .models import DemoRequest
-
 
         if not pk:
             raise ValidationError({"detail": "Request ID is required"})

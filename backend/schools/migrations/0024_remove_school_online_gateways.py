@@ -15,50 +15,52 @@ def move_off_online_gateways(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('schools', '0023_performance_indexes'),
+        ("schools", "0023_performance_indexes"),
     ]
 
     operations = [
         migrations.RunPython(move_off_online_gateways, migrations.RunPython.noop),
         migrations.RemoveField(
-            model_name='schoolpaymentconfig',
-            name='enable_flutterwave',
+            model_name="schoolpaymentconfig",
+            name="enable_flutterwave",
         ),
         migrations.RemoveField(
-            model_name='schoolpaymentconfig',
-            name='enable_paystack',
+            model_name="schoolpaymentconfig",
+            name="enable_paystack",
         ),
         migrations.RemoveField(
-            model_name='schoolpaymentconfig',
-            name='flutterwave_public_key',
+            model_name="schoolpaymentconfig",
+            name="flutterwave_public_key",
         ),
         migrations.RemoveField(
-            model_name='schoolpaymentconfig',
-            name='flutterwave_secret_key',
+            model_name="schoolpaymentconfig",
+            name="flutterwave_secret_key",
         ),
         migrations.RemoveField(
-            model_name='schoolpaymentconfig',
-            name='flutterwave_webhook_secret',
+            model_name="schoolpaymentconfig",
+            name="flutterwave_webhook_secret",
         ),
         migrations.RemoveField(
-            model_name='schoolpaymentconfig',
-            name='pass_processing_fee_to_parents',
+            model_name="schoolpaymentconfig",
+            name="pass_processing_fee_to_parents",
         ),
         migrations.RemoveField(
-            model_name='schoolpaymentconfig',
-            name='paystack_public_key',
+            model_name="schoolpaymentconfig",
+            name="paystack_public_key",
         ),
         migrations.RemoveField(
-            model_name='schoolpaymentconfig',
-            name='paystack_secret_key',
+            model_name="schoolpaymentconfig",
+            name="paystack_secret_key",
         ),
         migrations.RemoveField(
-            model_name='schoolpaymentconfig',
-            name='paystack_webhook_secret',
+            model_name="schoolpaymentconfig",
+            name="paystack_webhook_secret",
         ),
         migrations.AlterField(
-            model_name='schoolpaymentconfig',
-            name='default_payment_method',
-            field=models.CharField(choices=[('cash', 'Cash'), ('bank_transfer', 'Bank Transfer')], default='bank_transfer', max_length=20),
+            model_name="schoolpaymentconfig",
+            name="default_payment_method",
+            field=models.CharField(
+                choices=[("cash", "Cash"), ("bank_transfer", "Bank Transfer")], default="bank_transfer", max_length=20
+            ),
         ),
     ]

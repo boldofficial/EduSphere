@@ -7,13 +7,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('transport', '0001_initial'),
+        ("transport", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='busattendance',
-            name='date',
+            model_name="busattendance",
+            name="date",
             field=models.DateField(default=django.utils.timezone.localdate),
         ),
     ]

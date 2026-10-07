@@ -23,7 +23,7 @@ def get_request_school(request, allow_super_admin_tenant=True):
         return getattr(user, "school", None)
 
     user_school = getattr(user, "school", None)
-    
+
     # If the user has a school assigned, it MUST match the tenant context
     if user_school:
         if tenant_school and tenant_school != user_school:

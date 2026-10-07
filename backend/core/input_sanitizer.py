@@ -8,7 +8,6 @@ import re
 import html
 from django.core.exceptions import ValidationError
 
-
 # Maximum lengths for common fields
 MAX_LENGTHS = {
     "name": 200,
@@ -30,9 +29,7 @@ DANGEROUS_PATTERNS = [
 ]
 
 
-def sanitize_string(
-    value: str, max_length: int = None, allow_html: bool = False
-) -> str:
+def sanitize_string(value: str, max_length: int = None, allow_html: bool = False) -> str:
     """
     Sanitize a string input.
 

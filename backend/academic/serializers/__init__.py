@@ -41,7 +41,6 @@ __all__ = [
     "PeriodSerializer",
     "TimetableEntrySerializer",
     "TimetableSerializer",
-
     "ConductEntrySerializer",
     "SchoolEventSerializer",
     "GradeRangeSerializer",

@@ -1,13 +1,12 @@
 import random
-import uuid
 from datetime import date, timedelta
 
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
-from academic.models import AttendanceRecord, AttendanceSession, Class, GradingScheme, Student, Subject, Teacher
-from bursary.models import Expense, FeeCategory, FeeItem, Payment, PaymentLineItem
+from academic.models import AttendanceRecord, AttendanceSession, Class, Student, Subject, Teacher
+from bursary.models import Expense, FeeCategory, FeeItem, Payment
 from schools.models import MODULES, School, SchoolSettings, Subscription, SubscriptionPlan
 
 User = get_user_model()

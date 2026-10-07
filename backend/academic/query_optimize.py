@@ -7,7 +7,6 @@ Provides decorators and mixins to optimize database queries.
 from functools import wraps
 from django.db.models import QuerySet
 
-
 # Common prefetch_related configurations
 PREFETCH_CONFIGS = {
     "student_list": [
@@ -46,9 +45,7 @@ SELECT_CONFIGS = {
 }
 
 
-def apply_query_optimization(
-    queryset: QuerySet, optimization_type: str = "default"
-) -> QuerySet:
+def apply_query_optimization(queryset: QuerySet, optimization_type: str = "default") -> QuerySet:
     """
     Apply query optimizations based on type.
 

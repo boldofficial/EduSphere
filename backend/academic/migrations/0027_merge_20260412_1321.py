@@ -6,9 +6,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('academic', '0026_class_report_mode_and_reportcard_early_years_observations'),
-        ('academic', '0026_studentgroup'),
+        ("academic", "0026_class_report_mode_and_reportcard_early_years_observations"),
+        ("academic", "0026_studentgroup"),
     ]
 
-    operations = [
-    ]
+    operations = []

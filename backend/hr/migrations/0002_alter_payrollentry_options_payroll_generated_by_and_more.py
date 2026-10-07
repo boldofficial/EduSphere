@@ -9,32 +9,38 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('hr', '0001_initial'),
+        ("hr", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='payrollentry',
-            options={'ordering': ['staff__name']},
+            name="payrollentry",
+            options={"ordering": ["staff__name"]},
         ),
         migrations.AddField(
-            model_name='payroll',
-            name='generated_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='generated_payrolls', to=settings.AUTH_USER_MODEL),
+            model_name="payroll",
+            name="generated_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="generated_payrolls",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='payroll',
-            name='notes',
-            field=models.TextField(blank=True, help_text='Admin remarks for this payroll run'),
+            model_name="payroll",
+            name="notes",
+            field=models.TextField(blank=True, help_text="Admin remarks for this payroll run"),
         ),
         migrations.AddField(
-            model_name='payrollentry',
-            name='payment_date',
-            field=models.DateField(blank=True, help_text='Date salary was disbursed', null=True),
+            model_name="payrollentry",
+            name="payment_date",
+            field=models.DateField(blank=True, help_text="Date salary was disbursed", null=True),
         ),
         migrations.AddField(
-            model_name='payrollentry',
-            name='payslip_number',
+            model_name="payrollentry",
+            name="payslip_number",
             field=models.CharField(blank=True, db_index=True, max_length=30),
         ),
     ]

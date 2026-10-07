@@ -1,10 +1,9 @@
 from datetime import datetime
 from decimal import Decimal
 
-from django.db.models import Sum, Count, Q, DecimalField, Value
+from django.db.models import Sum, Count, DecimalField, Value
 from django.db.models.functions import Coalesce
 from django.utils import timezone
-from rest_framework import permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -28,10 +27,10 @@ from .serializers import (
     StaffSalaryStructureSerializer,
 )
 
-
 # ==========================================
 # SALARY COMPONENT VIEWSETS
 # ==========================================
+
 
 class SalaryAllowanceViewSet(TenantViewSet):
     queryset = SalaryAllowance.objects.all()
@@ -68,10 +67,12 @@ class StaffSalaryStructureViewSet(TenantViewSet):
 # HR DASHBOARD VIEWSET
 # ==========================================
 
+
 class HRDashboardViewSet(TenantViewSet):
     """
     Provides HR-specific dashboard analytics.
     """
+
     queryset = Payroll.objects.none()
     serializer_class = PayrollSerializer
 
@@ -96,16 +97,12 @@ class HRDashboardViewSet(TenantViewSet):
 
         # Year-to-date expenditure
         current_year = timezone.now().year
-        ytd_expenditure = Payroll.objects.filter(
-            school=school, status="paid", month__year=current_year
-        ).aggregate(
+        ytd_expenditure = Payroll.objects.filter(school=school, status="paid", month__year=current_year).aggregate(
             total=Coalesce(Sum("total_wage_bill"), Value(0), output_field=DecimalField())
         )["total"]
 
         # Payroll status counts
-        payroll_counts = Payroll.objects.filter(school=school).values("status").annotate(
-            count=Count("id")
-        )
+        payroll_counts = Payroll.objects.filter(school=school).values("status").annotate(count=Count("id"))
         status_map = {item["status"]: item["count"] for item in payroll_counts}
 
         # Pending payroll (draft)
@@ -116,11 +113,15 @@ class HRDashboardViewSet(TenantViewSet):
             "academic_staff": academic_staff,
             "non_academic_staff": non_academic_staff,
             "monthly_basic_total": float(monthly_basic),
-            "last_paid_payroll": {
-                "month": last_paid.month.isoformat() if last_paid else None,
-                "total": float(last_paid.total_wage_bill) if last_paid else 0,
-                "paid_at": last_paid.paid_at.isoformat() if last_paid and last_paid.paid_at else None,
-            } if last_paid else None,
+            "last_paid_payroll": (
+                {
+                    "month": last_paid.month.isoformat() if last_paid else None,
+                    "total": float(last_paid.total_wage_bill) if last_paid else 0,
+                    "paid_at": last_paid.paid_at.isoformat() if last_paid and last_paid.paid_at else None,
+                }
+                if last_paid
+                else None
+            ),
             "ytd_expenditure": float(ytd_expenditure),
             "payroll_status": {
                 "draft": status_map.get("draft", 0),
@@ -136,6 +137,7 @@ class HRDashboardViewSet(TenantViewSet):
 # ==========================================
 # PAYROLL VIEWSET
 # ==========================================
+
 
 class PayrollViewSet(TenantViewSet):
     queryset = Payroll.objects.prefetch_related("entries", "entries__staff").all()
@@ -184,9 +186,7 @@ class PayrollViewSet(TenantViewSet):
         active_staff = Teacher.objects.filter(school=school).select_related("salary_structure")
 
         # Ensure all active staff have a salary structure (Bulk Create if missing)
-        existing_staff_ids = set(
-            StaffSalaryStructure.objects.filter(school=school).values_list("staff_id", flat=True)
-        )
+        existing_staff_ids = set(StaffSalaryStructure.objects.filter(school=school).values_list("staff_id", flat=True))
         staff_without_structure = [s.id for s in active_staff if s.id not in existing_staff_ids]
 
         if staff_without_structure:
@@ -325,6 +325,7 @@ class PayrollViewSet(TenantViewSet):
             return Response({"error": "Payslip not found"}, status=404)
 
         from schools.models import SchoolSettings
+
         school_settings = SchoolSettings.objects.filter(school=payroll.school).first()
 
         entry_data = PayrollEntrySerializer(entry, context={"request": request}).data

@@ -7,25 +7,32 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('academic', '0025_seed_academic_terms'),
-        ('schools', '0022_schoolpaymentconfig_pass_processing_fee_to_parents'),
+        ("academic", "0025_seed_academic_terms"),
+        ("schools", "0022_schoolpaymentconfig_pass_processing_fee_to_parents"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='StudentGroup',
+            name="StudentGroup",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True, db_index=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('name', models.CharField(max_length=100)),
-                ('description', models.TextField(blank=True)),
-                ('school', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='%(class)s_related', to='schools.school')),
-                ('students', models.ManyToManyField(related_name='groups', to='academic.student')),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created_at", models.DateTimeField(auto_now_add=True, db_index=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("name", models.CharField(max_length=100)),
+                ("description", models.TextField(blank=True)),
+                (
+                    "school",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="%(class)s_related",
+                        to="schools.school",
+                    ),
+                ),
+                ("students", models.ManyToManyField(related_name="groups", to="academic.student")),
             ],
             options={
-                'abstract': False,
-                'indexes': [models.Index(fields=['school', 'created_at'], name='academic_st_school__3bada6_idx')],
+                "abstract": False,
+                "indexes": [models.Index(fields=["school", "created_at"], name="academic_st_school__3bada6_idx")],
             },
         ),
     ]

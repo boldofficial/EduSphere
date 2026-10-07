@@ -14,7 +14,7 @@ from .base import TenantViewSet
 
 
 class SubjectViewSet(TenantViewSet):
-    queryset = Subject.objects.order_by('name').all()
+    queryset = Subject.objects.order_by("name").all()
     serializer_class = SubjectSerializer
     pagination_class = StandardPagination
 

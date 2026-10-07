@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('academic', '0028_remove_student_ac_student_class_idx_and_more'),
+        ("academic", "0028_remove_student_ac_student_class_idx_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='reportcard',
-            name='ai_academic_outlook',
-            field=models.TextField(blank=True, help_text='Dynamic AI summary of academic standing'),
+            model_name="reportcard",
+            name="ai_academic_outlook",
+            field=models.TextField(blank=True, help_text="Dynamic AI summary of academic standing"),
         ),
     ]

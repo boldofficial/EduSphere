@@ -245,7 +245,9 @@ class SchoolSettingsSerializer(serializers.ModelSerializer):
     school_address = serializers.CharField(source="school.address", required=False, allow_blank=True)
     school_email = serializers.EmailField(source="school.email", required=False, allow_blank=True)
     school_phone = serializers.CharField(source="school.phone", required=False, allow_blank=True)
-    custom_domain = serializers.CharField(source="school.custom_domain", required=False, allow_blank=True, allow_null=True)
+    custom_domain = serializers.CharField(
+        source="school.custom_domain", required=False, allow_blank=True, allow_null=True
+    )
     logo_media = Base64ImageField(source="school.logo", required=False, allow_null=True)
 
     # Media fields

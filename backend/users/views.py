@@ -18,7 +18,6 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from emails.tasks import send_email_task
 from core.throttles import AuthRateThrottle
 
-from .models import User
 from .serializers import CustomTokenObtainPairSerializer
 
 
@@ -77,9 +76,6 @@ class MeView(APIView):
 
     def get(self, request):
         return Response(get_user_me_data(request.user))
-
-
-
 
 
 class ImpersonateUserView(APIView):
@@ -273,7 +269,7 @@ class PasswordResetRequestView(APIView):
             token_generator = PasswordResetTokenGenerator()
             token = token_generator.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
-            root_domain = getattr(settings, 'ROOT_DOMAIN', 'myregistra.net')
+            root_domain = getattr(settings, "ROOT_DOMAIN", "myregistra.net")
             reset_url = f"https://{root_domain}/reset-password?uid={uid}&token={token}"
 
             send_email_task.delay("password_reset", email, {"reset_url": reset_url})

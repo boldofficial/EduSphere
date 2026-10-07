@@ -31,14 +31,14 @@ class Command(BaseCommand):
                 "name": "Welcome Email",
                 "slug": "welcome_email",
                 "subject": "🎉 Welcome to Registra, {{ school_name }}!",
-                "body_html": base_style.format(content=f"""
+                "body_html": base_style.format(content="""
                     <h2 style="color: #1a202c; margin: 0 0 20px 0;">Welcome to Registra!</h2>
-                    <p style="font-size: 16px; line-height: 1.6; margin: 0 0 15px 0;">Hi <strong>{{{{ school_name }}}}</strong>,</p>
+                    <p style="font-size: 16px; line-height: 1.6; margin: 0 0 15px 0;">Hi <strong>{{ school_name }}</strong>,</p>
                     <p style="font-size: 16px; line-height: 1.6; margin: 0 0 15px 0;">Thank you for choosing Registra as your school management platform! We're excited to have you on board.</p>
                     <p style="font-size: 16px; line-height: 1.6; margin: 0 0 15px 0;">Your account is currently under review and will be activated shortly. Once approved, you'll receive a confirmation email with login details.</p>
                     <div style="background: #f0f4ff; padding: 20px; border-radius: 8px; margin: 25px 0;">
                         <p style="margin: 0 0 10px 0; font-weight: 600; color: #667eea;">Your School Domain:</p>
-                        <p style="margin: 0; font-size: 18px; color: #1a202c;"><strong>https://{{{{ domain }}}}.myregistra.net</strong></p>
+                        <p style="margin: 0; font-size: 18px; color: #1a202c;"><strong>https://{{ domain }}.myregistra.net</strong></p>
                     </div>
                     <p style="font-size: 14px; line-height: 1.6; margin: 20px 0 0 0; color: #6c757d;">If you have any questions, feel free to reach out to our support team.</p>
                 """),

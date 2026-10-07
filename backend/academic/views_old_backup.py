@@ -137,7 +137,6 @@ class TenantViewSet(CachingMixin, viewsets.ModelViewSet):
             raise PermissionDenied("School context not found.")
         self.invalidate_cache()
 
-
     def perform_update(self, serializer):
         instance = serializer.instance
         user = self.request.user
@@ -600,13 +599,13 @@ class AITimetableGenerateView(APIView):
             # This is complex because we delete by slot. For simplicity in bulk,
             # we can wipe all affected timetables' entries if that's the intent of 're-generating'.
             # Given the original code deletes selectively, we'll keep that but optimize retrieval.
-            
+
             for entry_data in entries:
                 try:
                     class_id = str(entry_data["class_id"])
                     if class_id not in classes_map:
                         continue
-                    
+
                     c = classes_map[class_id]
 
                     # Get or Create Timetable for class from cache-map
@@ -627,7 +626,7 @@ class AITimetableGenerateView(APIView):
                     ).delete()
 
                     teacher_id = entry_data.get("teacher_id")
-                    
+
                     entries_to_create.append(
                         TimetableEntry(
                             school=school,
@@ -653,6 +652,7 @@ class GradeTrendView(APIView):
     """
     Dedicated API for student and class performance trends.
     """
+
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
@@ -667,21 +667,24 @@ class GradeTrendView(APIView):
             try:
                 student = Student.objects.get(id=student_id, school=school)
                 reports = ReportCard.objects.filter(student=student, school=school).order_by("created_at")
-                
-                return Response({
-                    "student_id": student.id,
-                    "student_name": student.names,
-                    "trend": student.performance_trend,
-                    "history": [
-                        {
-                            "id": r.id,
-                            "session": r.session,
-                            "term": r.term,
-                            "average": r.average,
-                            "trend": r.performance_trend
-                        } for r in reports
-                    ]
-                })
+
+                return Response(
+                    {
+                        "student_id": student.id,
+                        "student_name": student.names,
+                        "trend": student.performance_trend,
+                        "history": [
+                            {
+                                "id": r.id,
+                                "session": r.session,
+                                "term": r.term,
+                                "average": r.average,
+                                "trend": r.performance_trend,
+                            }
+                            for r in reports
+                        ],
+                    }
+                )
             except Student.DoesNotExist:
                 return Response({"error": "Student not found"}, status=404)
 
@@ -689,14 +692,10 @@ class GradeTrendView(APIView):
             try:
                 student_class = Class.objects.get(id=class_id, school=school)
                 students = Student.objects.filter(current_class=student_class, school=school)
-                
-                return Response([
-                    {
-                        "student_id": s.id,
-                        "student_name": s.names,
-                        "trend": s.performance_trend
-                    } for s in students
-                ])
+
+                return Response(
+                    [{"student_id": s.id, "student_name": s.names, "trend": s.performance_trend} for s in students]
+                )
             except Class.DoesNotExist:
                 return Response({"error": "Class not found"}, status=404)
 
@@ -741,7 +740,9 @@ class AdmissionViewSet(TenantViewSet):
         if not password:
             password = os.environ.get("STUDENT_DEFAULT_PASSWORD")
         if not password:
-            return Response({"error": "password is required or STUDENT_DEFAULT_PASSWORD must be configured"}, status=400)
+            return Response(
+                {"error": "password is required or STUDENT_DEFAULT_PASSWORD must be configured"}, status=400
+            )
 
         if not student_no or not class_id:
             return Response({"error": "student_no and class_id are required"}, status=400)
@@ -1240,9 +1241,7 @@ class AIPredictiveInsightsView(APIView):
 
         # 3. Bulk fetch conduct scores (latest 10 per student)
         conduct_map = collections.defaultdict(list)
-        all_conduct = (
-            ConductEntry.objects.filter(student_id__in=student_ids, school=school).order_by("-date").all()
-        )
+        all_conduct = ConductEntry.objects.filter(student_id__in=student_ids, school=school).order_by("-date").all()
         for c in all_conduct:
             if len(conduct_map[c.student_id]) < 10:
                 conduct_map[c.student_id].append({"trait": c.trait, "score": c.score})

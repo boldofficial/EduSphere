@@ -7,26 +7,28 @@ import uuid
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('academic', '0027_merge_20260412_1321'),
+        ("academic", "0027_merge_20260412_1321"),
     ]
 
     operations = [
         migrations.RemoveIndex(
-            model_name='student',
-            name='ac_student_class_idx',
+            model_name="student",
+            name="ac_student_class_idx",
         ),
         migrations.RemoveIndex(
-            model_name='student',
-            name='ac_student_no_idx',
+            model_name="student",
+            name="ac_student_no_idx",
         ),
         migrations.AddField(
-            model_name='reportcard',
-            name='verification_hash',
+            model_name="reportcard",
+            name="verification_hash",
             field=models.UUIDField(blank=True, db_index=True, default=uuid.uuid4, null=True),
         ),
         migrations.AddField(
-            model_name='teacher',
-            name='signature_url',
-            field=models.CharField(blank=True, help_text='URL/Path to digital signature image', max_length=512, null=True),
+            model_name="teacher",
+            name="signature_url",
+            field=models.CharField(
+                blank=True, help_text="URL/Path to digital signature image", max_length=512, null=True
+            ),
         ),
     ]

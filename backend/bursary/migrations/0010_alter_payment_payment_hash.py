@@ -7,13 +7,13 @@ import uuid
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bursary', '0009_backfill_payment_hash'),
+        ("bursary", "0009_backfill_payment_hash"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='payment',
-            name='payment_hash',
+            model_name="payment",
+            name="payment_hash",
             field=models.UUIDField(db_index=True, default=uuid.uuid4, unique=True),
         ),
     ]

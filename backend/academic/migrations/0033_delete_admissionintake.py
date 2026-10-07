@@ -6,15 +6,15 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bursary', '0014_alter_admissionpackage_intake'),
-        ('academic', '0032_remove_admissionintake_school_delete_admission'),
+        ("bursary", "0014_alter_admissionpackage_intake"),
+        ("academic", "0032_remove_admissionintake_school_delete_admission"),
     ]
 
     operations = [
         migrations.SeparateDatabaseAndState(
             state_operations=[
                 migrations.DeleteModel(
-                    name='AdmissionIntake',
+                    name="AdmissionIntake",
                 ),
             ],
             database_operations=[],

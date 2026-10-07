@@ -22,7 +22,9 @@ class IsSchoolManagement(permissions.BasePermission):
     def has_permission(self, request, view):
         user = request.user
         return bool(
-            user and user.is_authenticated and (user.is_superuser or user.role in ("SUPER_ADMIN", "SCHOOL_ADMIN", "STAFF"))
+            user
+            and user.is_authenticated
+            and (user.is_superuser or user.role in ("SUPER_ADMIN", "SCHOOL_ADMIN", "STAFF"))
         )
 
 
@@ -53,15 +55,11 @@ class SchoolAnalyticsView(APIView):
         reports = ReportCard.objects.filter(school=school, session=session)
         payments = Payment.objects.filter(school=school, session=session, status="completed")
         expenses = Expense.objects.filter(school=school, session=session)
-        attendance = AttendanceRecord.objects.filter(
-            school=school, attendance_session__session=session
-        )
+        attendance = AttendanceRecord.objects.filter(school=school, attendance_session__session=session)
 
         perf = {
             row["term"]: row
-            for row in reports.filter(average__gt=0)
-            .values("term")
-            .annotate(avg=Avg("average"), scored=Count("id"))
+            for row in reports.filter(average__gt=0).values("term").annotate(avg=Avg("average"), scored=Count("id"))
         }
         revenue = {row["term"]: row["total"] for row in payments.values("term").annotate(total=Sum("amount"))}
         spent = {row["term"]: row["total"] for row in expenses.values("term").annotate(total=Sum("amount"))}

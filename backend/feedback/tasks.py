@@ -25,9 +25,7 @@ def send_feedback_emails(feedback):
         submitter_email = feedback.guest_email
 
     stars = "★" * feedback.rating
-    rating_label = {1: "Terrible", 2: "Poor", 3: "Okay", 4: "Good", 5: "Excellent"}.get(
-        feedback.rating, "Unknown"
-    )
+    rating_label = {1: "Terrible", 2: "Poor", 3: "Okay", 4: "Good", 5: "Excellent"}.get(feedback.rating, "Unknown")
 
     # ──────────────────────────────────────────────
     # 1. Thank-you email to the submitter

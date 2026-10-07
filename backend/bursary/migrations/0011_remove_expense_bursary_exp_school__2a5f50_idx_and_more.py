@@ -6,20 +6,20 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bursary', '0010_alter_payment_payment_hash'),
+        ("bursary", "0010_alter_payment_payment_hash"),
     ]
 
     operations = [
         migrations.RemoveIndex(
-            model_name='expense',
-            name='bursary_exp_school__2a5f50_idx',
+            model_name="expense",
+            name="bursary_exp_school__2a5f50_idx",
         ),
         migrations.AddIndex(
-            model_name='expense',
-            index=models.Index(fields=['school', 'date'], name='bursary_exp_school__7291eb_idx'),
+            model_name="expense",
+            index=models.Index(fields=["school", "date"], name="bursary_exp_school__7291eb_idx"),
         ),
         migrations.AddIndex(
-            model_name='payment',
-            index=models.Index(fields=['student', 'session', 'term'], name='bursary_pay_student_a40b14_idx'),
+            model_name="payment",
+            index=models.Index(fields=["student", "session", "term"], name="bursary_pay_student_a40b14_idx"),
         ),
     ]

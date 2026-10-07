@@ -48,7 +48,9 @@ class BlogPost(models.Model):
     content_json = models.JSONField(default=dict, blank=True)
     content_html = models.TextField(blank=True)
     excerpt = models.TextField(blank=True, help_text="Short summary shown in cards")
-    featured_image = models.URLField(max_length=500, blank=True, default="", help_text="URL for the featured image (R2 or external)")
+    featured_image = models.URLField(
+        max_length=500, blank=True, default="", help_text="URL for the featured image (R2 or external)"
+    )
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name="posts")
     tags = models.ManyToManyField(Tag, blank=True, related_name="posts")
     author_name = models.CharField(max_length=150, blank=True, default="EduSphere Team")

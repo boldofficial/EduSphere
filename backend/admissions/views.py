@@ -7,7 +7,6 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from core.pagination import StandardPagination
-from core.tenant_utils import get_request_school
 
 from .models import Admission, AdmissionIntake
 from academic.models import Class, Student
@@ -53,7 +52,9 @@ class AdmissionViewSet(TenantViewSet):
         if not password:
             password = os.environ.get("STUDENT_DEFAULT_PASSWORD")
         if not password:
-            return Response({"error": "password is required or STUDENT_DEFAULT_PASSWORD must be configured"}, status=400)
+            return Response(
+                {"error": "password is required or STUDENT_DEFAULT_PASSWORD must be configured"}, status=400
+            )
 
         if not student_no or not class_id:
             return Response({"error": "student_no and class_id are required"}, status=400)
@@ -111,8 +112,7 @@ class AdmissionViewSet(TenantViewSet):
 
                     package = AdmissionPackage.objects.prefetch_related("fees").get(intake=admission.intake)
                     fees_to_create = [
-                        StudentFee(student=student, fee_item=fee, school=student.school)
-                        for fee in package.fees.all()
+                        StudentFee(student=student, fee_item=fee, school=student.school) for fee in package.fees.all()
                     ]
                     if fees_to_create:
                         StudentFee.objects.bulk_create(fees_to_create, ignore_conflicts=True)

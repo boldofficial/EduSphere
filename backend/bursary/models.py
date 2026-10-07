@@ -3,8 +3,7 @@ import uuid
 from django.db import models
 from django.utils import timezone
 
-from academic.models import Class, Student, Teacher, TenantModel
-from schools.models import School
+from academic.models import Class, Student, TenantModel
 from core.security_utils import AuditTrailMixin
 
 
@@ -183,6 +182,7 @@ class FeeDiscount(TenantModel):
     """
     Detailed record of a discount or waiver applied to a student's fee.
     """
+
     DISCOUNT_TYPES = [
         ("percent", "Percentage"),
         ("fixed", "Fixed Amount"),

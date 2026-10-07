@@ -6,7 +6,6 @@ except Exception:  # pragma: no cover - optional runtime dependency
     genai = None
 import json
 import logging
-import os
 
 import requests
 
@@ -88,12 +87,12 @@ class AcademicAI:
     def _generate(self, prompt, model_override=None):
         """Unified generation method with multi-model fallback logic."""
         sanitized_prompt = sanitize_ai_prompt(prompt)
-        
+
         if sanitized_prompt != prompt:
-            logger.info(f"Prompt sanitized to remove potential injection patterns")
-        
+            logger.info("Prompt sanitized to remove potential injection patterns")
+
         prompt = sanitized_prompt
-        
+
         if not prompt:
             logger.warning("Empty prompt after sanitization")
             return None
@@ -109,9 +108,9 @@ class AcademicAI:
             models_to_try = [
                 model_override or self.openrouter_model,
                 "meta-llama/llama-3.1-8b-instruct",
-                "qwen/qwen-2.5-72b-instruct"
+                "qwen/qwen-2.5-72b-instruct",
             ]
-            
+
             # Remove duplicates while preserving order
             seen = set()
             models_to_try = [x for x in models_to_try if not (x in seen or seen.add(x))]
@@ -122,7 +121,7 @@ class AcademicAI:
                 except Exception as e:
                     logger.warning(f"OpenRouter model {model} failed: {str(e)}")
                     continue
-        
+
         return None
 
     def _openrouter_generate(self, prompt, model=None):

@@ -11,29 +11,30 @@ class RevokedTokenReuseDetection:
     Custom token reuse detection that checks Redis blacklist for revoked tokens.
     If a token's JTI is found in Redis, it's been revoked.
     """
-    
+
     def __init__(self, *args, **kwargs):
         self.redis_client = None
         self.ttl = int(os.environ.get("REDIS_BLACKLIST_TTL_SECONDS", 604800))
         self._connect_redis()
-    
+
     def _connect_redis(self):
         """Connect to Redis lazily."""
         redis_url = os.environ.get("REDIS_URL") or os.environ.get("CELERY_BROKER_URL")
-        
+
         if not redis_url:
             logger.debug("No Redis URL configured, skipping blacklist check")
             return
-        
+
         try:
             import redis
+
             self.redis_client = redis.from_url(redis_url)
             self.redis_client.ping()
             logger.info("Redis blacklist detection active")
         except Exception as e:
             logger.warning(f"Redis connection failed: {e}")
             self.redis_client = None
-    
+
     def check(self, token):
         """
         Check if token's JTI is in blacklist.
@@ -41,29 +42,29 @@ class RevokedTokenReuseDetection:
         """
         if not self.redis_client:
             return False
-        
+
         try:
             jti = token.get("jti")
             if not jti:
                 return False
-            
+
             key = f"blacklist:token:{jti}"
             result = self.redis_client.exists(key)
-            
+
             if result:
                 logger.warning(f"Revoked token reuse attempt: {jti}")
                 return True
-            
+
             return False
         except Exception as e:
             logger.error(f"Blacklist check error: {e}")
             return False
-    
+
     def mark_revoked(self, jti: str, ttl: Optional[int] = None):
         """Add a token's JTI to the blacklist."""
         if not self.redis_client:
             return
-        
+
         try:
             key = f"blacklist:token:{jti}"
             self.redis_client.setex(key, ttl or self.ttl, "1")
@@ -77,6 +78,7 @@ class AuditTrailMixin:
     Mixin for models that need automatic field-level change tracking.
     Inherit from this model and call track_changes() in save().
     """
+
     _original_values = None
 
     def __init__(self, *args, **kwargs):
@@ -142,16 +144,17 @@ class TenantRequiredMixin:
     """
 
     def dispatch(self, request, *args, **kwargs):
-        tenant = getattr(request, 'tenant', None)
-        subdomain = getattr(request, 'subdomain', None)
+        tenant = getattr(request, "tenant", None)
+        subdomain = getattr(request, "subdomain", None)
 
         if not tenant and not subdomain:
             from rest_framework.response import Response
             from rest_framework import status
+
             logger.warning(f"Tenant not identified for request to {request.path}")
             return Response(
-                {'error': 'Tenant identification required. Please access through your school domain.'},
-                status=status.HTTP_403_FORBIDDEN
+                {"error": "Tenant identification required. Please access through your school domain."},
+                status=status.HTTP_403_FORBIDDEN,
             )
         return super().dispatch(request, *args, **kwargs)
 
@@ -164,44 +167,44 @@ class TenantIsolationMixin:
 
     def get_queryset(self):
         from rest_framework.exceptions import PermissionDenied
-        
+
         queryset = super().get_queryset()
-        
-        if not hasattr(self.request, 'tenant') or not self.request.tenant:
+
+        if not hasattr(self.request, "tenant") or not self.request.tenant:
             logger.warning(f"Tenant isolation bypass attempt by {self.request.user.email}")
             raise PermissionDenied("Tenant context required for this operation.")
-        
-        if hasattr(queryset, 'filter'):
+
+        if hasattr(queryset, "filter"):
             return queryset.filter(school=self.request.tenant)
-        
+
         return queryset
 
     def perform_create(self, serializer):
         from rest_framework.exceptions import PermissionDenied
-        
-        if not hasattr(self.request, 'tenant') or not self.request.tenant:
+
+        if not hasattr(self.request, "tenant") or not self.request.tenant:
             raise PermissionDenied("Tenant context required for this operation.")
-        
-        if serializer.Meta.model == 'school':
+
+        if serializer.Meta.model == "school":
             return serializer.save()
-        
+
         serializer.save(school=self.request.tenant)
 
 
 SENSITIVE_FIELDS: List[str] = [
-    'password',
-    'token',
-    'secret',
-    'api_key',
-    'apikey',
-    'access_key',
-    'secret_key',
-    'authorization',
-    'credential',
-    'private_key',
-    'session',
-    'csrf',
-    'xsrf',
+    "password",
+    "token",
+    "secret",
+    "api_key",
+    "apikey",
+    "access_key",
+    "secret_key",
+    "authorization",
+    "credential",
+    "private_key",
+    "session",
+    "csrf",
+    "xsrf",
 ]
 
 
@@ -211,23 +214,20 @@ def sanitize_log_data(data: Dict[str, Any]) -> Dict[str, Any]:
     """
     if not isinstance(data, dict):
         return data
-    
+
     sanitized = {}
     for key, value in data.items():
         key_lower = key.lower()
-        
+
         if any(sensitive in key_lower for sensitive in SENSITIVE_FIELDS):
-            sanitized[key] = '***REDACTED***'
+            sanitized[key] = "***REDACTED***"
         elif isinstance(value, dict):
             sanitized[key] = sanitize_log_data(value)
         elif isinstance(value, list):
-            sanitized[key] = [
-                sanitize_log_data(item) if isinstance(item, dict) else item
-                for item in value
-            ]
+            sanitized[key] = [sanitize_log_data(item) if isinstance(item, dict) else item for item in value]
         else:
             sanitized[key] = value
-    
+
     return sanitized
 
 
@@ -237,34 +237,34 @@ def sanitize_ai_prompt(user_input: str) -> str:
     Removes or escapes potentially dangerous patterns.
     """
     dangerous_patterns = [
-        r'ignore\s+(previous|all|above)',
-        r'disregard\s+(previous|all|above|instructions)',
-        r'(?:forget|ignore)\s+instructions',
-        r'(?:you\s+are|you\s+are now)',
-        r'(?:system\s+prompt|system\s+message)',
-        r'^#\s*instructions',
-        r'^#\s*system',
-        r'^\(system\)',
-        r'^\[system\]',
-        r'now\s+you\s+are\s+a',
-        r'pretend\s+to\s+be',
-        r'always\s+say\s+yes',
-        r'cannot\s+refuse',
-        r'do\s+not\s+refuse',
+        r"ignore\s+(previous|all|above)",
+        r"disregard\s+(previous|all|above|instructions)",
+        r"(?:forget|ignore)\s+instructions",
+        r"(?:you\s+are|you\s+are now)",
+        r"(?:system\s+prompt|system\s+message)",
+        r"^#\s*instructions",
+        r"^#\s*system",
+        r"^\(system\)",
+        r"^\[system\]",
+        r"now\s+you\s+are\s+a",
+        r"pretend\s+to\s+be",
+        r"always\s+say\s+yes",
+        r"cannot\s+refuse",
+        r"do\s+not\s+refuse",
     ]
-    
+
     sanitized = user_input
-    
+
     for pattern in dangerous_patterns:
-        sanitized = re.sub(pattern, '[FILTERED]', sanitized, flags=re.IGNORECASE)
-    
-    sanitized = sanitized.replace('```system', '```text')
-    sanitized = sanitized.replace('```SYSTEM', '```text')
-    
+        sanitized = re.sub(pattern, "[FILTERED]", sanitized, flags=re.IGNORECASE)
+
+    sanitized = sanitized.replace("```system", "```text")
+    sanitized = sanitized.replace("```SYSTEM", "```text")
+
     max_length = 2000
     if len(sanitized) > max_length:
-        sanitized = sanitized[:max_length] + '\n\n[Truncated due to length]'
-    
+        sanitized = sanitized[:max_length] + "\n\n[Truncated due to length]"
+
     return sanitized
 
 
@@ -274,22 +274,22 @@ def validate_file_upload(file, allowed_extensions: Optional[List[str]] = None) -
     Returns True if valid, raises ValidationError otherwise.
     """
     from rest_framework.exceptions import ValidationError
-    
+
     if allowed_extensions is None:
-        allowed_extensions = ['pdf', 'png', 'jpg', 'jpeg', 'doc', 'docx', 'xls', 'xlsx', 'txt']
-    
-    filename = file.name if hasattr(file, 'name') else str(file)
-    
-    ext = filename.split('.')[-1].lower() if '.' in filename else ''
+        allowed_extensions = ["pdf", "png", "jpg", "jpeg", "doc", "docx", "xls", "xlsx", "txt"]
+
+    filename = file.name if hasattr(file, "name") else str(file)
+
+    ext = filename.split(".")[-1].lower() if "." in filename else ""
     if ext not in allowed_extensions:
-        raise ValidationError({
-            'detail': f'File type .{ext} is not allowed. Allowed types: {", ".join(allowed_extensions)}'
-        })
-    
+        raise ValidationError(
+            {"detail": f'File type .{ext} is not allowed. Allowed types: {", ".join(allowed_extensions)}'}
+        )
+
     max_size = 10 * 1024 * 1024
-    if hasattr(file, 'size') and file.size > max_size:
-        raise ValidationError({'detail': 'File size exceeds 10MB limit'})
-    
+    if hasattr(file, "size") and file.size > max_size:
+        raise ValidationError({"detail": "File size exceeds 10MB limit"})
+
     return True
 
 
@@ -298,20 +298,20 @@ def check_ip_allowed(request) -> bool:
     Check if request IP is in the allowed list.
     Returns True if allowed or no allowlist configured.
     """
-    allowed_ips = os.environ.get('ALLOWED_IPS', '')
-    
+    allowed_ips = os.environ.get("ALLOWED_IPS", "")
+
     if not allowed_ips:
         return True
-    
-    allowed_ip_list = [ip.strip() for ip in allowed_ips.split(',') if ip.strip()]
-    
-    client_ip = request.META.get('REMOTE_ADDR')
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+
+    allowed_ip_list = [ip.strip() for ip in allowed_ips.split(",") if ip.strip()]
+
+    client_ip = request.META.get("REMOTE_ADDR")
+    x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
     if x_forwarded_for:
-        client_ip = x_forwarded_for.split(',')[0].strip()
-    
+        client_ip = x_forwarded_for.split(",")[0].strip()
+
     if client_ip not in allowed_ip_list:
         logger.warning(f"Blocked request from disallowed IP: {client_ip}")
         return False
-    
+
     return True

@@ -7,18 +7,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bursary', '0014_alter_admissionpackage_intake'),
+        ("bursary", "0014_alter_admissionpackage_intake"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='expense',
-            name='date',
+            model_name="expense",
+            name="date",
             field=models.DateField(default=django.utils.timezone.localdate),
         ),
         migrations.AlterField(
-            model_name='payment',
-            name='date',
+            model_name="payment",
+            name="date",
             field=models.DateField(default=django.utils.timezone.localdate),
         ),
     ]

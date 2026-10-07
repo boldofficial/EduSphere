@@ -1,21 +1,20 @@
-
 from django.db.models import Case, Count, DecimalField, ExpressionWrapper, F, Q, Sum, Value, When
 from django.db.models.functions import Coalesce
 from django.utils import timezone
-from rest_framework import filters, permissions, status, viewsets
+from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
 import logging
+
 logger = logging.getLogger(__name__)
 
-from academic.models import AcademicTerm, Student, Teacher
+from academic.models import AcademicTerm, Student
 from academic.views.base import scope_to_learner
-from core.pagination import LargePagination, StandardPagination
+from core.pagination import StandardPagination
 from core.tenant_utils import get_request_school
 from schools.models import SchoolSettings
-from users.models import User
 
 from .models import (
     AdmissionPackage,
@@ -23,7 +22,6 @@ from .models import (
     FeeCategory,
     FeeItem,
     Payment,
-    PaymentLineItem,
     StudentFee,
     Scholarship,
     FeeDiscount,
@@ -56,18 +54,22 @@ def calculate_expected_revenue(school, session=None, term=None):
     scholarship_discount = Case(
         When(
             scholarship__benefit_type="percentage",
-            then=ExpressionWrapper(F("fee_item__amount") * F("scholarship__value") / Value(100), output_field=money_field),
+            then=ExpressionWrapper(
+                F("fee_item__amount") * F("scholarship__value") / Value(100), output_field=money_field
+            ),
         ),
         When(scholarship__benefit_type="fixed", then=F("scholarship__value")),
         default=Value(0),
         output_field=money_field,
     )
-    net_due = ExpressionWrapper(F("fee_item__amount") - F("discount_amount") - scholarship_discount, output_field=money_field)
+    net_due = ExpressionWrapper(
+        F("fee_item__amount") - F("discount_amount") - scholarship_discount, output_field=money_field
+    )
 
     return (
-        StudentFee.objects.filter(**filters).aggregate(total=Coalesce(Sum(net_due), Value(0), output_field=money_field))[
-            "total"
-        ]
+        StudentFee.objects.filter(**filters).aggregate(
+            total=Coalesce(Sum(net_due), Value(0), output_field=money_field)
+        )["total"]
         or 0
     )
 
@@ -171,21 +173,21 @@ class TenantViewSet(viewsets.ModelViewSet):
 
 
 class FeeCategoryViewSet(TenantViewSet):
-    queryset = FeeCategory.objects.order_by('name').all()
+    queryset = FeeCategory.objects.order_by("name").all()
     serializer_class = FeeCategorySerializer
     pagination_class = StandardPagination
     permission_classes = [permissions.IsAuthenticated, IsAdminOrReadOnly]
 
 
 class ScholarshipViewSet(TenantViewSet):
-    queryset = Scholarship.objects.order_by('-created_at').all()
+    queryset = Scholarship.objects.order_by("-created_at").all()
     serializer_class = ScholarshipSerializer
     pagination_class = StandardPagination
     permission_classes = [permissions.IsAuthenticated, IsAdminOrReadOnly]
 
 
 class FeeItemViewSet(TenantViewSet):
-    queryset = FeeItem.objects.order_by('-created_at').all()
+    queryset = FeeItem.objects.order_by("-created_at").all()
     serializer_class = FeeItemSerializer
     pagination_class = StandardPagination
     permission_classes = [permissions.IsAuthenticated, IsAdminOrReadOnly]
@@ -290,6 +292,7 @@ class DashboardViewSet(viewsets.ViewSet):
 
         # Payroll stats
         from hr.models import Payroll
+
         total_payroll = (
             Payroll.objects.filter(school=school, status="paid").aggregate(
                 total=Coalesce(Sum("total_wage_bill"), Value(0), output_field=DecimalField())
@@ -339,6 +342,7 @@ class DashboardViewSet(viewsets.ViewSet):
 
         # Payroll stats (approximate based on session/term as payroll is monthly)
         from hr.models import Payroll
+
         total_payroll = (
             Payroll.objects.filter(school=school, status="paid").aggregate(
                 total=Coalesce(Sum("total_wage_bill"), Value(0), output_field=DecimalField())
@@ -363,7 +367,7 @@ class DashboardViewSet(viewsets.ViewSet):
     def revenue_summary(self, request):
         school = get_request_school(request)
         term_id = request.query_params.get("term_id")
-        
+
         if term_id:
             term = AcademicTerm.objects.filter(school=school, id=term_id).first()
         else:
@@ -372,59 +376,65 @@ class DashboardViewSet(viewsets.ViewSet):
         if not term:
             return Response({"error": "Academic term not found"}, status=404)
 
-        from django.db.models import Sum, F, DecimalField, Count, Q
-        
+        from django.db.models import Sum, F, DecimalField, Q
+
         # 1. EXPECTED REVENUE CALCULATION
         # Calculate expected using optimized aggregated queries instead of an N+1 loop.
         total_active_students = Student.objects.filter(school=school, status="active").count()
-        
+
         # A. Items targeting specific classes
-        target_items_expected = FeeItem.objects.filter(
-            school=school, session=term.session, term=term.name, active=True, target_class__isnull=False
-        ).annotate(
-            student_count=Count(
-                'target_class__students',
-                filter=Q(target_class__students__status='active', target_class__students__school=school)
+        target_items_expected = (
+            FeeItem.objects.filter(
+                school=school, session=term.session, term=term.name, active=True, target_class__isnull=False
             )
-        ).aggregate(
-            total=Sum(F('amount') * F('student_count'), output_field=DecimalField())
-        )['total'] or 0
-        
+            .annotate(
+                student_count=Count(
+                    "target_class__students",
+                    filter=Q(target_class__students__status="active", target_class__students__school=school),
+                )
+            )
+            .aggregate(total=Sum(F("amount") * F("student_count"), output_field=DecimalField()))["total"]
+            or 0
+        )
+
         # B. Items applicable to all students (no target class)
-        global_items_sum = FeeItem.objects.filter(
-            school=school, session=term.session, term=term.name, active=True, target_class__isnull=True
-        ).aggregate(total=Sum('amount'))['total'] or 0
-        
+        global_items_sum = (
+            FeeItem.objects.filter(
+                school=school, session=term.session, term=term.name, active=True, target_class__isnull=True
+            ).aggregate(total=Sum("amount"))["total"]
+            or 0
+        )
+
         global_expected = global_items_sum * total_active_students
         total_expected = target_items_expected + global_expected
 
         # Phase B: Subtract individual discounts
-        total_discounts = StudentFee.objects.filter(
-            school=school, 
-            fee_item__session=term.session, 
-            fee_item__term=term.name
-        ).aggregate(Sum("discount_amount"))["discount_amount__sum"] or 0
-        
+        total_discounts = (
+            StudentFee.objects.filter(
+                school=school, fee_item__session=term.session, fee_item__term=term.name
+            ).aggregate(Sum("discount_amount"))["discount_amount__sum"]
+            or 0
+        )
+
         net_expected = total_expected - total_discounts
 
         # 2. COLLECTED REVENUE
-        collected = Payment.objects.filter(
-            school=school, 
-            session=term.session, 
-            term=term.name, 
-            status="completed"
-        ).aggregate(Sum("amount"))["amount__sum"] or 0
+        collected = (
+            Payment.objects.filter(school=school, session=term.session, term=term.name, status="completed").aggregate(
+                Sum("amount")
+            )["amount__sum"]
+            or 0
+        )
 
         # 3. FORECASTING logic
-        from datetime import date
         today = timezone.now().date()
-        
+
         days_elapsed = (today - term.start_date).days
         days_total = (term.end_date - term.start_date).days
-        
+
         # Max out elapsed days at total days if term has ended
         days_elapsed = max(0, min(days_elapsed, days_total))
-        
+
         # 3. FORECASTING logic - optimistic fallback if term just started or no data yet
         if days_elapsed >= 7 and collected > 0:
             pace = collected / days_elapsed
@@ -436,28 +446,30 @@ class DashboardViewSet(viewsets.ViewSet):
         outstanding = net_expected - collected
         collection_rate = (collected / net_expected * 100) if net_expected > 0 else 0
 
-        return Response({
-            "term": {
-                "id": term.id,
-                "name": term.name,
-                "session": term.session,
-                "start_date": term.start_date,
-                "end_date": term.end_date,
-            },
-            "expected": float(net_expected),
-            "collected": float(collected),
-            "outstanding": float(outstanding),
-            "forecast": float(round(forecast, 2)),
-            "collection_rate": round(float(collection_rate), 1),
-            "days_elapsed": days_elapsed,
-            "days_total": days_total
-        })
+        return Response(
+            {
+                "term": {
+                    "id": term.id,
+                    "name": term.name,
+                    "session": term.session,
+                    "start_date": term.start_date,
+                    "end_date": term.end_date,
+                },
+                "expected": float(net_expected),
+                "collected": float(collected),
+                "outstanding": float(outstanding),
+                "forecast": float(round(forecast, 2)),
+                "collection_rate": round(float(collection_rate), 1),
+                "days_elapsed": days_elapsed,
+                "days_total": days_total,
+            }
+        )
 
     @action(detail=False, methods=["get"], url_path="revenue-chart")
     def revenue_chart(self, request):
         school = get_request_school(request)
         term_id = request.query_params.get("term_id")
-        
+
         if term_id:
             term = AcademicTerm.objects.filter(school=school, id=term_id).first()
         else:
@@ -468,11 +480,12 @@ class DashboardViewSet(viewsets.ViewSet):
 
         # Generate labels (Weekly)
         from datetime import timedelta
+
         labels = []
         expected_points = []
         collected_points = []
         forecast_points = []
-        
+
         # Calculate full expected revenue (static baseline)
         fee_items = FeeItem.objects.filter(school=school, session=term.session, term=term.name, active=True)
         total_expected = 0
@@ -481,38 +494,42 @@ class DashboardViewSet(viewsets.ViewSet):
             if item.target_class:
                 student_query &= Q(current_class=item.target_class)
             student_count = Student.objects.filter(student_query).count()
-            total_expected += (item.amount * student_count)
-        
-        total_discounts = StudentFee.objects.filter(
-            school=school, 
-            fee_item__session=term.session, 
-            fee_item__term=term.name
-        ).aggregate(Sum("discount_amount"))["discount_amount__sum"] or 0
+            total_expected += item.amount * student_count
+
+        total_discounts = (
+            StudentFee.objects.filter(
+                school=school, fee_item__session=term.session, fee_item__term=term.name
+            ).aggregate(Sum("discount_amount"))["discount_amount__sum"]
+            or 0
+        )
         net_expected = float(total_expected - total_discounts)
 
         # Weekly aggregation
         curr_date = term.start_date
         cumulative_collected = 0
         today = timezone.now().date()
-        
+
         week_num = 1
         while curr_date <= term.end_date:
             next_date = curr_date + timedelta(days=7)
             labels.append(f"Week {week_num}")
-            
+
             # Static expected baseline
             expected_points.append(net_expected)
-            
+
             # Sum payments in this range
-            period_collected = Payment.objects.filter(
-                school=school,
-                session=term.session,
-                term=term.name,
-                status="completed",
-                date__gte=curr_date,
-                date__lt=next_date
-            ).aggregate(Sum("amount"))["amount__sum"] or 0
-            
+            period_collected = (
+                Payment.objects.filter(
+                    school=school,
+                    session=term.session,
+                    term=term.name,
+                    status="completed",
+                    date__gte=curr_date,
+                    date__lt=next_date,
+                ).aggregate(Sum("amount"))["amount__sum"]
+                or 0
+            )
+
             # Update cumulative (only for past/current weeks)
             if curr_date <= today:
                 cumulative_collected += float(period_collected)
@@ -528,16 +545,18 @@ class DashboardViewSet(viewsets.ViewSet):
         # Forecast Projection (Starts from current cumulative collected)
         days_elapsed = (today - term.start_date).days
         days_total = (term.end_date - term.start_date).days
-        
-        current_collected = collected_points[min(len(collected_points)-1, (days_elapsed // 7))] if days_elapsed >= 0 else 0
-        
+
+        current_collected = (
+            collected_points[min(len(collected_points) - 1, (days_elapsed // 7))] if days_elapsed >= 0 else 0
+        )
+
         # Use simple linear pace, fallback to static baseline if term just started
         if days_elapsed >= 7 and current_collected > 0:
-            pace_per_week = (current_collected / (days_elapsed / 7))
+            pace_per_week = current_collected / (days_elapsed / 7)
         else:
             # Linear projection towards net_expected
             pace_per_week = net_expected / (days_total / 7) if days_total > 0 else 0
-        
+
         for i in range(len(labels)):
             if (i * 7) < days_elapsed:
                 forecast_points.append(collected_points[i])
@@ -547,12 +566,9 @@ class DashboardViewSet(viewsets.ViewSet):
                 # Clamp forecast to not exceed 120% of expected revenue (realistic buffer)
                 forecast_points.append(min(round(projected, 2), float(net_expected * 1.2)))
 
-        return Response({
-            "labels": labels,
-            "expected": expected_points,
-            "collected": collected_points,
-            "forecast": forecast_points
-        })
+        return Response(
+            {"labels": labels, "expected": expected_points, "collected": collected_points, "forecast": forecast_points}
+        )
 
 
 class DiscountViewSet(TenantViewSet):
@@ -584,14 +600,12 @@ class DiscountViewSet(TenantViewSet):
             value=value,
             reason=reason,
             applied_by=request.user,
-            override=override
+            override=override,
         )
 
-        return Response({
-            "success": True,
-            "message": f"Successfully applied discounts to {count} students",
-            "count": count
-        })
+        return Response(
+            {"success": True, "message": f"Successfully applied discounts to {count} students", "count": count}
+        )
 
     @action(detail=False, methods=["post"], url_path="preview")
     def preview(self, request):
@@ -608,11 +622,7 @@ class DiscountViewSet(TenantViewSet):
             return Response({"error": "School context not found"}, status=400)
 
         preview_data = preview_bulk_discount(
-            school=school,
-            scope=scope,
-            fee_item_id=fee_item_id,
-            discount_type=discount_type,
-            value=value
+            school=school, scope=scope, fee_item_id=fee_item_id, discount_type=discount_type, value=value
         )
 
         return Response(preview_data)

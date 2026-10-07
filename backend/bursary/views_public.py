@@ -24,9 +24,9 @@ class PublicInvoiceView(APIView):
 
     def get(self, request, payment_hash):
         try:
-            payment = Payment.objects.select_related(
-                "student", "student__current_class", "category", "school"
-            ).get(payment_hash=payment_hash)
+            payment = Payment.objects.select_related("student", "student__current_class", "category", "school").get(
+                payment_hash=payment_hash
+            )
         except Payment.DoesNotExist:
             return Response({"error": "Invoice not found."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -45,9 +45,7 @@ class PublicInvoiceView(APIView):
             }
 
         # Build line items
-        line_items = list(
-            PaymentLineItem.objects.filter(payment=payment).values("purpose", "amount")
-        )
+        line_items = list(PaymentLineItem.objects.filter(payment=payment).values("purpose", "amount"))
 
         data = {
             "payment_hash": str(payment.payment_hash),
@@ -61,9 +59,7 @@ class PublicInvoiceView(APIView):
             "remark": payment.remark,
             "student_name": payment.student.names if payment.student else "N/A",
             "student_class": (
-                payment.student.current_class.name
-                if payment.student and payment.student.current_class
-                else "N/A"
+                payment.student.current_class.name if payment.student and payment.student.current_class else "N/A"
             ),
             "category": payment.category.name if payment.category else "General",
             "line_items": line_items,

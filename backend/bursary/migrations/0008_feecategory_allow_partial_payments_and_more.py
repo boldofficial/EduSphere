@@ -7,18 +7,18 @@ import uuid
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bursary', '0007_payroll_payrollentry_salaryallowance_salarydeduction_and_more'),
+        ("bursary", "0007_payroll_payrollentry_salaryallowance_salarydeduction_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='feecategory',
-            name='allow_partial_payments',
+            model_name="feecategory",
+            name="allow_partial_payments",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='payment',
-            name='payment_hash',
+            model_name="payment",
+            name="payment_hash",
             field=models.UUIDField(blank=True, db_index=True, default=uuid.uuid4, null=True),
         ),
     ]

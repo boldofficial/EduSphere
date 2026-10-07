@@ -4,33 +4,7 @@ from rest_framework.routers import DefaultRouter
 from . import views
 from .views import (
     AcademicDataMigrationViewSet,
-
-    AIInsightsView,
-    AILessonPlanView,
-    AIPredictiveInsightsView,
-    AITimetableGenerateView,
-    AttendanceRecordViewSet,
-    AttendanceSessionViewSet,
-    BroadsheetView,
-    GradeTrendView,
-    ClassViewSet,
-    ConductEntryViewSet,
-    GlobalSearchView,
-    GradeRangeViewSet,
-    GradingSchemeViewSet,
-    LessonViewSet,
-    PeriodViewSet,
-    ReportCardViewSet,
-    SchoolEventViewSet,
-    StudentAchievementViewSet,
-    StudentHistoryViewSet,
-    StudentViewSet,
-    SubjectScoreViewSet,
-    SubjectTeacherViewSet,
-    SubjectViewSet,
-    TeacherViewSet,
     TimetableEntryViewSet,
-    TimetableViewSet,
 )
 from .views_conduct import (
     CommendationViewSet,

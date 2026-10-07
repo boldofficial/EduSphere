@@ -2,15 +2,12 @@
 
 import logging
 
-from django.db import transaction
 from django.db.models import Q
-from rest_framework import permissions
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.exceptions import PermissionDenied
 
-from academic.serializers import Base64ImageField
 from core.tenant_utils import get_request_school
 from core.media_utils import get_media_url
 from schools.models import School, SchoolSettings

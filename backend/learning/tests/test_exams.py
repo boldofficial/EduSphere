@@ -3,17 +3,13 @@ Tests for Learning Module - Exams, Questions, Quizzes
 """
 
 from django.contrib.auth import get_user_model
-from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 
-from academic.models import Class, Student, Subject, Teacher
+from academic.models import Class, Subject
 from schools.models import School
 
-from learning.models import (
-    Assignment, BankQuestion, Exam, ExamPaper, ExamQuestion,
-    Question, QuestionBank, Quiz, Submission
-)
+from learning.models import Exam, QuestionBank
 
 
 class QuestionBankAPITests(APITestCase):
@@ -167,7 +163,7 @@ class TenantIsolationTests(APITestCase):
         self.client = APIClient()
         self.school_a = School.objects.create(name="School A", domain="school-a-learn")
         self.school_b = School.objects.create(name="School B", domain="school-b-learn")
-        
+
         self.admin_a = get_user_model().objects.create_user(
             username="admin-a-learn",
             password="password123",
@@ -180,17 +176,17 @@ class TenantIsolationTests(APITestCase):
             role="SCHOOL_ADMIN",
             school=self.school_b,
         )
-        
+
         self.subject_a = Subject.objects.create(school=self.school_a, name="Math A")
         self.subject_b = Subject.objects.create(school=self.school_b, name="Math B")
 
     def test_school_a_cannot_see_school_b_question_banks(self):
         """School A admin should not see School B's question banks"""
         bank_b = QuestionBank.objects.create(school=self.school_b, name="School B Bank", subject=self.subject_b)
-        
+
         self.client.force_authenticate(user=self.admin_a)
         response = self.client.get("/api/learning/question-banks/", HTTP_X_TENANT_ID=self.school_a.domain)
-        
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         bank_ids = [b["id"] for b in response.data.get("results", [])]
         self.assertNotIn(bank_b.id, bank_ids)
@@ -209,11 +205,11 @@ class TenantIsolationTests(APITestCase):
             start_time="09:00",
             end_time="10:00",
         )
-        
+
         self.client.force_authenticate(user=self.admin_a)
         response = self.client.get(f"/api/learning/exams/{exam_a.id}/", HTTP_X_TENANT_ID=self.school_a.domain)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        
+
         # School B admin should not see School A's exam
         self.client.force_authenticate(user=self.admin_b)
         response = self.client.get(f"/api/learning/exams/{exam_a.id}/", HTTP_X_TENANT_ID=self.school_b.domain)

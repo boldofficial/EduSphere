@@ -57,7 +57,7 @@ class StudentSerializer(serializers.ModelSerializer):
         # Fetch the latest report card for this student to get their most recent trend
         try:
             latest_report = ReportCard.objects.filter(student=obj).order_by("-created_at").first()
-            if latest_report and hasattr(latest_report, 'performance_trend'):
+            if latest_report and hasattr(latest_report, "performance_trend"):
                 return latest_report.performance_trend
         except Exception as e:
             logger.warning(f"Failed to fetch performance trend for student {obj.id}: {e}")

@@ -1,12 +1,11 @@
 from django.db import transaction
-from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
-from core.pagination import LargePagination, StandardPagination
+from core.pagination import StandardPagination
 from core.tenant_utils import get_request_school
 
 from django.conf import settings
@@ -18,7 +17,6 @@ from .serializers import (
     ExamViolationSerializer,
     QuestionSerializer,
     QuizSerializer,
-    StudentAnswerSerializer,
     SubmissionSerializer,
 )
 
@@ -217,17 +215,14 @@ class QuizViewSet(LearningTenantViewSet):
                 return Response({"detail": "You have already submitted this quiz."}, status=status.HTTP_400_BAD_REQUEST)
             # Resume existing
             from .serializers import AttemptSerializer
+
             serializer = AttemptSerializer(attempt)
             return Response(serializer.data)
 
         # Create new
-        attempt = Attempt.objects.create(
-            school=quiz.school,
-            quiz=quiz,
-            student=student,
-            start_time=timezone.now()
-        )
+        attempt = Attempt.objects.create(school=quiz.school, quiz=quiz, student=student, start_time=timezone.now())
         from .serializers import AttemptSerializer
+
         serializer = AttemptSerializer(attempt)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -245,14 +240,11 @@ class QuizViewSet(LearningTenantViewSet):
 
         # Find existing attempt or create one (though it should be created by start_attempt)
         attempt, created = Attempt.objects.get_or_create(
-            school=quiz.school, 
-            quiz=quiz, 
-            student=student,
-            defaults={'start_time': timezone.now()}
+            school=quiz.school, quiz=quiz, student=student, defaults={"start_time": timezone.now()}
         )
 
         if attempt.submit_time and not created:
-             return Response({"detail": "You have already submitted this quiz"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "You have already submitted this quiz"}, status=status.HTTP_400_BAD_REQUEST)
 
         attempt.submit_time = timezone.now()
 
@@ -373,12 +365,12 @@ class AttemptViewSet(LearningTenantViewSet):
         if request.method == "GET":
             # For teachers/admins to view violation logs for this attempt
             violations = attempt.violations.all().order_by("-timestamp")
-            serializer = ExamViolationSerializer(violations, many=True, context={'request': request})
+            serializer = ExamViolationSerializer(violations, many=True, context={"request": request})
             return Response(serializer.data)
 
         # POST logic: Student logging a violation
         count = request.data.get("count", 1)  # Usually frontend tracks the count and sends it
-        
+
         # Save violation
         violation = ExamViolation.objects.create(
             school=attempt.school,
@@ -386,7 +378,7 @@ class AttemptViewSet(LearningTenantViewSet):
             count=count,
         )
 
-        max_violations = getattr(settings, 'CBT_MAX_VIOLATIONS', 3)
+        max_violations = getattr(settings, "CBT_MAX_VIOLATIONS", 3)
         auto_submit = False
 
         # Check threshold
@@ -396,13 +388,12 @@ class AttemptViewSet(LearningTenantViewSet):
             # Calculate score using existing answers just in case
             attempt.total_score = sum(a.score for a in attempt.answers.all())
             attempt.save()
-            
+
             violation.auto_submitted = True
             violation.save()
             auto_submit = True
 
-        return Response({
-            "success": True,
-            "auto_submitted": auto_submit,
-            "message": "Violation logged securely."
-        }, status=status.HTTP_201_CREATED)
+        return Response(
+            {"success": True, "auto_submitted": auto_submit, "message": "Violation logged securely."},
+            status=status.HTTP_201_CREATED,
+        )

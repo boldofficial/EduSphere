@@ -764,9 +764,7 @@ class GlobalActivityLogViewSet(viewsets.ReadOnlyModelViewSet):
 
         search_query = self.request.query_params.get("q")
         if search_query:
-            qs = qs.filter(
-                Q(description__icontains=search_query) | Q(user__username__icontains=search_query)
-            )
+            qs = qs.filter(Q(description__icontains=search_query) | Q(user__username__icontains=search_query))
 
         return qs
 

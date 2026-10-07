@@ -1,7 +1,6 @@
 """Data migration ViewSet — CSV import/export for students."""
 
 import csv
-import io
 
 from django.db import transaction
 from django.http import HttpResponse

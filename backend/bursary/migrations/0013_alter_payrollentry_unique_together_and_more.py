@@ -6,55 +6,55 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bursary', '0012_merge_20260412_1321'),
+        ("bursary", "0012_merge_20260412_1321"),
     ]
 
     operations = [
         migrations.AlterUniqueTogether(
-            name='payrollentry',
+            name="payrollentry",
             unique_together=None,
         ),
         migrations.RemoveField(
-            model_name='payrollentry',
-            name='payroll',
+            model_name="payrollentry",
+            name="payroll",
         ),
         migrations.RemoveField(
-            model_name='payrollentry',
-            name='school',
+            model_name="payrollentry",
+            name="school",
         ),
         migrations.RemoveField(
-            model_name='payrollentry',
-            name='staff',
+            model_name="payrollentry",
+            name="staff",
         ),
         migrations.RemoveField(
-            model_name='salaryallowance',
-            name='school',
+            model_name="salaryallowance",
+            name="school",
         ),
         migrations.RemoveField(
-            model_name='salarydeduction',
-            name='school',
+            model_name="salarydeduction",
+            name="school",
         ),
         migrations.RemoveField(
-            model_name='staffsalarystructure',
-            name='school',
+            model_name="staffsalarystructure",
+            name="school",
         ),
         migrations.RemoveField(
-            model_name='staffsalarystructure',
-            name='staff',
+            model_name="staffsalarystructure",
+            name="staff",
         ),
         migrations.DeleteModel(
-            name='Payroll',
+            name="Payroll",
         ),
         migrations.DeleteModel(
-            name='PayrollEntry',
+            name="PayrollEntry",
         ),
         migrations.DeleteModel(
-            name='SalaryAllowance',
+            name="SalaryAllowance",
         ),
         migrations.DeleteModel(
-            name='SalaryDeduction',
+            name="SalaryDeduction",
         ),
         migrations.DeleteModel(
-            name='StaffSalaryStructure',
+            name="StaffSalaryStructure",
         ),
     ]

@@ -6,14 +6,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('contenttypes', '0002_remove_content_type_name'),
-        ('lms', '0001_initial'),
-        ('schools', '0022_schoolpaymentconfig_pass_processing_fee_to_parents'),
+        ("contenttypes", "0002_remove_content_type_name"),
+        ("lms", "0001_initial"),
+        ("schools", "0022_schoolpaymentconfig_pass_processing_fee_to_parents"),
     ]
 
     operations = [
         migrations.AddConstraint(
-            model_name='discussionthread',
-            constraint=models.UniqueConstraint(fields=('school', 'content_type', 'object_id'), name='unique_thread_per_resource'),
+            model_name="discussionthread",
+            constraint=models.UniqueConstraint(
+                fields=("school", "content_type", "object_id"), name="unique_thread_per_resource"
+            ),
         ),
     ]

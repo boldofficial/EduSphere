@@ -1,6 +1,5 @@
 import logging
 import os
-from io import BytesIO
 
 from celery import shared_task
 
@@ -10,7 +9,7 @@ from django.template.loader import render_to_string
 
 from schools.models import School, SchoolSettings
 
-from .models import Class, ReportCard, Student
+from .models import Class, ReportCard
 
 logger = logging.getLogger(__name__)
 
@@ -24,21 +23,21 @@ def generate_report_card_pdf(self, report_card_id: int, school_id: int):
     try:
         from weasyprint import HTML
 
-        report_card = ReportCard.objects.select_related(
-            'student', 'student_class', 'school'
-        ).get(id=report_card_id, school_id=school_id)
+        report_card = ReportCard.objects.select_related("student", "student_class", "school").get(
+            id=report_card_id, school_id=school_id
+        )
 
         # Render HTML template
         html_content = render_to_string(
-            'academic/report_card.html',
+            "academic/report_card.html",
             {
-                'report_card': report_card,
-                'student': report_card.student,
-                'class': report_card.student_class,
-                'school': report_card.school,
-                'MEDIA_URL': settings.MEDIA_URL,
-                'STATIC_URL': settings.STATIC_URL,
-            }
+                "report_card": report_card,
+                "student": report_card.student,
+                "class": report_card.student_class,
+                "school": report_card.school,
+                "MEDIA_URL": settings.MEDIA_URL,
+                "STATIC_URL": settings.STATIC_URL,
+            },
         )
 
         # Generate PDF
@@ -51,18 +50,18 @@ def generate_report_card_pdf(self, report_card_id: int, school_id: int):
         # Ensure directory exists
         os.makedirs(os.path.dirname(media_path), exist_ok=True)
 
-        with open(media_path, 'wb') as f:
+        with open(media_path, "wb") as f:
             f.write(pdf_file)
 
         # Return URL
         url = f"{settings.MEDIA_URL}{filename}"
 
         logger.info(f"Generated PDF for report card {report_card_id}: {url}")
-        return {'url': url, 'filename': filename}
+        return {"url": url, "filename": filename}
 
     except Exception as e:
         logger.error(f"PDF generation failed for {report_card_id}: {e}")
-        return {'error': str(e)}
+        return {"error": str(e)}
 
 
 @shared_task(bind=True)
@@ -75,25 +74,22 @@ def generate_class_report_cards(self, class_id: int, session: str, term: str, sc
         from weasyprint import HTML
 
         reports = ReportCard.objects.filter(
-            student_class_id=class_id,
-            session=session,
-            term=term,
-            school_id=school_id
-        ).select_related('student', 'student_class', 'school')
+            student_class_id=class_id, session=session, term=term, school_id=school_id
+        ).select_related("student", "student_class", "school")
 
         urls = []
         for report in reports:
             try:
                 html_content = render_to_string(
-                    'academic/report_card.html',
+                    "academic/report_card.html",
                     {
-                        'report_card': report,
-                        'student': report.student,
-                        'class': report.student_class,
-                        'school': report.school,
-                        'MEDIA_URL': settings.MEDIA_URL,
-                        'STATIC_URL': settings.STATIC_URL,
-                    }
+                        "report_card": report,
+                        "student": report.student,
+                        "class": report.student_class,
+                        "school": report.school,
+                        "MEDIA_URL": settings.MEDIA_URL,
+                        "STATIC_URL": settings.STATIC_URL,
+                    },
                 )
 
                 pdf_file = HTML(string=html_content).write_pdf()
@@ -101,23 +97,20 @@ def generate_class_report_cards(self, class_id: int, session: str, term: str, sc
                 media_path = os.path.join(settings.MEDIA_ROOT, filename)
 
                 os.makedirs(os.path.dirname(media_path), exist_ok=True)
-                with open(media_path, 'wb') as f:
+                with open(media_path, "wb") as f:
                     f.write(pdf_file)
 
-                urls.append({
-                    'report_id': report.id,
-                    'url': f"{settings.MEDIA_URL}{filename}"
-                })
+                urls.append({"report_id": report.id, "url": f"{settings.MEDIA_URL}{filename}"})
 
             except Exception as e:
                 logger.warning(f"Failed to generate PDF for report {report.id}: {e}")
 
         logger.info(f"Generated {len(urls)} PDFs for class {class_id}")
-        return {'generated': len(urls), 'urls': urls}
+        return {"generated": len(urls), "urls": urls}
 
     except Exception as e:
         logger.error(f"Batch PDF generation failed: {e}")
-        return {'error': str(e)}
+        return {"error": str(e)}
 
 
 @shared_task(bind=True)
@@ -191,12 +184,7 @@ def generate_school_report_cards(self, school_id, session, term):
     try:
         classes = Class.objects.filter(school_id=school_id)
         for cls in classes:
-            generate_class_report_cards.delay(
-                class_id=cls.id,
-                session=session,
-                term=term,
-                school_id=school_id
-            )
+            generate_class_report_cards.delay(class_id=cls.id, session=session, term=term, school_id=school_id)
         return {"status": "triggered", "classes_count": classes.count()}
     except Exception as e:
         logger.error(f"School report generation failed for {school_id}: {e}")

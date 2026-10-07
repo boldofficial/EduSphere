@@ -2,8 +2,12 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
 from .views import (
-    BusStopViewSet, BusRouteViewSet, TransportAssignmentViewSet,
-    TransportFeeViewSet, BusAttendanceViewSet, TransportPaymentViewSet
+    BusStopViewSet,
+    BusRouteViewSet,
+    TransportAssignmentViewSet,
+    TransportFeeViewSet,
+    BusAttendanceViewSet,
+    TransportPaymentViewSet,
 )
 
 router = DefaultRouter()

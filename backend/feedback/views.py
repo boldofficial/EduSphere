@@ -57,15 +57,16 @@ class FeedbackStatsView(APIView):
             return Response({"detail": "Forbidden."}, status=status.HTTP_403_FORBIDDEN)
 
         from django.db.models import Avg, Count
+
         stats = Feedback.objects.aggregate(
             total=Count("id"),
             average_rating=Avg("rating"),
         )
-        distribution = {
-            str(i): Feedback.objects.filter(rating=i).count() for i in range(1, 6)
-        }
-        return Response({
-            "total": stats["total"] or 0,
-            "average_rating": round(stats["average_rating"] or 0, 2),
-            "distribution": distribution,
-        })
+        distribution = {str(i): Feedback.objects.filter(rating=i).count() for i in range(1, 6)}
+        return Response(
+            {
+                "total": stats["total"] or 0,
+                "average_rating": round(stats["average_rating"] or 0, 2),
+                "distribution": distribution,
+            }
+        )

@@ -7,29 +7,36 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('academic', '0023_reportcard_ai_performance_remark_and_more'),
-        ('schools', '0022_schoolpaymentconfig_pass_processing_fee_to_parents'),
+        ("academic", "0023_reportcard_ai_performance_remark_and_more"),
+        ("schools", "0022_schoolpaymentconfig_pass_processing_fee_to_parents"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='AcademicTerm',
+            name="AcademicTerm",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True, db_index=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('session', models.CharField(max_length=50)),
-                ('name', models.CharField(max_length=50)),
-                ('start_date', models.DateField()),
-                ('end_date', models.DateField()),
-                ('is_current', models.BooleanField(default=False)),
-                ('school', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='%(class)s_related', to='schools.school')),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created_at", models.DateTimeField(auto_now_add=True, db_index=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("session", models.CharField(max_length=50)),
+                ("name", models.CharField(max_length=50)),
+                ("start_date", models.DateField()),
+                ("end_date", models.DateField()),
+                ("is_current", models.BooleanField(default=False)),
+                (
+                    "school",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="%(class)s_related",
+                        to="schools.school",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Academic Term',
-                'verbose_name_plural': 'Academic Terms',
-                'ordering': ['-start_date'],
-                'unique_together': {('school', 'session', 'name')},
+                "verbose_name": "Academic Term",
+                "verbose_name_plural": "Academic Terms",
+                "ordering": ["-start_date"],
+                "unique_together": {("school", "session", "name")},
             },
         ),
     ]

@@ -54,7 +54,7 @@ def setup_pilot_plan():
     )
 
     if not created:
-        print(f"Updating existing Enterprise plan to Free Pilot (NGN 0.00)")
+        print("Updating existing Enterprise plan to Free Pilot (NGN 0.00)")
         plan.price = 0.00
         plan.is_active = True
         plan.duration_days = 730

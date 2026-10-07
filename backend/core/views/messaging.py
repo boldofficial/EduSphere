@@ -192,9 +192,9 @@ class ConversationViewSet(CachingMixin, viewsets.ModelViewSet):
 
         # Guarantee at least one admin recipient for non-admin users
         if role not in {"SCHOOL_ADMIN", "SUPER_ADMIN"} and not any(r["type"] == "admin" for r in recipient_rows):
-            admin_fallback = User.objects.filter(
-                school=school, role="SCHOOL_ADMIN", is_active=True
-            ).exclude(id=user.id).first()
+            admin_fallback = (
+                User.objects.filter(school=school, role="SCHOOL_ADMIN", is_active=True).exclude(id=user.id).first()
+            )
             if admin_fallback:
                 recipient_rows.append(
                     {
@@ -302,15 +302,11 @@ class ConversationViewSet(CachingMixin, viewsets.ModelViewSet):
             )
 
             # Mark sender as read up to now
-            ConversationParticipant.objects.filter(user=user, conversation=conv).update(
-                last_read_at=timezone.now()
-            )
+            ConversationParticipant.objects.filter(user=user, conversation=conv).update(last_read_at=timezone.now())
 
             # Notify other participants
             other_participants = (
-                ConversationParticipant.objects.filter(conversation=conv)
-                .exclude(user=user)
-                .select_related("user")
+                ConversationParticipant.objects.filter(conversation=conv).exclude(user=user).select_related("user")
             )
             notifications = [
                 Notification(
