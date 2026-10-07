@@ -4,6 +4,7 @@ Base classes and permissions shared across all academic views.
 
 import logging
 
+from django.db import models
 from rest_framework import permissions, viewsets
 from rest_framework.exceptions import PermissionDenied
 
@@ -35,15 +36,34 @@ def is_school_staff(user):
     return bool(user and user.is_authenticated and (user.is_superuser or user.role in STAFF_ROLES))
 
 
+def teacher_class_ids(user):
+    """Classes a teacher is responsible for: class teacher or subject teacher."""
+    from academic.models import Class
+
+    teacher = getattr(user, "teacher_profile", None)
+    if not teacher:
+        return []
+    return list(
+        Class.objects.filter(models.Q(class_teacher=teacher) | models.Q(subject_teachers__teacher=teacher))
+        .values_list("id", flat=True)
+        .distinct()
+    )
+
+
 def scope_to_learner(qs, user, student_path="student"):
-    """Limit a queryset to the requesting student's own records, or a parent's children."""
-    if is_school_staff(user):
+    """
+    Limit a student-linked queryset by role: admins/staff see everything, teachers see students in
+    their own classes, students see themselves and parents see their children.
+    """
+    prefix = f"{student_path}__" if student_path != "pk" else ""
+    if user.is_superuser or user.role in ("SUPER_ADMIN", "SCHOOL_ADMIN", "STAFF"):
         return qs
+    if user.role == "TEACHER":
+        return qs.filter(**{f"{prefix}current_class_id__in": teacher_class_ids(user)})
     if user.role == "STUDENT":
         student = getattr(user, "student_profile", None)
         return qs.filter(**{student_path: student.pk}) if student else qs.none()
     if user.role == "PARENT":
-        prefix = f"{student_path}__" if student_path != "pk" else ""
         return qs.filter(**{f"{prefix}parent_email__iexact": user.email}) if user.email else qs.none()
     return qs.none()
 

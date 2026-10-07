@@ -11,6 +11,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 from academic.models import AcademicTerm, Student, Teacher
+from academic.views.base import scope_to_learner
 from core.pagination import LargePagination, StandardPagination
 from core.tenant_utils import get_request_school
 from schools.models import SchoolSettings
@@ -212,11 +213,7 @@ class StudentFeeViewSet(TenantViewSet):
     def get_queryset(self):
         qs = super().get_queryset()
         user = self.request.user
-        if user.role == "STUDENT":
-            student = getattr(user, "student_profile", None)
-            qs = qs.filter(student=student) if student else qs.none()
-        elif user.role == "PARENT":
-            qs = qs.filter(student__parent_email__iexact=user.email)
+        qs = scope_to_learner(qs, user)
         return qs
 
 
@@ -232,11 +229,7 @@ class PaymentViewSet(TenantViewSet):
         session, term = _resolve_period_filters(self.request, school)
         student_id = self.request.query_params.get("student")
 
-        if user.role == "STUDENT":
-            student = getattr(user, "student_profile", None)
-            qs = qs.filter(student=student) if student else qs.none()
-        elif user.role == "PARENT":
-            qs = qs.filter(student__parent_email__iexact=user.email)
+        qs = scope_to_learner(qs, user)
 
         if student_id:
             qs = qs.filter(student_id=student_id)

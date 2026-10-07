@@ -146,3 +146,28 @@ class AcademicLearnerScopeTests(APITestCase):
             HTTP_X_TENANT_ID=self.school.domain,
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class TeacherScopeTests(APITestCase):
+    def setUp(self):
+        from academic.models import Teacher
+
+        self.school = School.objects.create(name="Teacher School", domain="demo-teacher-scope")
+        self.teacher_user = get_user_model().objects.create_user(
+            username="teacher@demo-teacher-scope", password="password123", role="TEACHER", school=self.school
+        )
+        teacher = Teacher.objects.create(school=self.school, user=self.teacher_user)
+        self.my_class = Class.objects.create(name="JSS 1A", school=self.school, class_teacher=teacher)
+        other_class = Class.objects.create(name="JSS 1B", school=self.school)
+        self.mine = Student.objects.create(
+            school=self.school, student_no="T1", names="Mine", gender="Male", current_class=self.my_class
+        )
+        Student.objects.create(
+            school=self.school, student_no="T2", names="Not Mine", gender="Male", current_class=other_class
+        )
+
+    def test_teacher_sees_only_students_in_own_classes(self):
+        self.client.force_authenticate(user=self.teacher_user)
+        response = self.client.get("/api/academic/students/", HTTP_X_TENANT_ID=self.school.domain)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual({row["id"] for row in response.data["results"]}, {self.mine.id})

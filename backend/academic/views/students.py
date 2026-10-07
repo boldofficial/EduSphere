@@ -105,7 +105,7 @@ class StudentHistoryViewSet(TenantViewSet):
     pagination_class = StandardPagination
 
     def get_queryset(self):
-        qs = super().get_queryset()
+        qs = scope_to_learner(super().get_queryset(), self.request.user)
         student_id = self.request.query_params.get("student")
         if student_id:
             qs = qs.filter(student__id=student_id)
@@ -118,7 +118,7 @@ class StudentAchievementViewSet(TenantViewSet):
     pagination_class = StandardPagination
 
     def get_queryset(self):
-        qs = super().get_queryset()
+        qs = scope_to_learner(super().get_queryset(), self.request.user)
         student_id = self.request.query_params.get("student")
         if student_id:
             qs = qs.filter(student__id=student_id)
