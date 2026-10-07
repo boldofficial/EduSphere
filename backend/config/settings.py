@@ -207,6 +207,11 @@ if DATABASES["default"].get("ENGINE") == "django.db.backends.postgresql":
         }
     )
 
+# PgBouncer in transaction-pooling mode: server-side cursors break across pooled transactions.
+if os.environ.get("DB_POOLER") == "pgbouncer":
+    for _alias in ("default", "replica"):
+        DATABASES[_alias]["DISABLE_SERVER_SIDE_CURSORS"] = True
+
 # NOTE: Coolify manages database connections via DATABASE_URL environment variable
 # with dynamically generated container hostnames. Do not override DB_HOST.
 
