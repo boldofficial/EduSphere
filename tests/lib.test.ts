@@ -49,7 +49,7 @@ describe('getRateLimitConfig', () => {
   it('should return default config for other endpoints', async () => {
     const { getRateLimitConfig, RATE_LIMITS } = await import('@/lib/rate-limit');
 
-    const config = getRateLimitConfig('/api/students');
+    const config = getRateLimitConfig('/api/academic/students/1');
     expect(config.limit).toBe(RATE_LIMITS.default.limit);
   });
 });

@@ -68,6 +68,11 @@ export default [
         'no-console': 'off',
         '@next/next/no-img-element': 'warn',
         '@typescript-eslint/no-require-imports': 'off',
+        // React Compiler advisories: existing code is correct at runtime but not compiler-optimisable.
+        // Kept visible as warnings and tracked in docs/CODE_REVIEW_2026-10.md.
+        'react-hooks/set-state-in-effect': 'warn',
+        'react-hooks/immutability': 'warn',
+        'react-hooks/preserve-manual-memoization': 'warn',
     },
   },
   {

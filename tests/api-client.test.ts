@@ -1,180 +1,63 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-// Mock axios
-vi.mock('axios', async () => {
-  const mockAxiosInstance = {
-    interceptors: {
-      request: { use: vi.fn(), eject: vi.fn(), clear: vi.fn() },
-      response: { use: vi.fn(), eject: vi.fn(), clear: vi.fn() },
-    },
-    get: vi.fn(),
-    post: vi.fn(),
-    put: vi.fn(),
-    patch: vi.fn(),
-    delete: vi.fn(),
-    defaults: { headers: { common: {} } },
-  };
+const { get } = vi.hoisted(() => ({ get: vi.fn() }));
+vi.mock('@/lib/api-client', () => ({ default: { get } }));
 
-  return {
-    __esModule: true,
-    default: vi.fn(() => mockAxiosInstance),
-    create: vi.fn(() => mockAxiosInstance),
-  };
+import { fetchAll, fetchPaginated } from '@/lib/hooks/use-data';
+
+describe('fetchAll', () => {
+  beforeEach(() => get.mockReset());
+
+  it('follows DRF pagination until there is no next page', async () => {
+    get
+      .mockResolvedValueOnce({ data: { results: [1, 2], next: 'page=2' } })
+      .mockResolvedValueOnce({ data: { results: [3], next: null } });
+
+    await expect(fetchAll<number>('academic/students/', { class: 'c1' })).resolves.toEqual([
+      1, 2, 3,
+    ]);
+    expect(get).toHaveBeenCalledTimes(2);
+    expect(get).toHaveBeenLastCalledWith('academic/students/', {
+      params: { page_size: 200, class: 'c1', page: 2 },
+    });
+  });
+
+  it('returns plain array responses as-is', async () => {
+    get.mockResolvedValueOnce({ data: ['a', 'b'] });
+    await expect(fetchAll<string>('core/notifications/')).resolves.toEqual(['a', 'b']);
+  });
 });
 
-describe('API Client', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  afterEach(() => {
-    vi.resetAllMocks();
-  });
-
-  describe('Request Interceptor', () => {
-    it('should add auth token to requests', async () => {
-      // This test verifies the interceptor setup
-      const { apiClient } = await import('@/lib/api-client');
-      expect(apiClient).toBeDefined();
-    });
-
-    it('should handle missing tokens gracefully', async () => {
-      // Verify client can be instantiated without throwing
-      const { apiClient } = await import('@/lib/api-client');
-      expect(apiClient.defaults.headers.common).toBeDefined();
-    });
-  });
-
-  describe('Response Interceptor', () => {
-    it('should handle 401 errors for token refresh', async () => {
-      const { apiClient } = await import('@/lib/api-client');
-      // The client should have response interceptors configured
-      expect(apiClient.interceptors.response).toBeDefined();
+describe('fetchPaginated', () => {
+  it('requests a single page with page_size', async () => {
+    get.mockResolvedValueOnce({ data: { count: 1, results: ['x'], next: null, previous: null } });
+    const page = await fetchPaginated<string>('bursary/payments/', 3, 25, { term: 'First Term' });
+    expect(page.count).toBe(1);
+    expect(get).toHaveBeenLastCalledWith('bursary/payments/', {
+      params: { term: 'First Term', page: 3, page_size: 25 },
     });
   });
 });
 
-describe('Auth Utilities', () => {
-  describe('Cookie Management', () => {
-    it('should have cookie utility functions', async () => {
-      const { getCookie, setCookie, removeCookie } = await import('@/lib/auth-utils');
-
-      expect(typeof getCookie).toBe('function');
-      expect(typeof setCookie).toBe('function');
-      expect(typeof removeCookie).toBe('function');
-    });
-
-    it('should handle cookie retrieval for access token', async () => {
-      const { getCookie, COOKIE_NAMES } = await import('@/lib/auth-utils');
-
-      // Should be able to get access token cookie name
-      expect(COOKIE_NAMES.ACCESS_TOKEN).toBeDefined();
-      expect(COOKIE_NAMES.REFRESH_TOKEN).toBeDefined();
-    });
-  });
-});
-
-describe('Rate Limiting', () => {
-  describe('RATE_LIMITS', () => {
-    it('should have correct limit values', async () => {
-      const { RATE_LIMITS } = await import('@/lib/rate-limit');
-
-      expect(RATE_LIMITS.auth).toBeDefined();
-      expect(RATE_LIMITS.auth.limit).toBeGreaterThan(0);
-      expect(RATE_LIMITS.default).toBeDefined();
-    });
-
-    it('should have correct window duration', async () => {
-      const { RATE_LIMITS } = await import('@/lib/rate-limit');
-
-      expect(RATE_LIMITS.auth.duration).toBeDefined();
-      expect(typeof RATE_LIMITS.auth.duration).toBe('number');
-    });
+describe('auth cookie options', () => {
+  it('uses host-only lax cookies outside production', async () => {
+    const { getCookieOptions } = await import('@/lib/auth-utils');
+    const options = getCookieOptions('access');
+    expect(options).toMatchObject({ httpOnly: true, secure: false, sameSite: 'lax', maxAge: 3600 });
+    expect(options.domain).toBeUndefined();
   });
 
-  describe('getRateLimitConfig', () => {
-    it('should return auth config for auth endpoints', async () => {
-      const { getRateLimitConfig, RATE_LIMITS } = await import('@/lib/rate-limit');
-
-      const config = getRateLimitConfig('/api/auth/login');
-      expect(config).toEqual(RATE_LIMITS.auth);
+  it('scopes production cookies to the root domain', async () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    vi.stubEnv('NEXT_PUBLIC_ROOT_DOMAIN', 'myregistra.net');
+    const { getCookieOptions } = await import('@/lib/auth-utils');
+    expect(getCookieOptions('refresh')).toMatchObject({
+      secure: true,
+      sameSite: 'strict',
+      domain: '.myregistra.net',
+      maxAge: 60 * 60 * 24 * 7,
     });
-
-    it('should return default config for unknown endpoints', async () => {
-      const { getRateLimitConfig, RATE_LIMITS } = await import('@/lib/rate-limit');
-
-      const config = getRateLimitConfig('/api/unknown');
-      expect(config).toEqual(RATE_LIMITS.default);
-    });
-  });
-});
-
-describe('Store', () => {
-  describe('Zustand Store', () => {
-    it('should have required state properties', async () => {
-      const { useAuthStore } = await import('@/lib/store');
-
-      // Check store has expected methods
-      expect(typeof useAuthStore.getState).toBe('function');
-      expect(typeof useAuthStore.setState).toBe('function');
-      expect(typeof useAuthStore.subscribe).toBe('function');
-    });
-
-    it('should have currentUser in initial state', async () => {
-      const { useAuthStore } = await import('@/lib/store');
-
-      const state = useAuthStore.getState();
-      expect('currentUser' in state).toBe(true);
-    });
-
-    it('should have currentRole in initial state', async () => {
-      const { useAuthStore } = await import('@/lib/store');
-
-      const state = useAuthStore.getState();
-      expect('currentRole' in state).toBe(true);
-    });
-  });
-});
-
-describe('Query Client', () => {
-  describe('React Query Configuration', () => {
-    it('should have default query client config', async () => {
-      const { queryClient } = await import('@/lib/query-client');
-
-      expect(queryClient).toBeDefined();
-      expect(typeof queryClient.getQueryData).toBe('function');
-      expect(typeof queryClient.setQueryData).toBe('function');
-    });
-
-    it('should have correct default stale time', async () => {
-      const { defaultQueryFn } = await import('@/lib/query-client');
-
-      // Should have a default query function
-      expect(typeof defaultQueryFn).toBe('function');
-    });
-  });
-});
-
-describe('Types', () => {
-  describe('User Types', () => {
-    it('should have correct UserRole values', async () => {
-      const { UserRole } = await import('@/lib/types');
-
-      expect(UserRole.SUPER_ADMIN).toBe('SUPER_ADMIN');
-      expect(UserRole.SCHOOL_ADMIN).toBe('SCHOOL_ADMIN');
-      expect(UserRole.TEACHER).toBe('TEACHER');
-      expect(UserRole.STUDENT).toBe('STUDENT');
-      expect(UserRole.PARENT).toBe('PARENT');
-      expect(UserRole.STAFF).toBe('STAFF');
-    });
-  });
-
-  describe('API Response Types', () => {
-    it('should have PaginatedResponse type', async () => {
-      const { PaginatedResponse } = await import('@/lib/types');
-
-      // Type should be defined (this is a compile-time check)
-      expect(PaginatedResponse).toBeDefined();
-    });
+    vi.stubEnv('NODE_ENV', 'test');
+    vi.stubEnv('NEXT_PUBLIC_ROOT_DOMAIN', 'localhost');
   });
 });
