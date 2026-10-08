@@ -69,6 +69,17 @@ class School(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def custom_domain_allowed(self):
+        """
+        Custom domains are a paid feature: a school may use one only while it has an active
+        subscription on a plan with custom_domain_enabled. Free (no subscription) cannot.
+        """
+        subscription = getattr(self, "subscription", None)
+        if not subscription or subscription.status != "active":
+            return False
+        return bool(subscription.plan and subscription.plan.custom_domain_enabled)
+
     class Meta:
         indexes = [
             models.Index(fields=["domain"]),

@@ -47,12 +47,23 @@ class TenantMiddleware(MiddlewareMixin):
                 # (renamed domain, deactivation, settings). The pk fetch is a cheap indexed query.
                 domain_match = Q(domain=tenant_domain) | Q(custom_domain=tenant_domain)
                 school_id = cache.get(cache_key)
-                school = School.objects.filter(domain_match, pk=school_id).first() if school_id else None
+                school = (
+                    School.objects.filter(domain_match, pk=school_id).select_related("subscription__plan").first()
+                    if school_id
+                    else None
+                )
 
                 if school is None and school_id != 0:
                     # Cache miss, or the cached id no longer matches this domain
-                    school = School.objects.filter(domain_match).first()
+                    school = School.objects.filter(domain_match).select_related("subscription__plan").first()
                     cache.set(cache_key, school.id if school else 0, timeout=300)
+
+                # A custom domain only resolves while the school's plan allows it. If the plan lapses
+                # to Free, the subdomain keeps working but the custom domain stops. (Subdomain access
+                # never hits this branch, so it is unaffected.)
+                if school and tenant_domain == school.custom_domain and not school.custom_domain_allowed:
+                    logger.warning(f"[TenantMW] Custom domain '{tenant_domain}' not allowed on current plan")
+                    school = None
 
                 request.tenant = school
                 if request.tenant:

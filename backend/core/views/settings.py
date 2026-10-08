@@ -6,7 +6,7 @@ from django.db.models import Q
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from core.tenant_utils import get_request_school
 from core.media_utils import get_media_url
@@ -134,11 +134,16 @@ class SettingsView(APIView):
 
         try:
             settings_obj, _ = SchoolSettings.objects.get_or_create(school=school)
-            serializer = SchoolSettingsSerializer(instance=settings_obj, data=request.data, partial=True)
+            serializer = SchoolSettingsSerializer(
+                instance=settings_obj, data=request.data, partial=True, context={"request": request}
+            )
             serializer.is_valid(raise_exception=True)
             serializer.save()
 
             return self.get(request)
+        except ValidationError as e:
+            # Surface field errors (e.g. custom-domain gating) instead of a generic 400.
+            return Response({"errors": e.detail}, status=400)
         except Exception as e:
             logger.exception("Settings update FAILED for school %s", school.domain)
             return Response(

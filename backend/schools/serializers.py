@@ -268,10 +268,28 @@ class SchoolSettingsSerializer(serializers.ModelSerializer):
         with transaction.atomic():
             # Update School model if data is provided
             if school_data:
-                custom_domain = school_data.get("custom_domain")
-                if isinstance(custom_domain, str):
-                    normalized = custom_domain.strip()
-                    school_data["custom_domain"] = normalized or None
+                if "custom_domain" in school_data:
+                    custom_domain = school_data.get("custom_domain")
+                    normalized = custom_domain.strip() if isinstance(custom_domain, str) else None
+                    normalized = normalized or None
+                    school_data["custom_domain"] = normalized
+
+                    request = self.context.get("request")
+                    user = getattr(request, "user", None)
+                    is_super = bool(user and (user.is_superuser or getattr(user, "role", "") == "SUPER_ADMIN"))
+                    # Setting a (new) custom domain is gated to paid plans; clearing it is always allowed.
+                    # Super admins may override for enterprise provisioning.
+                    if (
+                        normalized
+                        and normalized != school.custom_domain
+                        and not is_super
+                        and not school.custom_domain_allowed
+                    ):
+                        raise serializers.ValidationError(
+                            {
+                                "custom_domain": "Custom domains require a paid plan. Upgrade to Starter or higher to use one."
+                            }
+                        )
 
                 for attr, value in school_data.items():
                     setattr(school, attr, value)
