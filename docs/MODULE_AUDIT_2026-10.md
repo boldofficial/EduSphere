@@ -59,6 +59,20 @@ copies in `academic`, `bursary` and `learning`. Plus:
 
 ---
 
+### Phase 2 status (Oct 2026)
+
+- **P1 fixed:** the student list annotates the latest report-card trend in one subquery; a test
+  asserts the query count does not grow with the number of students.
+- **P2 fixed:** library categories and members, inventory categories, question banks, exams and blog
+  categories use `annotate(Count(...))`, `select_related` and `prefetch_related` instead of per-row
+  queries.
+- **P3 was a false positive:** the inbox already annotates the last message and unread count.
+- **B4 fixed:** the low-stock, reorder-alert, overdue and route-students endpoints are paginated
+  (none are used by the frontend today).
+- **New P7:** the inventory, library and transport pages each download every student
+  (`fetchAll('academic/students/')`) just to fill a picker. Replace with a search-as-you-type student
+  picker that queries `?search=`. Planned with the design-system components in phase 3.
+
 ## 4. Design & layout audit
 
 The product has strong building blocks (`components/ui`: button, card, table, modal, tabs,
