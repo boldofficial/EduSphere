@@ -283,3 +283,75 @@ class StudentListQueryCountTests(APITestCase):
         large, response = self._count_queries()
         self.assertEqual(small, large)
         self.assertTrue(all(row["performance_trend"] == "improving" for row in response.data["results"]))
+
+
+class AdminDashboardTests(APITestCase):
+    def setUp(self):
+        from bursary.models import Expense, Payment
+        from schools.models import SchoolSettings
+
+        self.school = School.objects.create(name="Dash School", domain="demo-dash")
+        SchoolSettings.objects.update_or_create(
+            school=self.school, defaults={"current_session": "2025/2026", "current_term": "First Term"}
+        )
+        self.admin = get_user_model().objects.create_user(
+            username="admin@demo-dash", password="password123", role="SCHOOL_ADMIN", school=self.school
+        )
+        cls = Class.objects.create(name="JSS 1", school=self.school)
+        # More students than one API page, to prove counts are not truncated.
+        Student.objects.bulk_create(
+            [
+                Student(school=self.school, student_no=f"D{i}", names=f"Kid {i}", gender="Male", current_class=cls)
+                for i in range(60)
+            ]
+        )
+        first = Student.objects.filter(school=self.school).first()
+        Payment.objects.create(
+            school=self.school,
+            student=first,
+            amount=40000,
+            method="cash",
+            session="2025/2026",
+            term="First Term",
+            reference="DASH-1",
+            recorded_by="admin",
+            status="completed",
+        )
+        Payment.objects.create(
+            school=self.school,
+            student=first,
+            amount=5000,
+            method="transfer",
+            session="2025/2026",
+            term="First Term",
+            reference="DASH-2",
+            recorded_by="admin",
+            status="pending",
+        )
+        Expense.objects.create(
+            school=self.school,
+            title="Diesel",
+            amount=7000,
+            category="utilities",
+            session="2025/2026",
+            term="First Term",
+            recorded_by="admin",
+        )
+
+    def test_summary_counts_whole_school_and_term_finance(self):
+        self.client.force_authenticate(user=self.admin)
+        response = self.client.get("/api/academic/dashboard/", HTTP_X_TENANT_ID=self.school.domain)
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.data)
+        self.assertEqual(response.data["counts"]["students"], 60)
+        self.assertEqual(response.data["finance"]["collected"], 40000.0)
+        self.assertEqual(response.data["finance"]["expenses"], 7000.0)
+        self.assertEqual(response.data["action_items"]["payments_to_verify"], 1)
+        self.assertEqual(len(response.data["recent_payments"]), 2)
+
+    def test_teacher_cannot_view_admin_dashboard(self):
+        teacher = get_user_model().objects.create_user(
+            username="t@demo-dash", password="password123", role="TEACHER", school=self.school
+        )
+        self.client.force_authenticate(user=teacher)
+        response = self.client.get("/api/academic/dashboard/", HTTP_X_TENANT_ID=self.school.domain)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

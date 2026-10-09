@@ -24,6 +24,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import * as Types from '@/lib/types';
+import { useAdminDashboard } from '@/lib/hooks/use-dashboard';
 
 // ─── System Health Tab ─────────────────────────────────────────────────
 
@@ -37,19 +38,12 @@ interface SystemHealth {
 
 interface HealthTabProps {
   systemHealthData: SystemHealth;
-  students: Types.Student[];
-  teachers: Types.Teacher[];
-  staff: Types.Staff[];
-  classes: Types.Class[];
 }
 
-export const DashboardHealthTab: React.FC<HealthTabProps> = ({
-  systemHealthData,
-  students,
-  teachers,
-  staff,
-  classes,
-}) => {
+export const DashboardHealthTab: React.FC<HealthTabProps> = ({ systemHealthData }) => {
+  // Real totals from the dashboard summary (the old version counted one truncated page).
+  const { data: summary } = useAdminDashboard();
+  const counts = summary?.counts ?? { students: 0, teachers: 0, staff: 0, classes: 0 };
   const metrics = [
     {
       name: 'Cache (Redis)',
@@ -107,19 +101,19 @@ export const DashboardHealthTab: React.FC<HealthTabProps> = ({
         <div className="space-y-4">
           <div className="flex items-center justify-between p-4 bg-blue-50 rounded-xl">
             <span className="font-medium text-gray-700">Students</span>
-            <span className="text-lg font-bold text-blue-600">{students.length}</span>
+            <span className="text-lg font-bold text-blue-600">{counts.students}</span>
           </div>
           <div className="flex items-center justify-between p-4 bg-green-50 rounded-xl">
             <span className="font-medium text-gray-700">Teachers</span>
-            <span className="text-lg font-bold text-green-600">{teachers.length}</span>
+            <span className="text-lg font-bold text-green-600">{counts.teachers}</span>
           </div>
           <div className="flex items-center justify-between p-4 bg-amber-50 rounded-xl">
             <span className="font-medium text-gray-700">Non-Academic Staff</span>
-            <span className="text-lg font-bold text-amber-600">{staff.length}</span>
+            <span className="text-lg font-bold text-amber-600">{counts.staff}</span>
           </div>
           <div className="flex items-center justify-between p-4 bg-purple-50 rounded-xl">
             <span className="font-medium text-gray-700">Classes</span>
-            <span className="text-lg font-bold text-purple-600">{classes.length}</span>
+            <span className="text-lg font-bold text-purple-600">{counts.classes}</span>
           </div>
         </div>
       </div>

@@ -51,5 +51,6 @@ urlpatterns = [
     path("ai-lesson-plan/", views.AILessonPlanView.as_view(), name="ai-lesson-plan"),
     path("grades/trends/", views.GradeTrendView.as_view(), name="grade-trends"),
     path("analytics/", views.SchoolAnalyticsView.as_view(), name="school-analytics"),
+    path("dashboard/", views.AdminDashboardView.as_view(), name="admin-dashboard"),
     path("", include(router.urls)),
 ]

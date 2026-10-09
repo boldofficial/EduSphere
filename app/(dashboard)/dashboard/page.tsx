@@ -27,25 +27,15 @@ export default async function DashboardPage() {
   else if (currentRole === 'PARENT') currentRole = 'parent';
   else if (currentRole === 'STAFF') currentRole = 'staff';
 
-  // Parallel data fetching for the dashboard
-  // We fetch everything needed for the Admin view.
-  // Optimization: conditionally fetch based on role.
-
-  let students = [],
-    teachers = [],
-    staff = [],
-    payments = [],
-    expenses = [],
-    fees = [],
-    classes = [],
-    settings = Utils.INITIAL_SETTINGS,
+  // Teachers, students, parents and staff have self-loading dashboards. Admin numbers come from
+  // /academic/dashboard/ on the client; here we only load what the admin tabs need.
+  let settings = Utils.INITIAL_SETTINGS,
     announcements = [],
     schools = [],
     platformSettings = null,
     systemHealth = null,
     supportTickets = [];
 
-  // Help normalize paginated DRF responses
   const normalize = (data: any) => {
     if (data && typeof data === 'object' && 'results' in data && Array.isArray(data.results)) {
       return data.results;
@@ -53,83 +43,35 @@ export default async function DashboardPage() {
     return Array.isArray(data) ? data : [];
   };
 
-  if (currentRole === 'super_admin' || currentRole === 'admin' || currentRole === 'staff') {
+  if (currentRole === 'super_admin' || currentRole === 'admin') {
+    const isSuper = currentRole === 'super_admin';
     try {
       const results = await Promise.all([
-        fetchServer('/academic/students/').catch(() => []),
-        fetchServer('/academic/teachers/').catch(() => []),
-        fetchServer('/academic/staff/').catch(() => []),
-        fetchServer('/bursary/payments/').catch(() => []),
-        fetchServer('/bursary/expenses/').catch(() => []),
-        fetchServer('/bursary/fees/').catch(() => []),
-        fetchServer('/academic/classes/').catch(() => []),
         fetchServer('/core/settings/').catch(() => Utils.INITIAL_SETTINGS),
         fetchServer('/schools/announcements/').catch(() => []),
-        // Super Admin specific fetches
-        currentRole === 'super_admin'
-          ? fetchServer('/schools/management/').catch(() => [])
-          : Promise.resolve([]),
-        currentRole === 'super_admin'
+        isSuper ? fetchServer('/schools/management/').catch(() => []) : Promise.resolve([]),
+        isSuper
           ? fetchServer('/schools/platform-settings/').catch(() => null)
           : Promise.resolve(null),
-        currentRole === 'super_admin'
+        isSuper
           ? fetchServer('/schools/analytics/strategic/').catch(() => null)
           : Promise.resolve(null),
-        currentRole === 'super_admin'
-          ? fetchServer('/schools/governance/').catch(() => null)
-          : Promise.resolve(null),
-        currentRole === 'super_admin'
-          ? fetchServer('/schools/health/').catch(() => null)
-          : Promise.resolve(null),
-        currentRole === 'super_admin'
-          ? fetchServer('/schools/support/tickets/').catch(() => [])
-          : Promise.resolve([]),
+        isSuper ? fetchServer('/schools/governance/').catch(() => null) : Promise.resolve(null),
+        isSuper ? fetchServer('/schools/health/').catch(() => null) : Promise.resolve(null),
+        isSuper ? fetchServer('/schools/support/tickets/').catch(() => []) : Promise.resolve([]),
       ]);
-
-      students = normalize(results[0]);
-      teachers = normalize(results[1]);
-      staff = normalize(results[2]);
-      payments = normalize(results[3]);
-      expenses = normalize(results[4]);
-      fees = normalize(results[5]);
-      classes = normalize(results[6]);
-      settings = results[7];
-      announcements = normalize(results[8]);
-      schools = normalize(results[9]);
-      platformSettings = results[10];
-      systemHealth = results[13];
-      supportTickets = normalize(results[14]);
-
-      // Inject extra data for Super Admin features
-      if (currentRole === 'super_admin') {
-        (user as any).analyticsData = results[11];
-        (user as any).governanceData = results[12];
+      settings = results[0];
+      announcements = normalize(results[1]);
+      schools = normalize(results[2]);
+      platformSettings = results[3];
+      systemHealth = results[6];
+      supportTickets = normalize(results[7]);
+      if (isSuper) {
+        (user as any).analyticsData = results[4];
+        (user as any).governanceData = results[5];
       }
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
-    }
-  } else if (currentRole === 'teacher') {
-    // Teachers need classes, students...
-    try {
-      const results = await Promise.all([
-        fetchServer('/academic/classes/').catch(() => []),
-        fetchServer('/academic/students/').catch(() => []), // Should probably filter by teacher on backend
-        fetchServer('/core/settings/').catch(() => Utils.INITIAL_SETTINGS),
-      ]);
-      classes = normalize(results[0]);
-      students = normalize(results[1]);
-      settings = results[2];
-    } catch (error) {
-      console.error('Error fetching teacher data:', error);
-    }
-  } else {
-    // Students/Parents
-    try {
-      [settings] = await Promise.all([
-        fetchServer('/core/settings/').catch(() => Utils.INITIAL_SETTINGS),
-      ]);
-    } catch (error) {
-      console.error('Error fetching student data:', error);
     }
   }
 
@@ -149,13 +91,6 @@ export default async function DashboardPage() {
   return (
     <DashboardView
       user={user}
-      students={students}
-      teachers={teachers}
-      staff={staff}
-      payments={payments}
-      expenses={expenses}
-      fees={fees}
-      classes={classes}
       settings={settings}
       announcements={announcements}
       schools={schools}

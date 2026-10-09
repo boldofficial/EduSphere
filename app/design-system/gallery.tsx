@@ -10,6 +10,54 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { useToast } from '@/components/providers/toast-provider';
+import { useQueryClient } from '@tanstack/react-query';
+import { AdminOverview } from '@/components/features/dashboard/AdminOverview';
+import type { AdminDashboardSummary } from '@/lib/hooks/use-dashboard';
+
+const SAMPLE_DASHBOARD: AdminDashboardSummary = {
+  session: '2025/2026',
+  term: 'First Term',
+  counts: { students: 1248, teachers: 64, staff: 22, classes: 36 },
+  finance: {
+    expected: 52_000_000,
+    collected: 38_400_000,
+    outstanding: 13_600_000,
+    expenses: 9_250_000,
+    collection_rate: 73.8,
+  },
+  attendance_today: { records: 1140, present: 1071, rate: 93.9, classes_marked: 31 },
+  action_items: { pending_admissions: 7, payments_to_verify: 12, low_stock_items: 3 },
+  recent_payments: [
+    {
+      id: 1,
+      student_name: 'Adaeze Okafor',
+      amount: 185000,
+      date: '2026-10-08',
+      method: 'transfer',
+      status: 'pending',
+    },
+    {
+      id: 2,
+      student_name: 'Tunde Bakare',
+      amount: 92500,
+      date: '2026-10-08',
+      method: 'cash',
+      status: 'completed',
+    },
+    {
+      id: 3,
+      student_name: 'Fatima Bello',
+      amount: 185000,
+      date: '2026-10-07',
+      method: 'pos',
+      status: 'completed',
+    },
+  ],
+  upcoming_events: [
+    { id: 1, title: 'Mid-term break', start_date: '2026-10-16T08:00:00Z', event_type: 'holiday' },
+    { id: 2, title: 'PTA meeting', start_date: '2026-10-21T10:00:00Z', event_type: 'meeting' },
+  ],
+};
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -49,6 +97,9 @@ export function DesignSystemGallery() {
   const confirm = useConfirm();
   const { addToast } = useToast();
   const [modalOpen, setModalOpen] = useState(false);
+  const queryClient = useQueryClient();
+  // Seed the admin dashboard query so the overview renders without a backend.
+  useState(() => queryClient.setQueryData(['admin-dashboard'], SAMPLE_DASHBOARD));
 
   return (
     <main className="mx-auto max-w-6xl space-y-12 px-4 py-10 sm:px-6">
@@ -158,6 +209,12 @@ export function DesignSystemGallery() {
               <Plus className="mr-1.5 h-4 w-4" /> Add book
             </Button>
           }
+        />
+      </Section>
+
+      <Section title="Admin dashboard (sample data)">
+        <AdminOverview
+          allowedModules={['students', 'bursary', 'attendance', 'admissions', 'inventory']}
         />
       </Section>
 

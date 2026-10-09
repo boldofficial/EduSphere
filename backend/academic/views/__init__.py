@@ -7,6 +7,7 @@ will continue to work without modification.
 """
 
 from .analytics import SchoolAnalyticsView  # noqa: F401
+from .dashboard import AdminDashboardView  # noqa: F401
 from .base import IsAdminOrReadOnly, TenantViewSet  # noqa: F401
 from .students import (  # noqa: F401
     StudentAchievementViewSet,

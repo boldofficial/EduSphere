@@ -19,14 +19,8 @@ import * as Types from '@/lib/types';
 import apiClient from '@/lib/api-client';
 
 // Dashboard sub-components (overview widgets)
-import { DashboardStats } from './dashboard/DashboardStats';
-import { FinanceChart } from './dashboard/FinanceChart';
 import { QuickActions } from './dashboard/QuickActions';
-import { StudentPopulation } from './dashboard/StudentPopulation';
-import { RecentTransactions } from './dashboard/RecentTransactions';
-import { AdvancedAnalytics } from './dashboard/AdvancedAnalytics';
-import { AttendanceAnalytics } from './dashboard/AttendanceAnalytics';
-import { ExecutiveAcademicSummary } from './dashboard/ExecutiveAcademicSummary';
+import { AdminOverview } from './dashboard/AdminOverview';
 
 import { DashboardRolesTab } from './dashboard/DashboardRolesTab';
 import {
@@ -74,13 +68,6 @@ interface UserProfile {
 
 interface DashboardViewProps {
   user?: UserProfile;
-  students: Types.Student[];
-  teachers: Types.Teacher[];
-  staff: Types.Staff[];
-  payments: Types.Payment[];
-  expenses: Types.Expense[];
-  fees: Types.FeeStructure[];
-  classes: Types.Class[];
   settings: Types.Settings;
   announcements?: any[];
   schools?: any[];
@@ -92,13 +79,6 @@ interface DashboardViewProps {
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
   user,
-  students,
-  teachers,
-  staff,
-  payments,
-  expenses,
-  fees,
-  classes,
   settings,
   announcements = [],
   schools = [],
@@ -116,29 +96,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [selectedSchool, setSelectedSchool] = useState<any>(null);
   const [isSchoolModalOpen, setIsSchoolModalOpen] = useState(false);
   const { addToast } = useToast();
-
-  // ─── Shared Calculations ────────────────────────────────────────────
-  const currentSessionPayments = payments.filter(
-    (p) => p.session === settings.current_session && p.term === settings.current_term
-  );
-  const totalRevenue = currentSessionPayments.reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
-  const currentSessionExpenses = expenses.filter(
-    (e) => e.session === settings.current_session && e.term === settings.current_term
-  );
-  const totalExpenses = currentSessionExpenses.reduce((acc, e) => acc + (Number(e.amount) || 0), 0);
-
-  let totalExpectedRevenue = 0;
-  const safeStudents = Array.isArray(students) ? students : [];
-  safeStudents.forEach((s) => {
-    const { totalBill } = Utils.getStudentBalance(
-      s,
-      fees,
-      [],
-      settings.current_session,
-      settings.current_term
-    );
-    totalExpectedRevenue += Number(totalBill) || 0;
-  });
 
   // ─── Handlers ───────────────────────────────────────────────────────
   const handleSaveSettings = () => {
@@ -310,43 +267,35 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   });
 
   return (
-    <div
-      className={`space-y-8 ${user?.role === 'SUPER_ADMIN' ? 'p-1 bg-gradient-to-br from-indigo-50/50 via-white to-purple-50/50 rounded-[40px] border border-indigo-100 shadow-xl shadow-indigo-100/20' : ''}`}
-    >
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-6 pt-6">
+      <div className="flex flex-col gap-4 px-6 pt-6 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <h1 className="text-4xl font-black text-gray-900 uppercase tracking-tighter">
-            {user?.role === 'SUPER_ADMIN' ? (
-              <span className="bg-gradient-to-r from-brand-600 to-indigo-600 bg-clip-text text-transparent">
-                Platform Director
-              </span>
-            ) : (
-              'Executive Dashboard'
-            )}
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
+            {user?.role === 'SUPER_ADMIN' ? 'Platform overview' : 'Dashboard'}
           </h1>
-          <p className="text-gray-500 font-bold uppercase text-xs tracking-[0.2em]">
-            {settings.current_session} • {settings.current_term}
+          <p className="mt-1 text-sm text-gray-500">
+            {settings.current_session} · {settings.current_term}
           </p>
         </div>
-        <div className="w-full md:w-auto overflow-x-auto scrollbar-hide -mx-1 px-1">
-          <div className="flex bg-gray-200/50 p-1.5 rounded-2xl w-max min-w-full md:min-w-0 border border-gray-100 shadow-inner">
+        <nav className="-mx-1 overflow-x-auto px-1" aria-label="Dashboard sections">
+          <div className="flex w-max gap-1 rounded-control bg-gray-100 p-1">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-5 py-2.5 text-xs font-black uppercase tracking-wider rounded-xl transition-all duration-300 whitespace-nowrap ${
+                className={`flex items-center gap-2 whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                   activeTab === tab.id
-                    ? 'bg-white shadow-lg shadow-brand-500/10 text-brand-600 ring-1 ring-brand-100'
-                    : 'text-gray-500 hover:text-brand-500 hover:bg-white/50'
+                    ? 'bg-white text-gray-900 shadow-card'
+                    : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
-                <tab.icon size={14} strokeWidth={3} />
+                <tab.icon size={16} />
                 {tab.name}
               </button>
             ))}
           </div>
-        </div>
+        </nav>
       </div>
 
       {/* Platform Announcements Banner */}
@@ -390,45 +339,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
       {/* Overview Tab */}
       {activeTab === 'overview' && (
-        <div className="space-y-8">
-          <ExecutiveAcademicSummary />
-          <DashboardStats
-            studentsCount={students.length}
-            staffCount={teachers.length + staff.length}
-            revenue={totalRevenue}
-            expenses={totalExpenses}
-            targetRevenue={totalExpectedRevenue}
-            transactionsCount={currentSessionExpenses.length}
+        <div className="px-6 pb-6">
+          <AdminOverview
             allowedModules={allowedModules}
-          />
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 space-y-6">
-              {allowedModules.includes('bursary') && (
-                <FinanceChart revenue={totalRevenue} expenses={totalExpenses} />
-              )}
-              {allowedModules.includes('bursary') && (
-                <AdvancedAnalytics
-                  students={students}
-                  payments={payments}
-                  fees={fees}
-                  settings={settings}
-                />
-              )}
+            quickActions={
               <QuickActions
                 onChangeView={onChangeView || (() => {})}
                 onTabChange={(tab: string) => setActiveTab(tab as TabType)}
                 userRole={user?.role?.toLowerCase()}
                 allowedModules={allowedModules}
               />
-            </div>
-            <div className="space-y-6">
-              {allowedModules.includes('attendance') && <AttendanceAnalytics />}
-              {allowedModules.includes('students') && <StudentPopulation students={students} />}
-              {allowedModules.includes('bursary') && (
-                <RecentTransactions payments={payments} students={students} />
-              )}
-            </div>
-          </div>
+            }
+          />
         </div>
       )}
 
@@ -449,15 +371,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       )}
 
       {/* Health Tab */}
-      {activeTab === 'health' && (
-        <DashboardHealthTab
-          systemHealthData={systemHealthData}
-          students={students}
-          teachers={teachers}
-          staff={staff}
-          classes={classes}
-        />
-      )}
+      {activeTab === 'health' && <DashboardHealthTab systemHealthData={systemHealthData} />}
 
       {/* Schools Management Tab */}
       {activeTab === 'schools' && (
