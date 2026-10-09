@@ -223,21 +223,19 @@ export const SalaryStructureEditor: React.FC<SalaryStructureEditorProps> = ({
             {/* Summary Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 my-4">
               <div className="bg-gray-50 p-3 rounded-lg text-center">
-                <p className="text-[10px] text-gray-500 uppercase tracking-wider">Basic</p>
+                <p className="text-xs text-gray-500 uppercase tracking-wider">Basic</p>
                 <p className="text-lg font-bold">{formatNaira(basicSalary)}</p>
               </div>
-              <div className="bg-emerald-50 p-3 rounded-lg text-center">
-                <p className="text-[10px] text-emerald-600 uppercase tracking-wider">Allowances</p>
-                <p className="text-lg font-bold text-emerald-700">
-                  +{formatNaira(totalAllowances)}
-                </p>
+              <div className="bg-green-50 p-3 rounded-lg text-center">
+                <p className="text-xs text-green-600 uppercase tracking-wider">Allowances</p>
+                <p className="text-lg font-bold text-green-700">+{formatNaira(totalAllowances)}</p>
               </div>
               <div className="bg-red-50 p-3 rounded-lg text-center">
-                <p className="text-[10px] text-red-600 uppercase tracking-wider">Deductions</p>
+                <p className="text-xs text-red-600 uppercase tracking-wider">Deductions</p>
                 <p className="text-lg font-bold text-red-700">-{formatNaira(totalDeductions)}</p>
               </div>
               <div className="bg-blue-50 p-3 rounded-lg text-center border-2 border-blue-200">
-                <p className="text-[10px] text-blue-600 uppercase tracking-wider">Net Salary</p>
+                <p className="text-xs text-blue-600 uppercase tracking-wider">Net Salary</p>
                 <p className="text-lg font-bold text-blue-700">{formatNaira(netSalary)}</p>
               </div>
             </div>
@@ -246,7 +244,7 @@ export const SalaryStructureEditor: React.FC<SalaryStructureEditorProps> = ({
               {/* Allowances */}
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <h3 className="font-semibold text-sm text-emerald-700">Allowances</h3>
+                  <h3 className="font-semibold text-sm text-green-700">Allowances</h3>
                   <Button
                     size="sm"
                     variant="outline"
@@ -269,7 +267,7 @@ export const SalaryStructureEditor: React.FC<SalaryStructureEditorProps> = ({
                     ))}
                   </datalist>
                 </div>
-                <div className="text-right text-sm font-semibold text-emerald-700 pt-2 border-t">
+                <div className="text-right text-sm font-semibold text-green-700 pt-2 border-t">
                   Total: +{formatNaira(totalAllowances)}
                 </div>
               </div>

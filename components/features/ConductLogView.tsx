@@ -134,7 +134,7 @@ export const ConductLogView: React.FC = () => {
                         <div className="h-2 w-2 rounded-full bg-green-500 mr-2" />
                         {s.names}
                       </div>
-                      <span className="text-[10px] text-gray-400 font-mono">{s.student_no}</span>
+                      <span className="text-xs text-gray-400 font-mono">{s.student_no}</span>
                     </button>
                   ))}
                 {activeStudents.length === 0 && (
@@ -226,7 +226,7 @@ export const ConductLogView: React.FC = () => {
                           <p className="text-sm text-gray-700 leading-relaxed mb-3">
                             {log.remark || 'No specific remark recorded.'}
                           </p>
-                          <div className="flex items-center text-[10px] text-gray-400 font-medium">
+                          <div className="flex items-center text-xs text-gray-400 font-medium">
                             <MessageSquare className="h-3 w-3 mr-1.5" />
                             Logged by {log.recorded_by_name || 'System Admin'}
                           </div>

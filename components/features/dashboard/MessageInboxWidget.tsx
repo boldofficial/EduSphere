@@ -153,7 +153,7 @@ export const MessageInboxWidget: React.FC<MessageInboxWidgetProps> = ({
                         {!isMe ? message.sender_name : 'To Conversation'}
                       </p>
                       {isMe && (
-                        <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">
+                        <span className="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">
                           Sent
                         </span>
                       )}

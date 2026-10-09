@@ -32,7 +32,7 @@ import { ConfirmActionModal } from './components/ConfirmActionModal';
 function SidebarGroup({ label }: { label: string }) {
   return (
     <div className="px-4 pt-6 pb-2">
-      <span className="text-[9px] font-black uppercase tracking-[0.2em] text-brand-400/50">
+      <span className="text-xs font-black uppercase tracking-[0.2em] text-brand-400/50">
         {label}
       </span>
     </div>
@@ -56,7 +56,7 @@ function SidebarItem({
       className={`flex items-center gap-3 px-4 py-2.5 w-full rounded-xl transition-all text-sm ${
         active
           ? 'bg-gradient-to-r from-brand-600 to-brand-500 text-white shadow-lg shadow-brand-600/40 font-bold'
-          : 'text-slate-400 hover:text-white hover:bg-white/5 font-medium'
+          : 'text-gray-400 hover:text-white hover:bg-white/5 font-medium'
       }`}
     >
       <Icon size={18} />
@@ -277,7 +277,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
         <div className="p-3 border-t border-white/5">
           <button
             onClick={handleLogout}
-            className="flex items-center gap-3 px-4 py-2.5 w-full text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all text-sm font-medium"
+            className="flex items-center gap-3 px-4 py-2.5 w-full text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all text-sm font-medium"
           >
             <LogOut size={18} />
             <span>Logout</span>
@@ -313,7 +313,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
                     <div className="space-y-6">
                       {searchResults?.schools?.length > 0 && (
                         <div>
-                          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 px-2">
+                          <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3 px-2">
                             Schools
                           </p>
                           <div className="space-y-1">
@@ -328,7 +328,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
                                 className="w-full text-left p-3 hover:bg-gray-50 rounded-xl flex items-center justify-between group transition-colors"
                               >
                                 <span className="font-bold text-gray-900">{s.name}</span>
-                                <span className="text-[10px] font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full uppercase">
+                                <span className="text-xs font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full uppercase">
                                   {s.status}
                                 </span>
                               </Link>
@@ -348,17 +348,17 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
               className="p-3 bg-gray-50 border border-gray-100 rounded-2xl text-gray-400 hover:text-brand-600 hover:bg-white hover:border-brand-200 transition-all flex items-center gap-2 group"
             >
               <Search size={18} className="group-hover:scale-110 transition-transform" />
-              <kbd className="hidden md:inline-flex items-center gap-1 px-1.5 py-0.5 border border-gray-200 rounded text-[10px] font-black text-gray-400">
+              <kbd className="hidden md:inline-flex items-center gap-1 px-1.5 py-0.5 border border-gray-200 rounded text-xs font-black text-gray-400">
                 Ctrl+K
               </kbd>
             </button>
             <button
               disabled={isTogglingMaintenance}
               onClick={handleToggleMaintenance}
-              className={`flex items-center gap-3 px-4 py-2 rounded-2xl border transition-all ${isMaintenanceMode ? 'bg-amber-50 border-amber-200 text-amber-700' : 'bg-rose-50 border-rose-100 text-rose-700 hover:bg-rose-100'}`}
+              className={`flex items-center gap-3 px-4 py-2 rounded-2xl border transition-all ${isMaintenanceMode ? 'bg-amber-50 border-amber-200 text-amber-700' : 'bg-red-50 border-red-100 text-red-700 hover:bg-red-100'}`}
             >
               <div
-                className={`w-2 h-2 rounded-full ${isMaintenanceMode ? 'bg-amber-500 animate-pulse' : 'bg-rose-500'}`}
+                className={`w-2 h-2 rounded-full ${isMaintenanceMode ? 'bg-amber-500 animate-pulse' : 'bg-red-500'}`}
               ></div>
               <span className="text-xs font-bold uppercase tracking-tight">
                 {isTogglingMaintenance
@@ -374,7 +374,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
                 <p className="text-sm font-black text-gray-900">
                   {currentUser?.username || 'Admin'}
                 </p>
-                <p className="text-[10px] font-bold text-brand-600 uppercase tracking-widest">
+                <p className="text-xs font-bold text-brand-600 uppercase tracking-widest">
                   Global Super Admin
                 </p>
               </div>

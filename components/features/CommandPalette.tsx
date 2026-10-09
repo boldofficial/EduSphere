@@ -60,7 +60,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ schools, isOpen,
         <div className="p-4 max-h-[60vh] overflow-y-auto">
           {query.length > 0 ? (
             <div className="space-y-2">
-              <p className="px-4 py-2 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+              <p className="px-4 py-2 text-xs font-black text-gray-400 uppercase tracking-widest">
                 Institutions
               </p>
               {filteredSchools.map((school) => (
@@ -115,16 +115,16 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ schools, isOpen,
         <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
           <div className="flex gap-4">
             <div className="flex items-center gap-1">
-              <kbd className="px-2 py-1 bg-white border border-gray-200 rounded text-[10px] font-bold text-gray-400 shadow-sm">
+              <kbd className="px-2 py-1 bg-white border border-gray-200 rounded text-xs font-bold text-gray-400 shadow-sm">
                 Enter
               </kbd>
-              <span className="text-[10px] font-medium text-gray-400 uppercase">Select</span>
+              <span className="text-xs font-medium text-gray-400 uppercase">Select</span>
             </div>
             <div className="flex items-center gap-1">
-              <kbd className="px-2 py-1 bg-white border border-gray-200 rounded text-[10px] font-bold text-gray-400 shadow-sm">
+              <kbd className="px-2 py-1 bg-white border border-gray-200 rounded text-xs font-bold text-gray-400 shadow-sm">
                 Esc
               </kbd>
-              <span className="text-[10px] font-medium text-gray-400 uppercase">Close</span>
+              <span className="text-xs font-medium text-gray-400 uppercase">Close</span>
             </div>
           </div>
         </div>

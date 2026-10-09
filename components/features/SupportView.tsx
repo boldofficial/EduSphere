@@ -22,8 +22,12 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { useConfirm } from '@/components/ui/confirm-dialog';
+import { useToast } from '@/components/providers/toast-provider';
 
 export const SupportView: React.FC = () => {
+  const confirm = useConfirm();
+  const { addToast } = useToast();
   const { data: tickets = [], isLoading, refetch } = useSupportTickets();
   const createMutation = useCreateSupportTicket();
   const respondMutation = useRespondToTicket();
@@ -62,7 +66,7 @@ export const SupportView: React.FC = () => {
       setNewTicket({ subject: '', category: 'technical', priority: 'medium', description: '' });
       refetch();
     } catch {
-      alert('Failed to create ticket');
+      addToast('Failed to create ticket', 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -78,32 +82,32 @@ export const SupportView: React.FC = () => {
       setReplyMessage('');
       refetch();
     } catch {
-      alert('Failed to send reply');
+      addToast('Failed to send reply', 'error');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleResolve = async (id: number) => {
-    if (!confirm('Are you sure you want to mark this issue as resolved?')) return;
+    if (!(await confirm('Are you sure you want to mark this issue as resolved?'))) return;
     try {
       await resolveMutation.mutateAsync(id);
       refetch();
     } catch {
-      alert('Failed to resolve ticket');
+      addToast('Failed to resolve ticket', 'error');
     }
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'resolved':
-        return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+        return 'bg-green-100 text-green-700 border-green-200';
       case 'in_progress':
-        return 'bg-sky-100 text-sky-700 border-sky-200';
+        return 'bg-blue-100 text-blue-700 border-blue-200';
       case 'open':
         return 'bg-amber-100 text-amber-700 border-amber-200';
       default:
-        return 'bg-slate-100 text-slate-700 border-slate-200';
+        return 'bg-gray-100 text-gray-700 border-gray-200';
     }
   };
 
@@ -119,10 +123,10 @@ export const SupportView: React.FC = () => {
       {/* Header Area */}
       <div className="flex justify-between items-center">
         <div className="space-y-1">
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
             Support & Help Desk
           </h1>
-          <p className="text-slate-500 font-medium">
+          <p className="text-gray-500 font-medium">
             Get assistance and request platform features directly.
           </p>
         </div>
@@ -135,14 +139,14 @@ export const SupportView: React.FC = () => {
       </div>
 
       {/* Main Interface Layout */}
-      <div className="flex bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden flex-1 min-h-[600px] h-[calc(100vh-280px)]">
+      <div className="flex bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden flex-1 min-h-[600px] h-[calc(100vh-280px)]">
         {/* Tickets Sidebar */}
-        <div className="w-80 border-r border-slate-100 flex flex-col bg-slate-50/30">
-          <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-            <span className="font-bold text-slate-400 uppercase tracking-widest text-[10px]">
+        <div className="w-80 border-r border-gray-100 flex flex-col bg-gray-50/30">
+          <div className="p-5 border-b border-gray-100 flex items-center justify-between">
+            <span className="font-bold text-gray-400 uppercase tracking-widest text-xs">
               Your Tickets
             </span>
-            <span className="text-[10px] font-bold text-slate-500">{tickets.length}</span>
+            <span className="text-xs font-bold text-gray-500">{tickets.length}</span>
           </div>
           <div className="flex-1 overflow-y-auto custom-scrollbar">
             {tickets.length === 0 ? (
@@ -155,30 +159,30 @@ export const SupportView: React.FC = () => {
                 <button
                   key={ticket.id}
                   onClick={() => setSelectedTicketId(ticket.id)}
-                  className={`w-full text-left p-5 border-b border-slate-50 transition-all hover:bg-white relative group ${selectedTicketId === ticket.id ? 'bg-white' : ''}`}
+                  className={`w-full text-left p-5 border-b border-gray-50 transition-all hover:bg-white relative group ${selectedTicketId === ticket.id ? 'bg-white' : ''}`}
                 >
                   <div className="flex justify-between items-start mb-2">
                     <span
-                      className={`text-[9px] font-black px-2 py-0.5 rounded border uppercase tracking-widest ${ticket.priority === 'urgent' ? 'bg-rose-100 text-rose-700 border-rose-200' : 'bg-slate-100 text-slate-600 border-slate-200'}`}
+                      className={`text-xs font-black px-2 py-0.5 rounded border uppercase tracking-widest ${ticket.priority === 'urgent' ? 'bg-red-100 text-red-700 border-red-200' : 'bg-gray-100 text-gray-600 border-gray-200'}`}
                     >
                       {ticket.priority}
                     </span>
-                    <span className="text-[9px] text-slate-300 font-bold uppercase tracking-widest">
+                    <span className="text-xs text-gray-300 font-bold uppercase tracking-widest">
                       #{ticket.id.toString().slice(-4)}
                     </span>
                   </div>
                   <h4
-                    className={`text-sm font-bold mb-3 line-clamp-1 transition-colors ${selectedTicketId === ticket.id ? 'text-brand-600' : 'text-slate-900 group-hover:text-brand-600'}`}
+                    className={`text-sm font-bold mb-3 line-clamp-1 transition-colors ${selectedTicketId === ticket.id ? 'text-brand-600' : 'text-gray-900 group-hover:text-brand-600'}`}
                   >
                     {ticket.subject}
                   </h4>
                   <div className="flex items-center justify-between">
                     <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border ${getStatusBadge(ticket.status)}`}
+                      className={`text-xs font-bold px-2 py-0.5 rounded-lg border ${getStatusBadge(ticket.status)}`}
                     >
                       {ticket.status.replace('_', ' ')}
                     </span>
-                    <div className="flex items-center text-slate-400 text-[10px] font-bold">
+                    <div className="flex items-center text-gray-400 text-xs font-bold">
                       {formatDateTime(ticket.updated_at).split(',')[0]}
                       <ChevronRight
                         size={14}
@@ -200,22 +204,22 @@ export const SupportView: React.FC = () => {
           {selectedTicket ? (
             <>
               {/* Detailed Header */}
-              <div className="p-8 border-b border-slate-100 shrink-0">
+              <div className="p-8 border-b border-gray-100 shrink-0">
                 <div className="flex justify-between items-start mb-6">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2 mb-2">
                       <Hash size={16} className="text-brand-400" />
-                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+                      <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">
                         Case ID: {selectedTicket.id}
                       </span>
                     </div>
-                    <h2 className="text-2xl font-black text-slate-900">{selectedTicket.subject}</h2>
+                    <h2 className="text-2xl font-black text-gray-900">{selectedTicket.subject}</h2>
                     <div className="flex items-center gap-4 pt-1">
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-gray-500">
                         <HelpCircle size={14} className="text-brand-600" />
                         <span className="capitalize">{selectedTicket.category}</span>
                       </div>
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500 border-l border-slate-200 pl-4">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-gray-500 border-l border-gray-200 pl-4">
                         <Clock size={14} /> {formatDateTime(selectedTicket.created_at)}
                       </div>
                     </div>
@@ -224,17 +228,17 @@ export const SupportView: React.FC = () => {
                     <Button
                       variant="outline"
                       onClick={() => handleResolve(selectedTicket.id)}
-                      className="rounded-xl border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 hover:border-emerald-300 font-bold transition-all text-xs"
+                      className="rounded-xl border-green-200 text-green-700 bg-green-50 hover:bg-green-100 hover:border-green-300 font-bold transition-all text-xs"
                     >
                       <CheckCircle size={16} className="mr-2" /> Mark Resolved
                     </Button>
                   )}
                 </div>
-                <div className="p-6 bg-slate-50/80 rounded-2xl border border-slate-100 relative group">
-                  <div className="absolute -top-3 left-6 px-3 py-1 bg-white border border-slate-100 rounded-lg text-[9px] font-black text-slate-400 uppercase tracking-widest shadow-sm">
+                <div className="p-6 bg-gray-50/80 rounded-2xl border border-gray-100 relative group">
+                  <div className="absolute -top-3 left-6 px-3 py-1 bg-white border border-gray-100 rounded-lg text-xs font-black text-gray-400 uppercase tracking-widest shadow-sm">
                     Initial Report
                   </div>
-                  <p className="text-sm text-slate-700 leading-relaxed font-medium whitespace-pre-wrap">
+                  <p className="text-sm text-gray-700 leading-relaxed font-medium whitespace-pre-wrap">
                     {selectedTicket.description}
                   </p>
                 </div>
@@ -259,10 +263,10 @@ export const SupportView: React.FC = () => {
                         <div
                           className={`flex items-center gap-2 mb-1 px-1 ${resp.is_admin_response ? 'justify-start' : 'justify-end flex-row-reverse'}`}
                         >
-                          <span className="text-[10px] font-black text-slate-400 capitalize">
+                          <span className="text-xs font-black text-gray-400 capitalize">
                             {resp.is_admin_response ? 'Support Agent' : 'You'}
                           </span>
-                          <span className="text-[9px] text-slate-300 font-bold">
+                          <span className="text-xs text-gray-300 font-bold">
                             {formatDateTime(resp.created_at).split(',')[1]}
                           </span>
                         </div>
@@ -270,7 +274,7 @@ export const SupportView: React.FC = () => {
                           className={`rounded-2xl p-5 shadow-sm border text-sm leading-relaxed font-medium ${
                             resp.is_admin_response
                               ? 'bg-brand-900 text-white border-brand-800'
-                              : 'bg-white text-slate-900 border-slate-100'
+                              : 'bg-white text-gray-900 border-gray-100'
                           }`}
                         >
                           {resp.message}
@@ -289,7 +293,7 @@ export const SupportView: React.FC = () => {
                       value={replyMessage}
                       onChange={(e) => setReplyMessage(e.target.value)}
                       placeholder="Type your message here..."
-                      className="w-full bg-white border-2 border-slate-200 focus:border-brand-600 rounded-3xl p-5 pr-36 min-h-[90px] outline-none transition-all text-slate-900 text-sm font-medium shadow-xl shadow-slate-200/50 resize-none"
+                      className="w-full bg-white border-2 border-gray-200 focus:border-brand-600 rounded-3xl p-5 pr-36 min-h-[90px] outline-none transition-all text-gray-900 text-sm font-medium shadow-xl shadow-gray-200/50 resize-none"
                     />
                     <Button
                       type="submit"
@@ -303,14 +307,14 @@ export const SupportView: React.FC = () => {
               )}
             </>
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center p-20 text-center bg-slate-50/10">
-              <div className="w-24 h-24 bg-white rounded-[32px] flex items-center justify-center mb-8 border border-slate-100 shadow-xl shadow-slate-100/50">
-                <MessageSquare className="text-slate-100" size={56} />
+            <div className="flex-1 flex flex-col items-center justify-center p-20 text-center bg-gray-50/10">
+              <div className="w-24 h-24 bg-white rounded-[32px] flex items-center justify-center mb-8 border border-gray-100 shadow-xl shadow-gray-100/50">
+                <MessageSquare className="text-gray-100" size={56} />
               </div>
-              <h3 className="text-2xl font-black text-slate-900 mb-3 tracking-tight">
+              <h3 className="text-2xl font-black text-gray-900 mb-3 tracking-tight">
                 Support Interaction
               </h3>
-              <p className="text-slate-400 max-w-sm font-medium leading-relaxed">
+              <p className="text-gray-400 max-w-sm font-medium leading-relaxed">
                 Select a ticket from the sidebar to view the conversation thread or send a
                 follow-up.
               </p>
@@ -321,21 +325,21 @@ export const SupportView: React.FC = () => {
 
       {/* Creation Flow Modal */}
       {isCreateModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
+        <div className="fixed inset-0 bg-gray-900/70 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
           <Card className="w-full max-w-xl p-0 rounded-[40px] shadow-2xl border-none overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="p-10 border-b border-slate-50">
+            <div className="p-10 border-b border-gray-50">
               <div className="flex justify-between items-center mb-10">
                 <div className="space-y-1">
-                  <h3 className="text-2xl font-black text-slate-900 tracking-tight">
+                  <h3 className="text-2xl font-black text-gray-900 tracking-tight">
                     Open New Ticket
                   </h3>
-                  <p className="text-slate-500 font-medium text-sm">
+                  <p className="text-gray-500 font-medium text-sm">
                     Tell us more about your issue or request.
                   </p>
                 </div>
                 <button
                   onClick={() => setIsCreateModalOpen(false)}
-                  className="p-3 hover:bg-slate-100 rounded-2xl transition-all text-slate-300 hover:text-slate-900"
+                  className="p-3 hover:bg-gray-100 rounded-2xl transition-all text-gray-300 hover:text-gray-900"
                 >
                   <X size={24} />
                 </button>
@@ -343,7 +347,7 @@ export const SupportView: React.FC = () => {
 
               <form onSubmit={handleCreateTicket} className="space-y-8">
                 <div className="space-y-3">
-                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">
                     Overall Subject
                   </label>
                   <Input
@@ -351,17 +355,17 @@ export const SupportView: React.FC = () => {
                     value={newTicket.subject}
                     onChange={(e) => setNewTicket((prev) => ({ ...prev, subject: e.target.value }))}
                     required
-                    className="p-6 h-14 rounded-2xl border-2 border-slate-100 focus:border-brand-600 transition-all text-sm font-bold shadow-sm"
+                    className="p-6 h-14 rounded-2xl border-2 border-gray-100 focus:border-brand-600 transition-all text-sm font-bold shadow-sm"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-3">
-                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">
                       Category
                     </label>
                     <select
-                      className="w-full p-4 h-14 rounded-2xl border-2 border-slate-100 focus:border-brand-600 bg-slate-50 outline-none text-sm font-bold appearance-none transition-all shadow-sm"
+                      className="w-full p-4 h-14 rounded-2xl border-2 border-gray-100 focus:border-brand-600 bg-gray-50 outline-none text-sm font-bold appearance-none transition-all shadow-sm"
                       value={newTicket.category}
                       onChange={(e) =>
                         setNewTicket((prev) => ({ ...prev, category: e.target.value as any }))
@@ -374,11 +378,11 @@ export const SupportView: React.FC = () => {
                     </select>
                   </div>
                   <div className="space-y-3">
-                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">
                       Priority
                     </label>
                     <select
-                      className="w-full p-4 h-14 rounded-2xl border-2 border-slate-100 focus:border-brand-600 bg-slate-50 outline-none text-sm font-bold appearance-none transition-all shadow-sm"
+                      className="w-full p-4 h-14 rounded-2xl border-2 border-gray-100 focus:border-brand-600 bg-gray-50 outline-none text-sm font-bold appearance-none transition-all shadow-sm"
                       value={newTicket.priority}
                       onChange={(e) =>
                         setNewTicket((prev) => ({ ...prev, priority: e.target.value as any }))
@@ -393,11 +397,11 @@ export const SupportView: React.FC = () => {
                 </div>
 
                 <div className="space-y-3">
-                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">
                     Describe in detail
                   </label>
                   <textarea
-                    className="w-full p-6 h-40 rounded-3xl border-2 border-slate-100 focus:border-brand-600 bg-slate-50 outline-none text-sm font-bold resize-none transition-all shadow-sm"
+                    className="w-full p-6 h-40 rounded-3xl border-2 border-gray-100 focus:border-brand-600 bg-gray-50 outline-none text-sm font-bold resize-none transition-all shadow-sm"
                     placeholder="Provide context, steps to reproduce, or requirements..."
                     value={newTicket.description}
                     onChange={(e) =>
@@ -411,7 +415,7 @@ export const SupportView: React.FC = () => {
                   <Button
                     type="button"
                     variant="outline"
-                    className="flex-1 rounded-2xl h-14 font-black border-slate-200"
+                    className="flex-1 rounded-2xl h-14 font-black border-gray-200"
                     onClick={() => setIsCreateModalOpen(false)}
                   >
                     Cancel

@@ -86,7 +86,7 @@ export function Sidebar({
                 {category.name !== 'General' ? (
                   <button
                     onClick={() => toggleCategory(category.name)}
-                    className="w-full flex items-center justify-between px-2 py-1 text-[10px] font-black uppercase tracking-widest text-brand-300/50 hover:text-brand-200 transition-colors group"
+                    className="w-full flex items-center justify-between px-2 py-1 text-xs font-black uppercase tracking-widest text-brand-300/50 hover:text-brand-200 transition-colors group"
                   >
                     <div className="flex items-center gap-2">
                       <category.icon className={`h-3 w-3 ${category.color}`} />

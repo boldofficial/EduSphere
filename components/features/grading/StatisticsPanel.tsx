@@ -96,9 +96,9 @@ export const StatisticsPanel: React.FC<StatisticsPanelProps> = ({
           <p className="text-2xl font-bold text-gray-900">{median.toFixed(1)}</p>
         </Card>
 
-        <Card className="p-4 bg-gradient-to-br from-emerald-50 to-white">
+        <Card className="p-4 bg-gradient-to-br from-green-50 to-white">
           <div className="flex items-center gap-2 mb-1">
-            <Award className="h-4 w-4 text-emerald-600" />
+            <Award className="h-4 w-4 text-green-600" />
             <span className="text-xs text-gray-500 uppercase">Mode</span>
           </div>
           <p className="text-2xl font-bold text-gray-900">{mode ?? '-'}</p>

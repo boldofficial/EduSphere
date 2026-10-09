@@ -156,14 +156,12 @@ export const ReportPreviewTab: React.FC<ReportPreviewTabProps> = ({
 
             <div className="grid grid-cols-2 gap-2">
               <div className="rounded-2xl border border-cyan-100 bg-cyan-50 p-3">
-                <p className="text-[10px] uppercase tracking-[0.14em] text-cyan-700">Students</p>
+                <p className="text-xs uppercase tracking-[0.14em] text-cyan-700">Students</p>
                 <p className="mt-1 text-lg font-bold text-cyan-900">{activeStudents.length}</p>
               </div>
-              <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-3">
-                <p className="text-[10px] uppercase tracking-[0.14em] text-emerald-700">
-                  Published
-                </p>
-                <p className="mt-1 text-lg font-bold text-emerald-900">
+              <div className="rounded-2xl border border-green-100 bg-green-50 p-3">
+                <p className="text-xs uppercase tracking-[0.14em] text-green-700">Published</p>
+                <p className="mt-1 text-lg font-bold text-green-900">
                   {publishStats.published}/{publishStats.total}
                 </p>
               </div>
@@ -237,7 +235,7 @@ export const ReportPreviewTab: React.FC<ReportPreviewTabProps> = ({
                       <Copy className="h-4 w-4" />
                       {isCopyingParentNote ? 'Copying...' : 'Copy Parent Summary'}
                     </Button>
-                    <p className="rounded-xl border border-brand-100 bg-brand-50 px-3 py-2 text-[11px] leading-relaxed text-brand-700">
+                    <p className="rounded-xl border border-brand-100 bg-brand-50 px-3 py-2 text-xs leading-relaxed text-brand-700">
                       Parent-friendly export: download PDF, copy summary for WhatsApp/SMS/email,
                       then print on A4 if needed.
                     </p>

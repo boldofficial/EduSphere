@@ -109,6 +109,32 @@ skeleton, pagination) but they are used inconsistently, so screens feel like dif
 
 ---
 
+### Phase 3 status (Oct 2026) — design foundation
+
+- **Tokens:** semantic `success`/`warning`/`danger`/`info` colours, `rounded-card`/`rounded-control`,
+  `shadow-card`/`shadow-raised` in `app/globals.css`.
+- **Type:** 351 uses of 6–11px text in app screens raised to 12px. Printed documents (report cards,
+  ID cards, payslips, invoices, receipts) keep their small print sizes.
+- **Colour:** 583 classes unified onto one family per meaning (slate→gray, emerald→green,
+  rose→red, yellow→amber, sky→blue, violet→purple) across app screens; the marketing sites keep
+  their palettes.
+- **Components** (`components/ui`): `PageHeader`, `StatCard`, `EmptyState`, `StatusBadge`,
+  `ConfirmDialog`/`useConfirm`, `StudentPicker`. `Modal` now closes on Escape/backdrop, locks page
+  scroll, has dialog roles, and is a bottom sheet on phones.
+- **B3 fixed:** all 27 `window.confirm`/`alert` calls replaced with the confirm dialog or toasts.
+- **P7 fixed + bug:** inventory, library and transport use the search-as-you-type `StudentPicker`
+  instead of downloading every student. Their old dropdowns showed `first_name`/`last_name`, which
+  students do not have, so every option was blank.
+- **Fonts:** report-card font choices (Montserrat, Playfair, Roboto) load only on report cards, not
+  on every page.
+- **Guardrails:** ESLint errors on `confirm`/`alert`, text below 12px and the retired colour
+  families in app screens.
+- **Review page:** `/design-system` shows every token and component (404s in production unless
+  `ENABLE_DESIGN_SYSTEM_PAGE=true`).
+- **Bug noted, not fixed:** the blog editor's Delete button confirms and then does nothing.
+- **Not done yet:** dark mode, a shared `DataTable`, and applying `PageHeader`/`StatCard`/`EmptyState`
+  across screens — that is phase 4 (screen redesigns).
+
 ## 5. Module-by-module enhancements
 
 | Module                        | Functional enhancements                                                                                                                   | Design / UX enhancements                                                                                                         |

@@ -107,11 +107,11 @@ export const SubmissionGradingView: React.FC<SubmissionGradingViewProps> = ({
                       {s.student_name || 'Student'}
                     </span>
                   </div>
-                  <Badge variant={s.is_graded ? 'success' : 'secondary'} className="text-[10px]">
+                  <Badge variant={s.is_graded ? 'success' : 'secondary'} className="text-xs">
                     {s.is_graded ? 'Graded' : 'Pending'}
                   </Badge>
                 </div>
-                <div className="mt-2 flex items-center text-[10px] text-gray-400 gap-2">
+                <div className="mt-2 flex items-center text-xs text-gray-400 gap-2">
                   <Clock size={10} />
                   {new Date(s.submitted_at).toLocaleString()}
                 </div>

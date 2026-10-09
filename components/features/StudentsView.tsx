@@ -400,7 +400,7 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
             >
               {/* Simple Colorful Header Strip */}
               <div
-                className={`h-16 w-full bg-gradient-to-r ${s.gender === 'Female' ? 'from-rose-400 to-pink-500' : 'from-indigo-400 to-blue-500'} opacity-80`}
+                className={`h-16 w-full bg-gradient-to-r ${s.gender === 'Female' ? 'from-red-400 to-pink-500' : 'from-indigo-400 to-blue-500'} opacity-80`}
               />
 
               <div className="px-5 pb-5 -mt-8 relative">
@@ -440,7 +440,7 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
 
                   <div className="flex items-center gap-2 mt-1 mb-4">
                     <span
-                      className={`px-2 py-0.5 rounded-lg bg-${accentColor}-100 text-${accentColor}-700 text-[11px] font-bold tracking-tight border border-${accentColor}-200`}
+                      className={`px-2 py-0.5 rounded-lg bg-${accentColor}-100 text-${accentColor}-700 text-xs font-bold tracking-tight border border-${accentColor}-200`}
                     >
                       {s.student_no}
                     </span>
@@ -461,9 +461,9 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                   {/* Footer Actions */}
                   <div className="w-full flex items-center justify-between pt-3 border-t border-gray-100">
                     <div className="flex flex-col px-1">
-                      <span className="text-[10px] font-bold text-gray-400 uppercase">Status</span>
-                      <span className="text-xs font-bold text-emerald-600 flex items-center gap-1">
-                        <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
+                      <span className="text-xs font-bold text-gray-400 uppercase">Status</span>
+                      <span className="text-xs font-bold text-green-600 flex items-center gap-1">
+                        <div className="h-1.5 w-1.5 rounded-full bg-green-500" /> Active
                       </span>
                     </div>
                     <div className="flex gap-1">
@@ -482,7 +482,7 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                       </button>
                       <button
                         onClick={() => onDelete(s.id)}
-                        className="p-1.5 hover:bg-rose-50 rounded-lg text-gray-400 hover:text-rose-600 transition-colors"
+                        className="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-600 transition-colors"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -604,7 +604,7 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
               <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wide flex items-center gap-2">
                 <Library className="h-4 w-4 text-brand-500" /> Subject Selection (E.g. Science/Art)
               </h4>
-              <span className="text-[10px] text-gray-500 italic">
+              <span className="text-xs text-gray-500 italic">
                 Leave empty to use class defaults
               </span>
             </div>
@@ -730,31 +730,31 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
 
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
               <div className="rounded-lg bg-brand-50 p-3 border border-brand-100">
-                <p className="text-[10px] uppercase font-bold text-brand-600">Average</p>
+                <p className="text-xs uppercase font-bold text-brand-600">Average</p>
                 <p className="text-base font-bold text-brand-800">
                   {detailScore ? `${(detailScore.average || 0).toFixed(1)}%` : '--'}
                 </p>
               </div>
               <div className="rounded-lg bg-indigo-50 p-3 border border-indigo-100">
-                <p className="text-[10px] uppercase font-bold text-indigo-600">Position</p>
+                <p className="text-xs uppercase font-bold text-indigo-600">Position</p>
                 <p className="text-base font-bold text-indigo-800">
                   {detailPosition ? Utils.ordinalSuffix(detailPosition) : '--'}
                 </p>
               </div>
-              <div className="rounded-lg bg-emerald-50 p-3 border border-emerald-100">
-                <p className="text-[10px] uppercase font-bold text-emerald-600">Attendance</p>
-                <p className="text-base font-bold text-emerald-800">
+              <div className="rounded-lg bg-green-50 p-3 border border-green-100">
+                <p className="text-xs uppercase font-bold text-green-600">Attendance</p>
+                <p className="text-base font-bold text-green-800">
                   {detailAttendance.total ? `${detailAttendance.rate}%` : '--'}
                 </p>
               </div>
-              <div className="rounded-lg bg-rose-50 p-3 border border-rose-100">
-                <p className="text-[10px] uppercase font-bold text-rose-600">Outstanding</p>
-                <p className="text-base font-bold text-rose-800">
+              <div className="rounded-lg bg-red-50 p-3 border border-red-100">
+                <p className="text-xs uppercase font-bold text-red-600">Outstanding</p>
+                <p className="text-base font-bold text-red-800">
                   {detailFinance ? Utils.formatCurrency(detailFinance.balance) : '--'}
                 </p>
               </div>
               <div className="rounded-lg bg-amber-50 p-3 border border-amber-100">
-                <p className="text-[10px] uppercase font-bold text-amber-600">Data Alerts</p>
+                <p className="text-xs uppercase font-bold text-amber-600">Data Alerts</p>
                 <p className="text-base font-bold text-amber-800">{detailWarnings.length}</p>
               </div>
             </div>
@@ -870,12 +870,12 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                   Subject Strengths & Risk
                 </p>
                 <div className="space-y-2">
-                  <p className="text-xs font-semibold text-emerald-700">Top Subjects</p>
+                  <p className="text-xs font-semibold text-green-700">Top Subjects</p>
                   {detailSubjectAnalysis.strengths.length > 0 ? (
                     detailSubjectAnalysis.strengths.map((row) => (
                       <div
                         key={`${row.subject}-top`}
-                        className="flex items-center justify-between rounded-md bg-emerald-50 px-3 py-2 text-sm"
+                        className="flex items-center justify-between rounded-md bg-green-50 px-3 py-2 text-sm"
                       >
                         <span>{row.subject}</span>
                         <span className="font-bold">{row.total}%</span>
@@ -885,12 +885,12 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                     <p className="text-xs text-gray-500">No score data for this period.</p>
                   )}
 
-                  <p className="text-xs font-semibold text-rose-700 mt-3">Needs Attention</p>
+                  <p className="text-xs font-semibold text-red-700 mt-3">Needs Attention</p>
                   {detailSubjectAnalysis.risks.length > 0 ? (
                     detailSubjectAnalysis.risks.map((row) => (
                       <div
                         key={`${row.subject}-risk`}
-                        className="flex items-center justify-between rounded-md bg-rose-50 px-3 py-2 text-sm"
+                        className="flex items-center justify-between rounded-md bg-red-50 px-3 py-2 text-sm"
                       >
                         <span>{row.subject}</span>
                         <span className="font-bold">{row.total}%</span>
@@ -913,17 +913,17 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                     <span className="text-xs text-gray-500">Days</span>
                     <p className="font-bold">{detailAttendance.total}</p>
                   </div>
-                  <div className="rounded-md bg-emerald-50 p-2">
-                    <span className="text-xs text-emerald-600">Present</span>
-                    <p className="font-bold text-emerald-700">{detailAttendance.present}</p>
+                  <div className="rounded-md bg-green-50 p-2">
+                    <span className="text-xs text-green-600">Present</span>
+                    <p className="font-bold text-green-700">{detailAttendance.present}</p>
                   </div>
                   <div className="rounded-md bg-amber-50 p-2">
                     <span className="text-xs text-amber-600">Late</span>
                     <p className="font-bold text-amber-700">{detailAttendance.late}</p>
                   </div>
-                  <div className="rounded-md bg-rose-50 p-2">
-                    <span className="text-xs text-rose-600">Absent</span>
-                    <p className="font-bold text-rose-700">{detailAttendance.absent}</p>
+                  <div className="rounded-md bg-red-50 p-2">
+                    <span className="text-xs text-red-600">Absent</span>
+                    <p className="font-bold text-red-700">{detailAttendance.absent}</p>
                   </div>
                 </div>
                 <div className="mt-3 text-xs text-gray-600">
@@ -1072,7 +1072,7 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
             </div>
             <div className="bg-amber-50 border border-amber-200 p-3 rounded-lg flex items-start gap-3">
               <UserCheck className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
-              <p className="text-[10px] text-amber-800">
+              <p className="text-xs text-amber-800">
                 <span className="font-bold">Warning:</span> This action will modify multiple student
                 records in the background. Ensure you have confirmed all scores for this term before
                 proceeding.

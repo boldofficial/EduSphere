@@ -14,10 +14,10 @@ export const AchievementShowcase: React.FC<{ studentId: string }> = ({ studentId
 
   const getCategoryIcon = (category: string) => {
     const c = category.toLowerCase();
-    if (c.includes('sport')) return <Target className="text-rose-500" />;
+    if (c.includes('sport')) return <Target className="text-red-500" />;
     if (c.includes('academic')) return <Medal className="text-amber-500" />;
     if (c.includes('leader')) return <Trophy className="text-indigo-500" />;
-    return <Star className="text-emerald-500" />;
+    return <Star className="text-green-500" />;
   };
 
   return (
@@ -45,10 +45,10 @@ export const AchievementShowcase: React.FC<{ studentId: string }> = ({ studentId
               </div>
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-[10px] font-black text-brand-500 uppercase tracking-widest">
+                  <span className="text-xs font-black text-brand-500 uppercase tracking-widest">
                     {item.category}
                   </span>
-                  <span className="text-[10px] font-bold text-gray-400 capitalize">
+                  <span className="text-xs font-bold text-gray-400 capitalize">
                     {formatDate(item.date_achieved, 'MMM yyyy')}
                   </span>
                 </div>
@@ -61,7 +61,7 @@ export const AchievementShowcase: React.FC<{ studentId: string }> = ({ studentId
                   <a
                     href={item.evidence_url}
                     target="_blank"
-                    className="inline-flex items-center gap-1.5 text-[10px] font-black text-indigo-600 hover:text-indigo-700 transition-colors uppercase tracking-wider"
+                    className="inline-flex items-center gap-1.5 text-xs font-black text-indigo-600 hover:text-indigo-700 transition-colors uppercase tracking-wider"
                     rel="noreferrer"
                   >
                     View Evidence

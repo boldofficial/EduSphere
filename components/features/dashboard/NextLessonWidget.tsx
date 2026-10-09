@@ -49,7 +49,7 @@ export const NextLessonWidget: React.FC<{ teacherId: string }> = ({ teacherId })
           <BookOpen size={120} />
         </div>
         <div className="p-8 relative z-10">
-          <p className="text-brand-300 font-bold uppercase text-[10px] tracking-widest mb-2">
+          <p className="text-brand-300 font-bold uppercase text-xs tracking-widest mb-2">
             Schedule
           </p>
           <h3 className="text-2xl font-black text-white mb-2">No more lessons today</h3>
@@ -69,7 +69,7 @@ export const NextLessonWidget: React.FC<{ teacherId: string }> = ({ teacherId })
 
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
-          <span className="px-3 py-1 bg-brand-50 text-brand-600 rounded-full text-[10px] font-black uppercase tracking-wider border border-brand-100">
+          <span className="px-3 py-1 bg-brand-50 text-brand-600 rounded-full text-xs font-black uppercase tracking-wider border border-brand-100">
             Up Next
           </span>
           <div className="flex items-center gap-2 text-brand-500 font-bold text-xs">

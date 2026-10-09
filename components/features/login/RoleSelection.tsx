@@ -56,10 +56,10 @@ export const RoleSelection: React.FC<RoleSelectionProps> = ({ roles, onSelectRol
 
             <div className="mt-auto pt-10 flex items-center justify-between">
               <div className="flex flex-col">
-                <span className="text-[10px] font-black uppercase tracking-[0.5em] text-white/20 group-hover:text-white/60 transition-colors">
+                <span className="text-xs font-black uppercase tracking-[0.5em] text-white/20 group-hover:text-white/60 transition-colors">
                   Secure
                 </span>
-                <span className="text-[10px] font-black uppercase tracking-[0.5em] text-accent-500/40 group-hover:text-accent-500 transition-colors">
+                <span className="text-xs font-black uppercase tracking-[0.5em] text-accent-500/40 group-hover:text-accent-500 transition-colors">
                   Terminal
                 </span>
               </div>

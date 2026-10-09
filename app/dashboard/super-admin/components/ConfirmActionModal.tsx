@@ -15,7 +15,7 @@ interface ConfirmActionModalProps {
 }
 
 const variantClasses = {
-  danger: 'bg-rose-600 hover:bg-rose-700',
+  danger: 'bg-red-600 hover:bg-red-700',
   warning: 'bg-amber-600 hover:bg-amber-700',
   primary: 'bg-brand-600 hover:bg-brand-700',
 };

@@ -64,7 +64,7 @@ export const CmsContentTabs: React.FC<CmsContentTabsProps> = ({
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-xl font-black text-gray-900 mb-2 flex items-center gap-2">
-                <Heart className="text-rose-500" size={24} />
+                <Heart className="text-red-500" size={24} />
                 Core Values
               </h2>
               <p className="text-gray-500 text-sm">Define what makes your school special.</p>
@@ -191,7 +191,7 @@ export const CmsContentTabs: React.FC<CmsContentTabsProps> = ({
                     ) : (
                       <label className="cursor-pointer flex flex-col items-center gap-2 text-gray-400 hover:text-brand-600 transition-all">
                         <ImageIcon size={30} />
-                        <span className="text-[10px] font-black uppercase tracking-tighter">
+                        <span className="text-xs font-black uppercase tracking-tighter">
                           Add Image
                         </span>
                         <input

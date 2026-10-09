@@ -117,7 +117,7 @@ export const CreateCampaignModal: React.FC<CreateCampaignModalProps> = ({
                     className={`h-1 rounded-full transition-all duration-300 ${step >= i ? 'w-6 bg-brand-600' : 'w-2 bg-gray-200'}`}
                   />
                 ))}
-                <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-2">
+                <span className="text-xs font-black uppercase tracking-widest text-gray-400 ml-2">
                   Step {step} of 3
                 </span>
               </div>
@@ -151,7 +151,7 @@ export const CreateCampaignModal: React.FC<CreateCampaignModalProps> = ({
                   <label className="text-xs font-black uppercase tracking-widest text-gray-500">
                     Select Template
                   </label>
-                  <button className="text-[10px] font-black uppercase tracking-widest text-brand-600 hover:underline">
+                  <button className="text-xs font-black uppercase tracking-widest text-brand-600 hover:underline">
                     Manage Templates
                   </button>
                 </div>
@@ -170,7 +170,7 @@ export const CreateCampaignModal: React.FC<CreateCampaignModalProps> = ({
                         <Layout size={20} />
                       </div>
                       <h4 className="font-black text-sm text-gray-900 line-clamp-1">{t.name}</h4>
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight mt-1 truncate">
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-tight mt-1 truncate">
                         {t.subject}
                       </p>
                     </button>
@@ -192,7 +192,7 @@ export const CreateCampaignModal: React.FC<CreateCampaignModalProps> = ({
                       <Plus size={20} />
                     </div>
                     <h4 className="font-black text-sm text-gray-900">Custom Email</h4>
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight mt-1">
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-tight mt-1">
                       Compose from scratch
                     </p>
                   </button>
@@ -261,7 +261,7 @@ export const CreateCampaignModal: React.FC<CreateCampaignModalProps> = ({
                         }
                         className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all ${formData.audience_filter.role === role ? 'border-brand-600 bg-brand-50 text-brand-600 shadow-sm' : 'border-gray-50 bg-gray-50 text-gray-500 hover:border-gray-200'}`}
                       >
-                        <span className="text-[10px] font-black uppercase tracking-widest">
+                        <span className="text-xs font-black uppercase tracking-widest">
                           {role.replace('_', ' ')}
                         </span>
                         {formData.audience_filter.role === role && <CheckCircle size={14} />}
@@ -288,7 +288,7 @@ export const CreateCampaignModal: React.FC<CreateCampaignModalProps> = ({
                   </select>
                   <div className="p-5 bg-amber-50 rounded-2xl border border-amber-100 mt-4 flex gap-3">
                     <Info className="text-amber-600 shrink-0" size={16} />
-                    <p className="text-[10px] font-bold text-amber-900/70 uppercase leading-tight tracking-tight">
+                    <p className="text-xs font-bold text-amber-900/70 uppercase leading-tight tracking-tight">
                       Selecting &ldquo;All Schools&rdquo; will send this to every school in the
                       system.
                     </p>
@@ -301,7 +301,7 @@ export const CreateCampaignModal: React.FC<CreateCampaignModalProps> = ({
           {step === 3 && (
             <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
               <div className="p-8 bg-gray-50 rounded-[40px] border border-gray-100 space-y-6">
-                <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400 text-center">
+                <h4 className="text-xs font-black uppercase tracking-widest text-gray-400 text-center">
                   Campaign Review
                 </h4>
                 <div className="space-y-6">
@@ -329,7 +329,7 @@ export const CreateCampaignModal: React.FC<CreateCampaignModalProps> = ({
                       <div className="text-sm font-black text-gray-900">
                         {formData.audience_filter.role || 'All Registered Roles'}
                       </div>
-                      <div className="text-[10px] font-bold text-brand-600 uppercase mt-1">
+                      <div className="text-xs font-bold text-brand-600 uppercase mt-1">
                         {formData.audience_filter.school_id ? 'Specific School' : 'Platform-Wide'}
                       </div>
                     </div>
@@ -353,7 +353,7 @@ export const CreateCampaignModal: React.FC<CreateCampaignModalProps> = ({
             <Button
               variant="ghost"
               onClick={() => setStep(step - 1)}
-              className="rounded-2xl h-14 px-8 gap-2 font-black uppercase text-[11px] tracking-widest text-gray-500 hover:text-gray-900"
+              className="rounded-2xl h-14 px-8 gap-2 font-black uppercase text-xs tracking-widest text-gray-500 hover:text-gray-900"
             >
               <ChevronLeft size={16} /> Back
             </Button>
@@ -364,7 +364,7 @@ export const CreateCampaignModal: React.FC<CreateCampaignModalProps> = ({
           {step < 3 ? (
             <Button
               onClick={() => setStep(step + 1)}
-              className="rounded-2xl h-14 px-10 gap-2 bg-brand-600 hover:bg-brand-500 shadow-xl shadow-brand-500/20 font-black uppercase text-[11px] tracking-widest transition-all"
+              className="rounded-2xl h-14 px-10 gap-2 bg-brand-600 hover:bg-brand-500 shadow-xl shadow-brand-500/20 font-black uppercase text-xs tracking-widest transition-all"
               disabled={step === 1 && !formData.title}
             >
               Next <ArrowRight size={16} />
@@ -373,7 +373,7 @@ export const CreateCampaignModal: React.FC<CreateCampaignModalProps> = ({
             <Button
               onClick={handleCreate}
               disabled={isSubmitting}
-              className="rounded-2xl h-14 px-10 gap-2 bg-brand-900 hover:bg-brand-950 shadow-xl shadow-brand-900/20 font-black uppercase text-[11px] tracking-widest transition-all"
+              className="rounded-2xl h-14 px-10 gap-2 bg-brand-900 hover:bg-brand-950 shadow-xl shadow-brand-900/20 font-black uppercase text-xs tracking-widest transition-all"
             >
               {isSubmitting ? 'Creating...' : 'Finalize & Save Draft'}
             </Button>

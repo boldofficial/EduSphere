@@ -29,7 +29,7 @@ export const StudentStatsGrid: React.FC<StudentStatsGridProps> = ({ stats }) => 
             <stat.icon size={20} className="sm:w-6 sm:h-6" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider truncate">
+            <p className="text-xs sm:text-xs font-bold text-gray-400 uppercase tracking-wider truncate">
               {stat.label}
             </p>
             <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
@@ -38,7 +38,7 @@ export const StudentStatsGrid: React.FC<StudentStatsGridProps> = ({ stats }) => 
               </p>
               {stat.trend !== null && stat.trend !== 0 && (
                 <span
-                  className={`flex items-center gap-0.5 text-[10px] sm:text-xs font-bold px-1 sm:px-1.5 py-0.5 rounded-full ${
+                  className={`flex items-center gap-0.5 text-xs sm:text-xs font-bold px-1 sm:px-1.5 py-0.5 rounded-full ${
                     stat.trend > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                   }`}
                 >

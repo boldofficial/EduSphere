@@ -14,12 +14,14 @@ import {
   useCreateTag,
 } from '@/lib/hooks/use-blog';
 import { useToast } from '@/components/providers/toast-provider';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 
 interface BlogEditorProps {
   postId?: number | null;
 }
 
 export function BlogEditor({ postId }: BlogEditorProps) {
+  const confirm = useConfirm();
   const router = useRouter();
   const { addToast } = useToast();
 
@@ -244,7 +246,7 @@ export function BlogEditor({ postId }: BlogEditorProps) {
                 .map((tag) => (
                   <span
                     key={tag.id}
-                    className="inline-flex items-center gap-1 bg-brand-100 text-brand-700 text-[10px] font-bold px-2 py-1 rounded-full"
+                    className="inline-flex items-center gap-1 bg-brand-100 text-brand-700 text-xs font-bold px-2 py-1 rounded-full"
                   >
                     {tag.name}
                     <button
@@ -350,8 +352,8 @@ export function BlogEditor({ postId }: BlogEditorProps) {
           <button
             type="button"
             className="px-5 py-2.5 rounded-xl border border-red-200 text-sm font-bold text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
-            onClick={() => {
-              if (confirm('Delete this post?')) {
+            onClick={async () => {
+              if (await confirm('Delete this post?')) {
                 // handled by parent page
               }
             }}
@@ -533,7 +535,7 @@ function FeaturedImageUpload({
               <div className="text-center">
                 <p className="text-sm font-bold text-gray-700">Click to upload</p>
                 <p className="text-xs text-gray-400 mt-1">or drag & drop an image</p>
-                <p className="text-[10px] text-gray-400 mt-2">PNG, JPG, WebP — Max 5MB</p>
+                <p className="text-xs text-gray-400 mt-2">PNG, JPG, WebP — Max 5MB</p>
               </div>
             </>
           )}

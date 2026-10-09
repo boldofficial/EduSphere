@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/providers/toast-provider';
 import { useScores, useUpdateScore } from '@/lib/hooks/use-data';
 import * as Utils from '@/lib/utils';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 
 interface ExamModeProps {
   students: Types.Student[];
@@ -28,6 +29,7 @@ interface ExamConfig {
 }
 
 export const ExamMode: React.FC<ExamModeProps> = ({ students, classes, session, term }) => {
+  const confirm = useConfirm();
   const { addToast } = useToast();
   const { data: scores = [] } = useScores({ include_all_periods: true });
   const { mutate: updateScore } = useUpdateScore();
@@ -79,8 +81,8 @@ export const ExamMode: React.FC<ExamModeProps> = ({ students, classes, session, 
     addToast(`Exam started: ${examConfig.title || selectedSubject}`, 'success');
   };
 
-  const handleEndExam = () => {
-    if (!confirm('Are you sure you want to end the exam early?')) return;
+  const handleEndExam = async () => {
+    if (!(await confirm('Are you sure you want to end the exam early?'))) return;
     setIsExamActive(false);
     setIsLocked(true);
     addToast('Exam ended', 'info');
@@ -335,11 +337,11 @@ export const ExamMode: React.FC<ExamModeProps> = ({ students, classes, session, 
                       <span
                         className={`px-2 py-1 rounded text-xs font-bold ${
                           total >= 75
-                            ? 'bg-emerald-100 text-emerald-700'
+                            ? 'bg-green-100 text-green-700'
                             : total >= 65
                               ? 'bg-blue-100 text-blue-700'
                               : total >= 55
-                                ? 'bg-yellow-100 text-yellow-700'
+                                ? 'bg-amber-100 text-amber-700'
                                 : total >= 40
                                   ? 'bg-orange-100 text-orange-700'
                                   : 'bg-red-100 text-red-700'

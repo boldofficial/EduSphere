@@ -13,8 +13,10 @@ import { Badge } from '@/components/ui/badge';
 import { QuizResultsView } from '@/components/features/learning/QuizResultsView';
 import { TakeQuizView } from '@/components/features/learning/TakeQuizView';
 import { useSchoolStore } from '@/lib/store';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 
 export default function QuizEditorPage() {
+  const confirm = useConfirm();
   const params = useParams();
   const router = useRouter();
   const quizId = params.id as string;
@@ -115,8 +117,8 @@ export default function QuizEditorPage() {
                       variant="ghost"
                       size="sm"
                       className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
-                      onClick={() => {
-                        if (confirm('Are you sure you want to delete this question?')) {
+                      onClick={async () => {
+                        if (await confirm('Are you sure you want to delete this question?')) {
                           deleteMutation.mutate(q.id);
                         }
                       }}

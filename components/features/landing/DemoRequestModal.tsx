@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send, Loader2, CheckCircle } from 'lucide-react';
 import apiClient from '@/lib/api-client';
+import { useToast } from '@/components/providers/toast-provider';
 
 interface DemoRequestModalProps {
   isOpen: boolean;
@@ -9,6 +10,7 @@ interface DemoRequestModalProps {
 }
 
 export const DemoRequestModal: React.FC<DemoRequestModalProps> = ({ isOpen, onClose }) => {
+  const { addToast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [formData, setFormData] = useState({
@@ -27,7 +29,7 @@ export const DemoRequestModal: React.FC<DemoRequestModalProps> = ({ isOpen, onCl
       setIsSuccess(true);
     } catch (error) {
       console.error('Demo request failed:', error);
-      alert('Failed to submit request. Please try again.');
+      addToast('Failed to submit request. Please try again.', 'error');
     } finally {
       setIsLoading(false);
     }

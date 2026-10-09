@@ -97,7 +97,7 @@ export const AdmissionsView: React.FC<AdmissionsViewProps> = ({
 
   const getStatusBadge = (status: Types.Admission['status']) => {
     const styles = {
-      pending: 'bg-yellow-100 text-yellow-700',
+      pending: 'bg-amber-100 text-amber-700',
       reviewed: 'bg-blue-100 text-blue-700',
       accepted: 'bg-green-100 text-green-700',
       rejected: 'bg-red-100 text-red-700',
@@ -163,17 +163,17 @@ export const AdmissionsView: React.FC<AdmissionsViewProps> = ({
           <p className="text-xs font-medium uppercase opacity-80">Total</p>
           <p className="text-3xl font-bold mt-1">{stats.total}</p>
         </div>
-        <div className="relative overflow-hidden bg-gradient-to-br from-amber-400 to-yellow-600 p-4 rounded-xl shadow-lg text-white">
+        <div className="relative overflow-hidden bg-gradient-to-br from-amber-400 to-amber-600 p-4 rounded-xl shadow-lg text-white">
           <div className="absolute -top-4 -right-4 h-16 w-16 bg-white/10 rounded-full" />
           <p className="text-xs font-medium uppercase opacity-80">Pending</p>
           <p className="text-3xl font-bold mt-1">{stats.pending}</p>
         </div>
-        <div className="relative overflow-hidden bg-gradient-to-br from-emerald-400 to-green-600 p-4 rounded-xl shadow-lg text-white">
+        <div className="relative overflow-hidden bg-gradient-to-br from-green-400 to-green-600 p-4 rounded-xl shadow-lg text-white">
           <div className="absolute -top-4 -right-4 h-16 w-16 bg-white/10 rounded-full" />
           <p className="text-xs font-medium uppercase opacity-80">Accepted</p>
           <p className="text-3xl font-bold mt-1">{stats.accepted}</p>
         </div>
-        <div className="relative overflow-hidden bg-gradient-to-br from-rose-400 to-red-600 p-4 rounded-xl shadow-lg text-white">
+        <div className="relative overflow-hidden bg-gradient-to-br from-red-400 to-red-600 p-4 rounded-xl shadow-lg text-white">
           <div className="absolute -top-4 -right-4 h-16 w-16 bg-white/10 rounded-full" />
           <p className="text-xs font-medium uppercase opacity-80">Rejected</p>
           <p className="text-3xl font-bold mt-1">{stats.rejected}</p>
@@ -215,10 +215,10 @@ export const AdmissionsView: React.FC<AdmissionsViewProps> = ({
             const columnItems = admissions.filter((a) => a.status === status);
             const columnColors = {
               pending: {
-                bg: 'bg-yellow-50',
-                border: 'border-yellow-200',
-                header: 'text-yellow-700',
-                dot: 'bg-yellow-400',
+                bg: 'bg-amber-50',
+                border: 'border-amber-200',
+                header: 'text-amber-700',
+                dot: 'bg-amber-400',
               },
               reviewed: {
                 bg: 'bg-blue-50',
@@ -269,7 +269,7 @@ export const AdmissionsView: React.FC<AdmissionsViewProps> = ({
                       <p className="text-xs text-gray-500 mt-0.5">{a.parent_name}</p>
                       <div className="flex items-center justify-between mt-2">
                         {getProgramBadge(a.program)}
-                        <span className="text-[10px] text-gray-400">
+                        <span className="text-xs text-gray-400">
                           {new Date(a.created_at).toLocaleDateString()}
                         </span>
                       </div>

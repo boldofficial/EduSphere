@@ -34,13 +34,11 @@ function MetricCard({ title, value, icon: Icon, gradient, trend, trendLabel }: a
         >
           <Icon size={20} />
         </div>
-        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
-          {title}
-        </p>
+        <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">{title}</p>
         <h3 className="text-2xl font-black text-gray-900 tracking-tight">{value}</h3>
         {trend && (
           <div
-            className={`flex items-center gap-1 mt-3 text-xs font-bold ${trend > 0 ? 'text-emerald-600' : 'text-rose-600'}`}
+            className={`flex items-center gap-1 mt-3 text-xs font-bold ${trend > 0 ? 'text-green-600' : 'text-red-600'}`}
           >
             {trend > 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
             <span>
@@ -122,7 +120,7 @@ export function FinancialsTab({ revenue }: any) {
           title="Total Revenue"
           value={`₦${parseFloat(revenue?.total_revenue || 0).toLocaleString()}`}
           icon={Wallet}
-          gradient="bg-gradient-to-br from-emerald-500 to-emerald-700"
+          gradient="bg-gradient-to-br from-green-500 to-green-700"
           trend={12}
           trendLabel="vs last year"
         />
@@ -138,7 +136,7 @@ export function FinancialsTab({ revenue }: any) {
           title="Transactions"
           value={paymentCount}
           icon={CreditCard}
-          gradient="bg-gradient-to-br from-violet-500 to-purple-700"
+          gradient="bg-gradient-to-br from-purple-500 to-purple-700"
         />
         <MetricCard
           title="Avg. Payment"
@@ -152,7 +150,7 @@ export function FinancialsTab({ revenue }: any) {
       <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center text-white shadow-md">
+            <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-teal-600 rounded-xl flex items-center justify-center text-white shadow-md">
               <TrendingUp size={20} />
             </div>
             <div>
@@ -242,7 +240,7 @@ export function FinancialsTab({ revenue }: any) {
                 <tr key={i} className="hover:bg-brand-50/20 transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 bg-gradient-to-br from-brand-500 to-indigo-600 rounded-lg flex items-center justify-center text-white text-[10px] font-black">
+                      <div className="w-7 h-7 bg-gradient-to-br from-brand-500 to-indigo-600 rounded-lg flex items-center justify-center text-white text-xs font-black">
                         {payment.school__name?.[0]}
                       </div>
                       <span className="font-bold text-gray-900 text-sm">
@@ -251,7 +249,7 @@ export function FinancialsTab({ revenue }: any) {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="text-emerald-600 font-black text-sm flex items-center gap-1">
+                    <span className="text-green-600 font-black text-sm flex items-center gap-1">
                       <ArrowUpRight size={14} /> ₦{parseFloat(payment.amount).toLocaleString()}
                     </span>
                   </td>
@@ -260,7 +258,7 @@ export function FinancialsTab({ revenue }: any) {
                   </td>
                   <td className="px-6 py-4 text-gray-400 text-xs font-mono">{payment.reference}</td>
                   <td className="px-6 py-4">
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 rounded-full text-[10px] font-black uppercase">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-50 text-green-700 ring-1 ring-green-200 rounded-full text-xs font-black uppercase">
                       <CheckCircle2 size={10} /> Paid
                     </span>
                   </td>

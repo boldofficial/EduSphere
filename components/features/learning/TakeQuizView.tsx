@@ -9,12 +9,14 @@ import { useQuestions, useLogViolation, useSubmitAttempt } from '@/lib/hooks/use
 import { useToast } from '@/components/providers/toast-provider';
 import * as Types from '@/lib/types';
 import apiClient from '@/lib/api-client';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 
 interface TakeQuizViewProps {
   quiz: Types.Quiz;
 }
 
 export function TakeQuizView({ quiz }: TakeQuizViewProps) {
+  const confirm = useConfirm();
   const { addToast } = useToast();
   const { data: questions = [], isLoading } = useQuestions(quiz.id.toString());
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -197,8 +199,8 @@ export function TakeQuizView({ quiz }: TakeQuizViewProps) {
           <Button
             variant="primary"
             size="sm"
-            onClick={() => {
-              if (confirm('Are you sure you want to submit your exam now?')) {
+            onClick={async () => {
+              if (await confirm('Are you sure you want to submit your exam now?')) {
                 handleAutoSubmit();
               }
             }}
@@ -286,8 +288,8 @@ export function TakeQuizView({ quiz }: TakeQuizViewProps) {
           ) : (
             <Button
               variant="primary"
-              onClick={() => {
-                if (confirm('Ready to submit?')) {
+              onClick={async () => {
+                if (await confirm('Ready to submit?')) {
                   handleAutoSubmit();
                 }
               }}

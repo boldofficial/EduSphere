@@ -57,8 +57,8 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({ onNavigate }) => {
       value: formatNaira(dashboard?.monthly_basic_total ?? 0),
       subtitle: 'Total basic salaries',
       icon: Banknote,
-      color: 'text-emerald-600',
-      bg: 'bg-emerald-50',
+      color: 'text-green-600',
+      bg: 'bg-green-50',
     },
     {
       title: 'YTD Expenditure',
@@ -202,7 +202,7 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({ onNavigate }) => {
               variant="outline"
               onClick={() => onNavigate('payroll')}
             >
-              <PlayCircle className="mr-3 h-4 w-4 text-emerald-600" />
+              <PlayCircle className="mr-3 h-4 w-4 text-green-600" />
               <div className="text-left">
                 <div className="font-medium text-sm">Run Payroll</div>
                 <div className="text-xs text-muted-foreground">Generate monthly payroll</div>
@@ -241,19 +241,19 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({ onNavigate }) => {
                   <p className="text-lg font-bold text-amber-700">
                     {dashboard?.payroll_status?.draft ?? 0}
                   </p>
-                  <p className="text-[10px] text-amber-600">Draft</p>
+                  <p className="text-xs text-amber-600">Draft</p>
                 </div>
                 <div className="text-center p-2 rounded-lg bg-blue-50">
                   <p className="text-lg font-bold text-blue-700">
                     {dashboard?.payroll_status?.approved ?? 0}
                   </p>
-                  <p className="text-[10px] text-blue-600">Approved</p>
+                  <p className="text-xs text-blue-600">Approved</p>
                 </div>
-                <div className="text-center p-2 rounded-lg bg-emerald-50">
-                  <p className="text-lg font-bold text-emerald-700">
+                <div className="text-center p-2 rounded-lg bg-green-50">
+                  <p className="text-lg font-bold text-green-700">
                     {dashboard?.payroll_status?.paid ?? 0}
                   </p>
-                  <p className="text-[10px] text-emerald-600">Paid</p>
+                  <p className="text-xs text-green-600">Paid</p>
                 </div>
               </div>
             </div>

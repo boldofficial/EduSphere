@@ -119,11 +119,11 @@ export const EmailMarketingTab: React.FC = () => {
   const getStatusStyle = (status: string) => {
     switch (status) {
       case 'completed':
-        return 'bg-emerald-100 text-emerald-700 ring-emerald-200';
+        return 'bg-green-100 text-green-700 ring-green-200';
       case 'sending':
         return 'bg-blue-100 text-blue-700 ring-blue-200 animate-pulse';
       case 'failed':
-        return 'bg-rose-100 text-rose-700 ring-rose-200';
+        return 'bg-red-100 text-red-700 ring-red-200';
       default:
         return 'bg-gray-100 text-gray-700 ring-gray-200';
     }
@@ -152,13 +152,13 @@ export const EmailMarketingTab: React.FC = () => {
           <Button
             onClick={() => setIsIndividualModalOpen(true)}
             variant="outline"
-            className="rounded-2xl h-12 px-6 gap-2 border-brand-100 text-brand-600 font-bold uppercase text-[10px] tracking-widest hover:bg-brand-50"
+            className="rounded-2xl h-12 px-6 gap-2 border-brand-100 text-brand-600 font-bold uppercase text-xs tracking-widest hover:bg-brand-50"
           >
             <User size={16} /> Individual Email
           </Button>
           <Button
             onClick={() => setIsCreateModalOpen(true)}
-            className="rounded-2xl h-12 px-6 gap-2 bg-brand-600 hover:bg-brand-500 shadow-lg shadow-brand-500/20 font-bold uppercase text-[10px] tracking-widest"
+            className="rounded-2xl h-12 px-6 gap-2 bg-brand-600 hover:bg-brand-500 shadow-lg shadow-brand-500/20 font-bold uppercase text-xs tracking-widest"
           >
             <Plus size={16} /> New Campaign
           </Button>
@@ -183,7 +183,7 @@ export const EmailMarketingTab: React.FC = () => {
             </div>
 
             <div className="space-y-4">
-              <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+              <h4 className="text-xs font-black uppercase tracking-widest text-gray-400">
                 Marketing Analytics
               </h4>
               <div className="grid grid-cols-2 gap-4">
@@ -191,7 +191,7 @@ export const EmailMarketingTab: React.FC = () => {
                   <div className="text-2xl font-black text-gray-900 leading-none">
                     {stats.success_rate}%
                   </div>
-                  <div className="text-[9px] font-black uppercase tracking-tight text-gray-400 mt-1">
+                  <div className="text-xs font-black uppercase tracking-tight text-gray-400 mt-1">
                     Success Rate
                   </div>
                 </div>
@@ -199,7 +199,7 @@ export const EmailMarketingTab: React.FC = () => {
                   <div className="text-2xl font-black text-gray-900 leading-none">
                     {stats.total_sent}
                   </div>
-                  <div className="text-[9px] font-black uppercase tracking-tight text-gray-400 mt-1">
+                  <div className="text-xs font-black uppercase tracking-tight text-gray-400 mt-1">
                     Total Sent
                   </div>
                 </div>
@@ -207,15 +207,15 @@ export const EmailMarketingTab: React.FC = () => {
                   <div className="text-2xl font-black text-gray-900 leading-none">
                     {stats.campaign_count}
                   </div>
-                  <div className="text-[9px] font-black uppercase tracking-tight text-gray-400 mt-1">
+                  <div className="text-xs font-black uppercase tracking-tight text-gray-400 mt-1">
                     Campaigns
                   </div>
                 </div>
                 <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                  <div className="text-2xl font-black text-rose-600 leading-none">
+                  <div className="text-2xl font-black text-red-600 leading-none">
                     {stats.total_failed}
                   </div>
-                  <div className="text-[9px] font-black uppercase tracking-tight text-gray-400 mt-1">
+                  <div className="text-xs font-black uppercase tracking-tight text-gray-400 mt-1">
                     Failed
                   </div>
                 </div>
@@ -240,14 +240,14 @@ export const EmailMarketingTab: React.FC = () => {
                   </div>
                   <div>
                     <h4 className="font-black text-gray-900 tracking-tight">No campaigns yet</h4>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mt-1">
+                    <p className="text-xs font-black uppercase tracking-widest text-gray-400 mt-1">
                       Start your first email marketing push
                     </p>
                   </div>
                   <Button
                     onClick={() => setIsCreateModalOpen(true)}
                     variant="ghost"
-                    className="text-brand-600 font-black uppercase tracking-widest text-[10px]"
+                    className="text-brand-600 font-black uppercase tracking-widest text-xs"
                   >
                     Create Campaign Now <ChevronRight size={14} />
                   </Button>
@@ -261,7 +261,7 @@ export const EmailMarketingTab: React.FC = () => {
                     <div className="flex justify-between items-start mb-6">
                       <div className="flex items-center gap-3">
                         <div
-                          className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 border ${campaign.status === 'completed' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-brand-50 text-brand-600 border-brand-100'}`}
+                          className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 border ${campaign.status === 'completed' ? 'bg-green-50 text-green-600 border-green-100' : 'bg-brand-50 text-brand-600 border-brand-100'}`}
                         >
                           <Layout size={20} />
                         </div>
@@ -269,20 +269,20 @@ export const EmailMarketingTab: React.FC = () => {
                           <h4 className="font-black text-gray-900 tracking-tight text-sm">
                             {campaign.title}
                           </h4>
-                          <p className="text-[10px] font-bold text-gray-400 capitalize">
+                          <p className="text-xs font-bold text-gray-400 capitalize">
                             {campaign.template_name || 'Custom Message'}
                           </p>
                         </div>
                       </div>
                       <span
-                        className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ring-1 ${getStatusStyle(campaign.status)}`}
+                        className={`px-2 py-0.5 rounded-full text-xs font-black uppercase tracking-widest ring-1 ${getStatusStyle(campaign.status)}`}
                       >
                         {campaign.status}
                       </span>
                     </div>
 
                     <div className="space-y-4 mb-6">
-                      <div className="flex justify-between text-[10px] font-black uppercase tracking-tight mb-1">
+                      <div className="flex justify-between text-xs font-black uppercase tracking-tight mb-1">
                         <span className="text-gray-400">Progress</span>
                         <span className="text-gray-900">
                           {campaign.total_recipients > 0
@@ -293,18 +293,18 @@ export const EmailMarketingTab: React.FC = () => {
                       </div>
                       <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                         <div
-                          className={`h-full transition-all duration-500 ${campaign.status === 'failed' ? 'bg-rose-500' : 'bg-brand-600'}`}
+                          className={`h-full transition-all duration-500 ${campaign.status === 'failed' ? 'bg-red-500' : 'bg-brand-600'}`}
                           style={{
                             width: `${campaign.total_recipients > 0 ? (campaign.sent_count / campaign.total_recipients) * 100 : 0}%`,
                           }}
                         />
                       </div>
-                      <div className="flex justify-between items-center text-[10px] font-bold text-gray-500">
+                      <div className="flex justify-between items-center text-xs font-bold text-gray-500">
                         <div className="flex gap-4">
-                          <span className="flex items-center gap-1 text-emerald-600">
+                          <span className="flex items-center gap-1 text-green-600">
                             <CheckCircle size={10} /> {campaign.sent_count} Sent
                           </span>
-                          <span className="flex items-center gap-1 text-rose-600">
+                          <span className="flex items-center gap-1 text-red-600">
                             <AlertCircle size={10} /> {campaign.failed_count} Failed
                           </span>
                         </div>
@@ -318,14 +318,14 @@ export const EmailMarketingTab: React.FC = () => {
                       {campaign.status === 'draft' ? (
                         <Button
                           onClick={() => handleSendCampaign(campaign.id)}
-                          className="flex-1 rounded-xl h-10 bg-brand-600 hover:bg-brand-500 gap-2 font-black uppercase text-[9px] tracking-widest"
+                          className="flex-1 rounded-xl h-10 bg-brand-600 hover:bg-brand-500 gap-2 font-black uppercase text-xs tracking-widest"
                         >
                           <Send size={14} /> Send Now
                         </Button>
                       ) : (
                         <Button
                           variant="outline"
-                          className="flex-1 rounded-xl h-10 border-gray-100 text-gray-500 hover:bg-gray-50 gap-2 font-black uppercase text-[9px] tracking-widest"
+                          className="flex-1 rounded-xl h-10 border-gray-100 text-gray-500 hover:bg-gray-50 gap-2 font-black uppercase text-xs tracking-widest"
                         >
                           <BarChart3 size={14} /> View Report
                         </Button>
@@ -341,19 +341,19 @@ export const EmailMarketingTab: React.FC = () => {
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-gray-50 border-b border-gray-100">
-                      <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">
+                      <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-400">
                         Recipient
                       </th>
-                      <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">
+                      <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-400">
                         Subject
                       </th>
-                      <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">
+                      <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-400">
                         Campaign
                       </th>
-                      <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">
+                      <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-400">
                         Status
                       </th>
-                      <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 text-right">
+                      <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-400 text-right">
                         Sent At
                       </th>
                     </tr>
@@ -370,19 +370,19 @@ export const EmailMarketingTab: React.FC = () => {
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="text-[10px] font-black uppercase tracking-tight text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full w-max">
+                          <div className="text-xs font-black uppercase tracking-tight text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full w-max">
                             {log.campaign_title || 'Direct'}
                           </div>
                         </td>
                         <td className="px-6 py-4">
                           <span
-                            className={`px-2 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${log.status === 'sent' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}
+                            className={`px-2 py-1 rounded-full text-xs font-black uppercase tracking-widest ${log.status === 'sent' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}
                           >
                             {log.status}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <div className="text-[10px] font-bold text-gray-400">
+                          <div className="text-xs font-bold text-gray-400">
                             {new Date(log.sent_at).toLocaleString()}
                           </div>
                         </td>

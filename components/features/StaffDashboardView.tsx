@@ -239,7 +239,7 @@ export const StaffDashboardView = () => {
                           {announcement.content}
                         </p>
                         <span
-                          className={`inline-block mt-2 px-2 py-0.5 text-[10px] font-bold uppercase rounded ${
+                          className={`inline-block mt-2 px-2 py-0.5 text-xs font-bold uppercase rounded ${
                             announcement.priority === 'urgent'
                               ? 'bg-red-100 text-red-700'
                               : announcement.priority === 'important'

@@ -99,11 +99,11 @@ export default function LearningCenterPage() {
           >
             <Card
               title="Predictive Insights"
-              className="hover:shadow-lg transition-all group h-full border-violet-200"
+              className="hover:shadow-lg transition-all group h-full border-purple-200"
             >
               <div className="flex flex-col gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-3 rounded-lg bg-gradient-to-br from-violet-100 to-purple-100 text-violet-600 group-hover:from-violet-500 group-hover:to-purple-500 group-hover:text-white transition-all">
+                  <div className="p-3 rounded-lg bg-gradient-to-br from-purple-100 to-purple-100 text-purple-600 group-hover:from-purple-500 group-hover:to-purple-500 group-hover:text-white transition-all">
                     <Target className="w-6 h-6" />
                   </div>
                   <p className="text-sm text-gray-500">
@@ -112,7 +112,7 @@ export default function LearningCenterPage() {
                 </div>
                 <Button
                   variant="outline"
-                  className="w-full mt-2 border-violet-300 text-violet-700 hover:bg-violet-50"
+                  className="w-full mt-2 border-purple-300 text-purple-700 hover:bg-purple-50"
                 >
                   View Insights
                 </Button>
@@ -126,7 +126,7 @@ export default function LearningCenterPage() {
           <Card title="Lessons & Materials" className="hover:shadow-lg transition-all group h-full">
             <div className="flex flex-col gap-4">
               <div className="flex items-center gap-3">
-                <div className="p-3 rounded-lg bg-yellow-100 text-yellow-600 group-hover:bg-yellow-600 group-hover:text-white transition-colors">
+                <div className="p-3 rounded-lg bg-amber-100 text-amber-600 group-hover:bg-amber-600 group-hover:text-white transition-colors">
                   <BookOpen className="w-6 h-6" />
                 </div>
                 <p className="text-sm text-gray-500">

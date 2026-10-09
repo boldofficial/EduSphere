@@ -288,13 +288,13 @@ export const GradingView: React.FC<GradingViewProps> = ({
   const handlePrint = () => {
     const reportCard = document.getElementById('report-card');
     if (!reportCard) {
-      alert('Report card not found');
+      addToast('Report card not found', 'error');
       return;
     }
 
     const printWindow = window.open('', '_blank', 'width=900,height=700');
     if (!printWindow) {
-      alert('Please allow pop-ups to print');
+      addToast('Please allow pop-ups to print', 'error');
       return;
     }
 
@@ -475,7 +475,7 @@ export const GradingView: React.FC<GradingViewProps> = ({
 
         <div className="relative flex flex-col gap-5 px-5 py-5 lg:flex-row lg:items-center lg:justify-between lg:px-7">
           <div>
-            <p className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-700">
+            <p className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-brand-700">
               <GraduationCap className="h-3.5 w-3.5" />
               Grading Center
             </p>
@@ -488,19 +488,19 @@ export const GradingView: React.FC<GradingViewProps> = ({
 
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             <div className="rounded-2xl border border-cyan-100 bg-cyan-50 px-3 py-2">
-              <p className="text-[10px] uppercase tracking-[0.14em] text-cyan-700">Students</p>
+              <p className="text-xs uppercase tracking-[0.14em] text-cyan-700">Students</p>
               <p className="mt-1 text-lg font-bold text-cyan-900">{activeStudents.length}</p>
             </div>
             <div className="rounded-2xl border border-brand-100 bg-brand-50 px-3 py-2">
-              <p className="text-[10px] uppercase tracking-[0.14em] text-brand-700">Subjects</p>
+              <p className="text-xs uppercase tracking-[0.14em] text-brand-700">Subjects</p>
               <p className="mt-1 text-lg font-bold text-brand-900">{classSubjects.length}</p>
             </div>
-            <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-3 py-2">
-              <p className="text-[10px] uppercase tracking-[0.14em] text-emerald-700">Published</p>
-              <p className="mt-1 text-lg font-bold text-emerald-900">{publishedCount}</p>
+            <div className="rounded-2xl border border-green-100 bg-green-50 px-3 py-2">
+              <p className="text-xs uppercase tracking-[0.14em] text-green-700">Published</p>
+              <p className="mt-1 text-lg font-bold text-green-900">{publishedCount}</p>
             </div>
             <div className="rounded-2xl border border-amber-100 bg-amber-50 px-3 py-2">
-              <p className="text-[10px] uppercase tracking-[0.14em] text-amber-700">Pending</p>
+              <p className="text-xs uppercase tracking-[0.14em] text-amber-700">Pending</p>
               <p className="mt-1 text-lg font-bold text-amber-900">
                 {Math.max(0, classScoresForTerm.length - publishedCount)}
               </p>

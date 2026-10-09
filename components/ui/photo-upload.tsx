@@ -3,6 +3,7 @@
 import React, { useRef } from 'react';
 import { Camera, X } from 'lucide-react';
 import * as Utils from '@/lib/utils';
+import { useToast } from '@/components/providers/toast-provider';
 
 interface PhotoUploadProps {
   value?: string | null;
@@ -17,6 +18,7 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
   label = 'Photo',
   size = 'md',
 }) => {
+  const { addToast } = useToast();
   const inputRef = useRef<HTMLInputElement>(null);
 
   const sizeClasses = {
@@ -31,13 +33,13 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      alert('Please select an image file');
+      addToast('Please select an image file', 'error');
       return;
     }
 
     // Validate file size (max 2MB)
     if (file.size > 2 * 1024 * 1024) {
-      alert('Image must be less than 2MB');
+      addToast('Image must be less than 2MB', 'error');
       return;
     }
 
@@ -82,7 +84,7 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
         ) : (
           <div className="h-full w-full flex flex-col items-center justify-center text-gray-400 group-hover:text-brand-500 transition-colors">
             <Camera className="h-6 w-6 mb-1" />
-            <span className="text-[10px] font-medium">Upload</span>
+            <span className="text-xs font-medium">Upload</span>
           </div>
         )}
         <input
@@ -93,7 +95,7 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
           className="hidden"
         />
       </div>
-      <p className="text-[10px] text-gray-400">Max 2MB, JPG/PNG</p>
+      <p className="text-xs text-gray-400">Max 2MB, JPG/PNG</p>
     </div>
   );
 };

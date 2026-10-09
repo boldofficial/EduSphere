@@ -197,11 +197,11 @@ export default function BlogSettingsPage() {
                         <div>
                           <p className="text-sm font-bold text-gray-900">{cat.name}</p>
                           <div className="flex items-center gap-2 mt-0.5">
-                            <span className="text-[10px] font-semibold text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">
+                            <span className="text-xs font-semibold text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">
                               {cat.post_count} posts
                             </span>
                             {cat.description && (
-                              <span className="text-[10px] text-gray-400 truncate max-w-[120px]">
+                              <span className="text-xs text-gray-400 truncate max-w-[120px]">
                                 {cat.description}
                               </span>
                             )}

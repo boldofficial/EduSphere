@@ -16,7 +16,7 @@ export const StudentJourney: React.FC<{ studentId: string }> = ({ studentId }) =
     const a = action.toLowerCase();
     if (a.includes('promote')) return <ArrowUpCircle className="text-blue-500" />;
     if (a.includes('graduat')) return <Trophy className="text-amber-500" />;
-    if (a.includes('status')) return <CheckCircle2 className="text-emerald-500" />;
+    if (a.includes('status')) return <CheckCircle2 className="text-green-500" />;
     return <History className="text-gray-400" />;
   };
 
@@ -49,7 +49,7 @@ export const StudentJourney: React.FC<{ studentId: string }> = ({ studentId }) =
               <div className="flex-1 ml-12">
                 <div className="flex items-center justify-between mb-1">
                   <h4 className="font-bold text-gray-900 leading-none">{item.action}</h4>
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                  <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">
                     {Utils.formatDate(item.created_at, 'MMM d, yyyy')}
                   </span>
                 </div>
@@ -65,7 +65,7 @@ export const StudentJourney: React.FC<{ studentId: string }> = ({ studentId }) =
                   )}
                 </p>
                 {item.session && (
-                  <div className="mt-2 text-[10px] font-black text-indigo-400 uppercase tracking-tighter">
+                  <div className="mt-2 text-xs font-black text-indigo-400 uppercase tracking-tighter">
                     {item.session} • {item.term}
                   </div>
                 )}

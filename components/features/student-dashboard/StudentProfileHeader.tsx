@@ -95,7 +95,7 @@ export const StudentProfileHeader: React.FC<StudentProfileHeaderProps> = ({
             </button>
           </Link>
           <Link href="/bursary" className="w-full sm:w-auto">
-            <button className="w-full sm:w-auto flex gap-2 items-center justify-center bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2.5 rounded-xl font-bold shadow-lg shadow-emerald-200 transition-all text-sm">
+            <button className="w-full sm:w-auto flex gap-2 items-center justify-center bg-green-500 hover:bg-green-600 text-white px-4 py-2.5 rounded-xl font-bold shadow-lg shadow-green-200 transition-all text-sm">
               <Receipt size={16} />
               Invoice
             </button>

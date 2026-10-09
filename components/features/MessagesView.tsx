@@ -398,7 +398,7 @@ export const MessagesView: React.FC = () => {
                           ? conv.metadata?.subject || 'Group Chat'
                           : other?.user_name || 'System'}
                       </span>
-                      <span className="text-[10px] text-gray-400">
+                      <span className="text-xs text-gray-400">
                         {conv.last_message ? Utils.formatDate(conv.last_message.created_at) : ''}
                       </span>
                     </div>
@@ -409,7 +409,7 @@ export const MessagesView: React.FC = () => {
                           : conv.last_message?.body || 'No messages'}
                       </p>
                       {conv.unread_count > 0 && (
-                        <span className="bg-brand-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                        <span className="bg-brand-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
                           {conv.unread_count}
                         </span>
                       )}
@@ -481,7 +481,7 @@ export const MessagesView: React.FC = () => {
                       <div className={`max-w-[70%] group relative`}>
                         {/* Sender name for group conversations */}
                         {!isMe && activeConversation.type === 'GROUP' && (
-                          <p className="text-[10px] text-gray-500 font-medium mb-0.5 ml-3">
+                          <p className="text-xs text-gray-500 font-medium mb-0.5 ml-3">
                             {msg.sender_name}
                           </p>
                         )}
@@ -509,7 +509,7 @@ export const MessagesView: React.FC = () => {
                         <div
                           className={`flex items-center gap-1 mt-1 ${isMe ? 'justify-end' : 'justify-start'}`}
                         >
-                          <p className="text-[10px] text-gray-400">
+                          <p className="text-xs text-gray-400">
                             {new Date(msg.created_at).toLocaleTimeString([], {
                               hour: '2-digit',
                               minute: '2-digit',
@@ -638,7 +638,7 @@ export const MessagesView: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowTemplates(!showTemplates)}
-                    className="flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 rounded-full uppercase tracking-tighter transition-all"
+                    className="flex items-center gap-1 px-2 py-0.5 text-xs font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 rounded-full uppercase tracking-tighter transition-all"
                   >
                     <FileText className="h-3 w-3" /> Templates
                   </button>
@@ -688,7 +688,7 @@ export const MessagesView: React.FC = () => {
                     addToast('AI failed', 'error');
                   }
                 }}
-                className="flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold text-brand-700 bg-brand-50 hover:bg-brand-100 rounded-full uppercase tracking-tighter transition-all"
+                className="flex items-center gap-1.5 px-3 py-1 text-xs font-bold text-brand-700 bg-brand-50 hover:bg-brand-100 rounded-full uppercase tracking-tighter transition-all"
               >
                 ✨ Magic Draft
               </button>

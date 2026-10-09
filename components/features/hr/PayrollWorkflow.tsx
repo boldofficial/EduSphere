@@ -31,6 +31,7 @@ import {
 } from '@/lib/hooks/use-data';
 import { useToast } from '@/components/providers/toast-provider';
 import * as Types from '@/lib/types';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 
 const formatNaira = (amount: number) =>
   `₦${Number(amount).toLocaleString('en-NG', { minimumFractionDigits: 2 })}`;
@@ -40,6 +41,7 @@ interface PayrollWorkflowProps {
 }
 
 export const PayrollWorkflow: React.FC<PayrollWorkflowProps> = ({ onViewPayslip }) => {
+  const confirm = useConfirm();
   const { addToast } = useToast();
   const { data: payrolls = [] } = usePayrolls();
 
@@ -80,8 +82,8 @@ export const PayrollWorkflow: React.FC<PayrollWorkflowProps> = ({ onViewPayslip 
     );
   };
 
-  const handleDelete = (id: string | number) => {
-    if (!confirm('Delete this payroll run? This cannot be undone.')) return;
+  const handleDelete = async (id: string | number) => {
+    if (!(await confirm('Delete this payroll run? This cannot be undone.'))) return;
     deletePayroll(id, {
       onSuccess: () => addToast('Payroll deleted', 'success'),
     });
@@ -93,7 +95,7 @@ export const PayrollWorkflow: React.FC<PayrollWorkflowProps> = ({ onViewPayslip 
   > = {
     draft: { color: 'border-l-amber-400', badge: 'outline' },
     approved: { color: 'border-l-blue-500', badge: 'default' },
-    paid: { color: 'border-l-emerald-500', badge: 'secondary' },
+    paid: { color: 'border-l-green-500', badge: 'secondary' },
   };
 
   return (
@@ -235,7 +237,7 @@ export const PayrollWorkflow: React.FC<PayrollWorkflowProps> = ({ onViewPayslip 
                             <TableHead className="text-xs">Staff Name</TableHead>
                             <TableHead className="text-xs">Role</TableHead>
                             <TableHead className="text-xs text-right">Basic</TableHead>
-                            <TableHead className="text-xs text-right text-emerald-700">
+                            <TableHead className="text-xs text-right text-green-700">
                               Allowances
                             </TableHead>
                             <TableHead className="text-xs text-right text-red-700">
@@ -260,7 +262,7 @@ export const PayrollWorkflow: React.FC<PayrollWorkflowProps> = ({ onViewPayslip 
                               <TableCell className="text-right text-sm">
                                 {formatNaira(entry.basic_salary)}
                               </TableCell>
-                              <TableCell className="text-right text-sm text-emerald-600">
+                              <TableCell className="text-right text-sm text-green-600">
                                 +{formatNaira(entry.total_allowances)}
                               </TableCell>
                               <TableCell className="text-right text-sm text-red-600">

@@ -120,7 +120,7 @@ export function PlansTab({ plans, modules = [], onPlansChanged }: any) {
               </button>
               <button
                 onClick={() => setPendingDeleteId(plan.id)}
-                className="p-1.5 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 transition-colors"
+                className="p-1.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
               >
                 <Trash2 size={14} />
               </button>

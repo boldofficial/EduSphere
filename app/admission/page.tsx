@@ -7,8 +7,10 @@ import SiteHeader from '@/components/features/SiteHeader';
 import SiteFooter from '@/components/features/SiteFooter';
 import * as Utils from '@/lib/utils';
 import * as DataService from '@/lib/data-service';
+import { useToast } from '@/components/providers/toast-provider';
 
 const AdmissionPage = () => {
+  const { addToast } = useToast();
   const [settings, setSettings] = useState(Utils.INITIAL_SETTINGS);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -127,7 +129,7 @@ const AdmissionPage = () => {
       setIsSubmitted(true);
     } catch (error) {
       console.error('Submission failed', error);
-      alert('Submission failed. Please try again or contact the school.');
+      addToast('Submission failed. Please try again or contact the school.', 'error');
       setIsSubmitting(false);
     }
   };

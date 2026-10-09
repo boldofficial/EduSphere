@@ -137,10 +137,10 @@ export default function ExamsPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-gradient-to-br from-slate-500 to-slate-600 p-5 rounded-xl text-white shadow-lg">
+        <div className="bg-gradient-to-br from-gray-500 to-gray-600 p-5 rounded-xl text-white shadow-lg">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-slate-200 text-sm">Total Exams</p>
+              <p className="text-gray-200 text-sm">Total Exams</p>
               <p className="text-3xl font-bold">{exams.length}</p>
             </div>
             <div className="p-3 bg-white/20 rounded-xl">

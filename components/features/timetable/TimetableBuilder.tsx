@@ -159,7 +159,7 @@ export const TimetableBuilder = () => {
           window.location.reload();
         } catch (error) {
           console.error('Failed to setup default periods:', error);
-          alert('Failed to setup default periods. Please try again.');
+          addToast('Failed to setup default periods. Please try again.', 'error');
         } finally {
           setIsSettingUp(false);
         }
@@ -187,7 +187,7 @@ export const TimetableBuilder = () => {
             Before you can create class schedules, you need to define the school&rsquo;s periods
             (e.g., Period 1, Break, Lunch).
           </p>
-          <div className="p-4 bg-yellow-50 text-yellow-800 text-sm rounded-lg mb-6 max-w-md">
+          <div className="p-4 bg-amber-50 text-amber-800 text-sm rounded-lg mb-6 max-w-md">
             <strong>Note:</strong> We can auto-generate a standard schedule for you. Click the
             button below to get started. If you need custom periods, please contact support or use
             the backend admin.
@@ -240,10 +240,10 @@ export const TimetableBuilder = () => {
   // (MVP: If empty, maybe show "No Active Timetable")
   if (!activeTimetable && timetables.length === 0) {
     return (
-      <div className="p-8 bg-yellow-50 rounded-xl border border-yellow-100 text-center">
-        <AlertCircle className="w-10 h-10 text-yellow-600 mx-auto mb-3" />
-        <h3 className="font-bold text-yellow-800">No Timetable Found</h3>
-        <p className="text-yellow-600 mb-4">
+      <div className="p-8 bg-amber-50 rounded-xl border border-amber-100 text-center">
+        <AlertCircle className="w-10 h-10 text-amber-600 mx-auto mb-3" />
+        <h3 className="font-bold text-amber-800">No Timetable Found</h3>
+        <p className="text-amber-600 mb-4">
           This class doesn&rsquo;t have an active timetable yet.
         </p>
         {!isStudent && (
@@ -329,7 +329,7 @@ export const TimetableBuilder = () => {
                     {period.start_time} - {period.end_time}
                   </div>
                   {period.category !== 'Regular' && (
-                    <span className="inline-block mt-1 px-2 py-0.5 bg-gray-200 text-gray-600 text-[10px] rounded-full uppercase">
+                    <span className="inline-block mt-1 px-2 py-0.5 bg-gray-200 text-gray-600 text-xs rounded-full uppercase">
                       {period.category}
                     </span>
                   )}

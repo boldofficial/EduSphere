@@ -38,7 +38,7 @@ export function BottomNav({ onMenuToggle }: BottomNavProps) {
               className={`h-5 w-5 mb-1 transition-transform duration-300 group-hover:-translate-y-0.5 ${isActive ? 'stroke-[2.5px]' : 'stroke-[1.5px]'}`}
             />
             <span
-              className={`text-[10px] font-bold tracking-tight transition-colors ${isActive ? 'text-brand-700' : 'text-gray-500'}`}
+              className={`text-xs font-bold tracking-tight transition-colors ${isActive ? 'text-brand-700' : 'text-gray-500'}`}
             >
               {item.name}
             </span>
@@ -50,7 +50,7 @@ export function BottomNav({ onMenuToggle }: BottomNavProps) {
         className="flex flex-col items-center justify-center py-2 px-3 rounded-xl text-gray-400 active:scale-95 transition-all duration-300 group"
       >
         <Menu className="h-5 w-5 mb-1 transition-transform duration-300 group-hover:-translate-y-0.5 stroke-[1.5px]" />
-        <span className="text-[10px] font-bold text-gray-500 tracking-tight">More</span>
+        <span className="text-xs font-bold text-gray-500 tracking-tight">More</span>
       </button>
     </nav>
   );

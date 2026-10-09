@@ -35,7 +35,7 @@ function StatCard({
   const colors: Record<string, string> = {
     brand: 'bg-brand-50 text-brand-600',
     amber: 'bg-amber-50 text-amber-600',
-    green: 'bg-emerald-50 text-emerald-600',
+    green: 'bg-green-50 text-green-600',
     purple: 'bg-purple-50 text-purple-600',
   };
   return (
@@ -75,7 +75,7 @@ export function FeedbackTab() {
     }).format(new Date(dateStr));
 
   const ratingColor = (r: number) => {
-    if (r >= 4) return 'text-emerald-600 bg-emerald-50';
+    if (r >= 4) return 'text-green-600 bg-green-50';
     if (r === 3) return 'text-amber-600 bg-amber-50';
     return 'text-red-600 bg-red-50';
   };

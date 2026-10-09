@@ -94,7 +94,7 @@ export const AttendanceAnalytics: React.FC = () => {
         </ResponsiveContainer>
       </div>
       <div className="px-6 pb-6 pt-2">
-        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
           Presence rate over the last 14 active days
         </p>
       </div>

@@ -30,6 +30,7 @@ export async function middleware(request: NextRequest) {
     '/admission',
     '/opengraph-image',
     '/twitter-image',
+    '/design-system', // internal component gallery; 404s in production
   ];
 
   const isPublicPath =

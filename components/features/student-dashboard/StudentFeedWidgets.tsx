@@ -36,16 +36,16 @@ export const StudentFeedWidgets: React.FC<StudentFeedWidgetsProps> = ({
             announcements.map((a, i) => (
               <div
                 key={a.id}
-                className={`p-4 rounded-2xl border-l-4 ${a.priority === 'urgent' ? 'bg-red-50 border-l-red-500' : a.priority === 'important' ? 'bg-yellow-50 border-l-yellow-500' : 'bg-gray-50 border-l-brand-500'}`}
+                className={`p-4 rounded-2xl border-l-4 ${a.priority === 'urgent' ? 'bg-red-50 border-l-red-500' : a.priority === 'important' ? 'bg-amber-50 border-l-amber-500' : 'bg-gray-50 border-l-brand-500'}`}
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      {a.is_pinned && <Pin className="h-3 w-3 text-yellow-500" />}
+                      {a.is_pinned && <Pin className="h-3 w-3 text-amber-500" />}
                       <p className="text-sm font-bold text-gray-900">{a.title}</p>
                       {a.priority !== 'normal' && (
                         <span
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${a.priority === 'urgent' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}
+                          className={`px-2 py-0.5 rounded-full text-xs font-bold uppercase ${a.priority === 'urgent' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}
                         >
                           {a.priority}
                         </span>
@@ -53,7 +53,7 @@ export const StudentFeedWidgets: React.FC<StudentFeedWidgetsProps> = ({
                     </div>
                     <p className="text-xs text-gray-600 line-clamp-2">{a.content}</p>
                   </div>
-                  <span className="text-[10px] text-gray-400 whitespace-nowrap">
+                  <span className="text-xs text-gray-400 whitespace-nowrap">
                     {new Date(a.created_at).toLocaleDateString()}
                   </span>
                 </div>
@@ -93,7 +93,7 @@ export const StudentFeedWidgets: React.FC<StudentFeedWidgetsProps> = ({
                     <p className="text-sm font-bold text-gray-900">₦{p.amount.toLocaleString()}</p>
                     <p className="text-xs text-gray-500">{p.date}</p>
                   </div>
-                  <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-[10px] font-black uppercase tracking-tighter">
+                  <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-black uppercase tracking-tighter">
                     Verified
                   </span>
                 </div>

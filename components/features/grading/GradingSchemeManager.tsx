@@ -260,7 +260,7 @@ export const GradingSchemeManager = () => {
                     <h3 className="text-lg font-bold flex items-center gap-2">
                       {scheme.name}
                       {scheme.is_default && (
-                        <span className="text-[10px] bg-brand-100 text-brand-700 px-2 py-0.5 rounded-full uppercase">
+                        <span className="text-xs bg-brand-100 text-brand-700 px-2 py-0.5 rounded-full uppercase">
                           Default
                         </span>
                       )}

@@ -62,7 +62,7 @@ export function ModulesTab({
             <div className="flex items-center gap-2 mb-2">
               <h3 className="text-xl font-bold text-gray-900">{mod.name}</h3>
               {!mod.is_active && (
-                <span className="text-[10px] font-black text-white bg-gray-400 px-1.5 py-0.5 rounded uppercase tracking-tighter">
+                <span className="text-xs font-black text-white bg-gray-400 px-1.5 py-0.5 rounded uppercase tracking-tighter">
                   Disabled
                 </span>
               )}
@@ -70,7 +70,7 @@ export function ModulesTab({
             <p className="text-sm text-gray-500 leading-relaxed min-h-[40px]">{mod.description}</p>
             <div className="mt-6 pt-6 border-t border-gray-100 flex items-center justify-between">
               <span
-                className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-full ${mod.is_active ? 'bg-brand-50 text-brand-600' : 'bg-gray-50 text-gray-400'}`}
+                className={`text-xs font-black uppercase tracking-widest px-2 py-1 rounded-full ${mod.is_active ? 'bg-brand-50 text-brand-600' : 'bg-gray-50 text-gray-400'}`}
               >
                 ID: {mod.id}
               </span>

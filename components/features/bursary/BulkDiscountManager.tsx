@@ -314,7 +314,7 @@ export const BulkDiscountManager: React.FC = () => {
                           variant="outline"
                           size="sm"
                           onClick={() => setShowCreateGroup(true)}
-                          className="h-8 text-[10px] font-black border-brand-200 text-brand-600 hover:bg-brand-600 hover:text-white transition-colors uppercase tracking-widest"
+                          className="h-8 text-xs font-black border-brand-200 text-brand-600 hover:bg-brand-600 hover:text-white transition-colors uppercase tracking-widest"
                         >
                           <Plus className="h-3 w-3 mr-1" />
                           Add New Group
@@ -354,7 +354,7 @@ export const BulkDiscountManager: React.FC = () => {
                               <p className="text-sm font-black text-gray-900 leading-tight">
                                 {group.name}
                               </p>
-                              <p className="text-[10px] font-bold text-gray-500 mt-1 uppercase tracking-tighter">
+                              <p className="text-xs font-bold text-gray-500 mt-1 uppercase tracking-tighter">
                                 {group.student_count} members
                               </p>
                             </div>
@@ -424,10 +424,10 @@ export const BulkDiscountManager: React.FC = () => {
                                     {student.names}
                                   </p>
                                   <div className="flex items-center gap-2">
-                                    <span className="text-[10px] font-black uppercase text-gray-400 border px-1.5 rounded bg-white">
+                                    <span className="text-xs font-black uppercase text-gray-400 border px-1.5 rounded bg-white">
                                       {student.student_no}
                                     </span>
-                                    <span className="text-[10px] font-bold text-gray-500">
+                                    <span className="text-xs font-bold text-gray-500">
                                       {student.current_class_name || 'No Class Assigned'}
                                     </span>
                                   </div>
@@ -493,7 +493,7 @@ export const BulkDiscountManager: React.FC = () => {
                             <p className="text-sm font-black text-gray-900 leading-none mb-1">
                               {fee.name}
                             </p>
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                            <p className="text-xs font-black text-gray-400 uppercase tracking-widest">
                               {fee.category || 'Standard'}
                             </p>
                           </div>
@@ -528,7 +528,7 @@ export const BulkDiscountManager: React.FC = () => {
                         }`}
                       >
                         <type.icon className="h-6 w-6" />
-                        <span className="text-[10px] font-black uppercase tracking-widest">
+                        <span className="text-xs font-black uppercase tracking-widest">
                           {type.label}
                         </span>
                       </button>
@@ -625,7 +625,7 @@ export const BulkDiscountManager: React.FC = () => {
                       'Once applied, changes can only be reversed manually per student.',
                     ].map((tip, i) => (
                       <li key={i} className="flex gap-4 group">
-                        <div className="h-6 w-6 rounded-xl bg-gray-800 text-brand-400 flex items-center justify-center text-[10px] font-black shrink-0 group-hover:bg-brand-600 transition-colors">
+                        <div className="h-6 w-6 rounded-xl bg-gray-800 text-brand-400 flex items-center justify-center text-xs font-black shrink-0 group-hover:bg-brand-600 transition-colors">
                           {i + 1}
                         </div>
                         <p className="text-sm text-gray-400 font-bold leading-relaxed">{tip}</p>
@@ -671,11 +671,11 @@ export const BulkDiscountManager: React.FC = () => {
                     <div className="flex-1">
                       <p className="font-black text-gray-900 text-lg mb-1">{log.description}</p>
                       <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-3">
-                        <div className="flex items-center gap-2 px-3 py-1 bg-white rounded-full border text-[10px] font-black uppercase tracking-widest text-gray-500">
+                        <div className="flex items-center gap-2 px-3 py-1 bg-white rounded-full border text-xs font-black uppercase tracking-widest text-gray-500">
                           <User className="h-3 w-3" />
                           {log.user_name}
                         </div>
-                        <div className="flex items-center gap-2 px-3 py-1 bg-white rounded-full border text-[10px] font-black uppercase tracking-widest text-gray-500">
+                        <div className="flex items-center gap-2 px-3 py-1 bg-white rounded-full border text-xs font-black uppercase tracking-widest text-gray-500">
                           <Clock className="h-3 w-3" />
                           {formatDateTime(log.created_at)}
                         </div>
@@ -710,13 +710,13 @@ export const BulkDiscountManager: React.FC = () => {
                 <TabsList className="bg-gray-100 rounded-full h-10 p-1">
                   <TabsTrigger
                     value="overview"
-                    className="rounded-full text-[10px] font-black uppercase tracking-widest"
+                    className="rounded-full text-xs font-black uppercase tracking-widest"
                   >
                     Summary
                   </TabsTrigger>
                   <TabsTrigger
                     value="members"
-                    className="rounded-full text-[10px] font-black uppercase tracking-widest"
+                    className="rounded-full text-xs font-black uppercase tracking-widest"
                   >
                     Member List
                   </TabsTrigger>
@@ -729,7 +729,7 @@ export const BulkDiscountManager: React.FC = () => {
               <TabsContent value="overview" className="mt-8">
                 <div className="grid grid-cols-2 gap-6">
                   <div className="p-8 bg-brand-600 rounded-[32px] text-white shadow-xl shadow-brand-200">
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-2">
+                    <p className="text-xs font-black uppercase tracking-[0.2em] opacity-60 mb-2">
                       Target Volume
                     </p>
                     <p className="text-6xl font-black leading-none">{previewData?.count || 0}</p>
@@ -738,13 +738,13 @@ export const BulkDiscountManager: React.FC = () => {
                     </p>
                   </div>
                   <div className="p-8 bg-gray-900 rounded-[32px] text-white">
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-2">
+                    <p className="text-xs font-black uppercase tracking-[0.2em] opacity-40 mb-2">
                       Net Value Impact
                     </p>
                     <p className="text-5xl font-black leading-none truncate">
                       {formatCurrency(previewData?.total_impact || 0)}
                     </p>
-                    <div className="flex items-center gap-2 mt-4 text-brand-400 font-bold uppercase text-[10px] tracking-widest">
+                    <div className="flex items-center gap-2 mt-4 text-brand-400 font-bold uppercase text-xs tracking-widest">
                       <Calculator className="h-3 w-3" />
                       Aggregate Credit
                     </div>
@@ -757,10 +757,10 @@ export const BulkDiscountManager: React.FC = () => {
                   <table className="w-full text-left">
                     <thead className="bg-gray-50/80 sticky top-0 backdrop-blur-md">
                       <tr>
-                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">
+                        <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-400">
                           Student Identity
                         </th>
-                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 text-right">
+                        <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-400 text-right">
                           Credit Value
                         </th>
                       </tr>
@@ -770,7 +770,7 @@ export const BulkDiscountManager: React.FC = () => {
                         <tr key={s.id} className="hover:bg-gray-50 transition-colors">
                           <td className="px-6 py-4">
                             <p className="text-sm font-black text-gray-900">{s.names}</p>
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">
+                            <p className="text-xs font-black text-gray-400 uppercase tracking-tighter">
                               {s.class} • {s.student_no}
                             </p>
                           </td>
@@ -822,7 +822,7 @@ export const BulkDiscountManager: React.FC = () => {
 
           <div className="p-10 space-y-8">
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">
+              <label className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] ml-1">
                 Identity
               </label>
               <input
@@ -834,7 +834,7 @@ export const BulkDiscountManager: React.FC = () => {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">
+              <label className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] ml-1">
                 Purpose / Logic
               </label>
               <textarea
@@ -850,7 +850,7 @@ export const BulkDiscountManager: React.FC = () => {
                   <Users className="h-5 w-5" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-brand-600 mb-0.5">
+                  <p className="text-xs font-black uppercase tracking-widest text-brand-600 mb-0.5">
                     Initial Composition
                   </p>
                   <p className="text-sm font-black text-brand-900 underline decoration-brand-300 underline-offset-4">

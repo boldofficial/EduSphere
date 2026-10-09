@@ -335,7 +335,7 @@ export const AnalyticsView: React.FC = () => {
                         row.attendanceRate >= 80
                           ? 'text-green-600'
                           : row.attendanceRate >= 60
-                            ? 'text-yellow-600'
+                            ? 'text-amber-600'
                             : 'text-red-600'
                       }`}
                     >
@@ -348,7 +348,7 @@ export const AnalyticsView: React.FC = () => {
                         row.attendanceRate >= 80
                           ? 'bg-green-500'
                           : row.attendanceRate >= 60
-                            ? 'bg-yellow-500'
+                            ? 'bg-amber-500'
                             : 'bg-red-500'
                       }`}
                       style={{ width: `${row.attendanceRate}%` }}

@@ -26,7 +26,7 @@ export function TopBar({ onMenuToggle, onSearchOpen, currentRole, settings }: To
         >
           <Search size={18} className="group-hover:scale-110 transition-transform" />
           <span className="text-sm font-medium">Search anything...</span>
-          <kbd className="hidden md:inline-flex items-center gap-1 px-1.5 py-0.5 border border-gray-200 rounded text-[10px] font-black text-gray-400">
+          <kbd className="hidden md:inline-flex items-center gap-1 px-1.5 py-0.5 border border-gray-200 rounded text-xs font-black text-gray-400">
             ⌘K
           </kbd>
         </button>

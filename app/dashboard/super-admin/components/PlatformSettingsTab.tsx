@@ -45,7 +45,7 @@ export function PlatformSettingsTab({ settings }: { settings: any }) {
       </div>
       <form onSubmit={handleSave} className="space-y-6">
         {/* Paystack Section */}
-        <div className="bg-slate-900 rounded-3xl p-8 text-white shadow-2xl shadow-slate-900/20 border border-white/5 relative overflow-hidden group">
+        <div className="bg-gray-900 rounded-3xl p-8 text-white shadow-2xl shadow-gray-900/20 border border-white/5 relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
             <CreditCard size={120} />
           </div>
@@ -58,7 +58,7 @@ export function PlatformSettingsTab({ settings }: { settings: any }) {
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                <label className="text-xs font-black uppercase tracking-widest text-gray-400">
                   Public Key (pk_test_...)
                 </label>
                 <input
@@ -71,7 +71,7 @@ export function PlatformSettingsTab({ settings }: { settings: any }) {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                <label className="text-xs font-black uppercase tracking-widest text-gray-400">
                   Secret Key (sk_test_...)
                 </label>
                 <input
@@ -85,7 +85,7 @@ export function PlatformSettingsTab({ settings }: { settings: any }) {
                 />
               </div>
             </div>
-            <p className="mt-4 text-xs text-slate-400 font-medium italic">
+            <p className="mt-4 text-xs text-gray-400 font-medium italic">
               Used for automated subscription payments and plan upgrades.
             </p>
           </div>
@@ -106,7 +106,7 @@ export function PlatformSettingsTab({ settings }: { settings: any }) {
               { key: 'account_name', label: 'Account Name', ph: 'Registra Global' },
             ].map((f) => (
               <div key={f.key} className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                <label className="text-xs font-black uppercase tracking-widest text-gray-400">
                   {f.label}
                 </label>
                 <input
@@ -132,7 +132,7 @@ export function PlatformSettingsTab({ settings }: { settings: any }) {
           </h3>
           <div className="space-y-6">
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+              <label className="text-xs font-black uppercase tracking-widest text-gray-400">
                 Email Provider
               </label>
               <div className="flex gap-4">
@@ -151,7 +151,7 @@ export function PlatformSettingsTab({ settings }: { settings: any }) {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                <label className="text-xs font-black uppercase tracking-widest text-gray-400">
                   From Email Address
                 </label>
                 <input
@@ -165,7 +165,7 @@ export function PlatformSettingsTab({ settings }: { settings: any }) {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                <label className="text-xs font-black uppercase tracking-widest text-gray-400">
                   Sender Display Name
                 </label>
                 <input
@@ -180,8 +180,8 @@ export function PlatformSettingsTab({ settings }: { settings: any }) {
             </div>
 
             {editedSettings.email_provider === 'brevo_api' ? (
-              <div className="space-y-2 bg-slate-50 p-6 rounded-2xl border border-dashed border-gray-200">
-                <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">
+              <div className="space-y-2 bg-gray-50 p-6 rounded-2xl border border-dashed border-gray-200">
+                <label className="text-xs font-black uppercase tracking-widest text-gray-500">
                   Brevo API Key
                 </label>
                 <input
@@ -193,7 +193,7 @@ export function PlatformSettingsTab({ settings }: { settings: any }) {
                   className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm font-mono focus:ring-2 focus:ring-brand-500 transition-all outline-none"
                   placeholder="xkeysib-..."
                 />
-                <p className="text-[10px] text-gray-400 italic">
+                <p className="text-xs text-gray-400 italic">
                   Fetch this from your Brevo SMTP & API dashboard.
                 </p>
               </div>
@@ -201,7 +201,7 @@ export function PlatformSettingsTab({ settings }: { settings: any }) {
               <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100 space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="space-y-2 md:col-span-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                    <label className="text-xs font-black uppercase tracking-widest text-gray-400">
                       SMTP Host
                     </label>
                     <input
@@ -214,7 +214,7 @@ export function PlatformSettingsTab({ settings }: { settings: any }) {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                    <label className="text-xs font-black uppercase tracking-widest text-gray-400">
                       SMTP Port
                     </label>
                     <input
@@ -232,7 +232,7 @@ export function PlatformSettingsTab({ settings }: { settings: any }) {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                    <label className="text-xs font-black uppercase tracking-widest text-gray-400">
                       SMTP Username
                     </label>
                     <input
@@ -244,7 +244,7 @@ export function PlatformSettingsTab({ settings }: { settings: any }) {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                    <label className="text-xs font-black uppercase tracking-widest text-gray-400">
                       SMTP Password
                     </label>
                     <input
@@ -294,7 +294,7 @@ export function PlatformSettingsTab({ settings }: { settings: any }) {
         </div>
 
         {/* AI Configuration */}
-        <div className="bg-slate-900 rounded-3xl p-8 text-white shadow-2xl shadow-slate-900/20 border border-white/5 relative overflow-hidden group">
+        <div className="bg-gray-900 rounded-3xl p-8 text-white shadow-2xl shadow-gray-900/20 border border-white/5 relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
             <Zap size={120} />
           </div>
@@ -307,7 +307,7 @@ export function PlatformSettingsTab({ settings }: { settings: any }) {
             </h3>
             <div className="space-y-6">
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                <label className="text-xs font-black uppercase tracking-widest text-gray-400">
                   AI Provider
                 </label>
                 <div className="flex gap-4">
@@ -316,7 +316,7 @@ export function PlatformSettingsTab({ settings }: { settings: any }) {
                       key={p}
                       type="button"
                       onClick={() => setEditedSettings({ ...editedSettings, ai_provider: p })}
-                      className={`flex-1 py-3 px-4 rounded-xl border-2 transition-all flex items-center justify-center gap-2 font-bold uppercase text-xs tracking-wider ${editedSettings.ai_provider === p ? 'border-brand-600 bg-brand-500/20 text-brand-400' : 'border-white/5 bg-white/5 text-slate-400 hover:border-white/10'}`}
+                      className={`flex-1 py-3 px-4 rounded-xl border-2 transition-all flex items-center justify-center gap-2 font-bold uppercase text-xs tracking-wider ${editedSettings.ai_provider === p ? 'border-brand-600 bg-brand-500/20 text-brand-400' : 'border-white/5 bg-white/5 text-gray-400 hover:border-white/10'}`}
                     >
                       {p === 'gemini' ? 'Google Gemini' : 'OpenRouter'}
                     </button>
@@ -327,7 +327,7 @@ export function PlatformSettingsTab({ settings }: { settings: any }) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {editedSettings.ai_provider === 'gemini' ? (
                   <div className="space-y-2 md:col-span-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                    <label className="text-xs font-black uppercase tracking-widest text-gray-400">
                       Gemini API Key
                     </label>
                     <input
@@ -339,14 +339,12 @@ export function PlatformSettingsTab({ settings }: { settings: any }) {
                       className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-mono focus:ring-2 focus:ring-brand-500 transition-all outline-none"
                       placeholder="AIzaSy..."
                     />
-                    <p className="text-[10px] text-slate-500 italic">
-                      Get from Gemini API Console.
-                    </p>
+                    <p className="text-xs text-gray-500 italic">Get from Gemini API Console.</p>
                   </div>
                 ) : (
                   <>
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                      <label className="text-xs font-black uppercase tracking-widest text-gray-400">
                         OpenRouter API Key
                       </label>
                       <input
@@ -363,7 +361,7 @@ export function PlatformSettingsTab({ settings }: { settings: any }) {
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                      <label className="text-xs font-black uppercase tracking-widest text-gray-400">
                         Select Model
                       </label>
                       <select
@@ -371,7 +369,7 @@ export function PlatformSettingsTab({ settings }: { settings: any }) {
                         onChange={(e) =>
                           setEditedSettings({ ...editedSettings, openrouter_model: e.target.value })
                         }
-                        className="w-full bg-slate-800 border-white/10 border rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-brand-500 transition-all outline-none text-white appearance-none"
+                        className="w-full bg-gray-800 border-white/10 border rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-brand-500 transition-all outline-none text-white appearance-none"
                       >
                         <option value="google/gemini-2.0-flash-001">Gemini 2.0 Flash (Free)</option>
                         <option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet</option>

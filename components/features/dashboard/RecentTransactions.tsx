@@ -23,7 +23,7 @@ export const RecentTransactions: React.FC<RecentTransactionsProps> = ({ payments
                 key={p.id}
                 className="flex items-center gap-3 pb-3 border-b border-gray-100 last:border-0 last:pb-0"
               >
-                <div className="h-10 w-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0 border border-emerald-100">
+                <div className="h-10 w-10 rounded-full bg-green-50 text-green-600 flex items-center justify-center flex-shrink-0 border border-green-100">
                   <DollarSign className="h-5 w-5" />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -32,7 +32,7 @@ export const RecentTransactions: React.FC<RecentTransactionsProps> = ({ payments
                   </p>
                   <p className="text-xs text-gray-500">School Fees Payment</p>
                 </div>
-                <div className="text-sm font-bold text-emerald-600">
+                <div className="text-sm font-bold text-green-600">
                   +{Utils.formatCurrency(p.amount)}
                 </div>
               </div>

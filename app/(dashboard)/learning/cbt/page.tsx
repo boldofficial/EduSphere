@@ -71,7 +71,7 @@ export default function CBTPage() {
                   className={`hover:shadow-md transition-all group relative overflow-hidden ${isViolated ? 'border-red-200' : ''}`}
                 >
                   {isViolated && (
-                    <div className="absolute top-0 right-0 p-2 bg-red-600 text-white text-[10px] font-black uppercase tracking-widest rounded-bl-xl shadow-md z-10 animate-pulse">
+                    <div className="absolute top-0 right-0 p-2 bg-red-600 text-white text-xs font-black uppercase tracking-widest rounded-bl-xl shadow-md z-10 animate-pulse">
                       Security Violation
                     </div>
                   )}
@@ -81,19 +81,19 @@ export default function CBTPage() {
                     </h3>
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <span
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${quiz.is_published ? 'bg-green-100 text-green-700 font-black' : 'bg-yellow-100 text-yellow-700 font-black'}`}
+                        className={`px-2 py-0.5 rounded-full text-xs font-bold uppercase ${quiz.is_published ? 'bg-green-100 text-green-700 font-black' : 'bg-amber-100 text-amber-700 font-black'}`}
                       >
                         {quiz.is_published ? 'Published' : 'Draft'}
                       </span>
                       {isFinished && (
                         <span
-                          className={`${isViolated ? 'bg-red-100 text-red-700' : 'bg-brand-100 text-brand-700'} px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest ml-2`}
+                          className={`${isViolated ? 'bg-red-100 text-red-700' : 'bg-brand-100 text-brand-700'} px-2 py-0.5 rounded-full text-xs font-black uppercase tracking-widest ml-2`}
                         >
                           {isViolated ? 'Terminated' : 'Submitted'}
                         </span>
                       )}
                     </div>
-                    <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-2">
+                    <div className="text-xs text-gray-400 font-bold uppercase tracking-widest mt-2">
                       Duration: {quiz.duration_minutes} mins | Start:{' '}
                       {new Date(quiz.start_time).toLocaleDateString()}
                     </div>

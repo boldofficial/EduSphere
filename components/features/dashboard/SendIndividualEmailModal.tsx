@@ -59,7 +59,7 @@ export const SendIndividualEmailModal: React.FC<SendIndividualEmailModalProps> =
               <h3 className="text-xl font-black text-gray-900 tracking-tight">
                 Direct Professional Message
               </h3>
-              <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mt-1">
+              <p className="text-xs font-black uppercase tracking-widest text-gray-400 mt-1">
                 One-off communication
               </p>
             </div>
@@ -76,7 +76,7 @@ export const SendIndividualEmailModal: React.FC<SendIndividualEmailModalProps> =
           {/* Security/Branding Notice */}
           <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-2xl flex items-center gap-3">
             <ShieldCheck className="text-indigo-600" size={20} />
-            <p className="text-[10px] font-bold text-indigo-900 uppercase tracking-tight">
+            <p className="text-xs font-bold text-indigo-900 uppercase tracking-tight">
               This message will be automatically wrapped in the platform&rsquo;s professional header
               and footer.
             </p>
@@ -122,10 +122,10 @@ export const SendIndividualEmailModal: React.FC<SendIndividualEmailModalProps> =
 
           {/* Quick Tips */}
           <div className="flex gap-4">
-            <div className="flex-1 p-3 bg-gray-50 rounded-xl border border-gray-100 text-[9px] font-bold text-gray-500 uppercase tracking-tight flex items-center gap-2">
+            <div className="flex-1 p-3 bg-gray-50 rounded-xl border border-gray-100 text-xs font-bold text-gray-500 uppercase tracking-tight flex items-center gap-2">
               <Zap size={12} className="text-amber-500" /> Markdown Support
             </div>
-            <div className="flex-1 p-3 bg-gray-50 rounded-xl border border-gray-100 text-[9px] font-bold text-gray-500 uppercase tracking-tight flex items-center gap-2">
+            <div className="flex-1 p-3 bg-gray-50 rounded-xl border border-gray-100 text-xs font-bold text-gray-500 uppercase tracking-tight flex items-center gap-2">
               <AlertCircle size={12} className="text-blue-500" /> Sent via System SMTP
             </div>
           </div>
@@ -135,14 +135,14 @@ export const SendIndividualEmailModal: React.FC<SendIndividualEmailModalProps> =
           <Button
             variant="ghost"
             onClick={onClose}
-            className="rounded-2xl h-12 px-6 font-black uppercase text-[10px] tracking-widest text-gray-400 hover:text-gray-600"
+            className="rounded-2xl h-12 px-6 font-black uppercase text-xs tracking-widest text-gray-400 hover:text-gray-600"
           >
             Cancel
           </Button>
           <Button
             onClick={handleSend}
             disabled={isSubmitting}
-            className="rounded-2xl h-12 px-8 gap-2 bg-indigo-600 hover:bg-indigo-700 shadow-xl shadow-indigo-600/20 font-black uppercase text-[10px] tracking-widest transition-all"
+            className="rounded-2xl h-12 px-8 gap-2 bg-indigo-600 hover:bg-indigo-700 shadow-xl shadow-indigo-600/20 font-black uppercase text-xs tracking-widest transition-all"
           >
             {isSubmitting ? 'Sending...' : 'Send Professional Email'}
           </Button>

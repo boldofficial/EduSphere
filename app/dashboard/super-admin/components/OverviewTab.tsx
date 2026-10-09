@@ -43,14 +43,14 @@ export function StatCard({ title, value, icon: Icon, color, trend }: any) {
           <Icon size={22} />
         </div>
         <div>
-          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{title}</p>
+          <p className="text-xs font-black text-gray-400 uppercase tracking-widest">{title}</p>
           <h3 className="text-2xl font-black text-gray-900 tracking-tight">{value}</h3>
         </div>
       </div>
       {trend && (
         <div className="pt-3 border-t border-gray-50 flex items-center gap-1.5">
-          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-          <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-tight">{trend}</p>
+          <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+          <p className="text-xs font-bold text-green-600 uppercase tracking-tight">{trend}</p>
         </div>
       )}
     </div>
@@ -64,13 +64,13 @@ export function HealthCard({ title, status, message, icon: Icon }: any) {
     <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col gap-3">
       <div className="flex justify-between items-start">
         <div
-          className={`p-2 rounded-lg ${isHealthy ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}
+          className={`p-2 rounded-lg ${isHealthy ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}
         >
           <Icon size={18} />
         </div>
         <span
-          className={`flex items-center gap-1 text-[10px] font-black uppercase tracking-tighter px-2 py-0.5 rounded-full ${
-            isHealthy ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700 font-bold'
+          className={`flex items-center gap-1 text-xs font-black uppercase tracking-tighter px-2 py-0.5 rounded-full ${
+            isHealthy ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700 font-bold'
           }`}
         >
           {isHealthy ? <CheckCircle2 size={10} /> : <AlertCircle size={10} />}
@@ -78,7 +78,7 @@ export function HealthCard({ title, status, message, icon: Icon }: any) {
         </span>
       </div>
       <div>
-        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{title}</p>
+        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{title}</p>
         <p className="text-lg font-black text-gray-900 leading-tight">{message}</p>
       </div>
     </div>
@@ -171,7 +171,7 @@ export function OverviewTab({ schools, revenue, health, strategic, governance }:
           title="Global Students"
           value={stats.total_students || 0}
           icon={Users}
-          color="bg-gradient-to-br from-violet-500 to-purple-700"
+          color="bg-gradient-to-br from-purple-500 to-purple-700"
         />
         <StatCard
           title="Total Teachers"
@@ -183,7 +183,7 @@ export function OverviewTab({ schools, revenue, health, strategic, governance }:
           title="Annual Revenue"
           value={`₦${parseFloat(revenue?.total_revenue || 0).toLocaleString()}`}
           icon={CreditCard}
-          color="bg-gradient-to-br from-emerald-500 to-teal-600"
+          color="bg-gradient-to-br from-green-500 to-teal-600"
           trend="On track"
         />
       </div>
@@ -231,7 +231,7 @@ export function OverviewTab({ schools, revenue, health, strategic, governance }:
         {/* Revenue Performance Chart */}
         <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm">
           <div className="flex items-center gap-2 mb-8">
-            <CreditCard className="text-emerald-600" size={20} />
+            <CreditCard className="text-green-600" size={20} />
             <h3 className="text-lg font-bold text-gray-900 leading-tight">Revenue Trends</h3>
           </div>
           <div className="h-72 w-full">
@@ -320,7 +320,7 @@ export function OverviewTab({ schools, revenue, health, strategic, governance }:
       <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm mt-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-2">
-            <ScrollText className="text-slate-600" size={20} />
+            <ScrollText className="text-gray-600" size={20} />
             <h3 className="text-lg font-bold text-gray-900 leading-tight">Live Activity Stream</h3>
           </div>
         </div>
@@ -332,20 +332,20 @@ export function OverviewTab({ schools, revenue, health, strategic, governance }:
             >
               <div className="mt-1">
                 {log.action.includes('PAYMENT') ? (
-                  <CreditCard className="text-emerald-500" size={16} />
+                  <CreditCard className="text-green-500" size={16} />
                 ) : log.action.includes('SIGNUP') ? (
                   <Plus className="text-blue-500" size={16} />
                 ) : (
-                  <Activity className="text-slate-400" size={16} />
+                  <Activity className="text-gray-400" size={16} />
                 )}
               </div>
               <div className="flex-1">
                 <p className="text-sm font-medium text-gray-900">{log.description}</p>
                 <div className="flex items-center gap-3 mt-1.5">
-                  <span className="text-[10px] font-bold text-brand-600 uppercase bg-brand-50 px-2 py-0.5 rounded-full">
+                  <span className="text-xs font-bold text-brand-600 uppercase bg-brand-50 px-2 py-0.5 rounded-full">
                     {log.school_name}
                   </span>
-                  <span className="text-[10px] font-medium text-gray-400 flex items-center gap-1">
+                  <span className="text-xs font-medium text-gray-400 flex items-center gap-1">
                     <Clock size={10} />
                     {new Date(log.created_at).toLocaleString()}
                   </span>

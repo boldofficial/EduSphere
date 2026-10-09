@@ -65,12 +65,12 @@ export const StaffSalaryTable: React.FC<StaffSalaryTableProps> = ({ onEditStruct
             </div>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-sm bg-emerald-50/60">
+        <Card className="border-0 shadow-sm bg-green-50/60">
           <CardContent className="p-4 flex items-center gap-3">
-            <Banknote className="h-8 w-8 text-emerald-600" />
+            <Banknote className="h-8 w-8 text-green-600" />
             <div>
-              <p className="text-xs text-emerald-600 font-medium">Total Basic Salary</p>
-              <p className="text-xl font-bold text-emerald-800">{formatNaira(totalBasic)}</p>
+              <p className="text-xs text-green-600 font-medium">Total Basic Salary</p>
+              <p className="text-xl font-bold text-green-800">{formatNaira(totalBasic)}</p>
             </div>
           </CardContent>
         </Card>
@@ -125,7 +125,7 @@ export const StaffSalaryTable: React.FC<StaffSalaryTableProps> = ({ onEditStruct
                     <TableCell>
                       <Badge
                         variant={staff.staff_type === 'ACADEMIC' ? 'default' : 'secondary'}
-                        className="text-[10px]"
+                        className="text-xs"
                       >
                         {staff.staff_type === 'ACADEMIC' ? 'Academic' : 'Non-Academic'}
                       </Badge>

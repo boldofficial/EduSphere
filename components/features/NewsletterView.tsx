@@ -229,8 +229,8 @@ export const NewsletterView: React.FC = () => {
           </Card>
           <Card className="p-4">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 bg-yellow-100 rounded-lg flex items-center justify-center">
-                <Calendar className="h-5 w-5 text-yellow-600" />
+              <div className="h-10 w-10 bg-amber-100 rounded-lg flex items-center justify-center">
+                <Calendar className="h-5 w-5 text-amber-600" />
               </div>
               <div>
                 <p className="text-2xl font-bold text-gray-900">

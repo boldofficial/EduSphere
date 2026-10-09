@@ -38,7 +38,7 @@ export function SchoolEditModal({
 
   const inputClass =
     'w-full bg-gray-50 border-0 rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-brand-600 transition-all outline-none';
-  const labelClass = 'text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1';
+  const labelClass = 'text-xs font-black uppercase tracking-widest text-gray-400 ml-1';
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4">

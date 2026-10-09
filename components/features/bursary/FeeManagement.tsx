@@ -215,7 +215,7 @@ export const FeeManagement: React.FC<FeeManagementProps> = ({
             {/* Summary Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 lg:gap-4">
               <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 p-3 lg:p-4 shadow-sm">
-                <div className="text-[10px] lg:text-xs font-bold text-blue-600 uppercase tracking-wider mb-1">
+                <div className="text-xs lg:text-xs font-bold text-blue-600 uppercase tracking-wider mb-1">
                   Total Bill
                 </div>
                 <div className="text-lg lg:text-2xl font-extrabold text-blue-900">
@@ -223,7 +223,7 @@ export const FeeManagement: React.FC<FeeManagementProps> = ({
                 </div>
               </Card>
               <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200 p-3 lg:p-4 shadow-sm">
-                <div className="text-[10px] lg:text-xs font-bold text-green-600 uppercase tracking-wider mb-1">
+                <div className="text-xs lg:text-xs font-bold text-green-600 uppercase tracking-wider mb-1">
                   Total Paid
                 </div>
                 <div className="text-lg lg:text-2xl font-extrabold text-green-900">
@@ -231,15 +231,15 @@ export const FeeManagement: React.FC<FeeManagementProps> = ({
                 </div>
               </Card>
               <Card
-                className={`p-3 lg:p-4 shadow-sm border-2 ${balance > 0 ? 'bg-gradient-to-br from-rose-50 to-rose-100 border-rose-200' : 'bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200'}`}
+                className={`p-3 lg:p-4 shadow-sm border-2 ${balance > 0 ? 'bg-gradient-to-br from-red-50 to-red-100 border-red-200' : 'bg-gradient-to-br from-green-50 to-green-100 border-green-200'}`}
               >
                 <div
-                  className={`text-[10px] lg:text-xs font-bold uppercase tracking-wider mb-1 ${balance > 0 ? 'text-rose-600' : 'text-emerald-600'}`}
+                  className={`text-xs lg:text-xs font-bold uppercase tracking-wider mb-1 ${balance > 0 ? 'text-red-600' : 'text-green-600'}`}
                 >
                   {balance > 0 ? 'Outstanding' : 'Status'}
                 </div>
                 <div
-                  className={`text-lg lg:text-2xl font-extrabold ${balance > 0 ? 'text-rose-900' : 'text-emerald-900'}`}
+                  className={`text-lg lg:text-2xl font-extrabold ${balance > 0 ? 'text-red-900' : 'text-green-900'}`}
                 >
                   {balance > 0 ? Utils.formatCurrency(balance) : '✓ Fully Paid'}
                 </div>
@@ -284,7 +284,7 @@ export const FeeManagement: React.FC<FeeManagementProps> = ({
                           <td className="px-3 lg:px-4 py-2">
                             {fee.name}
                             {fee.allow_partial_payments && (
-                              <span className="ml-2 px-1.5 py-0.5 text-[10px] bg-blue-100 text-blue-700 rounded uppercase font-bold">
+                              <span className="ml-2 px-1.5 py-0.5 text-xs bg-blue-100 text-blue-700 rounded uppercase font-bold">
                                 Installments OK
                               </span>
                             )}

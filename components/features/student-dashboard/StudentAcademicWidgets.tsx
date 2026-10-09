@@ -34,7 +34,7 @@ export const StudentAcademicWidgets: React.FC<StudentAcademicWidgetsProps> = ({
             daysUntilExam <= 7
               ? 'bg-red-50 border-red-200'
               : daysUntilExam <= 14
-                ? 'bg-yellow-50 border-yellow-200'
+                ? 'bg-amber-50 border-amber-200'
                 : 'bg-brand-50 border-brand-200'
           }`}
         >
@@ -43,16 +43,14 @@ export const StudentAcademicWidgets: React.FC<StudentAcademicWidgetsProps> = ({
               daysUntilExam <= 7
                 ? 'bg-red-500'
                 : daysUntilExam <= 14
-                  ? 'bg-yellow-500'
+                  ? 'bg-amber-500'
                   : 'bg-brand-500'
             } text-white shrink-0`}
           >
             <Timer size={20} className="sm:w-6 sm:h-6" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[10px] sm:text-xs font-bold text-gray-500 uppercase">
-              Upcoming Exam
-            </p>
+            <p className="text-xs sm:text-xs font-bold text-gray-500 uppercase">Upcoming Exam</p>
             <p className="font-bold text-gray-900 text-sm sm:text-base truncate">
               {nextExam.title}
             </p>
@@ -63,13 +61,13 @@ export const StudentAcademicWidgets: React.FC<StudentAcademicWidgetsProps> = ({
                 daysUntilExam <= 7
                   ? 'text-red-600'
                   : daysUntilExam <= 14
-                    ? 'text-yellow-600'
+                    ? 'text-amber-600'
                     : 'text-brand-600'
               }`}
             >
               {daysUntilExam}
             </p>
-            <p className="text-[10px] sm:text-xs font-medium text-gray-500">days left</p>
+            <p className="text-xs sm:text-xs font-medium text-gray-500">days left</p>
           </div>
         </div>
       )}
@@ -117,7 +115,7 @@ export const StudentAcademicWidgets: React.FC<StudentAcademicWidgetsProps> = ({
                             : row.grade === 'B'
                               ? 'bg-blue-100 text-blue-700'
                               : row.grade === 'C'
-                                ? 'bg-yellow-100 text-yellow-700'
+                                ? 'bg-amber-100 text-amber-700'
                                 : row.grade === 'D'
                                   ? 'bg-orange-100 text-orange-700'
                                   : 'bg-red-100 text-red-700'

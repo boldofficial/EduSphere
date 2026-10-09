@@ -190,7 +190,7 @@ export const StudentDashboardView = () => {
       label: 'Fee Balance',
       value: `₦${balance.toLocaleString()}`,
       icon: CreditCard,
-      color: balance > 0 ? 'bg-rose-500' : 'bg-emerald-600',
+      color: balance > 0 ? 'bg-red-500' : 'bg-green-600',
       trend: null,
       trendSuffix: '',
     },

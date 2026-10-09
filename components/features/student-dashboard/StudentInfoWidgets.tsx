@@ -59,12 +59,12 @@ export const StudentInfoWidgets: React.FC<StudentInfoWidgetsProps> = ({
               <p className="text-brand-100 text-sm mb-2">Subjects ({classSubjects.length})</p>
               <div className="flex flex-wrap gap-1">
                 {classSubjects.slice(0, 4).map((sub, i) => (
-                  <span key={i} className="px-2 py-0.5 bg-white/20 rounded text-[10px] font-medium">
+                  <span key={i} className="px-2 py-0.5 bg-white/20 rounded text-xs font-medium">
                     {sub}
                   </span>
                 ))}
                 {classSubjects.length > 4 && (
-                  <span className="px-2 py-0.5 bg-white/10 rounded text-[10px]">
+                  <span className="px-2 py-0.5 bg-white/10 rounded text-xs">
                     +{classSubjects.length - 4}
                   </span>
                 )}
@@ -98,11 +98,11 @@ export const StudentInfoWidgets: React.FC<StudentInfoWidgetsProps> = ({
                   })}
                 </span>
                 <span
-                  className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                  className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold uppercase ${
                     record.status === 'present'
                       ? 'bg-green-100 text-green-700'
                       : record.status === 'late'
-                        ? 'bg-yellow-100 text-yellow-700'
+                        ? 'bg-amber-100 text-amber-700'
                         : 'bg-red-100 text-red-700'
                   }`}
                 >

@@ -288,7 +288,7 @@ export const StaffView: React.FC<StaffViewProps> = ({ staff, onAdd, onUpdate, on
                     {s.assigned_modules?.map((m) => (
                       <span
                         key={m}
-                        className="px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded text-[10px] font-bold uppercase"
+                        className="px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded text-xs font-bold uppercase"
                       >
                         {m}
                       </span>

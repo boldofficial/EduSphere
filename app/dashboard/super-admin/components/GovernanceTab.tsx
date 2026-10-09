@@ -31,7 +31,7 @@ export function GovernanceTab({ activities = [] }: any) {
                   {new Date(log.created_at).toLocaleString()}
                 </td>
                 <td className="px-6 py-4">
-                  <span className="text-[10px] font-black uppercase tracking-widest px-2 py-1 bg-slate-100 rounded text-slate-700">
+                  <span className="text-xs font-black uppercase tracking-widest px-2 py-1 bg-gray-100 rounded text-gray-700">
                     {log.action.replace(/_/g, ' ')}
                   </span>
                 </td>
@@ -97,13 +97,13 @@ export function BroadcastsTab({ announcements = [], onBroadcastChanged }: any) {
             className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm relative overflow-hidden"
           >
             <div
-              className={`absolute top-0 right-0 px-3 py-1 text-[10px] font-black uppercase tracking-tight text-white ${ann.priority === 'high' ? 'bg-red-500' : ann.priority === 'medium' ? 'bg-orange-500' : 'bg-blue-500'}`}
+              className={`absolute top-0 right-0 px-3 py-1 text-xs font-black uppercase tracking-tight text-white ${ann.priority === 'high' ? 'bg-red-500' : ann.priority === 'medium' ? 'bg-orange-500' : 'bg-blue-500'}`}
             >
               {ann.priority}
             </div>
             <h4 className="text-lg font-bold text-gray-900 mb-2">{ann.title}</h4>
             <p className="text-gray-600 text-sm leading-relaxed mb-6">{ann.message}</p>
-            <div className="flex items-center gap-2 text-[10px] text-gray-400 font-bold uppercase">
+            <div className="flex items-center gap-2 text-xs text-gray-400 font-bold uppercase">
               <Clock size={12} />
               {new Date(ann.created_at).toLocaleDateString()}
             </div>

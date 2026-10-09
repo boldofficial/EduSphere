@@ -496,7 +496,7 @@ export const TeacherDashboardView = () => {
                       ) : (
                         <div className="text-center text-gray-300">
                           <Upload size={24} className="mx-auto mb-1 opacity-50" />
-                          <span className="text-[10px] font-bold uppercase tracking-wider">
+                          <span className="text-xs font-bold uppercase tracking-wider">
                             No Signature
                           </span>
                         </div>

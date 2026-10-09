@@ -61,7 +61,7 @@ export const EarlyYearsEntryTab: React.FC<EarlyYearsEntryTabProps> = ({
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
       <div className="space-y-4 lg:col-span-1">
         <div className="overflow-hidden rounded-3xl border border-brand-100 bg-white shadow-sm">
-          <div className="bg-gradient-to-r from-brand-900 via-teal-700 to-emerald-500 px-5 py-4 text-white">
+          <div className="bg-gradient-to-r from-brand-900 via-teal-700 to-green-500 px-5 py-4 text-white">
             <h3 className="text-sm font-semibold uppercase tracking-[0.14em]">
               Early Years Journal
             </h3>
@@ -107,7 +107,7 @@ export const EarlyYearsEntryTab: React.FC<EarlyYearsEntryTabProps> = ({
 
       <div className="space-y-6 lg:col-span-3">
         {reportStudentId ? (
-          <Card className="rounded-3xl border border-emerald-100 bg-gradient-to-br from-emerald-50/70 to-white">
+          <Card className="rounded-3xl border border-green-100 bg-gradient-to-br from-green-50/70 to-white">
             <div className="mb-4 flex items-center justify-between">
               <div>
                 <h3 className="text-base font-bold text-gray-900">Learning Area Observations</h3>
@@ -115,7 +115,7 @@ export const EarlyYearsEntryTab: React.FC<EarlyYearsEntryTabProps> = ({
                   Use narrative evidence and next steps. No numeric scores required for early years.
                 </p>
               </div>
-              <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-100 px-3 py-1 text-[11px] font-semibold text-emerald-700">
+              <span className="inline-flex items-center gap-1 rounded-full border border-green-200 bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
                 <Sparkles className="h-3.5 w-3.5" />
                 {settings.current_term}
               </span>
@@ -130,11 +130,11 @@ export const EarlyYearsEntryTab: React.FC<EarlyYearsEntryTabProps> = ({
                   next_step: '',
                 };
                 return (
-                  <div key={area} className="rounded-2xl border border-emerald-100 bg-white p-4">
+                  <div key={area} className="rounded-2xl border border-green-100 bg-white p-4">
                     <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
                       <div className="md:col-span-2">
                         <p className="text-sm font-semibold text-gray-800">{area}</p>
-                        <p className="mt-0.5 text-[11px] text-gray-500">
+                        <p className="mt-0.5 text-xs text-gray-500">
                           Evidence of current capability
                         </p>
                       </div>
@@ -163,7 +163,7 @@ export const EarlyYearsEntryTab: React.FC<EarlyYearsEntryTabProps> = ({
                         <textarea
                           value={row.comment || ''}
                           onChange={(e) => upsertObservation(area, { comment: e.target.value })}
-                          className="min-h-[92px] w-full rounded-xl border border-emerald-100 p-3 text-sm focus:border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                          className="min-h-[92px] w-full rounded-xl border border-green-100 p-3 text-sm focus:border-green-300 focus:outline-none focus:ring-2 focus:ring-green-100"
                           placeholder="Describe what the learner can confidently do..."
                         />
                       </div>
@@ -174,7 +174,7 @@ export const EarlyYearsEntryTab: React.FC<EarlyYearsEntryTabProps> = ({
                         <textarea
                           value={row.next_step || ''}
                           onChange={(e) => upsertObservation(area, { next_step: e.target.value })}
-                          className="min-h-[92px] w-full rounded-xl border border-emerald-100 p-3 text-sm focus:border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                          className="min-h-[92px] w-full rounded-xl border border-green-100 p-3 text-sm focus:border-green-300 focus:outline-none focus:ring-2 focus:ring-green-100"
                           placeholder="State the next support target for home/school..."
                         />
                       </div>
@@ -185,7 +185,7 @@ export const EarlyYearsEntryTab: React.FC<EarlyYearsEntryTabProps> = ({
             </div>
           </Card>
         ) : (
-          <div className="flex min-h-[520px] flex-col items-center justify-center rounded-3xl border border-dashed border-brand-200 bg-gradient-to-br from-brand-50/60 via-white to-emerald-50/40 px-6 text-center">
+          <div className="flex min-h-[520px] flex-col items-center justify-center rounded-3xl border border-dashed border-brand-200 bg-gradient-to-br from-brand-50/60 via-white to-green-50/40 px-6 text-center">
             <div className="mb-3 rounded-2xl bg-brand-100 p-3 text-brand-700">
               <UserCircle2 className="h-8 w-8" />
             </div>

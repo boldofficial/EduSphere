@@ -43,8 +43,8 @@ const ACTION_ICONS: Record<string, React.ReactNode> = {
   SCHOOL_SIGNUP: <Plus className="text-green-500" size={16} />,
   PAYMENT_RECORDED: <CreditCard className="text-blue-500" size={16} />,
   ADMIN_IMPERSONATION: <User className="text-amber-500" size={16} />,
-  SECURITY_ALERT: <AlertCircle className="text-rose-500" size={16} />,
-  SCHOOL_ACTIVATED: <CheckCircle2 className="text-emerald-500" size={16} />,
+  SECURITY_ALERT: <AlertCircle className="text-red-500" size={16} />,
+  SCHOOL_ACTIVATED: <CheckCircle2 className="text-green-500" size={16} />,
 };
 
 export const PlatformGovernanceTab: React.FC<GovernanceTabProps> = ({
@@ -153,7 +153,7 @@ export const PlatformGovernanceTab: React.FC<GovernanceTabProps> = ({
           <div className="flex-1 overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
             {searchResults?.schools && searchResults.schools.length > 0 && (
               <div className="mb-8 space-y-4">
-                <h4 className="text-[10px] font-black uppercase tracking-widest text-brand-500 flex items-center gap-2">
+                <h4 className="text-xs font-black uppercase tracking-widest text-brand-500 flex items-center gap-2">
                   <School size={14} /> Matching Schools
                 </h4>
                 <div className="grid grid-cols-2 gap-4">
@@ -163,7 +163,7 @@ export const PlatformGovernanceTab: React.FC<GovernanceTabProps> = ({
                       className="p-4 bg-brand-50/50 border border-brand-100 rounded-2xl"
                     >
                       <div className="font-bold text-sm text-gray-900">{school.name}</div>
-                      <div className="text-[10px] text-brand-600 font-mono">.{school.domain}</div>
+                      <div className="text-xs text-brand-600 font-mono">.{school.domain}</div>
                     </div>
                   ))}
                 </div>
@@ -198,7 +198,7 @@ export const PlatformGovernanceTab: React.FC<GovernanceTabProps> = ({
                           <h4 className="font-black text-gray-900 text-sm tracking-tight uppercase">
                             {activity.action.replace(/_/g, ' ')}
                           </h4>
-                          <span className="text-[10px] font-bold text-gray-400 flex items-center gap-1">
+                          <span className="text-xs font-bold text-gray-400 flex items-center gap-1">
                             <Clock size={10} />{' '}
                             {new Date(activity.created_at).toLocaleTimeString([], {
                               hour: '2-digit',
@@ -212,13 +212,13 @@ export const PlatformGovernanceTab: React.FC<GovernanceTabProps> = ({
                         <div className="flex items-center gap-4">
                           <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white border border-gray-100 rounded-full">
                             <School size={10} className="text-brand-500" />
-                            <span className="text-[10px] font-black text-gray-500 tracking-tight">
+                            <span className="text-xs font-black text-gray-500 tracking-tight">
                               {activity.school_name || 'System'}
                             </span>
                           </div>
                           <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white border border-gray-100 rounded-full">
                             <User size={10} className="text-purple-500" />
-                            <span className="text-[10px] font-black text-gray-500 tracking-tight">
+                            <span className="text-xs font-black text-gray-500 tracking-tight">
                               {activity.user_email || 'automated'}
                             </span>
                           </div>
@@ -247,13 +247,13 @@ export const PlatformGovernanceTab: React.FC<GovernanceTabProps> = ({
                 <Megaphone size={20} className="text-brand-400" />
                 Global Broadcasts
               </h3>
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60">
+              <p className="text-xs font-black uppercase tracking-[0.2em] opacity-60">
                 Reach all school admins
               </p>
             </div>
             <Button
               size="sm"
-              className="bg-brand-500 hover:bg-brand-400 rounded-xl h-10 px-4 font-black uppercase text-[10px] tracking-wider"
+              className="bg-brand-500 hover:bg-brand-400 rounded-xl h-10 px-4 font-black uppercase text-xs tracking-wider"
             >
               New Alert
             </Button>
@@ -267,15 +267,15 @@ export const PlatformGovernanceTab: React.FC<GovernanceTabProps> = ({
               >
                 <div className="flex items-center justify-between mb-2">
                   <span
-                    className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full ${
+                    className={`text-xs font-black uppercase tracking-widest px-2 py-0.5 rounded-full ${
                       ann.priority === 'high'
-                        ? 'bg-rose-500/20 text-rose-400'
+                        ? 'bg-red-500/20 text-red-400'
                         : 'bg-brand-500/20 text-brand-400'
                     }`}
                   >
                     {ann.priority} Priority
                   </span>
-                  <span className="text-[10px] font-bold opacity-40">
+                  <span className="text-xs font-bold opacity-40">
                     {new Date(ann.created_at).toLocaleDateString()}
                   </span>
                 </div>
@@ -290,11 +290,11 @@ export const PlatformGovernanceTab: React.FC<GovernanceTabProps> = ({
                     <div
                       className={`w-2 h-2 rounded-full ${ann.is_active ? 'bg-green-400' : 'bg-gray-400'}`}
                     />
-                    <span className="text-[10px] font-black uppercase tracking-widest opacity-40">
+                    <span className="text-xs font-black uppercase tracking-widest opacity-40">
                       {ann.is_active ? 'Active' : 'Draft'}
                     </span>
                   </div>
-                  <button className="text-[10px] font-black uppercase tracking-widest text-brand-400 hover:text-white transition-colors">
+                  <button className="text-xs font-black uppercase tracking-widest text-brand-400 hover:text-white transition-colors">
                     Edit
                   </button>
                 </div>
@@ -316,7 +316,7 @@ export const PlatformGovernanceTab: React.FC<GovernanceTabProps> = ({
                 <h5 className="font-black text-xs uppercase tracking-tight text-gray-900">
                   Maintenance Mode
                 </h5>
-                <p className="text-[10px] text-gray-400 font-bold uppercase">
+                <p className="text-xs text-gray-400 font-bold uppercase">
                   {maintenanceMode ? 'Enabled for all schools' : 'Disable school access'}
                 </p>
               </div>
@@ -333,9 +333,7 @@ export const PlatformGovernanceTab: React.FC<GovernanceTabProps> = ({
                 <h5 className="font-black text-xs uppercase tracking-tight text-gray-900">
                   New Registration
                 </h5>
-                <p className="text-[10px] text-gray-400 font-bold uppercase">
-                  Enable public signup
-                </p>
+                <p className="text-xs text-gray-400 font-bold uppercase">Enable public signup</p>
               </div>
               <div className="w-12 h-6 bg-brand-500 rounded-full relative p-1 cursor-pointer flex justify-end">
                 <div className="w-4 h-4 bg-white rounded-full shadow-sm" />
@@ -347,14 +345,14 @@ export const PlatformGovernanceTab: React.FC<GovernanceTabProps> = ({
                 <h5 className="font-black text-xs uppercase tracking-tight text-purple-900">
                   Module Registry
                 </h5>
-                <p className="text-[10px] text-purple-400 font-bold uppercase">
+                <p className="text-xs text-purple-400 font-bold uppercase">
                   Sync platform features
                 </p>
               </div>
               <Button
                 size="sm"
                 variant="outline"
-                className="h-8 text-[9px] font-black uppercase tracking-widest border-purple-200 text-purple-600 bg-white"
+                className="h-8 text-xs font-black uppercase tracking-widest border-purple-200 text-purple-600 bg-white"
               >
                 Sync
               </Button>

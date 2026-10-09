@@ -23,6 +23,7 @@ import {
 import { useToast } from '@/components/providers/toast-provider';
 
 import { BulkDiscountManager } from './BulkDiscountManager';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 
 export const ScholarshipManager: React.FC = () => {
   const [view, setView] = useState<'list' | 'bulk'>('list');
@@ -50,6 +51,7 @@ export const ScholarshipManager: React.FC = () => {
 };
 
 const SimpleScholarshipList: React.FC = () => {
+  const confirm = useConfirm();
   const { data: scholarships, isLoading } = useScholarships();
   const createScholarship = useCreateScholarship();
   const updateScholarship = useUpdateScholarship();
@@ -85,7 +87,7 @@ const SimpleScholarshipList: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this scholarship?')) return;
+    if (!(await confirm('Are you sure you want to delete this scholarship?'))) return;
     try {
       await deleteScholarship.mutateAsync(id);
       addToast('Scholarship deleted successfully', 'success');
@@ -263,7 +265,7 @@ const SimpleScholarshipList: React.FC = () => {
                 >
                   {s.benefit_type === 'percentage' ? `${s.value}%` : Utils.formatCurrency(s.value)}
                 </span>
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
                   {s.benefit_type === 'percentage' ? 'Direct Discount' : 'Fixed Rebate'}
                 </span>
               </div>

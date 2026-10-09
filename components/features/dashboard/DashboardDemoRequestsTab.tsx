@@ -107,7 +107,7 @@ export const DashboardDemoRequestsTab: React.FC = () => {
                     <td className="py-4 px-4">
                       <div className="font-bold text-gray-700">{req.school_name}</div>
                       {req.school_name && (
-                        <div className="text-[10px] text-brand-600 font-mono">Demo Request</div>
+                        <div className="text-xs text-brand-600 font-mono">Demo Request</div>
                       )}
                     </td>
                     <td className="py-4 px-4 text-xs font-medium uppercase text-gray-600">
@@ -115,7 +115,7 @@ export const DashboardDemoRequestsTab: React.FC = () => {
                     </td>
                     <td className="py-4 px-4">
                       <span
-                        className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase ${
+                        className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
                           req.status === 'approved'
                             ? 'bg-green-100 text-green-700'
                             : req.status === 'rejected'

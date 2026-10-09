@@ -226,7 +226,7 @@ export const LearningCenterView: React.FC = () => {
                   <div className="bg-brand-50 text-brand-600 p-2 rounded-lg">
                     <Book className="h-5 w-5" />
                   </div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 bg-gray-100 text-gray-500 rounded">
+                  <span className="text-xs font-bold uppercase tracking-wider px-2 py-1 bg-gray-100 text-gray-500 rounded">
                     {lesson.class_name}
                   </span>
                 </div>

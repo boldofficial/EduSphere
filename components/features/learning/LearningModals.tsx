@@ -11,6 +11,7 @@ import { useClasses, useSubjects } from '@/lib/hooks/use-data';
 import { Loader2, Video, FileText, Image as ImageIcon } from 'lucide-react';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { FileUpload } from '@/components/ui/file-upload';
+import { useToast } from '@/components/providers/toast-provider';
 
 interface CreateAssignmentModalProps {
   children: React.ReactNode;
@@ -339,6 +340,7 @@ interface CreateQuestionModalProps {
 }
 
 export function CreateQuestionModal({ quizId, onSuccess, children }: CreateQuestionModalProps) {
+  const { addToast } = useToast();
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     text: '',
@@ -391,7 +393,7 @@ export function CreateQuestionModal({ quizId, onSuccess, children }: CreateQuest
     e.preventDefault();
     // Validation: Ensure at least one correct option for MCQ
     if (formData.question_type === 'mcq' && !formData.options.some((o) => o.is_correct)) {
-      alert('Please select at least one correct option.');
+      addToast('Please select at least one correct option.', 'error');
       return;
     }
     mutation.mutate(formData);

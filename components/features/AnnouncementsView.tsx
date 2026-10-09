@@ -187,7 +187,7 @@ export const AnnouncementsView: React.FC = () => {
       case 'urgent':
         return 'bg-red-100 text-red-700 border-red-200';
       case 'important':
-        return 'bg-yellow-100 text-yellow-700 border-yellow-200';
+        return 'bg-amber-100 text-amber-700 border-amber-200';
       default:
         return 'bg-gray-100 text-gray-700 border-gray-200';
     }
@@ -228,8 +228,8 @@ export const AnnouncementsView: React.FC = () => {
           </Card>
           <Card className="p-4">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 bg-yellow-100 rounded-lg flex items-center justify-center">
-                <Pin className="h-5 w-5 text-yellow-600" />
+              <div className="h-10 w-10 bg-amber-100 rounded-lg flex items-center justify-center">
+                <Pin className="h-5 w-5 text-amber-600" />
               </div>
               <div>
                 <p className="text-2xl font-bold text-gray-900">
@@ -316,14 +316,14 @@ export const AnnouncementsView: React.FC = () => {
                 announcement.priority === 'urgent'
                   ? 'border-l-red-500'
                   : announcement.priority === 'important'
-                    ? 'border-l-yellow-500'
+                    ? 'border-l-amber-500'
                     : 'border-l-brand-500'
               }`}
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    {announcement.is_pinned && <Pin className="h-4 w-4 text-yellow-500" />}
+                    {announcement.is_pinned && <Pin className="h-4 w-4 text-amber-500" />}
                     <h3 className="font-semibold text-gray-900">{announcement.title}</h3>
                     <span
                       className={`px-2 py-0.5 rounded-full text-xs font-medium ${getPriorityStyle(

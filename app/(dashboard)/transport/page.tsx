@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import apiClient from '@/lib/api-client';
 import { useToast } from '@/components/providers/toast-provider';
+import { StudentPicker } from '@/components/ui/student-picker';
 
 const ROUTE_COLORS = [
   'from-blue-500 to-blue-600',
@@ -47,11 +48,6 @@ export default function TransportPage() {
   const { data: assignments = [], isLoading: assignmentsLoading } = useQuery({
     queryKey: queryKeys.transportAssignments,
     queryFn: () => fetchAll<any>('transport/assignments/'),
-  });
-
-  const { data: students = [] } = useQuery({
-    queryKey: queryKeys.students,
-    queryFn: () => fetchAll<any>('academic/students/'),
   });
 
   const createRoute = useMutation({
@@ -320,32 +316,12 @@ export default function TransportPage() {
           className="space-y-4"
         >
           <div>
-            <label className="block text-sm font-medium mb-2">Select Students</label>
-            <div className="max-h-60 overflow-y-auto border rounded-md p-2 space-y-1">
-              {students.map((s: any) => (
-                <label
-                  key={s.id}
-                  className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer"
-                >
-                  <input
-                    type="checkbox"
-                    checked={assignForm.students.includes(String(s.id))}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setAssignForm({ students: [...assignForm.students, String(s.id)] });
-                      } else {
-                        setAssignForm({
-                          students: assignForm.students.filter((id) => id !== String(s.id)),
-                        });
-                      }
-                    }}
-                  />
-                  <span>
-                    {s.first_name} {s.last_name}
-                  </span>
-                </label>
-              ))}
-            </div>
+            <StudentPicker
+              multiple
+              label="Select Students"
+              value={assignForm.students}
+              onChange={(ids) => setAssignForm({ students: ids })}
+            />
             <p className="text-sm text-gray-500 mt-1">
               {assignForm.students.length} student(s) selected
             </p>

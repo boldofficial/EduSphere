@@ -22,6 +22,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import apiClient from '@/lib/api-client';
 import { useToast } from '@/components/providers/toast-provider';
+import { StudentPicker } from '@/components/ui/student-picker';
 
 const CATEGORY_ICONS: Record<string, any> = {
   electronics: Monitor,
@@ -65,11 +66,6 @@ export default function InventoryPage() {
   const { data: items = [], isLoading: itemsLoading } = useQuery({
     queryKey: queryKeys.inventoryItems,
     queryFn: () => fetchAll<any>('inventory/items/'),
-  });
-
-  const { data: students = [] } = useQuery({
-    queryKey: queryKeys.students,
-    queryFn: () => fetchAll<any>('academic/students/'),
   });
 
   const createAsset = useMutation({
@@ -140,7 +136,7 @@ export default function InventoryPage() {
       case 'in_use':
         return 'bg-blue-100 text-blue-700 border-blue-200';
       case 'maintenance':
-        return 'bg-yellow-100 text-yellow-700 border-yellow-200';
+        return 'bg-amber-100 text-amber-700 border-amber-200';
       case 'lost':
         return 'bg-red-100 text-red-700 border-red-200';
       default:
@@ -178,10 +174,10 @@ export default function InventoryPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-gradient-to-br from-slate-600 to-slate-700 p-5 rounded-xl text-white shadow-lg">
+        <div className="bg-gradient-to-br from-gray-600 to-gray-700 p-5 rounded-xl text-white shadow-lg">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-slate-200 text-sm">Total Assets</p>
+              <p className="text-gray-200 text-sm">Total Assets</p>
               <p className="text-3xl font-bold">{assets.length}</p>
             </div>
             <div className="p-3 bg-white/20 rounded-xl">
@@ -326,22 +322,11 @@ export default function InventoryPage() {
           }}
           className="space-y-4"
         >
-          <div>
-            <label className="block text-sm font-medium mb-1">Assign to Student</label>
-            <select
-              className="w-full border rounded-md px-3 py-2"
-              value={assignForm.student}
-              onChange={(e) => setAssignForm({ student: e.target.value })}
-              required
-            >
-              <option value="">Choose student...</option>
-              {students.map((s: any) => (
-                <option key={s.id} value={s.id}>
-                  {s.first_name} {s.last_name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <StudentPicker
+            label="Assign to Student"
+            value={assignForm.student}
+            onChange={(id) => setAssignForm({ student: id })}
+          />
           <div className="flex gap-2 justify-end">
             <Button
               type="button"

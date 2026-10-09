@@ -125,13 +125,13 @@ export function TenantsTab({ schools, onImpersonate, onEdit, onDataChanged }: an
   const getStatusStyle = (status: string) => {
     switch (status) {
       case 'active':
-        return 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200';
+        return 'bg-green-50 text-green-700 ring-1 ring-green-200';
       case 'suspended':
         return 'bg-amber-50 text-amber-700 ring-1 ring-amber-200';
       case 'expired':
-        return 'bg-rose-50 text-rose-700 ring-1 ring-rose-200';
+        return 'bg-red-50 text-red-700 ring-1 ring-red-200';
       default:
-        return 'bg-slate-50 text-slate-600 ring-1 ring-slate-200';
+        return 'bg-gray-50 text-gray-600 ring-1 ring-gray-200';
     }
   };
 
@@ -228,7 +228,7 @@ export function TenantsTab({ schools, onImpersonate, onEdit, onDataChanged }: an
                 </td>
                 <td className="px-6 py-4">
                   <span
-                    className={`px-2.5 py-1 text-[10px] font-black rounded-full uppercase tracking-wider ${getStatusStyle(school.subscription_status)}`}
+                    className={`px-2.5 py-1 text-xs font-black rounded-full uppercase tracking-wider ${getStatusStyle(school.subscription_status)}`}
                   >
                     {school.subscription_status || 'Active'}
                   </span>
@@ -269,7 +269,7 @@ export function TenantsTab({ schools, onImpersonate, onEdit, onDataChanged }: an
                           }}
                           className="w-full text-left px-4 py-2.5 hover:bg-gray-50 flex items-center gap-3 text-sm font-medium text-gray-700"
                         >
-                          <CreditCard size={14} className="text-emerald-500" /> Record Payment
+                          <CreditCard size={14} className="text-green-500" /> Record Payment
                         </button>
                         <div className="border-t border-gray-100 my-1" />
                         {school.subscription_status === 'active' ? (
@@ -288,7 +288,7 @@ export function TenantsTab({ schools, onImpersonate, onEdit, onDataChanged }: an
                               handleAction(school.id, 'activate');
                               setOpenDropdown(null);
                             }}
-                            className="w-full text-left px-4 py-2.5 hover:bg-emerald-50 flex items-center gap-3 text-sm font-medium text-emerald-600"
+                            className="w-full text-left px-4 py-2.5 hover:bg-green-50 flex items-center gap-3 text-sm font-medium text-green-600"
                           >
                             <Power size={14} /> Activate
                           </button>
@@ -298,7 +298,7 @@ export function TenantsTab({ schools, onImpersonate, onEdit, onDataChanged }: an
                             handleAction(school.id, 'delete');
                             setOpenDropdown(null);
                           }}
-                          className="w-full text-left px-4 py-2.5 hover:bg-rose-50 flex items-center gap-3 text-sm font-medium text-rose-600"
+                          className="w-full text-left px-4 py-2.5 hover:bg-red-50 flex items-center gap-3 text-sm font-medium text-red-600"
                         >
                           <Trash2 size={14} /> Delete
                         </button>
@@ -368,7 +368,7 @@ export function TenantsTab({ schools, onImpersonate, onEdit, onDataChanged }: an
             </h3>
             <form onSubmit={handlePayment} className="space-y-5">
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                <label className="text-xs font-black uppercase tracking-widest text-gray-400">
                   Amount (NGN)
                 </label>
                 <input
@@ -380,7 +380,7 @@ export function TenantsTab({ schools, onImpersonate, onEdit, onDataChanged }: an
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                <label className="text-xs font-black uppercase tracking-widest text-gray-400">
                   Reference
                 </label>
                 <input
@@ -402,7 +402,7 @@ export function TenantsTab({ schools, onImpersonate, onEdit, onDataChanged }: an
                 <button
                   type="submit"
                   disabled={isProcessing}
-                  className="px-6 py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 shadow-lg shadow-emerald-600/20 transition-all text-xs uppercase tracking-widest"
+                  className="px-6 py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 shadow-lg shadow-green-600/20 transition-all text-xs uppercase tracking-widest"
                 >
                   {isProcessing ? 'Recording...' : 'Record Payment'}
                 </button>

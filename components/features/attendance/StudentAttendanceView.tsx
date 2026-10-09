@@ -67,7 +67,7 @@ export const StudentAttendanceView: React.FC<StudentAttendanceViewProps> = ({
       case 'present':
         return 'bg-green-100 text-green-700';
       case 'late':
-        return 'bg-yellow-100 text-yellow-700';
+        return 'bg-amber-100 text-amber-700';
       case 'absent':
         return 'bg-red-100 text-red-700';
       default:
@@ -163,8 +163,8 @@ export const StudentAttendanceView: React.FC<StudentAttendanceViewProps> = ({
 
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 bg-yellow-100 rounded-lg flex items-center justify-center">
-              <Clock className="h-5 w-5 text-yellow-600" />
+            <div className="h-10 w-10 bg-amber-100 rounded-lg flex items-center justify-center">
+              <Clock className="h-5 w-5 text-amber-600" />
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900">{stats.late}</p>

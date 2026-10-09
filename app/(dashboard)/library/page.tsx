@@ -23,6 +23,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import apiClient from '@/lib/api-client';
 import { useToast } from '@/components/providers/toast-provider';
+import { StudentPicker } from '@/components/ui/student-picker';
 
 const CATEGORY_COLORS: Record<string, string> = {
   fiction: 'bg-pink-100 text-pink-700',
@@ -60,11 +61,6 @@ export default function LibraryPage() {
   const { data: members = [], isLoading: membersLoading } = useQuery({
     queryKey: queryKeys.libraryMembers,
     queryFn: () => fetchAll<any>('library/members/'),
-  });
-
-  const { data: students = [] } = useQuery({
-    queryKey: queryKeys.students,
-    queryFn: () => fetchAll<any>('academic/students/'),
   });
 
   const createBook = useMutation({
@@ -300,22 +296,11 @@ export default function LibraryPage() {
           }}
           className="space-y-4"
         >
-          <div>
-            <label className="block text-sm font-medium mb-1">Select Student</label>
-            <select
-              className="w-full border rounded-md px-3 py-2"
-              value={borrowForm.student}
-              onChange={(e) => setBorrowForm({ ...borrowForm, student: e.target.value })}
-              required
-            >
-              <option value="">Choose student...</option>
-              {students.map((s: any) => (
-                <option key={s.id} value={s.id}>
-                  {s.first_name} {s.last_name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <StudentPicker
+            label="Select Student"
+            value={borrowForm.student}
+            onChange={(id) => setBorrowForm({ ...borrowForm, student: id })}
+          />
           <div>
             <label className="block text-sm font-medium mb-1">Due Date</label>
             <Input
@@ -512,7 +497,7 @@ export default function LibraryPage() {
                           <XCircle className="h-3 w-3" /> Overdue
                         </span>
                       ) : (
-                        <span className="flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-700">
+                        <span className="flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-amber-100 text-amber-700">
                           <Clock className="h-3 w-3" /> Borrowed
                         </span>
                       )}

@@ -47,16 +47,14 @@ export const PublishTab: React.FC<PublishTabProps> = ({
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <Card className="rounded-3xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-white p-6">
+        <Card className="rounded-3xl border border-green-100 bg-gradient-to-br from-green-50 to-white p-6">
           <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-emerald-100 p-3">
-              <ShieldCheck className="h-6 w-6 text-emerald-700" />
+            <div className="rounded-xl bg-green-100 p-3">
+              <ShieldCheck className="h-6 w-6 text-green-700" />
             </div>
             <div>
               <p className="text-sm text-gray-500">Published</p>
-              <p className="text-2xl font-bold text-emerald-800">
-                {classPublishStatus.passedCount}
-              </p>
+              <p className="text-2xl font-bold text-green-800">{classPublishStatus.passedCount}</p>
             </div>
           </div>
         </Card>
@@ -120,7 +118,7 @@ export const PublishTab: React.FC<PublishTabProps> = ({
             <Button
               onClick={() => handlePassReportCards(true)}
               disabled={classPublishStatus.allPassed}
-              className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700"
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
             >
               <ShieldCheck className="h-4 w-4" />
               Publish All Results
@@ -145,7 +143,7 @@ export const PublishTab: React.FC<PublishTabProps> = ({
           <div className="overflow-x-auto">
             <table className="w-full min-w-[760px] text-sm">
               <thead>
-                <tr className="bg-brand-900 text-left text-[11px] font-semibold uppercase tracking-[0.14em] text-white">
+                <tr className="bg-brand-900 text-left text-xs font-semibold uppercase tracking-[0.14em] text-white">
                   <th className="px-4 py-3">Student</th>
                   <th className="px-4 py-3 text-center">{isEarlyYears ? 'Secure %' : 'Average'}</th>
                   <th className="px-4 py-3 text-center">
@@ -201,11 +199,11 @@ export const PublishTab: React.FC<PublishTabProps> = ({
                           className={`font-bold ${
                             isEarlyYears
                               ? securePercent >= 50
-                                ? 'text-emerald-600'
+                                ? 'text-green-600'
                                 : 'text-amber-600'
                               : (studentScore?.average || 0) >= 50
-                                ? 'text-emerald-600'
-                                : 'text-rose-600'
+                                ? 'text-green-600'
+                                : 'text-red-600'
                           }`}
                         >
                           {isEarlyYears
@@ -214,13 +212,13 @@ export const PublishTab: React.FC<PublishTabProps> = ({
                         </span>
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <span className={progressValue > 0 ? 'text-gray-900' : 'text-rose-500'}>
+                        <span className={progressValue > 0 ? 'text-gray-900' : 'text-red-500'}>
                           {progressValue} / {progressTotal}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-center">
                         {isPublished ? (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700">
                             <CheckCircle className="h-3.5 w-3.5" />
                             Published
                           </span>
@@ -245,7 +243,7 @@ export const PublishTab: React.FC<PublishTabProps> = ({
                           <Button
                             size="sm"
                             onClick={() => handlePassSingleReport(student.id, true)}
-                            className="bg-emerald-600 text-xs hover:bg-emerald-700"
+                            className="bg-green-600 text-xs hover:bg-green-700"
                             disabled={progressValue === 0}
                           >
                             Publish

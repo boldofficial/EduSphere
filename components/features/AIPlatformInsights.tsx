@@ -50,7 +50,7 @@ export const AIPlatformInsights: React.FC<AIPlatformInsightsProps> = ({
   }, [schools, health, revenue]);
 
   return (
-    <div className="relative group overflow-hidden bg-gradient-to-br from-brand-900 to-slate-900 rounded-[2rem] p-8 border border-white/10 shadow-2xl">
+    <div className="relative group overflow-hidden bg-gradient-to-br from-brand-900 to-gray-900 rounded-[2rem] p-8 border border-white/10 shadow-2xl">
       {/* Animated Glow Backdrop */}
       <div className="absolute -top-24 -right-24 w-64 h-64 bg-brand-500/20 rounded-full blur-[100px] animate-pulse"></div>
 
@@ -62,7 +62,7 @@ export const AIPlatformInsights: React.FC<AIPlatformInsightsProps> = ({
             </div>
             <div>
               <h3 className="text-xl font-black text-white tracking-tight">AI Platform Insights</h3>
-              <p className="text-[10px] font-black text-brand-400 uppercase tracking-widest">
+              <p className="text-xs font-black text-brand-400 uppercase tracking-widest">
                 Global Intelligence Layer
               </p>
             </div>
@@ -72,7 +72,7 @@ export const AIPlatformInsights: React.FC<AIPlatformInsightsProps> = ({
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-500"></span>
             </span>
-            <span className="text-[10px] font-bold text-white/60">LIVE ANALYTICS</span>
+            <span className="text-xs font-bold text-white/60">LIVE ANALYTICS</span>
           </div>
         </div>
 
@@ -80,9 +80,9 @@ export const AIPlatformInsights: React.FC<AIPlatformInsightsProps> = ({
           <div
             className={`mt-1 h-8 w-8 rounded-full flex items-center justify-center shrink-0 ${
               insightType === 'positive'
-                ? 'bg-emerald-500/20 text-emerald-400'
+                ? 'bg-green-500/20 text-green-400'
                 : insightType === 'warning'
-                  ? 'bg-rose-500/20 text-rose-400'
+                  ? 'bg-red-500/20 text-red-400'
                   : 'bg-brand-500/20 text-brand-400'
             }`}
           >
@@ -108,16 +108,16 @@ export const AIPlatformInsights: React.FC<AIPlatformInsightsProps> = ({
           <div className="p-4 bg-white/5 rounded-2xl border border-white/5 flex items-center gap-3">
             <Zap className="text-amber-400" size={20} />
             <div>
-              <p className="text-[8px] font-black text-white/40 uppercase tracking-widest">
+              <p className="text-xs font-black text-white/40 uppercase tracking-widest">
                 Optimization
               </p>
               <p className="text-xs font-bold text-white">Cache Active</p>
             </div>
           </div>
           <div className="p-4 bg-white/5 rounded-2xl border border-white/5 flex items-center gap-3">
-            <CheckCircle2 className="text-emerald-400" size={20} />
+            <CheckCircle2 className="text-green-400" size={20} />
             <div>
-              <p className="text-[8px] font-black text-white/40 uppercase tracking-widest">
+              <p className="text-xs font-black text-white/40 uppercase tracking-widest">
                 Compliance
               </p>
               <p className="text-xs font-bold text-white">Fully Verified</p>

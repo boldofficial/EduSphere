@@ -1,4 +1,6 @@
-import React from 'react';
+'use client';
+
+import React, { useEffect, useId } from 'react';
 import { X } from 'lucide-react';
 
 interface ModalProps {
@@ -10,6 +12,23 @@ interface ModalProps {
 }
 
 export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, size = 'md' }) => {
+  const titleId = useId();
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    // Stop the page behind the modal from scrolling.
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
   const sizes = {
     sm: 'max-w-md',
@@ -18,20 +37,32 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, 
     xl: 'max-w-6xl',
   };
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 animate-in fade-in duration-200 overflow-y-auto backdrop-blur-sm">
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-4 animate-in fade-in duration-200 backdrop-blur-sm"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
       <div
-        className={`relative w-full ${sizes[size]} rounded-xl bg-white shadow-2xl my-8 flex flex-col max-h-[90vh]`}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        className={`relative w-full ${sizes[size]} flex max-h-[92vh] flex-col rounded-t-card bg-white shadow-raised sm:my-8 sm:rounded-card`}
       >
-        <div className="flex items-center justify-between border-b p-4 bg-gray-50 rounded-t-xl shrink-0">
-          <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
+        <div className="flex shrink-0 items-center justify-between border-b border-gray-100 px-5 py-4">
+          <h2 id={titleId} className="text-lg font-semibold text-gray-900">
+            {title}
+          </h2>
           <button
+            type="button"
             onClick={onClose}
-            className="rounded-full p-1 hover:bg-gray-200 transition-colors"
+            aria-label="Close"
+            className="rounded-full p-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
           >
-            <X className="h-5 w-5 text-gray-500" />
+            <X className="h-5 w-5" />
           </button>
         </div>
-        <div className="p-6 overflow-y-auto">{children}</div>
+        <div className="overflow-y-auto p-5 sm:p-6">{children}</div>
       </div>
     </div>
   );

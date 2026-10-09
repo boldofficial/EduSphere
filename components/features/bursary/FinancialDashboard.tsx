@@ -157,17 +157,17 @@ export const FinancialDashboard: React.FC<FinancialDashboardProps> = ({
     <div className="space-y-6">
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="relative overflow-hidden border-none shadow-md bg-gradient-to-br from-emerald-500 to-teal-700 text-white p-6">
+        <Card className="relative overflow-hidden border-none shadow-md bg-gradient-to-br from-green-500 to-teal-700 text-white p-6">
           <div className="absolute top-[-10%] right-[-10%] h-24 w-24 bg-white/10 rounded-full blur-2xl" />
           <div className="flex items-center justify-between relative z-10">
             <div>
-              <p className="text-emerald-50/80 text-xs font-bold uppercase tracking-wider">
+              <p className="text-green-50/80 text-xs font-bold uppercase tracking-wider">
                 Total Income
               </p>
               <p className="text-3xl font-black mt-1 leading-none">
                 {Utils.formatCurrency(totalIncome)}
               </p>
-              <div className="flex items-center mt-3 bg-white/20 w-fit px-2 py-0.5 rounded-full text-[10px] font-bold backdrop-blur-sm">
+              <div className="flex items-center mt-3 bg-white/20 w-fit px-2 py-0.5 rounded-full text-xs font-bold backdrop-blur-sm">
                 <TrendingUp size={12} className="mr-1" />
                 <span>{currentPayments.length} transactions</span>
               </div>
@@ -178,17 +178,17 @@ export const FinancialDashboard: React.FC<FinancialDashboardProps> = ({
           </div>
         </Card>
 
-        <Card className="relative overflow-hidden border-none shadow-md bg-gradient-to-br from-rose-500 to-red-700 text-white p-6">
+        <Card className="relative overflow-hidden border-none shadow-md bg-gradient-to-br from-red-500 to-red-700 text-white p-6">
           <div className="absolute top-[-10%] right-[-10%] h-24 w-24 bg-white/10 rounded-full blur-2xl" />
           <div className="flex items-center justify-between relative z-10">
             <div>
-              <p className="text-rose-50/80 text-xs font-bold uppercase tracking-wider">
+              <p className="text-red-50/80 text-xs font-bold uppercase tracking-wider">
                 Total Expenses
               </p>
               <p className="text-3xl font-black mt-1 leading-none">
                 {Utils.formatCurrency(totalExpenses)}
               </p>
-              <div className="flex items-center mt-3 bg-white/20 w-fit px-2 py-0.5 rounded-full text-[10px] font-bold backdrop-blur-sm">
+              <div className="flex items-center mt-3 bg-white/20 w-fit px-2 py-0.5 rounded-full text-xs font-bold backdrop-blur-sm">
                 <TrendingDown size={12} className="mr-1" />
                 <span>{currentExpenses.length} records</span>
               </div>
@@ -209,7 +209,7 @@ export const FinancialDashboard: React.FC<FinancialDashboardProps> = ({
               <p className="text-3xl font-black mt-1 leading-none">
                 {Utils.formatCurrency(netBalance)}
               </p>
-              <div className="flex items-center mt-3 bg-white/20 w-fit px-2 py-0.5 rounded-full text-[10px] font-bold backdrop-blur-sm">
+              <div className="flex items-center mt-3 bg-white/20 w-fit px-2 py-0.5 rounded-full text-xs font-bold backdrop-blur-sm">
                 <PieChartIcon size={12} className="mr-1" />
                 <span>{netBalance >= 0 ? 'SURPLUS' : 'DEFICIT'}</span>
               </div>
@@ -230,7 +230,7 @@ export const FinancialDashboard: React.FC<FinancialDashboardProps> = ({
               <p className="text-3xl font-black mt-1 leading-none">
                 {Utils.formatCurrency(totalOutstanding)}
               </p>
-              <div className="flex items-center mt-3 bg-white/20 w-fit px-2 py-0.5 rounded-full text-[10px] font-bold backdrop-blur-sm">
+              <div className="flex items-center mt-3 bg-white/20 w-fit px-2 py-0.5 rounded-full text-xs font-bold backdrop-blur-sm">
                 <AlertTriangle size={12} className="mr-1" />
                 <span>{debtors.length} students owing</span>
               </div>
@@ -388,7 +388,7 @@ export const FinancialDashboard: React.FC<FinancialDashboardProps> = ({
                     <p className="font-black text-red-600 text-sm">
                       {Utils.formatCurrency(balance)}
                     </p>
-                    <p className="text-[10px] text-gray-400 font-bold uppercase">Balance due</p>
+                    <p className="text-xs text-gray-400 font-bold uppercase">Balance due</p>
                   </div>
                 </div>
               );

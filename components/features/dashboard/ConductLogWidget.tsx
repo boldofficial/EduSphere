@@ -70,7 +70,7 @@ export const ConductLogWidget: React.FC<ConductLogWidgetProps> = ({ students, on
     <Card className="p-6 border-none shadow-sm bg-white rounded-[32px]">
       <div className="flex items-center gap-2 mb-6">
         <div
-          className={`p-2 rounded-xl ${category === 'positive' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}
+          className={`p-2 rounded-xl ${category === 'positive' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}
         >
           {category === 'positive' ? (
             <Star size={18} strokeWidth={3} />
@@ -90,7 +90,7 @@ export const ConductLogWidget: React.FC<ConductLogWidgetProps> = ({ students, on
                 setCategory('positive');
                 setPoints(5);
               }}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${category === 'positive' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${category === 'positive' ? 'bg-white text-green-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
             >
               <ThumbsUp size={14} />
               Positive
@@ -101,7 +101,7 @@ export const ConductLogWidget: React.FC<ConductLogWidgetProps> = ({ students, on
                 setCategory('negative');
                 setPoints(-5);
               }}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${category === 'negative' ? 'bg-white text-rose-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${category === 'negative' ? 'bg-white text-red-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
             >
               <ThumbsDown size={14} />
               Negative
@@ -109,7 +109,7 @@ export const ConductLogWidget: React.FC<ConductLogWidgetProps> = ({ students, on
           </div>
 
           <div className="space-y-2">
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-2">
+            <p className="text-xs font-black text-gray-400 uppercase tracking-widest px-2">
               Select Student
             </p>
             <select
@@ -127,7 +127,7 @@ export const ConductLogWidget: React.FC<ConductLogWidgetProps> = ({ students, on
           </div>
 
           <div className="space-y-2">
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-2">
+            <p className="text-xs font-black text-gray-400 uppercase tracking-widest px-2">
               Quick Behaviors
             </p>
             <div className="grid grid-cols-2 gap-2">
@@ -139,19 +139,17 @@ export const ConductLogWidget: React.FC<ConductLogWidgetProps> = ({ students, on
                     setBehavior(b.label);
                     setPoints(b.points);
                   }}
-                  className={`p-3 rounded-2xl border flex flex-col items-center gap-2 transition-all ${behavior === b.label ? (category === 'positive' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-rose-50 border-rose-200 text-rose-700') : 'bg-white border-gray-100 text-gray-500 hover:bg-gray-50'}`}
+                  className={`p-3 rounded-2xl border flex flex-col items-center gap-2 transition-all ${behavior === b.label ? (category === 'positive' ? 'bg-green-50 border-green-200 text-green-700' : 'bg-red-50 border-red-200 text-red-700') : 'bg-white border-gray-100 text-gray-500 hover:bg-gray-50'}`}
                 >
                   <b.icon size={18} />
-                  <span className="text-[10px] font-black uppercase tracking-tighter">
-                    {b.label}
-                  </span>
+                  <span className="text-xs font-black uppercase tracking-tighter">{b.label}</span>
                 </button>
               ))}
             </div>
           </div>
 
           <div className="space-y-2">
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-2">
+            <p className="text-xs font-black text-gray-400 uppercase tracking-widest px-2">
               Custom Note (Optional)
             </p>
             <textarea
@@ -166,7 +164,7 @@ export const ConductLogWidget: React.FC<ConductLogWidgetProps> = ({ students, on
         <Button
           type="submit"
           disabled={isPending}
-          className={`w-full py-6 rounded-2xl font-black uppercase tracking-wider ${category === 'positive' ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-rose-600 hover:bg-rose-700 text-white'}`}
+          className={`w-full py-6 rounded-2xl font-black uppercase tracking-wider ${category === 'positive' ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-red-600 hover:bg-red-700 text-white'}`}
         >
           {isPending
             ? 'Logging...'

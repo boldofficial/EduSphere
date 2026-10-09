@@ -197,7 +197,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                     key={status}
                     disabled={isLocked}
                     onClick={() => setCurrentStatuses((prev) => ({ ...prev, [s.id]: status }))}
-                    className={`px-3 py-1 text-xs font-medium rounded capitalize transition-colors ${currentStatuses[s.id] === status ? (status === 'present' ? 'bg-green-500 text-white' : status === 'late' ? 'bg-yellow-500 text-white' : 'bg-red-500 text-white') : 'text-gray-500 hover:bg-gray-200'} ${isLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    className={`px-3 py-1 text-xs font-medium rounded capitalize transition-colors ${currentStatuses[s.id] === status ? (status === 'present' ? 'bg-green-500 text-white' : status === 'late' ? 'bg-amber-500 text-white' : 'bg-red-500 text-white') : 'text-gray-500 hover:bg-gray-200'} ${isLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     {status}
                   </button>

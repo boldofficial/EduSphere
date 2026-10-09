@@ -343,7 +343,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   onChange={(e) => handleChange('report_scale', parseInt(e.target.value))}
                   className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-brand-600"
                 />
-                <p className="text-[10px] text-gray-500 italic">
+                <p className="text-xs text-gray-500 italic">
                   Reduce if the report card is too large for your paper.
                 </p>
               </div>
@@ -522,7 +522,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               </label>
               <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg font-mono text-sm text-brand-600">
                 <span>.{settings.domain || 'your-school'}</span>
-                <span className="text-[10px] bg-brand-100 text-brand-700 px-2 py-0.5 rounded-full font-bold uppercase">
+                <span className="text-xs bg-brand-100 text-brand-700 px-2 py-0.5 rounded-full font-bold uppercase">
                   Default
                 </span>
               </div>
@@ -556,10 +556,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                     </svg>
                   </div>
                   <div className="flex-1">
-                    <p className="text-[11px] font-bold text-blue-900 uppercase tracking-tight">
+                    <p className="text-xs font-bold text-blue-900 uppercase tracking-tight">
                       DNS Configuration Required
                     </p>
-                    <p className="text-[10px] text-blue-800 font-medium leading-relaxed">
+                    <p className="text-xs text-blue-800 font-medium leading-relaxed">
                       Point your domain&apos;s <strong>CNAME</strong> record to:{' '}
                       <code className="bg-blue-100 px-1 rounded text-blue-900 font-bold">
                         app.myregistra.net
@@ -574,10 +574,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                     <Lock size={14} />
                   </div>
                   <div className="flex-1">
-                    <p className="text-[11px] font-bold text-amber-900 uppercase tracking-tight">
+                    <p className="text-xs font-bold text-amber-900 uppercase tracking-tight">
                       Upgrade Required
                     </p>
-                    <p className="text-[10px] text-amber-800 font-medium">
+                    <p className="text-xs text-amber-800 font-medium">
                       Custom domains are only available on Enterprise plans. Contact support to
                       upgrade.
                     </p>

@@ -33,7 +33,7 @@ function TemplateEditModal({ template, onClose, onSave }: any) {
         </div>
         <div className="p-8 space-y-6 overflow-y-auto">
           <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">
+            <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">
               Email Subject
             </label>
             <input
@@ -44,7 +44,7 @@ function TemplateEditModal({ template, onClose, onSave }: any) {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">
+              <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">
                 HTML Body
               </label>
               <textarea
@@ -54,24 +54,24 @@ function TemplateEditModal({ template, onClose, onSave }: any) {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">
+              <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">
                 Variables Available
               </label>
-              <div className="bg-slate-900 rounded-2xl p-6 text-emerald-400 font-mono text-xs space-y-2">
+              <div className="bg-gray-900 rounded-2xl p-6 text-green-400 font-mono text-xs space-y-2">
                 {Object.entries(template?.variables || {}).map(([key, example]) => (
                   <p key={key}>
                     {'{{'} <span className="text-white">{key}</span> {'}}'}{' '}
-                    <span className="text-slate-500 text-[10px] ml-2">
+                    <span className="text-gray-500 text-xs ml-2">
                       {'/*'} {String(example)} {'*/'}
                     </span>
                   </p>
                 ))}
                 {Object.keys(template?.variables || {}).length === 0 && (
-                  <p className="text-slate-500">No variables defined for this template.</p>
+                  <p className="text-gray-500">No variables defined for this template.</p>
                 )}
               </div>
               <div className="mt-6 space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">
+                <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">
                   Plain Text Body (Fallback)
                 </label>
                 <textarea
@@ -156,7 +156,7 @@ export function EmailTemplatesTab({
               </p>
               <p className="text-sm font-medium text-gray-700 line-clamp-1 mb-4">{tpl.subject}</p>
               <div className="pt-4 border-t border-gray-50 flex items-center justify-between">
-                <span className="text-[10px] font-black text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full uppercase tracking-tighter">
+                <span className="text-xs font-black text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full uppercase tracking-tighter">
                   /{tpl.slug}
                 </span>
                 <button
@@ -211,13 +211,13 @@ export function EmailLogsTab({ logs = [] }: { logs: any[] }) {
                 </td>
                 <td className="px-6 py-4">
                   <span
-                    className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded ${log.status === 'sent' ? 'bg-emerald-50 text-emerald-700' : log.status === 'failed' ? 'bg-rose-50 text-rose-700' : 'bg-amber-50 text-amber-700'}`}
+                    className={`text-xs font-black uppercase tracking-widest px-2 py-1 rounded ${log.status === 'sent' ? 'bg-green-50 text-green-700' : log.status === 'failed' ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-700'}`}
                   >
                     {log.status}
                   </span>
                 </td>
                 <td
-                  className="px-6 py-4 text-xs font-medium text-rose-600 max-w-xs truncate"
+                  className="px-6 py-4 text-xs font-medium text-red-600 max-w-xs truncate"
                   title={log.error_message}
                 >
                   {log.error_message || '-'}

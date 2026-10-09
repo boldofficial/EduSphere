@@ -194,7 +194,7 @@ export const UniversalSearch: React.FC<UniversalSearchProps> = ({
             <Shortcut kbd="Enter" label="Select" />
             <Shortcut kbd="Esc" label="Close" />
           </div>
-          <div className="flex items-center gap-2 text-brand-600 font-bold text-[10px] uppercase tracking-wider">
+          <div className="flex items-center gap-2 text-brand-600 font-bold text-xs uppercase tracking-wider">
             <Command size={12} />
             Registra Universal Search
           </div>
@@ -207,7 +207,7 @@ export const UniversalSearch: React.FC<UniversalSearchProps> = ({
 function Section({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="space-y-1">
-      <p className="px-4 py-2 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+      <p className="px-4 py-2 text-xs font-black text-gray-400 uppercase tracking-widest">
         {label}
       </p>
       {children}
@@ -271,9 +271,7 @@ function QuickLink({
       </div>
       <div>
         <p className="text-sm font-bold text-gray-900">{label}</p>
-        <p className="text-[10px] text-gray-400 uppercase font-black tracking-tight">
-          {description}
-        </p>
+        <p className="text-xs text-gray-400 uppercase font-black tracking-tight">{description}</p>
       </div>
     </button>
   );
@@ -282,10 +280,10 @@ function QuickLink({
 function Shortcut({ kbd, label }: { kbd: string; label: string }) {
   return (
     <div className="flex items-center gap-2">
-      <kbd className="px-2 py-1 bg-white border border-gray-200 rounded text-[10px] font-bold text-gray-400 shadow-sm">
+      <kbd className="px-2 py-1 bg-white border border-gray-200 rounded text-xs font-bold text-gray-400 shadow-sm">
         {kbd}
       </kbd>
-      <span className="text-[10px] font-bold text-gray-400 uppercase">{label}</span>
+      <span className="text-xs font-bold text-gray-400 uppercase">{label}</span>
     </div>
   );
 }

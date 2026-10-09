@@ -94,11 +94,11 @@ export const SupportTicketsTab: React.FC<SupportTicketsTabProps> = ({
   const getStatusStyle = (status: string) => {
     switch (status) {
       case 'open':
-        return 'bg-rose-100 text-rose-700 ring-rose-200';
+        return 'bg-red-100 text-red-700 ring-red-200';
       case 'in_progress':
         return 'bg-amber-100 text-amber-700 ring-amber-200';
       case 'resolved':
-        return 'bg-emerald-100 text-emerald-700 ring-emerald-200';
+        return 'bg-green-100 text-green-700 ring-green-200';
       default:
         return 'bg-gray-100 text-gray-700 ring-gray-200';
     }
@@ -107,7 +107,7 @@ export const SupportTicketsTab: React.FC<SupportTicketsTabProps> = ({
   const getPriorityStyle = (priority: string) => {
     switch (priority) {
       case 'urgent':
-        return 'text-rose-600';
+        return 'text-red-600';
       case 'high':
         return 'text-amber-600';
       default:
@@ -127,7 +127,7 @@ export const SupportTicketsTab: React.FC<SupportTicketsTabProps> = ({
               <LifeBuoy className="text-brand-600" />
               Helpdesk
             </h3>
-            <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+            <span className="text-xs font-black uppercase tracking-widest text-gray-400">
               {filteredTickets.length} Tickets
             </span>
           </div>
@@ -160,18 +160,16 @@ export const SupportTicketsTab: React.FC<SupportTicketsTabProps> = ({
                 >
                   <div className="flex justify-between items-start mb-2">
                     <span
-                      className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ring-1 ${getStatusStyle(ticket.status)}`}
+                      className={`px-2 py-0.5 rounded-full text-xs font-black uppercase tracking-widest ring-1 ${getStatusStyle(ticket.status)}`}
                     >
                       {ticket.status.replace('_', ' ')}
                     </span>
-                    <span className="text-[10px] font-bold text-gray-400 font-mono">
-                      #{ticket.id}
-                    </span>
+                    <span className="text-xs font-bold text-gray-400 font-mono">#{ticket.id}</span>
                   </div>
                   <h4 className="font-black text-sm text-gray-900 mb-1 line-clamp-1 group-hover:text-brand-600 transition-colors">
                     {ticket.subject}
                   </h4>
-                  <div className="flex items-center gap-3 text-[10px] font-bold text-gray-500">
+                  <div className="flex items-center gap-3 text-xs font-bold text-gray-500">
                     <div className="flex items-center gap-1">
                       <School size={10} />
                       {ticket.school.name}
@@ -207,7 +205,7 @@ export const SupportTicketsTab: React.FC<SupportTicketsTabProps> = ({
                   <h3 className="text-xl font-black text-gray-900 tracking-tight">
                     {selectedTicket.subject}
                   </h3>
-                  <div className="flex items-center gap-3 mt-1 text-[11px] font-bold text-gray-500 uppercase tracking-tight">
+                  <div className="flex items-center gap-3 mt-1 text-xs font-bold text-gray-500 uppercase tracking-tight">
                     <span
                       className={`flex items-center gap-1 ${getPriorityStyle(selectedTicket.priority)}`}
                     >
@@ -225,7 +223,7 @@ export const SupportTicketsTab: React.FC<SupportTicketsTabProps> = ({
                   <Button
                     onClick={handleResolve}
                     variant="outline"
-                    className="h-10 gap-2 border-emerald-100 text-emerald-600 hover:bg-emerald-50 bg-white shadow-sm"
+                    className="h-10 gap-2 border-green-100 text-green-600 hover:bg-green-50 bg-white shadow-sm"
                   >
                     <CheckCircle size={16} /> Mark Resolved
                   </Button>
@@ -248,7 +246,7 @@ export const SupportTicketsTab: React.FC<SupportTicketsTabProps> = ({
                     <span className="font-black text-sm text-gray-900">
                       {selectedTicket.user.username}
                     </span>
-                    <span className="text-[10px] font-bold text-gray-400">
+                    <span className="text-xs font-bold text-gray-400">
                       {selectedTicket.user.email}
                     </span>
                   </div>
@@ -289,7 +287,7 @@ export const SupportTicketsTab: React.FC<SupportTicketsTabProps> = ({
                             ? 'Support Team'
                             : (res as any).user_name || res.admin_name || 'User'}
                         </span>
-                        <span className="text-[10px] font-bold text-gray-400">
+                        <span className="text-xs font-bold text-gray-400">
                           {new Date(res.created_at).toLocaleTimeString([], {
                             hour: '2-digit',
                             minute: '2-digit',
@@ -318,7 +316,7 @@ export const SupportTicketsTab: React.FC<SupportTicketsTabProps> = ({
                   onClick={() =>
                     setReplyMessage('Hello, we have received your request and are looking into it.')
                   }
-                  className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-[10px] font-black uppercase tracking-tight text-gray-500 hover:border-brand-300 hover:text-brand-600 transition-all shadow-sm"
+                  className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-xs font-black uppercase tracking-tight text-gray-500 hover:border-brand-300 hover:text-brand-600 transition-all shadow-sm"
                 >
                   Quick Receive
                 </button>
@@ -328,7 +326,7 @@ export const SupportTicketsTab: React.FC<SupportTicketsTabProps> = ({
                       'This issue has been resolved. Please check and let us know if you need any further assistance.'
                     )
                   }
-                  className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-[10px] font-black uppercase tracking-tight text-gray-500 hover:border-brand-300 hover:text-brand-600 transition-all shadow-sm"
+                  className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-xs font-black uppercase tracking-tight text-gray-500 hover:border-brand-300 hover:text-brand-600 transition-all shadow-sm"
                 >
                   Quick Resolve
                 </button>
@@ -338,7 +336,7 @@ export const SupportTicketsTab: React.FC<SupportTicketsTabProps> = ({
                       'Could you please provide more details or a screenshot of the error?'
                     )
                   }
-                  className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-[10px] font-black uppercase tracking-tight text-gray-500 hover:border-brand-300 hover:text-brand-600 transition-all shadow-sm"
+                  className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-xs font-black uppercase tracking-tight text-gray-500 hover:border-brand-300 hover:text-brand-600 transition-all shadow-sm"
                 >
                   Request Info
                 </button>

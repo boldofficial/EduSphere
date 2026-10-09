@@ -330,7 +330,7 @@ ${plan.homework}
               <p className="text-sm text-gray-700">{plan.homework}</p>
             </Card>
             <Card className="p-5">
-              <h3 className="text-xs font-black text-violet-600 uppercase tracking-wider mb-3">
+              <h3 className="text-xs font-black text-purple-600 uppercase tracking-wider mb-3">
                 🔀 Differentiation
               </h3>
               <div className="space-y-2">

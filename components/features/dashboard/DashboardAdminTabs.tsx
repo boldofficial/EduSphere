@@ -83,14 +83,14 @@ export const DashboardHealthTab: React.FC<HealthTabProps> = ({
               <div className="flex items-center justify-between">
                 <span className="font-medium text-gray-700">{item.name}</span>
                 <span
-                  className={`text-sm font-bold flex items-center gap-2 ${item.ok ? 'text-green-600' : 'text-rose-600'}`}
+                  className={`text-sm font-bold flex items-center gap-2 ${item.ok ? 'text-green-600' : 'text-red-600'}`}
                 >
                   {item.ok ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
                   <span className="uppercase">{item.status}</span>
                 </span>
               </div>
               {item.error && (
-                <p className="mt-2 text-[10px] text-rose-500 font-mono bg-rose-50 p-2 rounded-lg border border-rose-100">
+                <p className="mt-2 text-xs text-red-500 font-mono bg-red-50 p-2 rounded-lg border border-red-100">
                   {item.error}
                 </p>
               )}
@@ -187,13 +187,13 @@ export const DashboardSchoolsTab: React.FC<SchoolsTabProps> = ({ schools, onSele
                 <td className="py-4 px-4 font-mono text-xs text-brand-600">
                   <div>.{school.domain}</div>
                   {school.custom_domain && (
-                    <div className="text-[9px] text-gray-400 mt-1">{school.custom_domain}</div>
+                    <div className="text-xs text-gray-400 mt-1">{school.custom_domain}</div>
                   )}
                 </td>
                 <td className="py-4 px-4 text-sm text-gray-600">{school.email || 'N/A'}</td>
                 <td className="py-4 px-4">
                   <span
-                    className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase ${
+                    className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
                       school.subscription_status === 'active'
                         ? 'bg-green-100 text-green-700'
                         : school.subscription_status === 'pending'
@@ -257,7 +257,7 @@ export const DashboardPlatformSettingsTab: React.FC<PlatformSettingsTabProps> = 
           <h4 className="font-bold border-b border-white/10 pb-2">Global Bank Details</h4>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-[10px] uppercase opacity-60 font-black mb-1">
+              <label className="block text-xs uppercase opacity-60 font-black mb-1">
                 Bank Name
               </label>
               <input
@@ -272,7 +272,7 @@ export const DashboardPlatformSettingsTab: React.FC<PlatformSettingsTabProps> = 
               />
             </div>
             <div>
-              <label className="block text-[10px] uppercase opacity-60 font-black mb-1">
+              <label className="block text-xs uppercase opacity-60 font-black mb-1">
                 Account Number
               </label>
               <input
@@ -287,7 +287,7 @@ export const DashboardPlatformSettingsTab: React.FC<PlatformSettingsTabProps> = 
               />
             </div>
             <div className="col-span-2">
-              <label className="block text-[10px] uppercase opacity-60 font-black mb-1">
+              <label className="block text-xs uppercase opacity-60 font-black mb-1">
                 Account Name
               </label>
               <input
@@ -310,7 +310,7 @@ export const DashboardPlatformSettingsTab: React.FC<PlatformSettingsTabProps> = 
           </h4>
           <div className="space-y-4">
             <div>
-              <label className="block text-[10px] uppercase opacity-60 font-black mb-1">
+              <label className="block text-xs uppercase opacity-60 font-black mb-1">
                 Public Key (pk_test_...)
               </label>
               <input
@@ -326,7 +326,7 @@ export const DashboardPlatformSettingsTab: React.FC<PlatformSettingsTabProps> = 
               />
             </div>
             <div>
-              <label className="block text-[10px] uppercase opacity-60 font-black mb-1">
+              <label className="block text-xs uppercase opacity-60 font-black mb-1">
                 Secret Key (sk_test_...)
               </label>
               <input
@@ -351,7 +351,7 @@ export const DashboardPlatformSettingsTab: React.FC<PlatformSettingsTabProps> = 
           </h4>
           <div className="space-y-4">
             <div>
-              <label className="block text-[10px] uppercase opacity-60 font-black mb-1">
+              <label className="block text-xs uppercase opacity-60 font-black mb-1">
                 AI Provider
               </label>
               <select
@@ -375,7 +375,7 @@ export const DashboardPlatformSettingsTab: React.FC<PlatformSettingsTabProps> = 
 
             {(editedPlatformSettings?.ai_provider || 'gemini') === 'gemini' && (
               <div>
-                <label className="block text-[10px] uppercase opacity-60 font-black mb-1">
+                <label className="block text-xs uppercase opacity-60 font-black mb-1">
                   Gemini API Key
                 </label>
                 <input
@@ -390,7 +390,7 @@ export const DashboardPlatformSettingsTab: React.FC<PlatformSettingsTabProps> = 
                   className="w-full bg-white/10 border-0 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-white font-mono"
                   placeholder="AIzaSy..."
                 />
-                <p className="text-[10px] mt-1 opacity-40">
+                <p className="text-xs mt-1 opacity-40">
                   Get from: console.cloud.google.com → API Keys
                 </p>
               </div>
@@ -399,7 +399,7 @@ export const DashboardPlatformSettingsTab: React.FC<PlatformSettingsTabProps> = 
             {editedPlatformSettings?.ai_provider === 'openrouter' && (
               <>
                 <div>
-                  <label className="block text-[10px] uppercase opacity-60 font-black mb-1">
+                  <label className="block text-xs uppercase opacity-60 font-black mb-1">
                     OpenRouter API Key
                   </label>
                   <input
@@ -414,10 +414,10 @@ export const DashboardPlatformSettingsTab: React.FC<PlatformSettingsTabProps> = 
                     className="w-full bg-white/10 border-0 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-white font-mono"
                     placeholder="sk-or-..."
                   />
-                  <p className="text-[10px] mt-1 opacity-40">Get from: openrouter.ai/keys</p>
+                  <p className="text-xs mt-1 opacity-40">Get from: openrouter.ai/keys</p>
                 </div>
                 <div>
-                  <label className="block text-[10px] uppercase opacity-60 font-black mb-1">
+                  <label className="block text-xs uppercase opacity-60 font-black mb-1">
                     Model
                   </label>
                   <select
@@ -541,7 +541,7 @@ export const SchoolManagementModal: React.FC<SchoolModalProps> = ({
 
           <div className="grid grid-cols-2 gap-8 mb-8">
             <div className="space-y-4">
-              <h4 className="text-[10px] font-black uppercase text-gray-400 tracking-wider">
+              <h4 className="text-xs font-black uppercase text-gray-400 tracking-wider">
                 Contact Details
               </h4>
               <div>
@@ -558,7 +558,7 @@ export const SchoolManagementModal: React.FC<SchoolModalProps> = ({
               </div>
             </div>
             <div className="space-y-4">
-              <h4 className="text-[10px] font-black uppercase text-gray-400 tracking-wider">
+              <h4 className="text-xs font-black uppercase text-gray-400 tracking-wider">
                 Subscription Info
               </h4>
               <div>
@@ -582,7 +582,7 @@ export const SchoolManagementModal: React.FC<SchoolModalProps> = ({
 
           {selectedSchool.subscription?.payment_proof && (
             <div className="mb-8 p-6 bg-gray-50 rounded-2xl">
-              <h4 className="text-[10px] font-black uppercase text-gray-400 tracking-wider mb-4 flex items-center gap-2">
+              <h4 className="text-xs font-black uppercase text-gray-400 tracking-wider mb-4 flex items-center gap-2">
                 <ImageIcon size={14} /> Proof of Payment
               </h4>
               <Image
@@ -598,7 +598,7 @@ export const SchoolManagementModal: React.FC<SchoolModalProps> = ({
           )}
 
           <div className="bg-gray-50 p-6 rounded-2xl mb-8 space-y-4">
-            <h4 className="text-[10px] font-black uppercase text-gray-400 tracking-wider">
+            <h4 className="text-xs font-black uppercase text-gray-400 tracking-wider">
               Management Actions
             </h4>
             <div className="space-y-4">

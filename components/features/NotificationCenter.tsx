@@ -122,7 +122,7 @@ export const NotificationCenter: React.FC = () => {
         description: `${nextExam.title} starts on ${nextExam.start_date}.`,
         date: new Date(nextExam.start_date).getTime(),
         icon: Calendar,
-        color: 'text-yellow-500',
+        color: 'text-amber-500',
         link: '/calendar',
       });
     }
@@ -170,7 +170,7 @@ export const NotificationCenter: React.FC = () => {
       >
         <Bell size={20} className="text-gray-600" />
         {notifications.length > 0 && (
-          <span className="absolute top-1.5 right-1.5 h-4 w-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white shadow-sm">
+          <span className="absolute top-1.5 right-1.5 h-4 w-4 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center border-2 border-white shadow-sm">
             {notifications.length}
           </span>
         )}
@@ -207,7 +207,7 @@ export const NotificationCenter: React.FC = () => {
                         <div className="flex-1">
                           <p className="text-sm font-bold text-gray-900">{n.title}</p>
                           <p className="text-xs text-gray-500 mt-1 line-clamp-2">{n.description}</p>
-                          <p className="text-[10px] text-gray-400 mt-2">
+                          <p className="text-xs text-gray-400 mt-2">
                             {new Date(n.date).toLocaleDateString(undefined, {
                               month: 'short',
                               day: 'numeric',

@@ -79,7 +79,7 @@ export const QuizResultsView: React.FC<QuizResultsViewProps> = ({ quizId }) => {
 
                   <div className="flex items-center gap-6">
                     <div className="text-center">
-                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
+                      <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">
                         Score
                       </p>
                       <div className="flex items-center gap-1 font-black text-xl text-brand-600">
@@ -112,7 +112,7 @@ export const QuizResultsView: React.FC<QuizResultsViewProps> = ({ quizId }) => {
                   </div>
                 </div>
                 {attempt.answers.some((a) => a.score === 0 && !a.is_graded) && (
-                  <div className="mt-4 p-2 bg-yellow-50 rounded-lg flex items-center gap-2 text-[10px] text-yellow-700 font-medium">
+                  <div className="mt-4 p-2 bg-amber-50 rounded-lg flex items-center gap-2 text-xs text-amber-700 font-medium">
                     <AlertCircle size={14} />
                     This attempt has ungraded theory questions.
                   </div>

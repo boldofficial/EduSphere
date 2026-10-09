@@ -419,6 +419,12 @@ export const ReportCardTemplate: React.FC<ReportCardTemplateProps> = ({
       className="mx-auto max-w-[820px] overflow-hidden border border-slate-300 bg-white text-[11px] text-slate-700 shadow-sm print:max-w-none print:border-none print:shadow-none"
       style={{ fontFamily: settings?.report_font_family || "'Inter', sans-serif" }}
     >
+      {/* Report-card font choices load only where a report card renders, not on every page. */}
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Playfair+Display:wght@400;700;900&family=Roboto:wght@400;700;900&display=swap"
+        precedence="default"
+      />
       <div className="h-1" style={{ backgroundColor: themePrimary }} />
 
       <div className="border-b border-slate-200 px-4 py-3">

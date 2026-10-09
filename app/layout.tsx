@@ -3,6 +3,7 @@ import { headers } from 'next/headers';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { ToastProvider } from '@/components/providers/toast-provider';
+import { ConfirmProvider } from '@/components/ui/confirm-dialog';
 import QueryProvider from '@/components/providers/query-provider';
 import { PWAProvider } from '@/components/providers/pwa-provider';
 import { AuthProvider } from '@/components/providers/AuthProvider';
@@ -103,10 +104,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ErrorBoundary>
           <QueryProvider>
             <ToastProvider>
-              <PWAProvider>
-                <AuthProvider>{children}</AuthProvider>
-                <FeedbackPortal />
-              </PWAProvider>
+              <ConfirmProvider>
+                <PWAProvider>
+                  <AuthProvider>{children}</AuthProvider>
+                  <FeedbackPortal />
+                </PWAProvider>
+              </ConfirmProvider>
             </ToastProvider>
           </QueryProvider>
         </ErrorBoundary>

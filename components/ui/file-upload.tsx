@@ -3,6 +3,7 @@
 import React, { useRef, useState } from 'react';
 import { Upload, X, FileText } from 'lucide-react';
 import * as Utils from '@/lib/utils';
+import { useToast } from '@/components/providers/toast-provider';
 
 interface FileUploadProps {
   value?: string | null;
@@ -19,6 +20,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
   accept = '*/*',
   maxSizeMB = 5,
 }) => {
+  const { addToast } = useToast();
   const inputRef = useRef<HTMLInputElement>(null);
   const [fileName, setFileName] = useState<string | null>(null);
 
@@ -28,7 +30,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
 
     // Validate file size
     if (file.size > maxSizeMB * 1024 * 1024) {
-      alert(`File must be less than ${maxSizeMB}MB`);
+      addToast(`File must be less than ${maxSizeMB}MB`, 'error');
       return;
     }
 
@@ -95,7 +97,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
           <div className="flex flex-col items-center justify-center text-gray-400 gap-1">
             <Upload className="h-6 w-6" />
             <span className="text-sm font-medium">Click to upload or drag & drop</span>
-            <span className="text-[10px]">Max {maxSizeMB}MB</span>
+            <span className="text-xs">Max {maxSizeMB}MB</span>
           </div>
         )}
         <input

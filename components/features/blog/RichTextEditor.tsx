@@ -220,7 +220,7 @@ export function RichTextEditor({
       <EditorContent editor={editor} className="min-h-[300px]" />
 
       {/* Hint */}
-      <div className="px-4 py-2 text-[10px] text-gray-400 border-t border-gray-100 bg-gray-50/50 flex items-center gap-4">
+      <div className="px-4 py-2 text-xs text-gray-400 border-t border-gray-100 bg-gray-50/50 flex items-center gap-4">
         <span>
           Paste <strong>HTML</strong> → auto-styled
         </span>

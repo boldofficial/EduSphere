@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card';
 import { Select } from '@/components/ui/select';
 import { Modal } from '@/components/ui/modal';
 import { useToast } from '@/components/providers/toast-provider';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 
 interface ClassesViewProps {
   classes: Types.Class[];
@@ -23,6 +24,7 @@ export const ClassesView: React.FC<ClassesViewProps> = ({
   onCreate,
   onDelete,
 }) => {
+  const confirm = useConfirm();
   const [editingClass, setEditingClass] = useState<Types.Class | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [searchSubject, setSearchSubject] = useState('');
@@ -180,7 +182,7 @@ export const ClassesView: React.FC<ClassesViewProps> = ({
   const handleDelete = async (cls: Types.Class) => {
     if (!onDelete) return;
     if (
-      confirm(
+      await confirm(
         `Are you sure you want to delete ${cls.name}? This will remove all students and records associated with this class.`
       )
     ) {
@@ -252,7 +254,7 @@ export const ClassesView: React.FC<ClassesViewProps> = ({
                       <span className="text-xs font-medium bg-cyan-50 px-2 py-1 rounded text-cyan-700 border border-cyan-100">
                         {c.category || 'Primary'}
                       </span>
-                      <span className="text-xs font-medium bg-emerald-50 px-2 py-1 rounded text-emerald-700 border border-emerald-100">
+                      <span className="text-xs font-medium bg-green-50 px-2 py-1 rounded text-green-700 border border-green-100">
                         {c.report_mode === 'early_years'
                           ? 'Early Years'
                           : c.report_mode === 'hybrid'
@@ -375,42 +377,42 @@ export const ClassesView: React.FC<ClassesViewProps> = ({
                   <button
                     type="button"
                     onClick={() => applyPreset('nursery')}
-                    className="text-[10px] bg-purple-100 text-purple-700 px-2 py-1 rounded hover:bg-purple-200 font-bold uppercase tracking-wider transition-colors"
+                    className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded hover:bg-purple-200 font-bold uppercase tracking-wider transition-colors"
                   >
                     Nursery
                   </button>
                   <button
                     type="button"
                     onClick={() => applyPreset('primary')}
-                    className="text-[10px] bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200 font-bold uppercase tracking-wider transition-colors"
+                    className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200 font-bold uppercase tracking-wider transition-colors"
                   >
                     Primary
                   </button>
                   <button
                     type="button"
                     onClick={() => applyPreset('jss')}
-                    className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-1 rounded hover:bg-emerald-200 font-bold uppercase tracking-wider transition-colors"
+                    className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded hover:bg-green-200 font-bold uppercase tracking-wider transition-colors"
                   >
                     JSS
                   </button>
                   <button
                     type="button"
                     onClick={() => applyPreset('sss_sci')}
-                    className="text-[10px] bg-amber-100 text-amber-700 px-2 py-1 rounded hover:bg-amber-200 font-bold uppercase tracking-wider transition-colors"
+                    className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded hover:bg-amber-200 font-bold uppercase tracking-wider transition-colors"
                   >
                     SSS Science
                   </button>
                   <button
                     type="button"
                     onClick={() => applyPreset('sss_art')}
-                    className="text-[10px] bg-indigo-100 text-indigo-700 px-2 py-1 rounded hover:bg-indigo-200 font-bold uppercase tracking-wider transition-colors"
+                    className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded hover:bg-indigo-200 font-bold uppercase tracking-wider transition-colors"
                   >
                     SSS Art
                   </button>
                   <button
                     type="button"
                     onClick={() => applyPreset('sss_comm')}
-                    className="text-[10px] bg-slate-100 text-slate-700 px-2 py-1 rounded hover:bg-slate-200 font-bold uppercase tracking-wider transition-colors"
+                    className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded hover:bg-gray-200 font-bold uppercase tracking-wider transition-colors"
                   >
                     SSS Commerce
                   </button>

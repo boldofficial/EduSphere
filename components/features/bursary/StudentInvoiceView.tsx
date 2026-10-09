@@ -7,6 +7,7 @@ import * as Utils from '@/lib/utils';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { InvoiceTemplate } from './InvoiceTemplate';
+import { useToast } from '@/components/providers/toast-provider';
 
 interface StudentInvoiceViewProps {
   student: Types.Student;
@@ -23,6 +24,7 @@ export const StudentInvoiceView: React.FC<StudentInvoiceViewProps> = ({
   payments,
   settings,
 }) => {
+  const { addToast } = useToast();
   const [selectedSession, setSelectedSession] = useState('');
   const [selectedTerm, setSelectedTerm] = useState('');
 
@@ -80,7 +82,7 @@ export const StudentInvoiceView: React.FC<StudentInvoiceViewProps> = ({
   const handlePrint = () => {
     const printWindow = window.open('', '_blank', 'width=800,height=800');
     if (!printWindow) {
-      alert('Please allow popups to print the invoice');
+      addToast('Please allow popups to print the invoice', 'error');
       return;
     }
 

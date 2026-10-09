@@ -230,7 +230,7 @@ export const SubjectTeacherManager: React.FC = () => {
                         coverage >= 80
                           ? 'text-green-600'
                           : coverage >= 50
-                            ? 'text-yellow-600'
+                            ? 'text-amber-600'
                             : 'text-red-600'
                       }`}
                     >
@@ -243,7 +243,7 @@ export const SubjectTeacherManager: React.FC = () => {
                         coverage >= 80
                           ? 'bg-green-500'
                           : coverage >= 50
-                            ? 'bg-yellow-500'
+                            ? 'bg-amber-500'
                             : 'bg-red-500'
                       }`}
                       style={{ width: `${coverage}%` }}

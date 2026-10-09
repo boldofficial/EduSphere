@@ -40,9 +40,9 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
       name: 'Record Fee',
       icon: CreditCard,
       href: '/bursary',
-      gradient: 'from-emerald-500 to-teal-600',
-      shadow: 'shadow-emerald-200',
-      bg: 'bg-emerald-50',
+      gradient: 'from-green-500 to-teal-600',
+      shadow: 'shadow-green-200',
+      bg: 'bg-green-50',
       module: 'bursary',
     },
     {
@@ -50,9 +50,9 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
       name: 'Attendance',
       icon: CalendarIcon,
       href: '/attendance',
-      gradient: 'from-rose-500 to-pink-600',
-      shadow: 'shadow-rose-200',
-      bg: 'bg-rose-50',
+      gradient: 'from-red-500 to-pink-600',
+      shadow: 'shadow-red-200',
+      bg: 'bg-red-50',
       module: 'attendance',
     },
     {
@@ -101,7 +101,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
                 >
                   <action.icon className="h-6 w-6" strokeWidth={2.5} />
                 </div>
-                <span className="font-black text-[11px] uppercase tracking-wider text-gray-600 group-hover:text-white transition-colors duration-500">
+                <span className="font-black text-xs uppercase tracking-wider text-gray-600 group-hover:text-white transition-colors duration-500">
                   {action.name}
                 </span>
               </div>
@@ -121,7 +121,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
               <div className="p-4 rounded-2xl bg-indigo-100 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-500 group-hover:scale-110 shadow-sm">
                 <Rocket className="h-6 w-6" strokeWidth={2.5} />
               </div>
-              <span className="font-black text-[11px] uppercase tracking-wider text-indigo-700 transition-colors duration-500 text-center">
+              <span className="font-black text-xs uppercase tracking-wider text-indigo-700 transition-colors duration-500 text-center">
                 Demo Requests
               </span>
             </button>

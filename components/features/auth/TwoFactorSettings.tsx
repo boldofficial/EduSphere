@@ -3,12 +3,14 @@
 import React, { useState, useEffect } from 'react';
 import { Shield, ShieldOff, RefreshCw, Copy, Check, AlertCircle, Loader2, Key } from 'lucide-react';
 import apiClient from '@/lib/api-client';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 
 interface TwoFactorSettingsProps {
   onUpdate?: () => void;
 }
 
 export const TwoFactorSettings: React.FC<TwoFactorSettingsProps> = ({ onUpdate }) => {
+  const confirm = useConfirm();
   const [status, setStatus] = useState<{
     enabled: boolean;
     has_backup_codes: boolean;
@@ -40,9 +42,9 @@ export const TwoFactorSettings: React.FC<TwoFactorSettingsProps> = ({ onUpdate }
 
   const handleDisable = async () => {
     if (
-      !confirm(
+      !(await confirm(
         'Are you sure you want to disable two-factor authentication? This will make your account less secure.'
-      )
+      ))
     ) {
       return;
     }
@@ -65,7 +67,9 @@ export const TwoFactorSettings: React.FC<TwoFactorSettingsProps> = ({ onUpdate }
 
   const handleRegenerateCodes = async () => {
     if (
-      !confirm('This will invalidate your current backup codes and generate new ones. Continue?')
+      !(await confirm(
+        'This will invalidate your current backup codes and generate new ones. Continue?'
+      ))
     ) {
       return;
     }
@@ -151,19 +155,19 @@ export const TwoFactorSettings: React.FC<TwoFactorSettingsProps> = ({ onUpdate }
       )}
 
       {newBackupCodes && (
-        <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+        <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
           <div className="flex items-center gap-2 mb-2">
-            <Key className="w-5 h-5 text-yellow-600" />
-            <h4 className="font-medium text-yellow-800">New Backup Codes</h4>
+            <Key className="w-5 h-5 text-amber-600" />
+            <h4 className="font-medium text-amber-800">New Backup Codes</h4>
           </div>
-          <p className="text-sm text-yellow-700 mb-3">
+          <p className="text-sm text-amber-700 mb-3">
             Save these codes in a secure location. Each code can only be used once.
           </p>
           <div className="grid grid-cols-2 gap-2">
             {newBackupCodes.map((code, index) => (
               <div
                 key={index}
-                className="flex items-center justify-between px-3 py-2 bg-white border border-yellow-200 rounded text-sm font-mono"
+                className="flex items-center justify-between px-3 py-2 bg-white border border-amber-200 rounded text-sm font-mono"
               >
                 <span>{code}</span>
                 <button

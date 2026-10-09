@@ -66,10 +66,10 @@ const RISK_CONFIG = {
     dot: 'bg-amber-500',
   },
   low: {
-    color: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+    color: 'bg-green-100 text-green-700 border-green-200',
     icon: Shield,
     label: 'Low Risk',
-    dot: 'bg-emerald-500',
+    dot: 'bg-green-500',
   },
 };
 
@@ -109,7 +109,7 @@ export default function PredictiveDashboard() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-black text-gray-900 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
               <Target className="w-5 h-5 text-white" />
             </div>
             Predictive Insights
@@ -188,9 +188,9 @@ export default function PredictiveDashboard() {
                 Medium Risk
               </p>
             </Card>
-            <Card className="p-5 text-center border-l-4 border-l-emerald-500">
-              <Shield className="w-6 h-6 text-emerald-500 mx-auto mb-2" />
-              <p className="text-3xl font-black text-emerald-600">{data.summary.low_risk}</p>
+            <Card className="p-5 text-center border-l-4 border-l-green-500">
+              <Shield className="w-6 h-6 text-green-500 mx-auto mb-2" />
+              <p className="text-3xl font-black text-green-600">{data.summary.low_risk}</p>
               <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Low Risk</p>
             </Card>
           </div>
@@ -244,7 +244,7 @@ export default function PredictiveDashboard() {
                           </p>
                         </div>
                         <Badge
-                          className={`${risk.color} border gap-1 text-[10px] font-black uppercase tracking-wider`}
+                          className={`${risk.color} border gap-1 text-xs font-black uppercase tracking-wider`}
                         >
                           <RiskIcon className="w-3 h-3" />
                           {risk.label}
@@ -273,13 +273,13 @@ export default function PredictiveDashboard() {
                             </div>
                           )}
                           {sp.prediction.strengths.length > 0 && (
-                            <div className="bg-emerald-50 rounded-xl p-4">
-                              <h4 className="text-xs font-black text-emerald-600 uppercase tracking-wider mb-2">
+                            <div className="bg-green-50 rounded-xl p-4">
+                              <h4 className="text-xs font-black text-green-600 uppercase tracking-wider mb-2">
                                 ✓ Strengths
                               </h4>
                               <ul className="space-y-1">
                                 {sp.prediction.strengths.map((s, i) => (
-                                  <li key={i} className="text-sm text-emerald-700">
+                                  <li key={i} className="text-sm text-green-700">
                                     • {s}
                                   </li>
                                 ))}

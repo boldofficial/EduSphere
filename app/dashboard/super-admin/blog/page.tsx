@@ -19,8 +19,10 @@ import {
   useCategories,
 } from '@/lib/hooks/use-blog';
 import { useToast } from '@/components/providers/toast-provider';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 
 export default function SuperAdminBlogPage() {
+  const confirm = useConfirm();
   const router = useRouter();
   const { addToast } = useToast();
   const [page, setPage] = useState(1);
@@ -30,7 +32,7 @@ export default function SuperAdminBlogPage() {
   const publishMutation = usePublishBlogPost();
 
   const handleDelete = async (id: number, title: string) => {
-    if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
+    if (!(await confirm(`Delete "${title}"? This cannot be undone.`))) return;
     try {
       await deleteMutation.mutateAsync(id);
       addToast('Post deleted', 'success');
@@ -126,16 +128,16 @@ export default function SuperAdminBlogPage() {
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
                   <h3 className="text-sm font-bold text-gray-900 truncate">{post.title}</h3>
                   <span
-                    className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase ${
+                    className={`text-xs font-black px-2 py-0.5 rounded-full uppercase ${
                       post.status === 'published'
-                        ? 'bg-emerald-50 text-emerald-600'
+                        ? 'bg-green-50 text-green-600'
                         : 'bg-amber-50 text-amber-600'
                     }`}
                   >
                     {post.status}
                   </span>
                   {post.category_name && (
-                    <span className="text-[10px] font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full">
+                    <span className="text-xs font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full">
                       {post.category_name}
                     </span>
                   )}
@@ -151,7 +153,7 @@ export default function SuperAdminBlogPage() {
                       {post.tags_list.map((tag) => (
                         <span
                           key={tag.id}
-                          className="text-[10px] text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded"
+                          className="text-xs text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded"
                         >
                           #{tag.name}
                         </span>

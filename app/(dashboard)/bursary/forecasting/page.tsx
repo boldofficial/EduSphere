@@ -91,7 +91,7 @@ export default function RevenueForecastingPage() {
               <p className="text-2xl font-black mt-1 leading-none">
                 {summary ? Utils.formatCurrency(summary.expected) : '---'}
               </p>
-              <div className="flex items-center mt-3 bg-white/20 w-fit px-2 py-0.5 rounded-full text-[10px] font-bold backdrop-blur-sm">
+              <div className="flex items-center mt-3 bg-white/20 w-fit px-2 py-0.5 rounded-full text-xs font-bold backdrop-blur-sm">
                 <Target size={12} className="mr-1" />
                 <span>TERM TARGET</span>
               </div>
@@ -102,17 +102,17 @@ export default function RevenueForecastingPage() {
           </div>
         </Card>
 
-        <Card className="relative overflow-hidden border-none shadow-xl bg-gradient-to-br from-emerald-500 to-teal-700 text-white p-6">
+        <Card className="relative overflow-hidden border-none shadow-xl bg-gradient-to-br from-green-500 to-teal-700 text-white p-6">
           <div className="absolute top-[-10%] right-[-10%] h-24 w-24 bg-white/10 rounded-full blur-2xl" />
           <div className="flex items-center justify-between relative z-10 gap-3">
             <div className="min-w-0 flex-1">
-              <p className="text-emerald-50/70 text-xs font-bold uppercase tracking-wider truncate">
+              <p className="text-green-50/70 text-xs font-bold uppercase tracking-wider truncate">
                 Collected To Date
               </p>
               <p className="text-2xl font-black mt-1 leading-none">
                 {summary ? Utils.formatCurrency(summary.collected) : '---'}
               </p>
-              <div className="flex items-center mt-3 bg-white/20 w-fit px-2 py-0.5 rounded-full text-[10px] font-bold backdrop-blur-sm">
+              <div className="flex items-center mt-3 bg-white/20 w-fit px-2 py-0.5 rounded-full text-xs font-bold backdrop-blur-sm">
                 <ArrowUpRight size={12} className="mr-1" />
                 <span>{summary ? summary.collection_rate.toFixed(1) : 0}% COMPLETE</span>
               </div>
@@ -133,7 +133,7 @@ export default function RevenueForecastingPage() {
               <p className="text-2xl font-black mt-1 leading-none">
                 {summary ? Utils.formatCurrency(summary.outstanding) : '---'}
               </p>
-              <div className="flex items-center mt-3 bg-white/20 w-fit px-2 py-0.5 rounded-full text-[10px] font-bold backdrop-blur-sm">
+              <div className="flex items-center mt-3 bg-white/20 w-fit px-2 py-0.5 rounded-full text-xs font-bold backdrop-blur-sm">
                 <AlertCircle size={12} className="mr-1" />
                 <span>ARREARS</span>
               </div>
@@ -144,17 +144,17 @@ export default function RevenueForecastingPage() {
           </div>
         </Card>
 
-        <Card className="relative overflow-hidden border-none shadow-xl bg-gradient-to-br from-violet-600 to-purple-800 text-white p-6">
+        <Card className="relative overflow-hidden border-none shadow-xl bg-gradient-to-br from-purple-600 to-purple-800 text-white p-6">
           <div className="absolute top-[-10%] right-[-10%] h-24 w-24 bg-white/10 rounded-full blur-2xl" />
           <div className="flex items-center justify-between relative z-10 gap-3">
             <div className="min-w-0 flex-1">
-              <p className="text-violet-50/70 text-xs font-bold uppercase tracking-wider truncate">
+              <p className="text-purple-50/70 text-xs font-bold uppercase tracking-wider truncate">
                 Revenue Forecast
               </p>
               <p className="text-2xl font-black mt-1 leading-none">
                 {summary ? Utils.formatCurrency(summary.forecast) : '---'}
               </p>
-              <div className="flex items-center mt-3 bg-white/20 w-fit px-2 py-0.5 rounded-full text-[10px] font-bold backdrop-blur-sm">
+              <div className="flex items-center mt-3 bg-white/20 w-fit px-2 py-0.5 rounded-full text-xs font-bold backdrop-blur-sm">
                 <Zap size={12} className="mr-1" />
                 <span>PREDICTED OUTCOME</span>
               </div>
@@ -180,13 +180,13 @@ export default function RevenueForecastingPage() {
             </div>
 
             <div className="flex flex-wrap gap-4 items-center self-start bg-gray-50 p-2 rounded-lg border border-gray-100">
-              <div className="flex items-center text-[10px] font-black uppercase text-gray-500">
+              <div className="flex items-center text-xs font-black uppercase text-gray-500">
                 <div className="w-2.5 h-2.5 bg-blue-500 rounded-full mr-1.5 shadow-sm" /> Target
               </div>
-              <div className="flex items-center text-[10px] font-black uppercase text-gray-500">
-                <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full mr-1.5 shadow-sm" /> Actual
+              <div className="flex items-center text-xs font-black uppercase text-gray-500">
+                <div className="w-2.5 h-2.5 bg-green-500 rounded-full mr-1.5 shadow-sm" /> Actual
               </div>
-              <div className="flex items-center text-[10px] font-black uppercase text-gray-500">
+              <div className="flex items-center text-xs font-black uppercase text-gray-500">
                 <div className="w-2.5 h-2.5 border-2 border-purple-400 rounded-full mr-1.5 shadow-sm" />{' '}
                 Forecast
               </div>
@@ -287,13 +287,13 @@ export default function RevenueForecastingPage() {
                   <span className="text-xs font-black text-gray-400 uppercase tracking-widest">
                     Collection Pace
                   </span>
-                  <span className="text-sm font-black text-emerald-600">
+                  <span className="text-sm font-black text-green-600">
                     {summary?.collection_rate.toFixed(1)}%
                   </span>
                 </div>
                 <div className="h-3 w-full bg-gray-50 rounded-full overflow-hidden border border-gray-100 p-0.5">
                   <div
-                    className="h-full bg-emerald-500 rounded-full transition-all duration-1000 ease-out"
+                    className="h-full bg-green-500 rounded-full transition-all duration-1000 ease-out"
                     style={{ width: `${summary?.collection_rate || 0}%` }}
                   />
                 </div>
@@ -319,7 +319,7 @@ export default function RevenueForecastingPage() {
                     }}
                   />
                 </div>
-                <p className="text-[10px] text-gray-400 mt-2 font-bold italic translate-x-1">
+                <p className="text-xs text-gray-400 mt-2 font-bold italic translate-x-1">
                   {summary?.days_elapsed} of {summary?.days_total} expected term days passed.
                 </p>
               </div>
@@ -353,8 +353,8 @@ export default function RevenueForecastingPage() {
 
       {/* Verification Footer */}
       <div className="flex justify-center pt-8">
-        <p className="text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] flex items-center gap-2">
-          <div className="h-1.5 w-1.5 bg-emerald-400 animate-pulse rounded-full" />
+        <p className="text-xs font-black text-gray-300 uppercase tracking-[0.2em] flex items-center gap-2">
+          <div className="h-1.5 w-1.5 bg-green-400 animate-pulse rounded-full" />
           Real-time Predictive Engine Active
         </p>
       </div>

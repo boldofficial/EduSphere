@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { MessageSquare, Loader2, Send } from 'lucide-react';
 import apiClient from '@/lib/api-client';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 
 interface DiscussionThreadProps {
   contentTypeId: number;
@@ -20,6 +21,7 @@ export const DiscussionThreadComponent: React.FC<DiscussionThreadProps> = ({
   objectId,
   title = 'Discussion',
 }) => {
+  const confirm = useConfirm();
   const [thread, setThread] = useState<DiscussionThread | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [newCommentBody, setNewCommentBody] = useState('');
@@ -67,7 +69,7 @@ export const DiscussionThreadComponent: React.FC<DiscussionThreadProps> = ({
   };
 
   const handleDeleteMessage = async (messageId: string | number) => {
-    if (!confirm('Are you sure you want to delete this message?')) return;
+    if (!(await confirm('Are you sure you want to delete this message?'))) return;
 
     try {
       await apiClient.delete(`lms/messages/${messageId}/`);

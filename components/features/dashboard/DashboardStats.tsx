@@ -28,13 +28,13 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       <div className="relative overflow-hidden rounded-xl lg:rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 p-3 sm:p-4 lg:p-6 text-white shadow-lg transition-transform hover:scale-[1.02]">
         <div className="relative z-10 flex justify-between items-start">
           <div className="min-w-0">
-            <p className="text-blue-100 text-[10px] sm:text-xs lg:text-sm font-medium truncate">
+            <p className="text-blue-100 text-xs sm:text-xs lg:text-sm font-medium truncate">
               Total Students
             </p>
             <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold mt-1 sm:mt-2">
               {studentsCount}
             </h3>
-            <p className="text-[10px] sm:text-xs text-blue-200 mt-1 hidden sm:block">
+            <p className="text-xs sm:text-xs text-blue-200 mt-1 hidden sm:block">
               Active Enrollment
             </p>
           </div>
@@ -47,11 +47,11 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       <div className="relative overflow-hidden rounded-xl lg:rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 p-3 sm:p-4 lg:p-6 text-white shadow-lg transition-transform hover:scale-[1.02]">
         <div className="relative z-10 flex justify-between items-start">
           <div className="min-w-0">
-            <p className="text-purple-100 text-[10px] sm:text-xs lg:text-sm font-medium truncate">
+            <p className="text-purple-100 text-xs sm:text-xs lg:text-sm font-medium truncate">
               Total Staff
             </p>
             <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold mt-1 sm:mt-2">{staffCount}</h3>
-            <p className="text-[10px] sm:text-xs text-purple-200 mt-1 hidden sm:block">
+            <p className="text-xs sm:text-xs text-purple-200 mt-1 hidden sm:block">
               Academic & Non-Academic
             </p>
           </div>
@@ -64,16 +64,16 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
 
       {showBursary && (
         <>
-          <div className="relative overflow-hidden rounded-xl lg:rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 p-3 sm:p-4 lg:p-6 text-white shadow-lg transition-transform hover:scale-[1.02]">
+          <div className="relative overflow-hidden rounded-xl lg:rounded-2xl bg-gradient-to-br from-green-500 to-green-600 p-3 sm:p-4 lg:p-6 text-white shadow-lg transition-transform hover:scale-[1.02]">
             <div className="relative z-10 flex justify-between items-start">
               <div className="min-w-0">
-                <p className="text-emerald-100 text-[10px] sm:text-xs lg:text-sm font-medium truncate">
+                <p className="text-green-100 text-xs sm:text-xs lg:text-sm font-medium truncate">
                   Revenue (Term)
                 </p>
                 <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold mt-1 sm:mt-2">
                   {Utils.formatCurrency(revenue)}
                 </h3>
-                <p className="text-[10px] sm:text-xs text-emerald-200 mt-1 hidden sm:block">
+                <p className="text-xs sm:text-xs text-green-200 mt-1 hidden sm:block">
                   Target: {Utils.formatCurrency(targetRevenue)}
                 </p>
               </div>
@@ -83,16 +83,16 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
             </div>
             <div className="absolute -bottom-4 -right-4 h-16 sm:h-24 w-16 sm:w-24 rounded-full bg-white/10 blur-xl"></div>
           </div>
-          <div className="relative overflow-hidden rounded-xl lg:rounded-2xl bg-gradient-to-br from-rose-500 to-rose-600 p-3 sm:p-4 lg:p-6 text-white shadow-lg transition-transform hover:scale-[1.02]">
+          <div className="relative overflow-hidden rounded-xl lg:rounded-2xl bg-gradient-to-br from-red-500 to-red-600 p-3 sm:p-4 lg:p-6 text-white shadow-lg transition-transform hover:scale-[1.02]">
             <div className="relative z-10 flex justify-between items-start">
               <div className="min-w-0">
-                <p className="text-rose-100 text-[10px] sm:text-xs lg:text-sm font-medium truncate">
+                <p className="text-red-100 text-xs sm:text-xs lg:text-sm font-medium truncate">
                   Expenses (Term)
                 </p>
                 <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold mt-1 sm:mt-2">
                   {Utils.formatCurrency(expenses)}
                 </h3>
-                <p className="text-[10px] sm:text-xs text-rose-200 mt-1 hidden sm:block">
+                <p className="text-xs sm:text-xs text-red-200 mt-1 hidden sm:block">
                   {transactionsCount} Transactions
                 </p>
               </div>

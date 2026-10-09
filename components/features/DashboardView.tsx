@@ -325,7 +325,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               'Executive Dashboard'
             )}
           </h1>
-          <p className="text-gray-500 font-bold uppercase text-[10px] tracking-[0.2em]">
+          <p className="text-gray-500 font-bold uppercase text-xs tracking-[0.2em]">
             {settings.current_session} • {settings.current_term}
           </p>
         </div>
@@ -335,7 +335,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-5 py-2.5 text-[11px] font-black uppercase tracking-wider rounded-xl transition-all duration-300 whitespace-nowrap ${
+                className={`flex items-center gap-2 px-5 py-2.5 text-xs font-black uppercase tracking-wider rounded-xl transition-all duration-300 whitespace-nowrap ${
                   activeTab === tab.id
                     ? 'bg-white shadow-lg shadow-brand-500/10 text-brand-600 ring-1 ring-brand-100'
                     : 'text-gray-500 hover:text-brand-500 hover:bg-white/50'
@@ -357,7 +357,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               key={ann.id}
               className={`p-4 rounded-2xl border flex items-start gap-4 shadow-sm animate-in slide-in-from-top-4 duration-500 overflow-hidden relative ${
                 ann.priority === 'high'
-                  ? 'bg-rose-50 border-rose-100 text-rose-900'
+                  ? 'bg-red-50 border-red-100 text-red-900'
                   : ann.priority === 'medium'
                     ? 'bg-amber-50 border-amber-100 text-amber-900'
                     : 'bg-brand-50 border-brand-100 text-brand-900'
@@ -366,7 +366,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <div
                 className={`p-2 rounded-xl scale-110 ${
                   ann.priority === 'high'
-                    ? 'bg-rose-100 text-rose-600'
+                    ? 'bg-red-100 text-red-600'
                     : ann.priority === 'medium'
                       ? 'bg-amber-100 text-amber-600'
                       : 'bg-brand-100 text-brand-600'
@@ -377,7 +377,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <div className="flex-1 pr-10">
                 <h4 className="font-black uppercase tracking-tight text-sm mb-1 flex items-center gap-2">
                   {ann.title}
-                  <span className="text-[10px] bg-white/50 px-2 py-0.5 rounded-full">
+                  <span className="text-xs bg-white/50 px-2 py-0.5 rounded-full">
                     Global Update
                   </span>
                 </h4>

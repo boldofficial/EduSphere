@@ -8,6 +8,7 @@ import * as Types from '@/lib/types';
 import * as Utils from '@/lib/utils';
 import { useToast } from '@/components/providers/toast-provider';
 import apiClient from '@/lib/api-client';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 
 interface DebtorReportProps {
   students: Types.Student[];
@@ -24,6 +25,7 @@ export const DebtorReport: React.FC<DebtorReportProps> = ({
   payments,
   settings,
 }) => {
+  const confirm = useConfirm();
   const { addToast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedClass, setSelectedClass] = useState('all');
@@ -78,7 +80,7 @@ export const DebtorReport: React.FC<DebtorReportProps> = ({
   const totalOutstanding = filteredDebtors.reduce((sum, d) => sum + d.balance, 0);
 
   const handleSendReminders = async () => {
-    if (!window.confirm(`Send payment reminders to ${filteredDebtors.length} debtors?`)) return;
+    if (!(await confirm(`Send payment reminders to ${filteredDebtors.length} debtors?`))) return;
 
     setIsSending(true);
     try {

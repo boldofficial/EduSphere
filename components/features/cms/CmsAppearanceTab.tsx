@@ -53,7 +53,7 @@ export const CmsAppearanceTab: React.FC<CmsAppearanceTabProps> = ({
           >
             Interactive Button Example
           </div>
-          <p className="text-[11px] text-gray-400 mt-4 leading-normal">
+          <p className="text-xs text-gray-400 mt-4 leading-normal">
             This color will be used for buttons, icons, and overlays across your school&apos;s
             public website to maintain consistency.
           </p>

@@ -72,7 +72,7 @@ export const StrategicAnalyticsTab: React.FC<AnalyticsTabProps> = ({ data }) => 
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
             <TrendingUp size={120} />
           </div>
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80 mb-2">
+          <p className="text-xs font-black uppercase tracking-[0.2em] opacity-80 mb-2">
             Total Platform Revenue
           </p>
           <h3 className="text-4xl font-black mb-4 tracking-tighter">
@@ -88,7 +88,7 @@ export const StrategicAnalyticsTab: React.FC<AnalyticsTabProps> = ({ data }) => 
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
             <Users size={120} />
           </div>
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80 mb-2">
+          <p className="text-xs font-black uppercase tracking-[0.2em] opacity-80 mb-2">
             Institutional Growth
           </p>
           <h3 className="text-4xl font-black mb-4 tracking-tighter">{totalSchools} Schools</h3>
@@ -102,7 +102,7 @@ export const StrategicAnalyticsTab: React.FC<AnalyticsTabProps> = ({ data }) => 
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
             <CreditCard size={120} />
           </div>
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80 mb-2">
+          <p className="text-xs font-black uppercase tracking-[0.2em] opacity-80 mb-2">
             Avg. Revenue / School
           </p>
           <h3 className="text-4xl font-black mb-4 tracking-tighter">
@@ -336,7 +336,7 @@ export const StrategicAnalyticsTab: React.FC<AnalyticsTabProps> = ({ data }) => 
           <div className="pt-8 mt-8 border-t border-white/10 text-center">
             <button
               onClick={() => window.print()}
-              className="text-[10px] font-black uppercase tracking-[0.3em] text-brand-400 hover:text-brand-300 transition-colors"
+              className="text-xs font-black uppercase tracking-[0.3em] text-brand-400 hover:text-brand-300 transition-colors"
             >
               Export Strategic Intelligence
             </button>

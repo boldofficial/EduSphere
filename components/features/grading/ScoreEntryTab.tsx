@@ -119,7 +119,7 @@ export const ScoreEntryTab: React.FC<ScoreEntryTabProps> = ({
 
       <div className="overflow-x-auto">
         <table className="w-full min-w-[760px] text-sm">
-          <thead className="bg-brand-900 text-[11px] font-semibold uppercase tracking-[0.14em] text-white">
+          <thead className="bg-brand-900 text-xs font-semibold uppercase tracking-[0.14em] text-white">
             <tr>
               <th className="sticky left-0 min-w-[180px] bg-brand-900 px-4 py-3 text-left">
                 Student
@@ -144,18 +144,18 @@ export const ScoreEntryTab: React.FC<ScoreEntryTabProps> = ({
                 const row = getRow(student.id);
                 const totalBg =
                   row.total >= 70
-                    ? 'bg-emerald-50 text-emerald-700'
+                    ? 'bg-green-50 text-green-700'
                     : row.total >= 50
                       ? 'bg-blue-50 text-blue-700'
                       : row.total >= 40
                         ? 'bg-amber-50 text-amber-700'
                         : row.total > 0
-                          ? 'bg-rose-50 text-rose-700'
+                          ? 'bg-red-50 text-red-700'
                           : 'bg-gray-50 text-gray-400';
 
                 const gradeBg =
                   row.grade === 'A'
-                    ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
+                    ? 'bg-green-100 text-green-800 border-green-200'
                     : row.grade === 'B'
                       ? 'bg-cyan-100 text-cyan-800 border-cyan-200'
                       : row.grade === 'C'
@@ -163,7 +163,7 @@ export const ScoreEntryTab: React.FC<ScoreEntryTabProps> = ({
                         : row.grade === 'D'
                           ? 'bg-amber-100 text-amber-800 border-amber-200'
                           : row.grade === 'F'
-                            ? 'bg-rose-100 text-rose-800 border-rose-200'
+                            ? 'bg-red-100 text-red-800 border-red-200'
                             : 'bg-gray-100 text-gray-600 border-gray-200';
 
                 return (

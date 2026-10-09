@@ -261,7 +261,7 @@ export const DashboardCmsTab: React.FC<DashboardCmsTabProps> = ({
               </button>
               <div className="space-y-3">
                 <div>
-                  <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
+                  <label className="block text-xs font-bold text-gray-400 uppercase mb-1">
                     Title
                   </label>
                   <Input
@@ -272,7 +272,7 @@ export const DashboardCmsTab: React.FC<DashboardCmsTabProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
+                  <label className="block text-xs font-bold text-gray-400 uppercase mb-1">
                     Icon (Lucide name)
                   </label>
                   <Input
@@ -283,7 +283,7 @@ export const DashboardCmsTab: React.FC<DashboardCmsTabProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
+                  <label className="block text-xs font-bold text-gray-400 uppercase mb-1">
                     Description
                   </label>
                   <textarea
@@ -346,7 +346,7 @@ export const DashboardCmsTab: React.FC<DashboardCmsTabProps> = ({
                   ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center text-gray-400">
                       <Upload size={24} className="mb-2" />
-                      <span className="text-[10px] font-bold">No Image</span>
+                      <span className="text-xs font-bold">No Image</span>
                     </div>
                   )}
                   <label className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity cursor-pointer">
@@ -368,7 +368,7 @@ export const DashboardCmsTab: React.FC<DashboardCmsTabProps> = ({
                   </label>
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
+                  <label className="block text-xs font-bold text-gray-400 uppercase mb-1">
                     Division Name
                   </label>
                   <Input
@@ -379,7 +379,7 @@ export const DashboardCmsTab: React.FC<DashboardCmsTabProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
+                  <label className="block text-xs font-bold text-gray-400 uppercase mb-1">
                     Age Range
                   </label>
                   <Input
@@ -392,7 +392,7 @@ export const DashboardCmsTab: React.FC<DashboardCmsTabProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
+                  <label className="block text-xs font-bold text-gray-400 uppercase mb-1">
                     Description
                   </label>
                   <textarea
