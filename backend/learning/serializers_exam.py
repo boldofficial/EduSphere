@@ -12,7 +12,12 @@ from learning.models import (
 from academic.models import Subject
 
 
-class BankOptionSerializer(serializers.ModelSerializer):
+from core.permissions import HideFromLearnersMixin, is_learner
+
+
+class BankOptionSerializer(HideFromLearnersMixin, serializers.ModelSerializer):
+    learner_hidden_fields = ("is_correct",)
+
     class Meta:
         model = BankOption
         fields = ["id", "text", "is_correct", "order"]
@@ -77,7 +82,9 @@ class QuestionBankSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
-class BankQuestionSerializer(serializers.ModelSerializer):
+class BankQuestionSerializer(HideFromLearnersMixin, serializers.ModelSerializer):
+    learner_hidden_fields = ("correct_answer",)
+
     options = serializers.SerializerMethodField()
     correct_answer = serializers.SerializerMethodField()
 
@@ -192,10 +199,22 @@ class BankQuestionCreateSerializer(serializers.ModelSerializer):
 # ==========================================
 
 
-class ExamQuestionSerializer(serializers.ModelSerializer):
+class ExamQuestionSerializer(HideFromLearnersMixin, serializers.ModelSerializer):
+    learner_hidden_fields = ("model_answer",)
+
     class Meta:
         model = ExamQuestion
         fields = ["id", "question_number", "question_text", "question_type", "marks", "options", "model_answer"]
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        request = self.context.get("request")
+        if request is not None and is_learner(request.user):
+            data["options"] = [
+                {k: v for k, v in opt.items() if k != "is_correct"} if isinstance(opt, dict) else opt
+                for opt in (data.get("options") or [])
+            ]
+        return data
 
 
 class ExamAnswerSerializer(serializers.ModelSerializer):
@@ -278,7 +297,10 @@ class ExamSerializer(serializers.ModelSerializer):
         return obj.papers.count()
 
 
-class ExamDetailSerializer(ExamSerializer):
+class ExamDetailSerializer(HideFromLearnersMixin, ExamSerializer):
+    # Students and parents must not see every candidate's paper and results.
+    learner_hidden_fields = ("papers",)
+
     exam_questions = ExamQuestionSerializer(many=True, read_only=True)
     papers = ExamPaperSerializer(many=True, read_only=True)
 

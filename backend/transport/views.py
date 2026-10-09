@@ -3,6 +3,9 @@ from rest_framework.response import Response
 from datetime import date
 
 from academic.views.base import TenantViewSet
+from rest_framework import permissions as drf_permissions
+
+from core.permissions import OperationsStaff
 from transport.models import BusRoute, BusStop, TransportAssignment, TransportFee, BusAttendance, TransportPayment
 from transport.serializers import (
     BusRouteSerializer,
@@ -17,6 +20,7 @@ from transport.serializers import (
 
 
 class BusStopViewSet(TenantViewSet):
+    permission_classes = [drf_permissions.IsAuthenticated, OperationsStaff]
     queryset = BusStop.objects.order_by("name").all()
     serializer_class = BusStopSerializer
 
@@ -29,6 +33,7 @@ class BusStopViewSet(TenantViewSet):
 
 
 class BusRouteViewSet(TenantViewSet):
+    permission_classes = [drf_permissions.IsAuthenticated, OperationsStaff]
     queryset = BusRoute.objects.order_by("name").all()
     serializer_class = BusRouteListSerializer
 
@@ -53,6 +58,7 @@ class BusRouteViewSet(TenantViewSet):
 
 
 class TransportAssignmentViewSet(TenantViewSet):
+    permission_classes = [drf_permissions.IsAuthenticated, OperationsStaff]
     queryset = TransportAssignment.objects.all()
     serializer_class = TransportAssignmentSerializer
 
@@ -87,6 +93,7 @@ class TransportAssignmentViewSet(TenantViewSet):
 
 
 class TransportFeeViewSet(TenantViewSet):
+    permission_classes = [drf_permissions.IsAuthenticated, OperationsStaff]
     queryset = TransportFee.objects.all()
     serializer_class = TransportFeeSerializer
 
@@ -107,6 +114,7 @@ class TransportFeeViewSet(TenantViewSet):
 
 
 class BusAttendanceViewSet(TenantViewSet):
+    permission_classes = [drf_permissions.IsAuthenticated, OperationsStaff]
     queryset = BusAttendance.objects.all()
     serializer_class = BusAttendanceSerializer
 
@@ -164,6 +172,7 @@ class BusAttendanceViewSet(TenantViewSet):
 
 
 class TransportPaymentViewSet(TenantViewSet):
+    permission_classes = [drf_permissions.IsAuthenticated, OperationsStaff]
     queryset = TransportPayment.objects.all()
     serializer_class = TransportPaymentSerializer
 

@@ -4,12 +4,24 @@ from core.pagination import StandardPagination
 from core.tenant_utils import get_request_school
 
 from ..models import Teacher
-from ..serializers import TeacherSerializer
+from rest_framework import permissions
+
+from core.permissions import ADMIN, EveryoneReadAdminWrite, role_of
+
+from ..serializers import TeacherPublicSerializer, TeacherSerializer
 from .base import TenantViewSet
 
 
 class TeacherViewSet(TenantViewSet):
     queryset = Teacher.objects.select_related("user", "school").all()
+    permission_classes = [permissions.IsAuthenticated, EveryoneReadAdminWrite]
+
+    def get_serializer_class(self):
+        # Pay, bank, pension and contact details are admin-only.
+        if role_of(self.request.user) in ADMIN:
+            return TeacherSerializer
+        return TeacherPublicSerializer
+
     serializer_class = TeacherSerializer
     pagination_class = StandardPagination
 

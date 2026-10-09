@@ -1,3 +1,4 @@
+from core.permissions import HideFromLearnersMixin
 from rest_framework import serializers
 
 from academic.models import Class, Student, Subject, Teacher
@@ -81,7 +82,9 @@ class SubmissionSerializer(serializers.ModelSerializer):
         return attrs
 
 
-class OptionSerializer(serializers.ModelSerializer):
+class OptionSerializer(HideFromLearnersMixin, serializers.ModelSerializer):
+    learner_hidden_fields = ("is_correct",)
+
     text = serializers.CharField(required=False, allow_blank=True)
 
     class Meta:

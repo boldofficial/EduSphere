@@ -50,3 +50,18 @@ class TeacherSerializer(serializers.ModelSerializer):
         if instance.passport_url:
             ret["passport_url"] = get_media_url(instance.passport_url)
         return ret
+
+
+class TeacherPublicSerializer(serializers.ModelSerializer):
+    """Staff directory view for non-admins: no pay, bank, pension, tax, address or phone."""
+
+    class Meta:
+        model = Teacher
+        fields = ["id", "user", "school", "name", "passport_url", "staff_type", "role"]
+        read_only_fields = fields
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        if instance.passport_url:
+            ret["passport_url"] = get_media_url(instance.passport_url)
+        return ret

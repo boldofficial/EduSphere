@@ -5,7 +5,9 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
+from academic.views.base import learner_class_ids, scope_to_learner
 from core.pagination import StandardPagination
+from core.permissions import EveryoneReadStaffWrite, is_learner
 from core.tenant_utils import get_request_school
 
 from django.conf import settings
@@ -22,7 +24,8 @@ from .serializers import (
 
 
 class LearningTenantViewSet(viewsets.ModelViewSet):
-    permission_classes = [permissions.IsAuthenticated]
+    # Everyone in the school can read; only staff create or change learning content.
+    permission_classes = [permissions.IsAuthenticated, EveryoneReadStaffWrite]
     pagination_class = StandardPagination
 
     def _enforce_related_school(self, value, school, field_name="field"):
@@ -77,6 +80,12 @@ class AssignmentViewSet(LearningTenantViewSet):
     queryset = Assignment.objects.select_related("student_class", "subject", "teacher", "school").all()
     serializer_class = AssignmentSerializer
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if is_learner(self.request.user):
+            qs = qs.filter(student_class_id__in=learner_class_ids(self.request.user))
+        return qs
+
 
 from academic.ai_utils import AcademicAI
 
@@ -84,6 +93,22 @@ from academic.ai_utils import AcademicAI
 class SubmissionViewSet(LearningTenantViewSet):
     queryset = Submission.objects.select_related("assignment", "student", "school").all()
     serializer_class = SubmissionSerializer
+    learner_actions = ("create",)  # students hand in work; grading stays with staff
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if is_learner(self.request.user):
+            qs = scope_to_learner(qs, self.request.user)
+        return qs
+
+    def perform_create(self, serializer):
+        if is_learner(self.request.user):
+            student = getattr(self.request.user, "student_profile", None)
+            if not student:
+                raise PermissionDenied("Only students can submit assignments.")
+            serializer.save(school=student.school, student=student, score=None, feedback="")
+            return
+        super().perform_create(serializer)
 
     @action(detail=True, methods=["post"], url_path="ai-evaluate")
     def ai_evaluate(self, request, pk=None):
@@ -113,6 +138,14 @@ class SubmissionViewSet(LearningTenantViewSet):
 class QuizViewSet(LearningTenantViewSet):
     queryset = Quiz.objects.select_related("student_class", "subject", "teacher", "school").all()
     serializer_class = QuizSerializer
+    learner_actions = ("start_attempt", "submit")
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if is_learner(self.request.user):
+            # Learners only see published quizzes for their (or their children's) class.
+            qs = qs.filter(is_published=True, student_class_id__in=learner_class_ids(self.request.user))
+        return qs
 
     @action(detail=False, methods=["post"], url_path="generate-from-lesson")
     def generate_from_lesson(self, request):
@@ -228,75 +261,91 @@ class QuizViewSet(LearningTenantViewSet):
 
     @action(detail=True, methods=["post"])
     def submit(self, request, pk=None):
-        """Submit an attempt for a quiz"""
+        """Submit an attempt for a quiz. Scores are computed here; clients never send them."""
         quiz = self.get_object()
 
-        # Ensure user is a student
         student = getattr(request.user, "student_profile", None)
         if not student:
             return Response({"detail": "Only students can take quizzes"}, status=status.HTTP_403_FORBIDDEN)
         if student.school != quiz.school:
             return Response({"detail": "Cross-tenant quiz access denied"}, status=status.HTTP_403_FORBIDDEN)
+        if not quiz.is_published:
+            return Response({"detail": "This quiz is not open."}, status=status.HTTP_403_FORBIDDEN)
 
-        # Find existing attempt or create one (though it should be created by start_attempt)
-        attempt, created = Attempt.objects.get_or_create(
-            school=quiz.school, quiz=quiz, student=student, defaults={"start_time": timezone.now()}
-        )
+        now = timezone.now()
+        if quiz.start_time and now < quiz.start_time:
+            return Response({"detail": "This quiz has not started yet."}, status=status.HTTP_403_FORBIDDEN)
 
-        if attempt.submit_time and not created:
-            return Response({"detail": "You have already submitted this quiz"}, status=status.HTTP_400_BAD_REQUEST)
-
-        attempt.submit_time = timezone.now()
-
-        # Clear previous answers if any (to prevent duplicates on re-submit/resume)
-        attempt.answers.all().delete()
-
-        answers_data = request.data.get("answers", [])
-        errors = []
-        total_score = 0
-        for ans in answers_data:
-            question_id = ans.get("question_id")
-            option_id = ans.get("selected_option_id")
-            text_answer = ans.get("text_answer", "")
-
-            # Safe lookup — no crash on bad IDs
-            try:
-                question = Question.objects.get(id=question_id, quiz=quiz)
-            except Question.DoesNotExist:
-                errors.append(f"Question {question_id} not found in this quiz")
-                continue
-
-            score = 0
-            selected_option = None
-
-            if question.question_type == "mcq" and option_id:
-                try:
-                    option = Option.objects.get(id=option_id, question=question)
-                    selected_option = option
-                    if option.is_correct:
-                        score = question.points
-                except Option.DoesNotExist:
-                    errors.append(f"Option {option_id} not found for question {question_id}")
-                    continue
-
-            total_score += score
-
-            StudentAnswer.objects.create(
-                school=quiz.school,
-                attempt=attempt,
-                question=question,
-                selected_option=selected_option,
-                text_answer=text_answer,
-                score=score,
+        with transaction.atomic():
+            attempt, created = Attempt.objects.select_for_update().get_or_create(
+                school=quiz.school, quiz=quiz, student=student, defaults={"start_time": now}
             )
+            if attempt.submit_time:
+                return Response({"detail": "You have already submitted this quiz"}, status=status.HTTP_400_BAD_REQUEST)
 
-        attempt.total_score = total_score
-        attempt.save()
+            # Late submissions (after the quiz closes, or past the time limit plus a 2-minute grace)
+            # are recorded but flagged so teachers can decide, instead of passing as on time.
+            grace = timezone.timedelta(minutes=2)
+            deadline = attempt.start_time + timezone.timedelta(minutes=quiz.duration_minutes or 0) + grace
+            if quiz.end_time:
+                deadline = min(deadline, quiz.end_time + grace)
+            is_late = now > deadline
 
-        result = {"success": True, "score": total_score}
+            questions = {q.id: q for q in quiz.questions.prefetch_related("options")}
+            attempt.answers.all().delete()
+
+            errors = []
+            total_score = 0
+            seen = set()
+            new_answers = []
+            for ans in request.data.get("answers", []):
+                question = questions.get(_as_int(ans.get("question_id")))
+                if question is None:
+                    errors.append(f"Question {ans.get('question_id')} not found in this quiz")
+                    continue
+                if question.id in seen:
+                    continue  # one answer per question; duplicates are ignored, not scored again
+                seen.add(question.id)
+
+                score = 0
+                selected_option = None
+                option_id = _as_int(ans.get("selected_option_id"))
+                if question.question_type == "mcq" and option_id:
+                    selected_option = next((o for o in question.options.all() if o.id == option_id), None)
+                    if selected_option is None:
+                        errors.append(f"Option {option_id} not found for question {question.id}")
+                        continue
+                    if selected_option.is_correct:
+                        score = question.points
+
+                total_score += score
+                new_answers.append(
+                    StudentAnswer(
+                        school=quiz.school,
+                        attempt=attempt,
+                        question=question,
+                        selected_option=selected_option,
+                        text_answer=ans.get("text_answer", ""),
+                        score=score,
+                    )
+                )
+
+            StudentAnswer.objects.bulk_create(new_answers)
+            attempt.submit_time = now
+            attempt.total_score = total_score
+            attempt.save()
+
+        result = {"success": True, "score": total_score, "late": is_late}
         if errors:
             result["warnings"] = errors
         return Response(result)
+
+
+def _as_int(value):
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
 
 
 class QuestionViewSet(LearningTenantViewSet):
@@ -305,6 +354,12 @@ class QuestionViewSet(LearningTenantViewSet):
 
     def get_queryset(self):
         queryset = super().get_queryset()
+        if is_learner(self.request.user):
+            # Only questions of published quizzes for the learner's class; answer keys are hidden
+            # by OptionSerializer.
+            queryset = queryset.filter(
+                quiz__is_published=True, quiz__student_class_id__in=learner_class_ids(self.request.user)
+            )
         quiz_id = self.request.query_params.get("quiz_id")
         if quiz_id:
             queryset = queryset.filter(quiz_id=quiz_id)
@@ -314,6 +369,13 @@ class QuestionViewSet(LearningTenantViewSet):
 class AttemptViewSet(LearningTenantViewSet):
     queryset = Attempt.objects.select_related("quiz", "student", "school").prefetch_related("answers__question").all()
     serializer_class = AttemptSerializer
+    learner_actions = ("violations",)  # the exam screen logs tab switches on the student's own attempt
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if is_learner(self.request.user):
+            qs = scope_to_learner(qs, self.request.user)
+        return qs
 
     @action(detail=True, methods=["post"], url_path="ai-grade-theory")
     def ai_grade_theory(self, request, pk=None):

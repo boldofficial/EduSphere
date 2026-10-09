@@ -6,6 +6,13 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from academic.views.base import TenantViewSet
+from rest_framework import permissions as drf_permissions
+
+from academic.views.base import scope_to_learner
+from core.permissions import is_learner, EVERYONE, FINANCE, OperationsStaff, role_permission
+
+# Everyone can browse the catalogue; librarians (admin/staff) manage it.
+LibraryCatalog = role_permission(EVERYONE, FINANCE, "LibraryCatalog")
 from library.models import Book, BookCategory, BorrowRecord, Reservation, LibraryMember, LibrarySettings
 from library.serializers import (
     BookCategorySerializer,
@@ -22,6 +29,7 @@ from library.serializers import (
 
 
 class BookCategoryViewSet(TenantViewSet):
+    permission_classes = [drf_permissions.IsAuthenticated, LibraryCatalog]
     queryset = BookCategory.objects.order_by("name").all()
     serializer_class = BookCategorySerializer
 
@@ -34,6 +42,7 @@ class BookCategoryViewSet(TenantViewSet):
 
 
 class BookViewSet(TenantViewSet):
+    permission_classes = [drf_permissions.IsAuthenticated, LibraryCatalog]
     queryset = Book.objects.order_by("title").all()
     serializer_class = BookListSerializer
 
@@ -65,6 +74,7 @@ class BookViewSet(TenantViewSet):
 
 
 class BorrowRecordViewSet(TenantViewSet):
+    permission_classes = [drf_permissions.IsAuthenticated, LibraryCatalog]
     queryset = BorrowRecord.objects.all()
     serializer_class = BorrowRecordSerializer
 
@@ -77,6 +87,8 @@ class BorrowRecordViewSet(TenantViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset()
+        if is_learner(self.request.user):
+            qs = scope_to_learner(qs, self.request.user)
         student_id = self.request.query_params.get("student")
         book_id = self.request.query_params.get("book")
         status_filter = self.request.query_params.get("status")
@@ -181,11 +193,14 @@ class BorrowRecordViewSet(TenantViewSet):
 
 
 class ReservationViewSet(TenantViewSet):
+    permission_classes = [drf_permissions.IsAuthenticated, LibraryCatalog]
     queryset = Reservation.objects.all()
     serializer_class = ReservationSerializer
 
     def get_queryset(self):
         qs = super().get_queryset()
+        if is_learner(self.request.user):
+            qs = scope_to_learner(qs, self.request.user)
         book_id = self.request.query_params.get("book")
         student_id = self.request.query_params.get("student")
         status_filter = self.request.query_params.get("status")
@@ -239,6 +254,7 @@ class ReservationViewSet(TenantViewSet):
 
 
 class LibraryMemberViewSet(TenantViewSet):
+    permission_classes = [drf_permissions.IsAuthenticated, OperationsStaff]
     queryset = LibraryMember.objects.all()
     serializer_class = LibraryMemberSerializer
 
@@ -256,6 +272,7 @@ class LibraryMemberViewSet(TenantViewSet):
 
 
 class LibrarySettingsViewSet(TenantViewSet):
+    permission_classes = [drf_permissions.IsAuthenticated, OperationsStaff]
     queryset = LibrarySettings.objects.all()
     serializer_class = LibrarySettingsSerializer
 

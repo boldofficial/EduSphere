@@ -50,6 +50,22 @@ def teacher_class_ids(user):
     )
 
 
+def learner_class_ids(user):
+    """Classes a student is in, or a parent's children are in."""
+    from academic.models import Student
+
+    if user.role == "STUDENT":
+        student = getattr(user, "student_profile", None)
+        return [student.current_class_id] if student and student.current_class_id else []
+    if user.role == "PARENT" and user.email:
+        return list(
+            Student.objects.filter(parent_email__iexact=user.email, current_class__isnull=False)
+            .values_list("current_class_id", flat=True)
+            .distinct()
+        )
+    return []
+
+
 def scope_to_learner(qs, user, student_path="student"):
     """
     Limit a student-linked queryset by role: admins/staff see everything, teachers see students in

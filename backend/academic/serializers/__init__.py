@@ -9,7 +9,7 @@ from .students import (
     StudentHistorySerializer,
     StudentSerializer,
 )
-from .teachers import TeacherSerializer
+from .teachers import TeacherPublicSerializer, TeacherSerializer
 from .classes import ClassSerializer, SubjectSerializer, SubjectTeacherSerializer
 from .lessons import LessonSerializer
 from .reports import ReportCardSerializer, SubjectScoreSerializer
@@ -30,6 +30,7 @@ __all__ = [
     "StudentHistorySerializer",
     "StudentAchievementSerializer",
     "TeacherSerializer",
+    "TeacherPublicSerializer",
     "ClassSerializer",
     "SubjectSerializer",
     "SubjectTeacherSerializer",

@@ -9,7 +9,10 @@ from rest_framework.response import Response
 
 from core.pagination import StandardPagination
 from core.tenant_utils import get_request_school
+from rest_framework import permissions
+
 from academic.views.base import TenantViewSet
+from core.permissions import AdminOnly
 from academic.models import Teacher
 
 from .models import (
@@ -32,19 +35,25 @@ from .serializers import (
 # ==========================================
 
 
-class SalaryAllowanceViewSet(TenantViewSet):
+class HRViewSet(TenantViewSet):
+    """Salaries and payroll are visible to school admins only."""
+
+    permission_classes = [permissions.IsAuthenticated, AdminOnly]
+
+
+class SalaryAllowanceViewSet(HRViewSet):
     queryset = SalaryAllowance.objects.all()
     serializer_class = SalaryAllowanceSerializer
     pagination_class = StandardPagination
 
 
-class SalaryDeductionViewSet(TenantViewSet):
+class SalaryDeductionViewSet(HRViewSet):
     queryset = SalaryDeduction.objects.all()
     serializer_class = SalaryDeductionSerializer
     pagination_class = StandardPagination
 
 
-class StaffSalaryStructureViewSet(TenantViewSet):
+class StaffSalaryStructureViewSet(HRViewSet):
     queryset = StaffSalaryStructure.objects.select_related("staff").all()
     serializer_class = StaffSalaryStructureSerializer
     pagination_class = StandardPagination
@@ -68,7 +77,7 @@ class StaffSalaryStructureViewSet(TenantViewSet):
 # ==========================================
 
 
-class HRDashboardViewSet(TenantViewSet):
+class HRDashboardViewSet(HRViewSet):
     """
     Provides HR-specific dashboard analytics.
     """
@@ -139,7 +148,7 @@ class HRDashboardViewSet(TenantViewSet):
 # ==========================================
 
 
-class PayrollViewSet(TenantViewSet):
+class PayrollViewSet(HRViewSet):
     queryset = Payroll.objects.prefetch_related("entries", "entries__staff").all()
     serializer_class = PayrollSerializer
     pagination_class = StandardPagination

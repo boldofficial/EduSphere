@@ -17,7 +17,14 @@ from learning.serializers_exam import (
 )
 
 
+from rest_framework import permissions as drf_permissions
+
+from academic.views.base import learner_class_ids, scope_to_learner
+from core.permissions import EveryoneReadStaffWrite, StaffOnly, is_learner, role_of
+
+
 class QuestionBankViewSet(TenantViewSet):
+    permission_classes = [drf_permissions.IsAuthenticated, StaffOnly]
     queryset = QuestionBank.objects.order_by("-created_at").all()
     serializer_class = QuestionBankSerializer
 
@@ -59,6 +66,7 @@ class QuestionBankViewSet(TenantViewSet):
 
 
 class BankQuestionViewSet(TenantViewSet):
+    permission_classes = [drf_permissions.IsAuthenticated, StaffOnly]
     queryset = BankQuestion.objects.all()
     serializer_class = BankQuestionSerializer
 
@@ -84,6 +92,7 @@ class BankQuestionViewSet(TenantViewSet):
 
 
 class ExamViewSet(TenantViewSet):
+    permission_classes = [drf_permissions.IsAuthenticated, EveryoneReadStaffWrite]
     queryset = Exam.objects.all()
     serializer_class = ExamSerializer
 
@@ -110,6 +119,9 @@ class ExamViewSet(TenantViewSet):
             qs = qs.filter(term=term)
         if status_filter:
             qs = qs.filter(status=status_filter)
+
+        if is_learner(self.request.user):
+            qs = qs.exclude(status="draft").filter(student_class_id__in=learner_class_ids(self.request.user))
 
         return qs
 
@@ -164,6 +176,8 @@ class ExamViewSet(TenantViewSet):
 
 
 class ExamPaperViewSet(TenantViewSet):
+    permission_classes = [drf_permissions.IsAuthenticated, EveryoneReadStaffWrite]
+    learner_actions = ("start_exam", "submit_exam")
     queryset = ExamPaper.objects.all()
     serializer_class = ExamPaperSerializer
 
@@ -180,11 +194,15 @@ class ExamPaperViewSet(TenantViewSet):
         if status_filter:
             qs = qs.filter(status=status_filter)
 
+        if is_learner(self.request.user):
+            qs = scope_to_learner(qs, self.request.user)
         return qs.select_related("student", "exam")
 
     @action(detail=True, methods=["post"])
     def start_exam(self, request, pk=None):
         """Start exam for student - locks the paper."""
+        if role_of(request.user) == "PARENT":
+            return Response({"error": "Only the student can take this exam."}, status=status.HTTP_403_FORBIDDEN)
         paper = self.get_object()
 
         if paper.status != "not_started":
@@ -221,6 +239,8 @@ class ExamPaperViewSet(TenantViewSet):
     @action(detail=True, methods=["post"])
     def submit_exam(self, request, pk=None):
         """Submit exam paper."""
+        if role_of(request.user) == "PARENT":
+            return Response({"error": "Only the student can take this exam."}, status=status.HTTP_403_FORBIDDEN)
         paper = self.get_object()
 
         if paper.status != "in_progress":
@@ -291,6 +311,7 @@ class ExamPaperViewSet(TenantViewSet):
 
 
 class ExamAnswerViewSet(TenantViewSet):
+    permission_classes = [drf_permissions.IsAuthenticated, StaffOnly]
     queryset = ExamAnswer.objects.all()
     serializer_class = ExamAnswerSerializer
 

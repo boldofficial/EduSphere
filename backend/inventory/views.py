@@ -4,6 +4,9 @@ from django.db import models
 from datetime import date
 
 from academic.views.base import TenantViewSet
+from rest_framework import permissions as drf_permissions
+
+from core.permissions import OperationsStaff
 from inventory.models import (
     Asset,
     AssetCategory,
@@ -27,11 +30,13 @@ from inventory.serializers import (
 
 
 class AssetCategoryViewSet(TenantViewSet):
+    permission_classes = [drf_permissions.IsAuthenticated, OperationsStaff]
     queryset = AssetCategory.objects.order_by("name").all()
     serializer_class = AssetCategorySerializer
 
 
 class AssetViewSet(TenantViewSet):
+    permission_classes = [drf_permissions.IsAuthenticated, OperationsStaff]
     queryset = Asset.objects.order_by("name").all()
     serializer_class = AssetListSerializer
 
@@ -69,6 +74,7 @@ class AssetViewSet(TenantViewSet):
 
 
 class AssetAssignmentViewSet(TenantViewSet):
+    permission_classes = [drf_permissions.IsAuthenticated, OperationsStaff]
     queryset = AssetAssignment.objects.all()
     serializer_class = AssetAssignmentSerializer
 
@@ -116,6 +122,7 @@ class AssetAssignmentViewSet(TenantViewSet):
 
 
 class AssetMaintenanceViewSet(TenantViewSet):
+    permission_classes = [drf_permissions.IsAuthenticated, OperationsStaff]
     queryset = AssetMaintenance.objects.all()
     serializer_class = AssetMaintenanceSerializer
 
@@ -156,6 +163,7 @@ class AssetMaintenanceViewSet(TenantViewSet):
 
 
 class InventoryItemViewSet(TenantViewSet):
+    permission_classes = [drf_permissions.IsAuthenticated, OperationsStaff]
     queryset = InventoryItem.objects.all()
     serializer_class = InventoryItemSerializer
 
@@ -180,6 +188,7 @@ class InventoryItemViewSet(TenantViewSet):
 
 
 class InventoryTransactionViewSet(TenantViewSet):
+    permission_classes = [drf_permissions.IsAuthenticated, OperationsStaff]
     queryset = InventoryTransaction.objects.all()
     serializer_class = InventoryTransactionSerializer
 
