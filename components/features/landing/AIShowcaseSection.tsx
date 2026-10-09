@@ -165,9 +165,7 @@ export const AIShowcaseSection: React.FC = () => (
           Experience AI-Powered Education
           <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
         </Link>
-        <p className="text-gray-500 text-sm mt-4">
-          No credit card required • Free pilot program available
-        </p>
+        <p className="text-gray-500 text-sm mt-4">No credit card required • Free plan available</p>
       </motion.div>
     </div>
   </section>

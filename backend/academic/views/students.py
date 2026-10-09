@@ -9,6 +9,8 @@ from core.tenant_utils import get_request_school
 
 from ..models import Class, Student, StudentAchievement, StudentHistory
 from ..serializers import StudentAchievementSerializer, StudentHistorySerializer, StudentSerializer
+from rest_framework.exceptions import PermissionDenied
+
 from .base import TenantViewSet, scope_to_learner
 
 
@@ -27,6 +29,14 @@ class StudentViewSet(TenantViewSet):
         if search:
             qs = qs.filter(models.Q(names__icontains=search) | models.Q(student_no__icontains=search))
         return qs
+
+    def perform_create(self, serializer):
+        school = get_request_school(self.request, allow_super_admin_tenant=True)
+        if school and not school.has_student_capacity():
+            raise PermissionDenied(
+                "Your plan's student limit has been reached. Upgrade your plan to add more students."
+            )
+        super().perform_create(serializer)
 
     @action(detail=False, methods=["post"], url_path="bulk-promote")
     def bulk_promote(self, request):

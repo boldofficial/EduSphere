@@ -72,6 +72,12 @@ class AdmissionViewSet(TenantViewSet):
             except Class.DoesNotExist:
                 return Response({"error": "Class not found"}, status=404)
 
+            if not admission.school.has_student_capacity():
+                return Response(
+                    {"error": "Your plan's student limit has been reached. Upgrade your plan to add more students."},
+                    status=403,
+                )
+
             student = Student.objects.create(
                 school=admission.school,
                 student_no=student_no,

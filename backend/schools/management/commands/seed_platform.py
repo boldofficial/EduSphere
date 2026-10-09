@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand
 
-from schools.models import MODULES, PlatformModule, PlatformSettings, SubscriptionPlan
+from schools.models import PlatformModule, PlatformSettings, SubscriptionPlan
+from schools.plans import PLAN_CATALOG
 
 
 class Command(BaseCommand):
@@ -13,46 +14,11 @@ class Command(BaseCommand):
         PlatformModule.sync_from_registry()
         self.stdout.write(self.style.SUCCESS("✅ Platform modules synchronized."))
 
-        # 2. Setup Default Plans
-        all_module_ids = [m["id"] for m in MODULES]
-        plans_data = [
-            {
-                "name": "Basic Plan",
-                "slug": "basic",
-                "price": 10000.00,
-                "duration_days": 30,
-                "description": "Essential features for small schools.",
-                "allowed_modules": ["students", "attendance", "announcements", "calendar"],
-            },
-            {
-                "name": "Professional Plan",
-                "slug": "pro",
-                "price": 25000.00,
-                "duration_days": 30,
-                "description": "Advanced features for growing schools.",
-                "allowed_modules": [
-                    "students",
-                    "teachers",
-                    "classes",
-                    "grading",
-                    "attendance",
-                    "bursary",
-                    "announcements",
-                    "calendar",
-                ],
-            },
-            {
-                "name": "Enterprise Plan",
-                "slug": "enterprise",
-                "price": 50000.00,
-                "duration_days": 30,
-                "description": "Full access to all platform capabilities.",
-                "allowed_modules": all_module_ids,
-            },
-        ]
-
-        for p_data in plans_data:
-            plan, created = SubscriptionPlan.objects.update_or_create(slug=p_data["slug"], defaults=p_data)
+        # 2. Annual subscription plans (one academic year = 3 terms)
+        for p_data in PLAN_CATALOG:
+            defaults = {k: v for k, v in p_data.items() if k != "slug"}
+            defaults.update(duration_days=365, is_active=True)
+            plan, created = SubscriptionPlan.objects.update_or_create(slug=p_data["slug"], defaults=defaults)
             status = "Created" if created else "Updated"
             self.stdout.write(f"  - {status} {plan.name}")
 

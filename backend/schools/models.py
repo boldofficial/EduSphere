@@ -80,6 +80,19 @@ class School(models.Model):
             return False
         return bool(subscription.plan and subscription.plan.custom_domain_enabled)
 
+    @property
+    def student_limit(self):
+        """Student cap from the school's plan; None means unlimited (or no plan assigned yet)."""
+        subscription = getattr(self, "subscription", None)
+        plan = getattr(subscription, "plan", None) if subscription else None
+        return plan.max_students if plan else None
+
+    def has_student_capacity(self, adding=1):
+        limit = self.student_limit
+        if limit is None:
+            return True
+        return self.student_related.count() + adding <= limit
+
     class Meta:
         indexes = [
             models.Index(fields=["domain"]),
@@ -97,6 +110,8 @@ class SubscriptionPlan(models.Model):
     features = models.JSONField(default=list)  # List of feature strings (marketing)
     allowed_modules = models.JSONField(default=list)  # List of module IDs (students, bursary, etc.)
     custom_domain_enabled = models.BooleanField(default=False, help_text="Allow school to use custom domain")
+    max_students = models.PositiveIntegerField(null=True, blank=True, help_text="Student limit; empty = unlimited")
+    is_custom_price = models.BooleanField(default=False, help_text="Priced on request (e.g. Enterprise)")
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

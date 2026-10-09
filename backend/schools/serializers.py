@@ -17,6 +17,8 @@ class SubscriptionPlanSerializer(serializers.ModelSerializer):
             "duration_days",
             "is_active",
             "custom_domain_enabled",
+            "max_students",
+            "is_custom_price",
         ]
 
 

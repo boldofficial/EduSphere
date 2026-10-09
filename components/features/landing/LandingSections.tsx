@@ -126,24 +126,24 @@ const testimonials = [
 
 const faqs = [
   {
-    question: 'What is the 2025/2026 Pilot Program?',
+    question: 'How much does Registra cost?',
     answer:
-      'We are offering the Enterprise version of Registra for free during the 2nd and 3rd terms of the 2025/2026 session. This allows us to work closely with schools like yours to refine our features while you benefit from world-class automation.',
+      'Pricing is per academic year (3 terms) and depends on your number of students: Free up to 30 students, Starter ₦150,000 (up to 150), Standard ₦320,000 (up to 400), Premium ₦520,000 (up to 800), Elite ₦825,000 (up to 1,500), and custom Enterprise pricing above that.',
   },
   {
-    question: "Is it really free? What's the catch?",
+    question: 'Can we pay termly instead of yearly?',
     answer:
-      "Yes, it's completely free for the pilot session. In exchange, we ask for your honest feedback and a written review to help us continue building the most powerful school OS in the market.",
+      'Yes. You can pay the annual fee at once or in three termly instalments by bank transfer. Many schools cover the cost with a small termly ICT levy.',
   },
   {
     question: 'Can I migrate my existing data?',
     answer:
-      'Absolutely. Our expert team will help you import your student, staff, and financial records for a seamless transition, free of charge during the pilot.',
+      'Absolutely. Our team will help you import your student, staff, and financial records for a seamless transition.',
   },
   {
-    question: 'What happens after the pilot session?',
+    question: 'Can I use my own domain name?',
     answer:
-      'After the pilot period, Registra remains free for smaller schools with fewer than 40 students. For schools with 40 students and above, the subscription is ₦700 per student per term, which includes access to all premium features and enterprise-grade tools.',
+      'Yes, on any paid plan (Starter and above). The Free plan uses a yourschool.myregistra.net subdomain.',
   },
   {
     question: 'How do I get started?',

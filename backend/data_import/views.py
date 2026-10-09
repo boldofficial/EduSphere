@@ -98,6 +98,17 @@ def process_student_import(job, rows, school):
             if class_name:
                 student_class = Class.objects.filter(school=school, name=class_name).first()
 
+            # New students count against the plan's student limit; updates to existing ones don't.
+            is_new = not Student.objects.filter(school=school, student_no=student_no).exists()
+            if is_new and not school.has_student_capacity():
+                errors.append(
+                    {
+                        "row": i + 1,
+                        "error": "Your plan's student limit has been reached. Upgrade your plan to add more students.",
+                    }
+                )
+                continue
+
             # Create student
             student, created = Student.objects.update_or_create(
                 school=school,

@@ -34,13 +34,8 @@ class PublicPlanListView(APIView):
     throttle_classes = []  # Disable throttling for public endpoint
 
     def get(self, request):
-        # Restriction: Only show the 'enterprise' plan for the free pilot period
-        plans = SubscriptionPlan.objects.filter(slug="enterprise", is_active=True)
-        # If enterprise plan is missing, fallback to showing all active but log warning
-        if not plans.exists():
-            logger.warning("Enterprise plan missing! Showing all active plans.")
-            plans = SubscriptionPlan.objects.filter(is_active=True).order_by("price")
-
+        # Priced tiers by price, custom-priced (Enterprise) last.
+        plans = SubscriptionPlan.objects.filter(is_active=True).order_by("is_custom_price", "price")
         serializer = SubscriptionPlanSerializer(plans, many=True)
         return Response(serializer.data)
 
@@ -122,24 +117,20 @@ class RegisterSchoolView(APIView):
                     school=school,
                 )
 
-                # 3. Create Subscription
-                # Restriction: Force 'enterprise' plan for this pilot phase
-                try:
-                    plan = SubscriptionPlan.objects.get(slug="enterprise")
-                except SubscriptionPlan.DoesNotExist:
-                    # Fallback to provided plan if enterprise is not found to prevent crash
-                    try:
-                        plan = SubscriptionPlan.objects.get(slug=data["plan_slug"])
-                    except SubscriptionPlan.DoesNotExist:
-                        raise ValidationError({"plan_slug": "Invalid plan selected"})
+                # 3. Every school starts on Free. A paid plan is activated by a super admin once
+                # payment is confirmed; the plan they picked is recorded in the notification below.
+                plan = SubscriptionPlan.objects.filter(slug="free", is_active=True).first()
+                if not plan:
+                    raise ValidationError({"plan_slug": "Free plan is not configured. Please contact support."})
+                requested = SubscriptionPlan.objects.filter(slug=data.get("plan_slug"), is_active=True).first()
 
                 Subscription.objects.create(
                     school=school,
                     plan=plan,
-                    status="active",  # Auto-activate during pilot phase
-                    payment_method="free_pilot",
+                    status="active",
+                    payment_method="bank_transfer",
                     payment_proof=None,
-                    end_date=timezone.now() + timezone.timedelta(days=730),  # 2 years for 2025/26 session coverage
+                    end_date=timezone.now() + timezone.timedelta(days=plan.duration_days),
                 )
 
                 # 4. Notify Super Admins
@@ -151,7 +142,10 @@ class RegisterSchoolView(APIView):
                         user=sa,
                         school=school,
                         title="New School Registration",
-                        message=f"School '{school.name}' has registered and is active.",
+                        message=(
+                            f"School '{school.name}' has registered on Free."
+                            + (f" Requested plan: {requested.name}." if requested and requested.slug != "free" else "")
+                        ),
                         category="system",
                         link="/super-admin/schools",
                     )

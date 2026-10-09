@@ -134,12 +134,8 @@ class CustomDomainGatingTests(APITestCase):
         from .models import Subscription, SubscriptionPlan
 
         self.client = APIClient()
-        self.free_plan = SubscriptionPlan.objects.create(
-            name="Free", slug="free", price=0, duration_days=365, custom_domain_enabled=False
-        )
-        self.paid_plan = SubscriptionPlan.objects.create(
-            name="Starter", slug="starter", price=150000, duration_days=365, custom_domain_enabled=True
-        )
+        self.free_plan = SubscriptionPlan.objects.get(slug="free")
+        self.paid_plan = SubscriptionPlan.objects.get(slug="starter")
         self.end = timezone.now() + timedelta(days=365)
 
         self.free_school = School.objects.create(name="Free School", domain="free-school")
@@ -201,3 +197,71 @@ class CustomDomainGatingTests(APITestCase):
         self.paid_school.subscription.save()
         self.paid_school.refresh_from_db()
         self.assertFalse(self.paid_school.custom_domain_allowed)
+
+
+class AnnualPlanTests(APITestCase):
+    """Plans are installed by migration 0025; the test DB runs migrations, so they exist here."""
+
+    def test_public_plans_list_all_tiers_in_price_order(self):
+        response = self.client.get("/api/schools/plans/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        slugs = [p["slug"] for p in response.data]
+        self.assertEqual(slugs, ["free", "starter", "standard", "premium", "elite", "enterprise"])
+        starter = response.data[1]
+        self.assertEqual(float(starter["price"]), 150000.0)
+        self.assertEqual(starter["max_students"], 150)
+        self.assertTrue(starter["custom_domain_enabled"])
+        self.assertFalse(response.data[0]["custom_domain_enabled"])
+        self.assertTrue(response.data[-1]["is_custom_price"])
+
+    def test_registration_starts_on_free_whatever_plan_is_picked(self):
+        response = self.client.post(
+            "/api/schools/register/",
+            {
+                "school_name": "New Academy",
+                "domain": "newacademy",
+                "email": "owner@newacademy.ng",
+                "password": "StrongPass!2026",
+                "plan_slug": "premium",
+                "payment_method": "bank_transfer",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.data)
+        school = School.objects.get(domain="newacademy")
+        self.assertEqual(school.subscription.plan.slug, "free")
+        self.assertEqual(school.student_limit, 30)
+        self.assertFalse(school.custom_domain_allowed)
+
+
+class StudentLimitTests(APITestCase):
+    def setUp(self):
+        from datetime import timedelta
+
+        from django.utils import timezone
+
+        from academic.models import Student
+
+        from .models import Subscription, SubscriptionPlan
+
+        self.school = School.objects.create(name="Tiny School", domain="tiny-school")
+        plan = SubscriptionPlan.objects.create(name="Tiny", slug="tiny-test", price=0, max_students=2)
+        Subscription.objects.create(
+            school=self.school, plan=plan, status="active", end_date=timezone.now() + timedelta(days=365)
+        )
+        self.admin = get_user_model().objects.create_user(
+            username="admin@tiny-school", password="password123", role="SCHOOL_ADMIN", school=self.school
+        )
+        for n in range(2):
+            Student.objects.create(school=self.school, student_no=f"T{n}", names=f"Kid {n}", gender="Male")
+
+    def test_cannot_add_student_beyond_plan_limit(self):
+        self.client.force_authenticate(user=self.admin)
+        response = self.client.post(
+            "/api/academic/students/",
+            {"student_no": "T9", "names": "One Too Many", "gender": "Female"},
+            format="json",
+            HTTP_X_TENANT_ID=self.school.domain,
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertIn("student limit", str(response.data))

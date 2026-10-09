@@ -24,7 +24,7 @@ const schema = z.object({
   contact_person: z.string().optional().or(z.literal('')),
   payment_method: z.enum(['paystack', 'bank_transfer']),
   payment_proof: z.string().optional().or(z.literal('')),
-  pilot_agreement: z.boolean().refine((val) => val === true, 'You must agree to the pilot terms'),
+  terms_agreement: z.boolean().refine((val) => val === true, 'You must agree to the terms'),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -36,7 +36,6 @@ export default function OnboardingPage() {
   const [plans, setPlans] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [isPaid] = useState(false);
 
   const {
     register,
@@ -52,14 +51,14 @@ export default function OnboardingPage() {
       email: '',
       password: '',
       admin_name: '',
-      plan_slug: searchParams.get('plan') || 'enterprise',
+      plan_slug: searchParams.get('plan') || 'free',
       phone: '',
       school_email: '',
       address: '',
       contact_person: '',
-      payment_method: 'bank_transfer', // Dummy value for free phase
+      payment_method: 'bank_transfer',
       payment_proof: '',
-      pilot_agreement: false,
+      terms_agreement: false,
     },
   });
 
@@ -181,42 +180,50 @@ export default function OnboardingPage() {
                 </h2>
                 <div className="grid grid-cols-1 gap-4">
                   {plans
-                    .filter((p) => p.slug === 'enterprise')
-                    .map((plan) => (
-                      <div
-                        key={plan.id}
-                        className="p-6 rounded-2xl border-2 border-brand-600 bg-brand-50"
-                      >
-                        <div className="flex justify-between items-center mb-2">
-                          <h3 className="font-black text-2xl text-gray-900">{plan.name}</h3>
-                          <span className="px-3 py-1 bg-brand-600 text-white text-xs font-bold rounded-full">
-                            PILOT ACCESS
-                          </span>
-                        </div>
-                        <p className="text-brand-700 font-bold mb-4">
-                          FREE for 2025/2026 Session (2nd & 3rd Term)
-                        </p>
-                        <ul className="space-y-2 text-sm text-gray-600">
-                          <li className="flex items-center gap-2">
-                            <CheckCircle2 size={14} className="text-brand-600" /> Full academic &
-                            finance automation
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <CheckCircle2 size={14} className="text-brand-600" /> Professional PDF
-                            report cards
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <CheckCircle2 size={14} className="text-brand-600" /> Dedicated priority
-                            support
-                          </li>
-                        </ul>
-                      </div>
-                    ))}
-                  {plans.filter((p) => p.slug === 'enterprise').length === 0 && (
+                    .filter((p) => !p.is_custom_price)
+                    .map((plan) => {
+                      const price = Number(plan.price);
+                      const selected = selectedPlanSlug === plan.slug;
+                      return (
+                        <button
+                          type="button"
+                          key={plan.id}
+                          onClick={() => setValue('plan_slug', plan.slug)}
+                          className={`p-5 rounded-2xl border-2 text-left transition-colors ${
+                            selected
+                              ? 'border-brand-600 bg-brand-50'
+                              : 'border-gray-100 hover:border-gray-300'
+                          }`}
+                        >
+                          <div className="flex justify-between items-center">
+                            <h3 className="font-black text-lg text-gray-900">{plan.name}</h3>
+                            <span className="font-bold text-brand-700">
+                              {price === 0
+                                ? 'Free'
+                                : `₦${Math.round(price).toLocaleString('en-NG')} / year`}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-500 mt-1">
+                            {plan.max_students
+                              ? `Up to ${plan.max_students.toLocaleString('en-NG')} students`
+                              : 'Unlimited students'}
+                            {price > 0 &&
+                              ` · or ₦${Math.round(price / 3).toLocaleString('en-NG')} per term`}
+                          </p>
+                        </button>
+                      );
+                    })}
+                  {plans.length === 0 && (
                     <div className="p-4 bg-gray-50 border border-dashed border-gray-300 rounded-xl text-center text-gray-400">
-                      Loading pilot plan details...
+                      Loading plans...
                     </div>
                   )}
+                  <p className="text-xs text-gray-500">
+                    Larger school or group of schools?{' '}
+                    <a href="/#contact" className="font-bold text-brand-700">
+                      Contact us for Enterprise pricing.
+                    </a>
+                  </p>
                 </div>
                 {errors.plan_slug && (
                   <p className="text-red-500 text-sm">{errors.plan_slug.message}</p>
@@ -333,32 +340,35 @@ export default function OnboardingPage() {
             {step === 3 && (
               <div className="space-y-6 animate-in slide-in-from-right duration-300">
                 <div className="p-8 bg-brand-50 border-2 border-brand-100 rounded-2xl">
-                  <h3 className="font-bold text-brand-900 mb-4">Pilot Program Agreement</h3>
+                  <h3 className="font-bold text-brand-900 mb-4">How billing works</h3>
                   <div className="space-y-4 text-sm text-brand-800 leading-relaxed">
-                    <p>
-                      By proceeding, you agree to use Registra for your school management for the
-                      remainder of the 2025/2026 session.
-                    </p>
                     <ul className="list-disc pl-5 space-y-2">
-                      <li>Access is completely free for 2nd and 3rd terms.</li>
-                      <li>Our team will provide setup and migration assistance.</li>
+                      <li>Your school starts on the Free plan straight away.</li>
                       <li>
-                        <strong>Requirement:</strong> You agree to provide a written review and
-                        participate in a brief feedback session.
+                        Paid plans are billed per academic year (3 terms). You can pay once or in
+                        three termly instalments by bank transfer.
+                      </li>
+                      <li>
+                        We&apos;ll contact you to activate the plan you selected once payment is
+                        confirmed.
                       </li>
                     </ul>
                     <div className="pt-4 flex items-start gap-3">
                       <input
-                        {...register('pilot_agreement')}
+                        {...register('terms_agreement')}
                         type="checkbox"
                         className="mt-1 w-4 h-4 text-brand-600 rounded bg-white border-brand-200"
                       />
                       <span className="font-medium">
-                        I understand this is a pilot program and agree to provide feedback.
+                        I agree to the{' '}
+                        <a href="/terms-of-service" target="_blank" className="underline">
+                          terms of service
+                        </a>
+                        .
                       </span>
                     </div>
-                    {errors.pilot_agreement && (
-                      <p className="text-red-500 text-xs mt-1">{errors.pilot_agreement.message}</p>
+                    {errors.terms_agreement && (
+                      <p className="text-red-500 text-xs mt-1">{errors.terms_agreement.message}</p>
                     )}
                   </div>
                 </div>
@@ -374,12 +384,7 @@ export default function OnboardingPage() {
                   <button
                     type="button"
                     onClick={() => setStep(4)}
-                    disabled={
-                      !watch('pilot_agreement') ||
-                      (selectedPlanSlug !== 'enterprise' &&
-                        ((watch('payment_method') === 'bank_transfer' && !watch('payment_proof')) ||
-                          (watch('payment_method') === 'paystack' && !isPaid)))
-                    }
+                    disabled={!watch('terms_agreement')}
                     className="px-6 py-3 bg-brand-600 text-white font-bold rounded-xl hover:bg-brand-700 disabled:opacity-30"
                   >
                     Next Step

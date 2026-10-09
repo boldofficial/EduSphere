@@ -72,7 +72,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onOpenDemoModal }) => 
             >
               The Complete School OS
               <span className="block text-accent-500 drop-shadow-[0_0_15px_rgba(212,175,55,0.3)]">
-                Free for 2025/26
+                Free to start
               </span>
             </motion.h1>
 
@@ -82,8 +82,8 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onOpenDemoModal }) => 
               transition={{ delay: 0.6, duration: 0.8 }}
               className="text-xl md:text-2xl text-brand-100/90 mb-12 max-w-2xl leading-relaxed font-medium"
             >
-              Empowering Nigerian schools with world-class automation. Join our pilot program and
-              get <strong>full enterprise access</strong> free for the 2025/26 session.
+              Empowering Nigerian schools with world-class automation. Start free, then pay{' '}
+              <strong>once per school year</strong> as you grow.
             </motion.p>
 
             {/* CTA Buttons */}
