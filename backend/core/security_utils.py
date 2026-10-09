@@ -83,9 +83,13 @@ class AuditTrailMixin:
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Store original values on load
+        # Store original values on load. Use attname (raw FK ids) so loading a row never triggers
+        # extra queries for its related objects.
         if self.pk:
-            self._original_values = {f.name: getattr(self, f.name, None) for f in self._meta.fields}
+            self._original_values = self._snapshot_values()
+
+    def _snapshot_values(self):
+        return {f.name: getattr(self, f.attname, None) for f in self._meta.fields}
 
     def track_changes(self, user=None, request=None):
         """Compare current values with original, log any changes."""
@@ -102,7 +106,7 @@ class AuditTrailMixin:
                 continue
 
             old_value = self._original_values.get(field_name)
-            new_value = getattr(self, field_name, None)
+            new_value = getattr(self, field.attname, None)
 
             # Skip timestamps and non-tracked fields
             if field_name in ["created_at", "updated_at", "id"]:
@@ -128,7 +132,7 @@ class AuditTrailMixin:
 
         # Update original values after save
         if not is_new:
-            self._original_values = {f.name: getattr(self, f.name, None) for f in self._meta.fields}
+            self._original_values = self._snapshot_values()
 
 
 def blacklist_token(jti: str):
