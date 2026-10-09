@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from core.pagination import LargePagination, StandardPagination
 from core.tenant_utils import get_request_school
 
-from ..models import Class, Student, StudentAchievement, StudentHistory
+from ..models import Class, ReportCard, Student, StudentAchievement, StudentHistory
 from ..serializers import StudentAchievementSerializer, StudentHistorySerializer, StudentSerializer
 from rest_framework.exceptions import PermissionDenied
 
@@ -21,6 +21,13 @@ class StudentViewSet(TenantViewSet):
 
     def get_queryset(self):
         qs = scope_to_learner(super().get_queryset(), self.request.user, student_path="pk")
+        # Latest report-card trend as a subquery, instead of one query per student in the serializer.
+        latest_trend = (
+            ReportCard.objects.filter(student=models.OuterRef("pk"))
+            .order_by("-created_at")
+            .values("performance_trend")[:1]
+        )
+        qs = qs.annotate(latest_performance_trend=models.Subquery(latest_trend))
         class_id = self.request.query_params.get("class")
         search = self.request.query_params.get("search")
 

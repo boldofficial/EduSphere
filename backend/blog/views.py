@@ -1,4 +1,5 @@
 from rest_framework import permissions, status
+from django.db.models import Count, Q
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.utils import timezone
@@ -110,7 +111,7 @@ class CategoryListCreateView(APIView):
     permission_classes = [permissions.IsAdminUser]
 
     def get(self, request):
-        qs = Category.objects.all()
+        qs = Category.objects.annotate(published_posts=Count("posts", filter=Q(posts__status="published")))
         serializer = CategorySerializer(qs, many=True)
         return Response(serializer.data)
 

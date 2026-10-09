@@ -54,7 +54,10 @@ class BusRouteViewSet(TenantViewSet):
         """Get all students on this route."""
         route = self.get_object()
         assignments = route.assignments.filter(is_active=True).select_related("student", "stop")
-        return Response(TransportAssignmentSerializer(assignments, many=True).data)
+        page = self.paginate_queryset(assignments)
+        return self.get_paginated_response(
+            TransportAssignmentSerializer(page, many=True, context=self.get_serializer_context()).data
+        )
 
 
 class TransportAssignmentViewSet(TenantViewSet):

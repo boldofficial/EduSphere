@@ -18,10 +18,12 @@ class AssetCategorySerializer(serializers.ModelSerializer):
         fields = ["id", "name", "description", "depreciation_rate", "parent", "assets_count", "subcategories"]
 
     def get_assets_count(self, obj):
+        if hasattr(obj, "assets_total"):  # annotated by AssetCategoryViewSet
+            return obj.assets_total
         return obj.assets.count()
 
     def get_subcategories(self, obj):
-        children = obj.subcategories.all()[:5]
+        children = list(obj.subcategories.all())[:5]  # uses the viewset's prefetch
         return [{"id": c.id, "name": c.name} for c in children]
 
 

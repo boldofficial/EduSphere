@@ -1,4 +1,5 @@
 from rest_framework import status
+from django.db.models import Count
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -25,7 +26,11 @@ from core.permissions import EveryoneReadStaffWrite, StaffOnly, is_learner, role
 
 class QuestionBankViewSet(TenantViewSet):
     permission_classes = [drf_permissions.IsAuthenticated, StaffOnly]
-    queryset = QuestionBank.objects.order_by("-created_at").all()
+    queryset = (
+        QuestionBank.objects.order_by("-created_at")
+        .select_related("subject")
+        .annotate(questions_total=Count("questions", distinct=True))
+    )
     serializer_class = QuestionBankSerializer
 
     def get_serializer_class(self):
@@ -93,7 +98,9 @@ class BankQuestionViewSet(TenantViewSet):
 
 class ExamViewSet(TenantViewSet):
     permission_classes = [drf_permissions.IsAuthenticated, EveryoneReadStaffWrite]
-    queryset = Exam.objects.all()
+    queryset = Exam.objects.select_related("subject", "student_class").annotate(
+        papers_total=Count("papers", distinct=True)
+    )
     serializer_class = ExamSerializer
 
     def get_serializer_class(self):

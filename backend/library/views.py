@@ -1,6 +1,7 @@
 from datetime import date
 
 from django.db import models
+from django.db.models import Count, Q
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -30,7 +31,7 @@ from library.serializers import (
 
 class BookCategoryViewSet(TenantViewSet):
     permission_classes = [drf_permissions.IsAuthenticated, LibraryCatalog]
-    queryset = BookCategory.objects.order_by("name").all()
+    queryset = BookCategory.objects.order_by("name").annotate(books_total=Count("books"))
     serializer_class = BookCategorySerializer
 
     def get_queryset(self):
@@ -181,7 +182,10 @@ class BorrowRecordViewSet(TenantViewSet):
                 r.status = "overdue"
                 r.save()
 
-        return Response(BorrowRecordSerializer(qs, many=True).data)
+        page = self.paginate_queryset(qs)
+        return self.get_paginated_response(
+            BorrowRecordSerializer(page, many=True, context=self.get_serializer_context()).data
+        )
 
     def get_issued_by_user(self, request):
         from academic.models import Teacher
@@ -255,7 +259,12 @@ class ReservationViewSet(TenantViewSet):
 
 class LibraryMemberViewSet(TenantViewSet):
     permission_classes = [drf_permissions.IsAuthenticated, OperationsStaff]
-    queryset = LibraryMember.objects.all()
+    queryset = LibraryMember.objects.select_related("student").annotate(
+        open_borrows=Count(
+            "student__borrow_records",
+            filter=Q(student__borrow_records__status__in=["borrowed", "overdue"]),
+        )
+    )
     serializer_class = LibraryMemberSerializer
 
     def get_queryset(self):

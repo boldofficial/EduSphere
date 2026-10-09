@@ -51,6 +51,8 @@ class QuestionBankSerializer(serializers.ModelSerializer):
         read_only_fields = ["created_by"]
 
     def get_questions_count(self, obj):
+        if hasattr(obj, "questions_total"):  # annotated by QuestionBankViewSet
+            return obj.questions_total
         return obj.questions.count()
 
     def get_subject_name(self, obj):
@@ -294,6 +296,8 @@ class ExamSerializer(serializers.ModelSerializer):
         ]
 
     def get_papers_count(self, obj):
+        if hasattr(obj, "papers_total"):  # annotated by ExamViewSet
+            return obj.papers_total
         return obj.papers.count()
 
 

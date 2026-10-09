@@ -10,6 +10,8 @@ class BookCategorySerializer(serializers.ModelSerializer):
         fields = ["id", "name", "description", "parent", "books_count"]
 
     def get_books_count(self, obj):
+        if hasattr(obj, "books_total"):  # annotated by BookCategoryViewSet
+            return obj.books_total
         return obj.books.count() if hasattr(obj, "books") else 0
 
 
@@ -123,6 +125,8 @@ class LibraryMemberSerializer(serializers.ModelSerializer):
         ]
 
     def get_current_borrows(self, obj):
+        if hasattr(obj, "open_borrows"):  # annotated by LibraryMemberViewSet
+            return obj.open_borrows
         return BorrowRecord.objects.filter(student=obj.student, status__in=["borrowed", "overdue"]).count()
 
 

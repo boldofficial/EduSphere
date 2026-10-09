@@ -1,6 +1,7 @@
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db import models
+from django.db.models import Count
 from datetime import date
 
 from academic.views.base import TenantViewSet
@@ -31,7 +32,11 @@ from inventory.serializers import (
 
 class AssetCategoryViewSet(TenantViewSet):
     permission_classes = [drf_permissions.IsAuthenticated, OperationsStaff]
-    queryset = AssetCategory.objects.order_by("name").all()
+    queryset = (
+        AssetCategory.objects.order_by("name")
+        .annotate(assets_total=Count("assets", distinct=True))
+        .prefetch_related("subcategories")
+    )
     serializer_class = AssetCategorySerializer
 
 
@@ -70,7 +75,10 @@ class AssetViewSet(TenantViewSet):
     def low_stock(self, request):
         """Get assets in low stock or needing maintenance."""
         qs = self.get_queryset().filter(status__in=["maintenance", "lost"])
-        return Response(AssetListSerializer(qs, many=True).data)
+        page = self.paginate_queryset(qs)
+        return self.get_paginated_response(
+            AssetListSerializer(page, many=True, context=self.get_serializer_context()).data
+        )
 
 
 class AssetAssignmentViewSet(TenantViewSet):
@@ -184,7 +192,10 @@ class InventoryItemViewSet(TenantViewSet):
         """Get items that need reordering."""
         qs = self.get_queryset()
         alerts = [item for item in qs if item.needs_reorder]
-        return Response(InventoryItemSerializer(alerts, many=True).data)
+        page = self.paginate_queryset(alerts)
+        return self.get_paginated_response(
+            InventoryItemSerializer(page, many=True, context=self.get_serializer_context()).data
+        )
 
 
 class InventoryTransactionViewSet(TenantViewSet):

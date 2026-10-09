@@ -240,3 +240,46 @@ class SchoolAnalyticsTests(APITestCase):
         self.client.force_authenticate(user=teacher)
         response = self.client.get("/api/academic/analytics/", HTTP_X_TENANT_ID=self.school.domain)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class StudentListQueryCountTests(APITestCase):
+    """The student list must not run a query per student (performance_trend used to)."""
+
+    def setUp(self):
+        self.school = School.objects.create(name="Count School", domain="demo-count")
+        self.admin = get_user_model().objects.create_user(
+            username="admin@demo-count", password="password123", role="SCHOOL_ADMIN", school=self.school
+        )
+        self.cls = Class.objects.create(name="JSS 3", school=self.school)
+        self.client.force_authenticate(user=self.admin)
+
+    def _add_students(self, n, start):
+        for i in range(start, start + n):
+            student = Student.objects.create(
+                school=self.school, student_no=f"Q{i}", names=f"Kid {i}", gender="Male", current_class=self.cls
+            )
+            ReportCard.objects.create(
+                school=self.school,
+                student=student,
+                student_class=self.cls,
+                session="2025/2026",
+                term="First Term",
+                performance_trend="improving",
+            )
+
+    def _count_queries(self):
+        from django.db import connection
+        from django.test.utils import CaptureQueriesContext
+
+        with CaptureQueriesContext(connection) as ctx:
+            response = self.client.get("/api/academic/students/", HTTP_X_TENANT_ID=self.school.domain)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        return len(ctx.captured_queries), response
+
+    def test_query_count_does_not_grow_with_students(self):
+        self._add_students(3, 0)
+        small, _ = self._count_queries()
+        self._add_students(12, 100)
+        large, response = self._count_queries()
+        self.assertEqual(small, large)
+        self.assertTrue(all(row["performance_trend"] == "improving" for row in response.data["results"]))

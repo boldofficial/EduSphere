@@ -54,7 +54,9 @@ class StudentSerializer(serializers.ModelSerializer):
         return ret
 
     def get_performance_trend(self, obj):
-        # Fetch the latest report card for this student to get their most recent trend
+        # StudentViewSet annotates the latest trend in one query; fall back per object elsewhere.
+        if hasattr(obj, "latest_performance_trend"):
+            return obj.latest_performance_trend or "stable"
         try:
             latest_report = ReportCard.objects.filter(student=obj).order_by("-created_at").first()
             if latest_report and hasattr(latest_report, "performance_trend"):
