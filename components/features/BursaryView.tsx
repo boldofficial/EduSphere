@@ -10,6 +10,8 @@ import { BursaryModals } from './bursary/BursaryModals';
 import { FinancialDashboard } from './bursary/FinancialDashboard';
 import { DebtorReport } from './bursary/DebtorReport';
 import { ScholarshipManager } from './bursary/ScholarshipManager';
+import { TransferReviewQueue } from './bursary/TransferReviewQueue';
+import { useTransfers } from '@/lib/hooks/use-transfers';
 
 interface BursaryViewProps {
   students: Types.Student[];
@@ -38,7 +40,14 @@ interface BursaryViewProps {
   onClassChange?: (c: string) => void;
 }
 
-type TabType = 'dashboard' | 'fees' | 'debtors' | 'expenses' | 'structure' | 'scholarships';
+type TabType =
+  | 'dashboard'
+  | 'fees'
+  | 'debtors'
+  | 'expenses'
+  | 'structure'
+  | 'scholarships'
+  | 'transfers';
 
 export const BursaryView: React.FC<BursaryViewProps> = ({
   students,
@@ -83,8 +92,15 @@ export const BursaryView: React.FC<BursaryViewProps> = ({
   const [invoiceStudent, setInvoiceStudent] = useState<Types.Student | null>(null);
   const { addToast } = useToast();
 
+  const { data: pendingTransfers } = useTransfers({ status: 'pending' });
+  const pendingCount = pendingTransfers?.count ?? 0;
+
   const tabs: { key: TabType; label: string }[] = [
     { key: 'dashboard', label: 'Dashboard' },
+    {
+      key: 'transfers',
+      label: pendingCount ? `Transfers to verify (${pendingCount})` : 'Transfers to verify',
+    },
     { key: 'fees', label: 'Fee Collection' },
     { key: 'debtors', label: 'Debtors' },
     { key: 'scholarships', label: 'Scholarships' },
@@ -114,6 +130,23 @@ export const BursaryView: React.FC<BursaryViewProps> = ({
           </div>
         </div>
       </div>
+
+      {activeTab === 'transfers' && <TransferReviewQueue />}
+
+      {activeTab === 'dashboard' && pendingCount > 0 && (
+        <button
+          type="button"
+          onClick={() => setActiveTab('transfers')}
+          className="flex w-full items-center justify-between gap-3 rounded-card border border-warning-200 bg-warning-50 px-4 py-3 text-left text-sm text-warning-700 hover:bg-warning-100"
+        >
+          <span>
+            <span className="font-semibold">{pendingCount}</span> bank transfer
+            {pendingCount === 1 ? '' : 's'} reported by parents {pendingCount === 1 ? 'is' : 'are'}{' '}
+            waiting for you to confirm.
+          </span>
+          <span className="font-semibold">Review →</span>
+        </button>
+      )}
 
       {activeTab === 'dashboard' && (
         <FinancialDashboard

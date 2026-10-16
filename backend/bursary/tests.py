@@ -378,3 +378,90 @@ class BursaryRolePermissionTests(APITestCase):
         for url in ("/api/bursary/expenses/", "/api/bursary/dashboard/"):
             response = self.client.get(url, HTTP_X_TENANT_ID=self.school.domain)
             self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN, url)
+
+
+class TransferProofTests(APITestCase):
+    def setUp(self):
+        from academic.models import Class
+        from schools.models import SchoolPaymentConfig, SchoolSettings
+
+        self.client = APIClient()
+        self.school = School.objects.create(name="Transfer School", domain="test-transfer")
+        SchoolSettings.objects.update_or_create(
+            school=self.school, defaults={"current_session": "2025/2026", "current_term": "First Term"}
+        )
+        SchoolPaymentConfig.objects.create(school=self.school, require_transfer_proof=False)
+        cls = Class.objects.create(name="JSS 1", school=self.school)
+        User = get_user_model()
+        self.bursar = User.objects.create_user(
+            username="bursar@test-transfer", password="password123", role="STAFF", school=self.school
+        )
+        self.parent = User.objects.create_user(
+            username="parent@test-transfer",
+            email="mum@example.com",
+            password="password123",
+            role="PARENT",
+            school=self.school,
+        )
+        self.child = Student.objects.create(
+            school=self.school,
+            student_no="TR1",
+            names="Kemi",
+            gender="Female",
+            current_class=cls,
+            parent_email="mum@example.com",
+        )
+        self.stranger = Student.objects.create(school=self.school, student_no="TR2", names="Not Mine", gender="Male")
+
+    def _submit(self, student, amount="50000"):
+        self.client.force_authenticate(user=self.parent)
+        return self.client.post(
+            "/api/bursary/payments/submit-transfer/",
+            {"student": student.id, "amount": amount, "narration": "KEMI JSS1 FEES"},
+            format="json",
+            HTTP_X_TENANT_ID=self.school.domain,
+        )
+
+    def test_parent_submits_pending_transfer_for_own_child(self):
+        response = self._submit(self.child)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.data)
+        self.assertEqual(response.data["status"], "pending")
+        self.assertEqual(response.data["method"], "transfer")
+        self.assertTrue(response.data["reference"].startswith("TRF-"))
+
+    def test_parent_cannot_submit_for_another_child_or_zero(self):
+        self.assertEqual(self._submit(self.stranger).status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(self._submit(self.child, amount="0").status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_bursar_approves_and_rejects(self):
+        first = self._submit(self.child).data["id"]
+        second = self._submit(self.child).data["id"]
+
+        # Parents cannot approve their own transfer
+        response = self.client.post(
+            f"/api/bursary/payments/{first}/approve/", {}, format="json", HTTP_X_TENANT_ID=self.school.domain
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        self.client.force_authenticate(user=self.bursar)
+        pending = self.client.get("/api/bursary/payments/", {"status": "pending"}, HTTP_X_TENANT_ID=self.school.domain)
+        self.assertEqual(pending.data["count"], 2)
+
+        ok = self.client.post(
+            f"/api/bursary/payments/{first}/approve/", {}, format="json", HTTP_X_TENANT_ID=self.school.domain
+        )
+        self.assertEqual(ok.data["status"], "completed")
+        self.assertTrue(ok.data["reviewed_by"])
+
+        no_reason = self.client.post(
+            f"/api/bursary/payments/{second}/reject/", {}, format="json", HTTP_X_TENANT_ID=self.school.domain
+        )
+        self.assertEqual(no_reason.status_code, status.HTTP_400_BAD_REQUEST)
+        rejected = self.client.post(
+            f"/api/bursary/payments/{second}/reject/",
+            {"note": "No matching credit on our statement"},
+            format="json",
+            HTTP_X_TENANT_ID=self.school.domain,
+        )
+        self.assertEqual(rejected.data["status"], "failed")
+        self.assertEqual(rejected.data["review_note"], "No matching credit on our statement")

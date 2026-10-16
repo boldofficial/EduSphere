@@ -612,8 +612,14 @@ export const getStudentBalance = (
   const totalBill = Math.max(0, rawBill - totalDiscount); // Ensure bill doesn't go below 0
 
   // Calculate total paid
+  // Only money the school has confirmed counts: transfers awaiting the bursar's check (pending)
+  // and rejected ones (failed/refunded) do not reduce the balance.
   const studentPayments = payments.filter(
-    (p) => String(p.student_id) === String(student.id) && p.session === session && p.term === term
+    (p) =>
+      String(p.student_id) === String(student.id) &&
+      p.session === session &&
+      p.term === term &&
+      !['pending', 'failed', 'refunded'].includes(String(p.status || 'completed'))
   );
   const totalPaid = studentPayments.reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
 

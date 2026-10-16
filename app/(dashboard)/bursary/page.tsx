@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { useSchoolStore } from '@/lib/store';
 import { BursaryView } from '@/components/features/BursaryView';
 import { StudentInvoiceView } from '@/components/features/bursary/StudentInvoiceView';
+import { TransferSubmission } from '@/components/features/bursary/TransferSubmission';
 import {
   useClasses,
   useFees,
@@ -97,13 +98,16 @@ export default function BursaryPage() {
 
   if (isStudentOrParent && student) {
     return (
-      <StudentInvoiceView
-        student={student}
-        cls={studentClass}
-        fees={fees}
-        payments={payments}
-        settings={settings}
-      />
+      <div className="space-y-6">
+        <TransferSubmission student={student} />
+        <StudentInvoiceView
+          student={student}
+          cls={studentClass}
+          fees={fees}
+          payments={payments}
+          settings={settings}
+        />
+      </div>
     );
   }
 

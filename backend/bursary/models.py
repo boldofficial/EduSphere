@@ -107,6 +107,12 @@ class Payment(AuditTrailMixin, TenantModel):
     remark = models.TextField(blank=True)
     recorded_by = models.CharField(max_length=100, help_text="User who entered this record")
 
+    # Bank-transfer proof submitted by a parent/student, and the bursar's review of it
+    proof_url = models.CharField(max_length=512, blank=True, null=True)
+    reviewed_by = models.CharField(max_length=100, blank=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    review_note = models.TextField(blank=True)
+
     session = models.CharField(max_length=50)
     term = models.CharField(max_length=50)
 

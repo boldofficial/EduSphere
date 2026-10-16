@@ -464,6 +464,10 @@ export interface Payment extends Entity {
   status?: string;
   fee_structure_id?: string;
   payment_hash?: string;
+  proof_url?: string | null;
+  reviewed_by?: string;
+  reviewed_at?: string | null;
+  review_note?: string;
   // Nigerian installment tracking
   payment_plan_id?: string; // Links to installment plan
   installment_number?: number; // 1st, 2nd, 3rd payment

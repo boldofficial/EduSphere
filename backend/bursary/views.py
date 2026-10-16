@@ -1,3 +1,7 @@
+import logging
+import uuid
+from decimal import Decimal, InvalidOperation
+
 from django.db.models import Case, Count, DecimalField, ExpressionWrapper, F, Q, Sum, Value, When
 from django.db.models.functions import Coalesce
 from django.utils import timezone
@@ -6,15 +10,14 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
-import logging
-
-logger = logging.getLogger(__name__)
-
 from academic.models import AcademicTerm, Student
+from academic.serializers import Base64ImageField
 from academic.views.base import scope_to_learner
 from core.pagination import StandardPagination
 from core.tenant_utils import get_request_school
-from schools.models import SchoolSettings
+from schools.models import SchoolPaymentConfig, SchoolSettings
+
+logger = logging.getLogger(__name__)
 
 from .models import (
     AdmissionPackage,
@@ -235,13 +238,96 @@ class PaymentViewSet(TenantViewSet):
 
         qs = scope_to_learner(qs, user)
 
+        status_filter = self.request.query_params.get("status")
         if student_id:
             qs = qs.filter(student_id=student_id)
         if session:
             qs = qs.filter(session=session)
         if term:
             qs = qs.filter(term=term)
-        return qs
+        if status_filter:
+            qs = qs.filter(status=status_filter)
+        method_filter = self.request.query_params.get("method")
+        if method_filter:
+            qs = qs.filter(method=method_filter)
+        return qs.order_by("-date", "-created_at")
+
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="submit-transfer",
+        permission_classes=[permissions.IsAuthenticated],
+    )
+    def submit_transfer(self, request):
+        """
+        A parent or student reports a bank transfer, with proof. It is recorded as a pending payment
+        that the bursar approves or rejects; it does not reduce the balance until approved.
+        """
+        school = get_request_school(request)
+        if not school:
+            return Response({"error": "School context not found"}, status=400)
+
+        students = scope_to_learner(Student.objects.filter(school=school), request.user, student_path="pk")
+        student = students.filter(pk=request.data.get("student")).first()
+        if not student:
+            return Response({"student": "Choose one of your students."}, status=400)
+
+        try:
+            amount = Decimal(str(request.data.get("amount", "")))
+        except (InvalidOperation, ValueError):
+            amount = Decimal("0")
+        if amount <= 0:
+            return Response({"amount": "Enter the amount you transferred."}, status=400)
+
+        proof = request.data.get("proof")
+        config = SchoolPaymentConfig.objects.filter(school=school).first()
+        if not proof and (config is None or config.require_transfer_proof):
+            return Response({"proof": "Attach a screenshot or photo of the transfer receipt."}, status=400)
+        proof_path = Base64ImageField().to_internal_value(proof) if proof else None
+
+        settings_obj = SchoolSettings.objects.filter(school=school).first()
+        user = request.user
+        payment = Payment.objects.create(
+            school=school,
+            student=student,
+            amount=amount,
+            date=request.data.get("date") or timezone.localdate(),
+            method="transfer",
+            status="pending",
+            reference=f"TRF-{uuid.uuid4().hex[:10].upper()}",
+            remark=(request.data.get("narration") or "")[:500],
+            recorded_by=(user.get_full_name() or user.username)[:100],
+            proof_url=proof_path,
+            session=getattr(settings_obj, "current_session", "") or "",
+            term=getattr(settings_obj, "current_term", "") or "",
+        )
+        return Response(self.get_serializer(payment).data, status=201)
+
+    def _review(self, request, new_status):
+        if not _is_finance_user(request.user):
+            raise PermissionDenied("Only the bursar or school admin can review transfers.")
+        payment = self.get_object()
+        if payment.status != "pending":
+            return Response({"error": f"This payment is already {payment.status}."}, status=400)
+        note = (request.data.get("note") or "").strip()
+        if new_status == "failed" and not note:
+            return Response({"note": "Give the parent a reason for rejecting the transfer."}, status=400)
+        payment.status = new_status
+        payment.review_note = note
+        payment.reviewed_by = (request.user.get_full_name() or request.user.username)[:100]
+        payment.reviewed_at = timezone.now()
+        payment.save(update_fields=["status", "review_note", "reviewed_by", "reviewed_at", "updated_at"])
+        return Response(self.get_serializer(payment).data)
+
+    @action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated])
+    def approve(self, request, pk=None):
+        """Bursar confirms the money arrived; the payment now counts towards the balance."""
+        return self._review(request, "completed")
+
+    @action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated])
+    def reject(self, request, pk=None):
+        """Bursar could not match the transfer; the parent sees the reason."""
+        return self._review(request, "failed")
 
 
 class ExpenseViewSet(TenantViewSet):

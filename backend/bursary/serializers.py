@@ -190,8 +190,22 @@ class PaymentSerializer(serializers.ModelSerializer):
             "line_items",
             "items_input",
             "created_at",
+            "payment_hash",
+            "proof_url",
+            "reviewed_by",
+            "reviewed_at",
+            "review_note",
         ]
-        read_only_fields = ("school", "reference", "recorded_by")
+        read_only_fields = (
+            "school",
+            "reference",
+            "recorded_by",
+            "payment_hash",
+            "proof_url",
+            "reviewed_by",
+            "reviewed_at",
+            "review_note",
+        )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
