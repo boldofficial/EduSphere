@@ -46,7 +46,7 @@ class RegistrationTests(APITestCase):
             "profileId": self.teacher_profile_a.id,
             "profileType": "teacher",
             "email": "teacher@school-a.com",
-            "password": "newpassword123",
+            "password": "New-Staff!Pass2026",
             "name": "Teacher A",
         }
 
@@ -68,7 +68,7 @@ class RegistrationTests(APITestCase):
             "profileId": self.teacher_profile_b.id,
             "profileType": "teacher",
             "email": "teacher@school-b.com",
-            "password": "newpassword123",
+            "password": "New-Staff!Pass2026",
         }
 
         response = self.client.post("/api/users/account-setup/", data, format="json")
