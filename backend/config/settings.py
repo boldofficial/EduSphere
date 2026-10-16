@@ -263,6 +263,10 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "core.password_validators.CommonPasswordPatternValidator",
     },
+    {
+        "NAME": "core.password_validators.PasswordHistoryValidator",
+        "OPTIONS": {"history_length": 5},
+    },
 ]
 
 

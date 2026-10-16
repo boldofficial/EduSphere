@@ -12,6 +12,7 @@ import {
   useTags,
   useCreateCategory,
   useCreateTag,
+  useDeleteBlogPost,
 } from '@/lib/hooks/use-blog';
 import { useToast } from '@/components/providers/toast-provider';
 import { useConfirm } from '@/components/ui/confirm-dialog';
@@ -23,6 +24,7 @@ interface BlogEditorProps {
 export function BlogEditor({ postId }: BlogEditorProps) {
   const confirm = useConfirm();
   const router = useRouter();
+  const deleteMutation = useDeleteBlogPost();
   const { addToast } = useToast();
 
   const { data: existingPost, isLoading: loadingPost } = useAdminBlogPost(postId ?? null);
@@ -353,8 +355,18 @@ export function BlogEditor({ postId }: BlogEditorProps) {
             type="button"
             className="px-5 py-2.5 rounded-xl border border-red-200 text-sm font-bold text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
             onClick={async () => {
-              if (await confirm('Delete this post?')) {
-                // handled by parent page
+              const ok = await confirm({
+                title: 'Delete this post?',
+                description: 'It will be removed from the blog. This cannot be undone.',
+                tone: 'danger',
+              });
+              if (!ok || !postId) return;
+              try {
+                await deleteMutation.mutateAsync(postId);
+                addToast('Post deleted', 'success');
+                router.push('/dashboard/super-admin/blog');
+              } catch {
+                addToast('Failed to delete post', 'error');
               }
             }}
           >

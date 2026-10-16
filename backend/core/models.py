@@ -324,3 +324,15 @@ class Newsletter(models.Model):
 
     def __str__(self):
         return f"[{self.school.name}] {self.title} - {self.term} {self.session}"
+
+
+class PasswordHistory(models.Model):
+    """Hashes of a user's previous passwords, used to stop them being reused."""
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="password_history")
+    password_hash = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [models.Index(fields=["user", "-created_at"])]

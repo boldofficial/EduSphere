@@ -5,6 +5,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -166,6 +168,11 @@ class CreateAccountView(APIView):
             logger.warning(f"Cross-tenant account setup blocked: {email} already belongs to {existing_user.school}")
             raise ValidationError({"detail": "This account email already belongs to another school."})
 
+        try:
+            validate_password(password, user=None if created else existing_user)
+        except DjangoValidationError as e:
+            raise ValidationError({"password": list(e.messages)})
+
         if created:
             user = User.objects.create(username=email, email=email, role=role, school=profile.school, is_active=True)
         else:
@@ -210,6 +217,33 @@ class CreateAccountView(APIView):
         )
 
 
+# Role -> (User.role value, profile relation the portal needs to show anything)
+_DEMO_ROLES = {
+    "admin": ("SCHOOL_ADMIN", None),
+    "teacher": ("TEACHER", "teacher_profile"),
+    "student": ("STUDENT", "student_profile"),
+    "staff": ("STAFF", None),
+}
+
+
+def _demo_user(User, role_type, preferred_username):
+    """
+    The demo school's account for a role. Prefer the configured username, but only if it has the
+    profile that role needs (a student login with no student record shows an empty portal);
+    otherwise fall back to any demo-school user of that role that has one.
+    """
+    role, profile = _DEMO_ROLES.get(role_type, ("SCHOOL_ADMIN", None))
+    demo_users = User.objects.filter(school__domain="demo")
+    with_profile = demo_users.filter(role=role)
+    if profile:
+        with_profile = with_profile.filter(**{f"{profile}__isnull": False})
+    return (
+        with_profile.filter(username=preferred_username).first()
+        or with_profile.order_by("id").first()
+        or demo_users.filter(username=preferred_username).first()
+    )
+
+
 class DemoLoginView(APIView):
     """Magic login for the demo school."""
 
@@ -230,13 +264,9 @@ class DemoLoginView(APIView):
             "staff": "staff@myregistra.net",
         }
 
-        username = username_map.get(role_type, "demo_admin")
-
         User = get_user_model()
-        try:
-            # Note: The seeder creates these users with school__domain='demo'
-            user = User.objects.get(username=username, school__domain="demo")
-        except User.DoesNotExist:
+        user = _demo_user(User, role_type, username_map.get(role_type, "demo_admin"))
+        if user is None:
             raise NotFound({"detail": f"Demo user for {role_type} not found. Please run the seeder."})
 
         # Generate tokens
@@ -312,8 +342,10 @@ class PasswordResetConfirmView(APIView):
         if not token_generator.check_token(user, token):
             return Response({"detail": "Reset link has expired or is invalid."}, status=400)
 
-        if len(new_password) < 8:
-            return Response({"detail": "Password must be at least 8 characters."}, status=400)
+        try:
+            validate_password(new_password, user=user)
+        except DjangoValidationError as e:
+            return Response({"detail": " ".join(e.messages), "errors": list(e.messages)}, status=400)
 
         user.set_password(new_password)
         user.save()

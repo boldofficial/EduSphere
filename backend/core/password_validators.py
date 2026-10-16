@@ -46,42 +46,47 @@ class PasswordComplexityValidator:
 
 class PasswordHistoryValidator:
     """
-    Validate that password is not in the user's password history.
-    Prevents reuse of last N passwords.
+    Reject a new password that matches the current one or any of the user's last
+    `history_length` passwords.
+
+    validate() remembers the user's current (outgoing) hash; password_changed(), which Django calls
+    after the new password is saved, stores that outgoing hash. Storing the outgoing hash (not the
+    new one) matters because accounts created with create_user() never trigger password_changed.
     """
 
     def __init__(self, history_length=5):
         self.history_length = history_length
 
     def validate(self, password, user=None):
-        if not user:
+        from django.contrib.auth.hashers import check_password
+
+        if user is None or not getattr(user, "pk", None):
+            return  # new account, no history yet
+
+        from core.models import PasswordHistory
+
+        previous = list(
+            PasswordHistory.objects.filter(user=user).values_list("password_hash", flat=True)[: self.history_length]
+        )
+        current = getattr(user, "password", "") or ""
+        user._outgoing_password_hash = current
+        for stored in [current, *previous]:
+            if stored and check_password(password, stored):
+                raise ValidationError(
+                    _("You cannot reuse any of your last {0} passwords.").format(self.history_length),
+                    code="password_reused",
+                )
+
+    def password_changed(self, password, user=None):
+        outgoing = getattr(user, "_outgoing_password_hash", "") if user is not None else ""
+        if not outgoing or not getattr(user, "pk", None) or outgoing == user.password:
             return
+        from core.models import PasswordHistory
 
-        from django.contrib.auth import get_user_model
-
-        User = get_user_model()
-
-        try:
-            from django.contrib.auth.hashers import check_password
-            from rest_framework_simplejwt.blacklist.models import BlacklistedToken
-
-            user_tokens = BlacklistedToken.objects.filter(token__user=user).select_related("token")
-
-            for token_entry in user_tokens[: self.history_length]:
-                if hasattr(token_entry, "token"):
-                    try:
-                        from rest_framework_simplejwt.tokens import RefreshToken
-
-                        refresh = RefreshToken(token_entry.token.token)
-                        if "password" in refresh.get("payload", {}):
-                            if check_password(password, refresh["password"]):
-                                raise ValidationError(
-                                    _("You cannot reuse any of your last {0} passwords.").format(self.history_length)
-                                )
-                    except Exception:
-                        pass
-        except ImportError:
-            pass
+        PasswordHistory.objects.create(user=user, password_hash=outgoing)
+        user._outgoing_password_hash = ""
+        stale = PasswordHistory.objects.filter(user=user).values_list("pk", flat=True)[self.history_length :]
+        PasswordHistory.objects.filter(pk__in=list(stale)).delete()
 
     def get_help_text(self):
         return _("You cannot reuse your last {0} passwords.").format(self.history_length)
