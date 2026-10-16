@@ -3,6 +3,7 @@ import { fetchServer } from '@/lib/api-server';
 import { DashboardView } from '@/components/features/DashboardView';
 import { TeacherDashboardView } from '@/components/features/TeacherDashboardView';
 import { StudentDashboardView } from '@/components/features/StudentDashboardView';
+import { ParentHome } from '@/components/features/parent/ParentHome';
 import { StaffDashboardView } from '@/components/features/StaffDashboardView';
 import * as Utils from '@/lib/utils';
 import { redirect } from 'next/navigation';
@@ -79,7 +80,11 @@ export default async function DashboardPage() {
     return <TeacherDashboardView />;
   }
 
-  if (currentRole === 'student' || currentRole === 'parent') {
+  if (currentRole === 'parent') {
+    return <ParentHome />;
+  }
+
+  if (currentRole === 'student') {
     return <StudentDashboardView />;
   }
 

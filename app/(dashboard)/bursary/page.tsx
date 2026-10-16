@@ -1,5 +1,6 @@
 'use client';
 import { useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useSchoolStore } from '@/lib/store';
 import { BursaryView } from '@/components/features/BursaryView';
 import { StudentInvoiceView } from '@/components/features/bursary/StudentInvoiceView';
@@ -41,8 +42,17 @@ export default function BursaryPage() {
   const students = studentResponse?.results || [];
   const studentTotalPages = studentResponse ? Math.ceil(studentResponse.count / 50) : 0;
 
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const childParam = searchParams.get('child');
+
   const student = useMemo(() => {
     if (!isStudentOrParent) return null;
+    // A parent arriving from a child's card (or switching child) picks that child.
+    if (childParam) {
+      const picked = linkedStudents.find((s: Types.Student) => String(s.id) === childParam);
+      if (picked) return picked;
+    }
 
     const profileId = currentUser?.profile_id || currentUser?.student_id;
     if (profileId) {
@@ -58,7 +68,7 @@ export default function BursaryPage() {
     }
 
     return linkedStudents[0] || null;
-  }, [isStudentOrParent, currentRole, currentUser, linkedStudents]);
+  }, [isStudentOrParent, currentRole, currentUser, linkedStudents, childParam]);
 
   const { data: fees = [] } = useFees(
     isStudentOrParent ? { include_all_periods: true } : undefined
@@ -99,6 +109,22 @@ export default function BursaryPage() {
   if (isStudentOrParent && student) {
     return (
       <div className="space-y-6">
+        {currentRole === 'parent' && linkedStudents.length > 1 && (
+          <label className="flex items-center gap-3 text-sm text-gray-700">
+            <span className="font-medium">Child</span>
+            <select
+              value={String(student.id)}
+              onChange={(e) => router.replace(`/bursary?child=${e.target.value}`)}
+              className="h-10 rounded-control border border-gray-300 bg-white px-3 text-sm"
+            >
+              {linkedStudents.map((s: Types.Student) => (
+                <option key={s.id} value={String(s.id)}>
+                  {s.names}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         <TransferSubmission student={student} />
         <StudentInvoiceView
           student={student}
