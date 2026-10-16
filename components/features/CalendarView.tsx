@@ -55,9 +55,9 @@ export const CalendarView: React.FC = () => {
   const { data: settings = Utils.INITIAL_SETTINGS } = useSettings();
 
   // Mutations
-  const { mutate: addEvent } = useCreateEvent();
-  const { mutate: updateEvent } = useUpdateEvent();
-  const { mutate: deleteEvent } = useDeleteEvent();
+  const { mutateAsync: addEvent } = useCreateEvent();
+  const { mutateAsync: updateEvent } = useUpdateEvent();
+  const { mutateAsync: deleteEvent } = useDeleteEvent();
 
   const isReadOnlyRole = currentRole !== 'admin';
 
@@ -111,7 +111,7 @@ export const CalendarView: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!title.trim() || !startDate) {
       addToast('Please fill in required fields', 'warning');
       return;
@@ -131,20 +131,28 @@ export const CalendarView: React.FC = () => {
       created_at: editingEvent?.created_at || Date.now(),
       updated_at: Date.now(),
     };
-    if (editingEvent) {
-      updateEvent({ id: eventData.id, updates: eventData });
-      addToast('Event updated', 'success');
-    } else {
-      addEvent(eventData);
-      addToast('Event created', 'success');
+    try {
+      if (editingEvent) {
+        await updateEvent({ id: eventData.id, updates: eventData });
+        addToast('Event updated', 'success');
+      } else {
+        await addEvent(eventData);
+        addToast('Event created', 'success');
+      }
+      setIsModalOpen(false);
+      resetForm();
+    } catch {
+      addToast('Could not save the event. Please check the details and try again.', 'error');
     }
-    setIsModalOpen(false);
-    resetForm();
   };
 
-  const handleDelete = (id: string) => {
-    deleteEvent(id);
-    addToast('Event deleted', 'info');
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteEvent(id);
+      addToast('Event deleted', 'info');
+    } catch {
+      addToast('Could not delete the event.', 'error');
+    }
   };
 
   const filteredEvents = useMemo(() => {

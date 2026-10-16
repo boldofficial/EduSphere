@@ -472,3 +472,84 @@ class StudentDeleteCascadeTests(APITestCase):
         response = self.client.delete(f"/api/academic/students/{student.id}/", HTTP_X_TENANT_ID=school.domain)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(Student.objects.filter(pk=student.pk).exists())
+
+
+class FrontendContractFlowTests(APITestCase):
+    """Payloads exactly as the frontend sends them (class_id, teacher_id, records[].student_id)."""
+
+    def setUp(self):
+        self.school = School.objects.create(name="Flow School", domain="demo-flow")
+        self.admin = get_user_model().objects.create_user(
+            username="admin@demo-flow", password="password123", role="SCHOOL_ADMIN", school=self.school
+        )
+        self.cls = Class.objects.create(name="JSS 1A", school=self.school)
+        self.other_cls = Class.objects.create(name="JSS 1B", school=self.school)
+        self.kid1 = Student.objects.create(
+            school=self.school, student_no="F1", names="Ada", gender="Female", current_class=self.cls
+        )
+        self.kid2 = Student.objects.create(
+            school=self.school, student_no="F2", names="Bayo", gender="Male", current_class=self.cls
+        )
+        self.client.force_authenticate(user=self.admin)
+        self.h = {"HTTP_X_TENANT_ID": self.school.domain}
+
+    def _register(self, class_id, date, marks):
+        return self.client.post(
+            "/api/academic/attendance-sessions/",
+            {
+                "date": date,
+                "class_id": class_id,
+                "session": "2025/2026",
+                "term": "First Term",
+                "records": [{"student_id": sid, "status": st} for sid, st in marks],
+            },
+            format="json",
+            **self.h,
+        )
+
+    def test_attendance_register_saves_marks_and_reads_back_in_frontend_shape(self):
+        response = self._register(self.cls.id, "2026-10-12", [(self.kid1.id, "present"), (self.kid2.id, "absent")])
+        self.assertEqual(response.status_code, 201, response.data)
+        self.assertEqual(response.data["class_id"], self.cls.id)
+        marks = {r["student_id"]: r["status"] for r in response.data["records"]}
+        self.assertEqual(marks, {self.kid1.id: "present", self.kid2.id: "absent"})
+
+    def test_same_class_and_date_updates_instead_of_duplicating(self):
+        self._register(self.cls.id, "2026-10-12", [(self.kid1.id, "present")])
+        self._register(self.other_cls.id, "2026-10-12", [])
+        again = self._register(self.cls.id, "2026-10-12", [(self.kid1.id, "late")])
+        self.assertIn(again.status_code, (200, 201), again.data)
+        from academic.models import AttendanceRecord, AttendanceSession
+
+        self.assertEqual(AttendanceSession.objects.filter(student_class=self.cls).count(), 1)
+        self.assertEqual(AttendanceSession.objects.filter(student_class=self.other_cls).count(), 1)
+        self.assertEqual(AttendanceRecord.objects.get(student=self.kid1).status, "late")
+
+    def test_subject_teacher_assignment_accepts_frontend_fields(self):
+        from academic.models import Teacher
+
+        teacher = Teacher.objects.create(school=self.school, name="Mr Okon")
+        response = self.client.post(
+            "/api/academic/subject_teachers/",
+            {"teacher_id": str(teacher.id), "class_id": str(self.cls.id), "subject": "Maths", "session": "2025/2026"},
+            format="json",
+            **self.h,
+        )
+        self.assertEqual(response.status_code, 201, response.data)
+        self.assertEqual((response.data["teacher_id"], response.data["class_id"]), (teacher.id, self.cls.id))
+
+    def test_event_keeps_its_class(self):
+        response = self.client.post(
+            "/api/academic/events/",
+            {
+                "title": "JSS 1A excursion",
+                "start_date": "2026-11-02T09:00:00Z",
+                "event_type": "academic",
+                "target_audience": "all",
+                "class_id": self.cls.id,
+            },
+            format="json",
+            **self.h,
+        )
+        self.assertEqual(response.status_code, 201, response.data)
+        self.assertEqual(response.data["class_id"], self.cls.id)

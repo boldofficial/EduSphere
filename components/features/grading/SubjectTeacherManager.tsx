@@ -27,7 +27,7 @@ export const SubjectTeacherManager: React.FC = () => {
   const { data: settings = Utils.INITIAL_SETTINGS } = useSettings();
 
   // Mutations
-  const { mutate: addSubjectTeacher } = useCreateSubjectTeacher();
+  const { mutateAsync: addSubjectTeacher } = useCreateSubjectTeacher();
   const { mutate: removeSubjectTeacher } = useDeleteSubjectTeacher();
 
   const [selectedClass, setSelectedClass] = useState(String(classes[0]?.id || ''));
@@ -42,7 +42,7 @@ export const SubjectTeacherManager: React.FC = () => {
     (st) => Utils.sameId(st.class_id, selectedClass) && st.session === settings.current_session
   );
 
-  const handleAddAssignment = () => {
+  const handleAddAssignment = async () => {
     if (!selectedTeacher || !selectedSubject) {
       addToast('Please select both a teacher and a subject', 'warning');
       return;
@@ -55,19 +55,22 @@ export const SubjectTeacherManager: React.FC = () => {
       return;
     }
 
-    addSubjectTeacher({
-      id: Utils.generateId(),
-      teacher_id: String(selectedTeacher),
-      class_id: String(selectedClass),
-      subject: String(selectedSubject),
-      session: String(settings.current_session),
-      created_at: new Date().getTime(),
-      updated_at: new Date().getTime(),
-    });
-
-    addToast('Subject-teacher assignment added', 'success');
-    setSelectedSubject('');
-    setSelectedTeacher('');
+    try {
+      await addSubjectTeacher({
+        id: Utils.generateId(),
+        teacher_id: String(selectedTeacher),
+        class_id: String(selectedClass),
+        subject: String(selectedSubject),
+        session: String(settings.current_session),
+        created_at: new Date().getTime(),
+        updated_at: new Date().getTime(),
+      });
+      addToast('Subject-teacher assignment added', 'success');
+      setSelectedSubject('');
+      setSelectedTeacher('');
+    } catch {
+      addToast('Could not save the assignment. Please try again.', 'error');
+    }
   };
 
   const getTeacherName = (teacherId: string) => {
