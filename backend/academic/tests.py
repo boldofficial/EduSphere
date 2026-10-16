@@ -355,3 +355,120 @@ class AdminDashboardTests(APITestCase):
         self.client.force_authenticate(user=teacher)
         response = self.client.get("/api/academic/dashboard/", HTTP_X_TENANT_ID=self.school.domain)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class StudentProfileTests(APITestCase):
+    def setUp(self):
+        from bursary.models import FeeCategory, FeeItem, Payment, StudentFee
+        from schools.models import SchoolSettings
+
+        self.school = School.objects.create(name="Profile School", domain="demo-profile")
+        SchoolSettings.objects.update_or_create(
+            school=self.school, defaults={"current_session": "2025/2026", "current_term": "First Term"}
+        )
+        self.admin = get_user_model().objects.create_user(
+            username="admin@demo-profile", password="password123", role="SCHOOL_ADMIN", school=self.school
+        )
+        self.cls = Class.objects.create(name="SS 1", school=self.school)
+        self.subject = Subject.objects.create(name="Biology", school=self.school)
+        self.student = Student.objects.create(
+            school=self.school, student_no="PR1", names="Chidi Eze", gender="Male", current_class=self.cls
+        )
+        rival = Student.objects.create(
+            school=self.school, student_no="PR2", names="Rival", gender="Male", current_class=self.cls
+        )
+        mine = ReportCard.objects.create(
+            school=self.school,
+            student=self.student,
+            student_class=self.cls,
+            session="2025/2026",
+            term="First Term",
+            average=64,
+        )
+        ReportCard.objects.create(
+            school=self.school,
+            student=rival,
+            student_class=self.cls,
+            session="2025/2026",
+            term="First Term",
+            average=80,
+        )
+        SubjectScore.objects.create(school=self.school, report_card=mine, subject=self.subject, total=64)
+        category = FeeCategory.objects.create(school=self.school, name="Tuition", is_optional=False)
+        item = FeeItem.objects.create(
+            school=self.school, category=category, amount=100000, session="2025/2026", term="First Term"
+        )
+        StudentFee.objects.create(school=self.school, student=self.student, fee_item=item)
+        Payment.objects.create(
+            school=self.school,
+            student=self.student,
+            amount=60000,
+            method="cash",
+            session="2025/2026",
+            term="First Term",
+            reference="PRF-1",
+            recorded_by="admin",
+            status="completed",
+        )
+
+    def test_profile_for_current_term(self):
+        self.client.force_authenticate(user=self.admin)
+        response = self.client.get(
+            f"/api/academic/students/{self.student.id}/profile/", HTTP_X_TENANT_ID=self.school.domain
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.data)
+        data = response.data
+        self.assertEqual((data["session"], data["term"]), ("2025/2026", "First Term"))
+        self.assertEqual(data["academics"]["position"], 2)
+        self.assertEqual(data["academics"]["class_size"], 2)
+        self.assertEqual(data["academics"]["subjects"][0]["subject"], "Biology")
+        self.assertEqual(data["finance"]["total_bill"], 100000.0)
+        self.assertEqual(data["finance"]["balance"], 40000.0)
+        self.assertIn("Parent phone is missing.", data["warnings"])
+
+    def test_other_student_cannot_view_profile(self):
+        other = get_user_model().objects.create_user(
+            username="kid@demo-profile", password="password123", role="STUDENT", school=self.school
+        )
+        Student.objects.create(school=self.school, student_no="PR3", names="Other Kid", gender="Female", user=other)
+        self.client.force_authenticate(user=other)
+        response = self.client.get(
+            f"/api/academic/students/{self.student.id}/profile/", HTTP_X_TENANT_ID=self.school.domain
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class StudentDeleteCascadeTests(APITestCase):
+    """Deleting a student with history used to recurse forever in AuditTrailMixin (deferred fields)."""
+
+    def test_delete_student_with_results_and_payments(self):
+        from bursary.models import Payment
+
+        school = School.objects.create(name="Delete School", domain="demo-delete")
+        admin = get_user_model().objects.create_user(
+            username="admin@demo-delete", password="password123", role="SCHOOL_ADMIN", school=school
+        )
+        cls = Class.objects.create(name="JSS 2", school=school)
+        student = Student.objects.create(
+            school=school, student_no="DEL1", names="Gone Soon", gender="Male", current_class=cls
+        )
+        report = ReportCard.objects.create(
+            school=school, student=student, student_class=cls, session="2025/2026", term="First Term"
+        )
+        SubjectScore.objects.create(
+            school=school, report_card=report, subject=Subject.objects.create(name="Art", school=school), total=70
+        )
+        Payment.objects.create(
+            school=school,
+            student=student,
+            amount=1000,
+            method="cash",
+            session="2025/2026",
+            term="First Term",
+            reference="DEL-1",
+            recorded_by="admin",
+        )
+        self.client.force_authenticate(user=admin)
+        response = self.client.delete(f"/api/academic/students/{student.id}/", HTTP_X_TENANT_ID=school.domain)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(Student.objects.filter(pk=student.pk).exists())

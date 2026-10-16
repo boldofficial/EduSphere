@@ -7,7 +7,6 @@ import {
   useCreateStudent,
   useUpdateStudent,
   useDeleteStudent,
-  useScores,
 } from '@/lib/hooks/use-data';
 import { CardSkeleton } from '@/components/ui/skeleton';
 import { StudentsView } from '@/components/features/StudentsView';
@@ -26,7 +25,6 @@ export default function StudentsPage() {
     classId === 'all' ? '' : classId
   );
   const { data: classes = [] } = useClasses();
-  const { data: scores = [] } = useScores();
 
   const students = studentResponse?.results || [];
   const totalPages = studentResponse ? Math.ceil(studentResponse.count / pageSize) : 0;
@@ -77,7 +75,7 @@ export default function StudentsPage() {
         onSearchChange={handleSearchChange}
         onFilterClassChange={handleClassChange}
         isLoading={studentsLoading}
-        scores={scores}
+        totalCount={studentResponse?.count}
       />
 
       <Pagination

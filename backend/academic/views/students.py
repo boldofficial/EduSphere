@@ -12,6 +12,7 @@ from ..serializers import StudentAchievementSerializer, StudentHistorySerializer
 from rest_framework.exceptions import PermissionDenied
 
 from .base import TenantViewSet, scope_to_learner
+from .student_profile import build_student_profile
 
 
 class StudentViewSet(TenantViewSet):
@@ -44,6 +45,18 @@ class StudentViewSet(TenantViewSet):
                 "Your plan's student limit has been reached. Upgrade your plan to add more students."
             )
         super().perform_create(serializer)
+
+    @action(detail=True, methods=["get"], url_path="profile")
+    def profile(self, request, pk=None):
+        """One student's academics, attendance, fees and conduct for ?session=&term= (default: current)."""
+        student = self.get_object()  # role scoping from get_queryset applies
+        return Response(
+            build_student_profile(
+                student,
+                session=request.query_params.get("session"),
+                term=request.query_params.get("term"),
+            )
+        )
 
     @action(detail=False, methods=["post"], url_path="bulk-promote")
     def bulk_promote(self, request):

@@ -39,12 +39,14 @@ from .serializers import (
 )
 
 
-def calculate_expected_revenue(school, session=None, term=None):
+def calculate_expected_revenue(school, session=None, term=None, student=None):
     """
     Calculate net expected revenue from assigned fees, accounting for discounts
-    and scholarships.
+    and scholarships. Pass `student` for one student's bill.
     """
     filters = {"school": school}
+    if student is not None:
+        filters["student"] = student
     if session:
         filters["fee_item__session"] = session
     if term:

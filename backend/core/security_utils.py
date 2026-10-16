@@ -89,7 +89,11 @@ class AuditTrailMixin:
             self._original_values = self._snapshot_values()
 
     def _snapshot_values(self):
-        return {f.name: getattr(self, f.attname, None) for f in self._meta.fields}
+        # Skip deferred fields (e.g. rows Django loads with .only() while cascading a delete):
+        # reading one would trigger refresh_from_db, which builds another instance, whose
+        # snapshot reads the deferred field again — infinite recursion.
+        deferred = self.get_deferred_fields()
+        return {f.name: getattr(self, f.attname, None) for f in self._meta.fields if f.attname not in deferred}
 
     def track_changes(self, user=None, request=None):
         """Compare current values with original, log any changes."""
@@ -105,7 +109,9 @@ class AuditTrailMixin:
             if field_name.startswith("_") or field_name == "id":
                 continue
 
-            old_value = self._original_values.get(field_name)
+            if field_name not in self._original_values:
+                continue  # was not loaded, so there is no original value to compare
+            old_value = self._original_values[field_name]
             new_value = getattr(self, field.attname, None)
 
             # Skip timestamps and non-tracked fields
