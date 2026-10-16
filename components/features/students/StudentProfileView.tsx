@@ -23,6 +23,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useStudent, useStudentProfile } from '@/lib/hooks/use-student-profile';
 import { useClasses } from '@/lib/hooks/use-data';
+import { useSchoolStore } from '@/lib/store';
 import * as Utils from '@/lib/utils';
 
 type Tab = 'overview' | 'academics' | 'fees' | 'attendance' | 'conduct';
@@ -73,6 +74,8 @@ export function StudentProfileView({ studentId }: { studentId: string }) {
   const { data: student, isLoading: loadingStudent, isError } = useStudent(studentId);
   const { data: profile, isFetching } = useStudentProfile(studentId, session, term);
   const { data: classes = [] } = useClasses();
+  const { currentRole } = useSchoolStore();
+  const isLearner = currentRole === 'student' || currentRole === 'parent';
 
   if (loadingStudent) {
     return (
@@ -111,10 +114,10 @@ export function StudentProfileView({ studentId }: { studentId: string }) {
   return (
     <div className="space-y-6 pb-12">
       <Link
-        href="/students"
+        href={isLearner ? '/dashboard' : '/students'}
         className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-900"
       >
-        <ArrowLeft className="h-4 w-4" /> All students
+        <ArrowLeft className="h-4 w-4" /> {isLearner ? 'Back' : 'All students'}
       </Link>
 
       <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
@@ -138,11 +141,13 @@ export function StudentProfileView({ studentId }: { studentId: string }) {
           description={[student.student_no, className, student.gender].filter(Boolean).join(' · ')}
           actions={
             <>
-              <Link href={`/students?edit=${student.id}`}>
-                <Button variant="secondary" size="sm">
-                  <Edit className="mr-1.5 h-4 w-4" /> Edit
-                </Button>
-              </Link>
+              {!isLearner && (
+                <Link href={`/students?edit=${student.id}`}>
+                  <Button variant="secondary" size="sm">
+                    <Edit className="mr-1.5 h-4 w-4" /> Edit
+                  </Button>
+                </Link>
+              )}
               <Link href="/messages">
                 <Button variant="secondary" size="sm">
                   <MessageSquare className="mr-1.5 h-4 w-4" /> Message parent
