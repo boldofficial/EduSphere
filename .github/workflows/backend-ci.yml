@@ -90,7 +90,12 @@ jobs:
           DEBUG: 'False'
         run: |
           uv run --no-sync python manage.py spectacular --file /tmp/openapi.yml
-          diff -q openapi.yml /tmp/openapi.yml || { echo "::error::backend/openapi.yml is stale. Run 'npm run api:schema && npm run api:types' and commit."; exit 1; }
+          if ! diff -q openapi.yml /tmp/openapi.yml; then
+            d=$(diff -u openapi.yml /tmp/openapi.yml | head -60 | sed ':a;N;$!ba;s/%/%25/g;s/
+/%0A/g')
+            echo "::error::backend/openapi.yml is stale. Run 'npm run api:schema && npm run api:types' and commit.%0A$d"
+            exit 1
+          fi
 
       - name: Run Django tests
         working-directory: backend
