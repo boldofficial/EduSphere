@@ -5,20 +5,20 @@ from core.tenant_utils import get_request_school
 
 from ..models import ConductEntry
 from ..serializers import ConductEntrySerializer
-from .base import TenantViewSet
+from core.permissions import EveryoneReadStaffWrite
+
+from .base import TenantViewSet, scope_to_learner
 
 
 class ConductEntryViewSet(TenantViewSet):
     queryset = ConductEntry.objects.select_related("student", "recorded_by", "school").all()
     serializer_class = ConductEntrySerializer
     pagination_class = StandardPagination
+    permission_classes = [EveryoneReadStaffWrite]
 
     def get_queryset(self):
-        qs = super().get_queryset()
-        user = self.request.user
-        if user.role == "STUDENT" and hasattr(user, "student_profile"):
-            qs = qs.filter(student=user.student_profile)
-        return qs
+        # Students see their own record, parents their children's, teachers their classes'.
+        return scope_to_learner(super().get_queryset(), self.request.user)
 
     def perform_create(self, serializer):
         school = get_request_school(self.request, allow_super_admin_tenant=True)

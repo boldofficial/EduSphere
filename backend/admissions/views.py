@@ -7,6 +7,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from core.pagination import StandardPagination
+from core.permissions import EveryoneReadAdminWrite, FinanceOnly
 
 from .models import Admission, AdmissionIntake
 from academic.models import Class, Student
@@ -18,12 +19,15 @@ class AdmissionIntakeViewSet(TenantViewSet):
     queryset = AdmissionIntake.objects.all()
     serializer_class = AdmissionIntakeSerializer
     pagination_class = StandardPagination
+    permission_classes = [EveryoneReadAdminWrite]
 
 
 class AdmissionViewSet(TenantViewSet):
     queryset = Admission.objects.select_related("intake", "school").all()
     serializer_class = AdmissionSerializer
     pagination_class = StandardPagination
+    # Applications hold children's and parents' personal data: office staff only (admins and staff).
+    permission_classes = [FinanceOnly]
 
     def get_permissions(self):
         """

@@ -2,7 +2,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import Avg
 
-from academic.views.base import TenantViewSet
+from academic.views.base import TenantViewSet, is_school_staff, scope_to_learner
+from core.permissions import EveryoneReadStaffWrite
 from academic.models import Commendation, ConductWarning, BehaviorAnalytics, ConductEntry, Student
 from academic.serializers_conduct import (
     CommendationSerializer,
@@ -18,6 +19,7 @@ from academic.serializers_conduct import (
 class CommendationViewSet(TenantViewSet):
     queryset = Commendation.objects.all()
     serializer_class = CommendationSerializer
+    permission_classes = [EveryoneReadStaffWrite]
 
     def get_serializer_class(self):
         if self.action in ["create", "update", "partial_update"]:
@@ -25,7 +27,7 @@ class CommendationViewSet(TenantViewSet):
         return CommendationSerializer
 
     def get_queryset(self):
-        qs = super().get_queryset()
+        qs = scope_to_learner(super().get_queryset(), self.request.user)
         student_id = self.request.query_params.get("student")
         category = self.request.query_params.get("category")
         session = self.request.query_params.get("session")
@@ -46,6 +48,7 @@ class CommendationViewSet(TenantViewSet):
 class ConductWarningViewSet(TenantViewSet):
     queryset = ConductWarning.objects.all()
     serializer_class = ConductWarningSerializer
+    permission_classes = [EveryoneReadStaffWrite]
 
     def get_serializer_class(self):
         if self.action in ["create", "update", "partial_update"]:
@@ -53,7 +56,7 @@ class ConductWarningViewSet(TenantViewSet):
         return ConductWarningSerializer
 
     def get_queryset(self):
-        qs = super().get_queryset()
+        qs = scope_to_learner(super().get_queryset(), self.request.user)
         student_id = self.request.query_params.get("student")
         severity = self.request.query_params.get("severity")
         status_filter = self.request.query_params.get("status")
@@ -99,9 +102,10 @@ class ConductWarningViewSet(TenantViewSet):
 class BehaviorAnalyticsViewSet(TenantViewSet):
     queryset = BehaviorAnalytics.objects.all()
     serializer_class = BehaviorAnalyticsSerializer
+    permission_classes = [EveryoneReadStaffWrite]
 
     def get_queryset(self):
-        qs = super().get_queryset()
+        qs = scope_to_learner(super().get_queryset(), self.request.user)
         student_id = self.request.query_params.get("student")
         session = self.request.query_params.get("session")
         term = self.request.query_params.get("term")
@@ -121,8 +125,10 @@ class BehaviorAnalyticsViewSet(TenantViewSet):
         session = request.query_params.get("session")
         term = request.query_params.get("term")
 
+        if not is_school_staff(request.user):
+            return Response({"detail": "Only staff can generate analytics."}, status=403)
         if not session or not term:
-            return Response({"error": "session and term required"}, status=400)
+            return Response({"detail": "session and term required"}, status=400)
 
         students = Student.objects.filter(school=request.tenant, status="active")
 
@@ -258,6 +264,7 @@ class BehaviorAnalyticsViewSet(TenantViewSet):
 class ConductEntryViewSet(TenantViewSet):
     queryset = ConductEntry.objects.all()
     serializer_class = ConductEntrySerializer
+    permission_classes = [EveryoneReadStaffWrite]
 
     def get_serializer_class(self):
         if self.action in ["create", "update", "partial_update"]:
@@ -265,7 +272,7 @@ class ConductEntryViewSet(TenantViewSet):
         return ConductEntrySerializer
 
     def get_queryset(self):
-        qs = super().get_queryset()
+        qs = scope_to_learner(super().get_queryset(), self.request.user)
         student_id = self.request.query_params.get("student")
         trait = self.request.query_params.get("trait")
 
