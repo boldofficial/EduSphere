@@ -1,6 +1,6 @@
 import logging
 
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenRefreshSerializer
 
 from rest_framework import serializers
 from rest_framework.exceptions import AuthenticationFailed
@@ -96,21 +96,9 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             raise AuthenticationFailed("You do not have permission to login to this school portal.")
 
         # 2. Check school subscription status
-        if self.user.school:
-            from schools.models import Subscription
-
-            # Use query instead of reverse attribute to avoid RelatedObjectDoesNotExist crashes
-            sub = Subscription.objects.filter(school=self.user.school).first()
-            if sub:
-                status = sub.status
-                if status == "pending":
-                    raise AuthenticationFailed("School account is pending approval.")
-                elif status == "cancelled":
-                    raise AuthenticationFailed("School account is suspended.")
-                elif status == "expired":
-                    raise AuthenticationFailed("School subscription has expired.")
-            else:
-                logger.warning(f"[AUTH_DEBUG] School {self.user.school.name} has NO subscription record.")
+        error = school_access_error(self.user)
+        if error:
+            raise AuthenticationFailed(error)
 
         # Add custom claims or user data
         data["role"] = self.user.role
@@ -137,3 +125,43 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         logger.info("[AUTH_DEBUG] Login Successful")
         return data
+
+
+SUBSCRIPTION_BLOCKS = {
+    "pending": "School account is pending approval.",
+    "cancelled": "School account is suspended.",
+    "expired": "School subscription has expired.",
+}
+
+
+def school_access_error(user):
+    """Why this user's school may not sign in right now, or None. Checked at login and on every token refresh."""
+    if not getattr(user, "school_id", None):
+        return None
+    from schools.models import Subscription
+
+    sub = Subscription.objects.filter(school_id=user.school_id).only("status").first()
+    if not sub:
+        logger.warning(f"[AUTH_DEBUG] School {user.school_id} has NO subscription record.")
+        return None
+    return SUBSCRIPTION_BLOCKS.get(sub.status)
+
+
+class SchoolAwareTokenRefreshSerializer(TokenRefreshSerializer):
+    """Refreshing a session re-checks the account and the school, so suspended or expired schools are signed out."""
+
+    def validate(self, attrs):
+        from django.contrib.auth import get_user_model
+        from rest_framework_simplejwt.settings import api_settings
+        from rest_framework_simplejwt.tokens import RefreshToken
+
+        token = RefreshToken(attrs["refresh"])
+        user = (
+            get_user_model().objects.filter(**{api_settings.USER_ID_FIELD: token[api_settings.USER_ID_CLAIM]}).first()
+        )
+        if not user or not user.is_active:
+            raise AuthenticationFailed("This account is no longer active.")
+        error = school_access_error(user)
+        if error:
+            raise AuthenticationFailed(error)
+        return super().validate(attrs)
