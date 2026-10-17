@@ -473,6 +473,8 @@ class SchoolEvent(TenantModel):
     end_date = models.DateTimeField(null=True, blank=True)
     event_type = models.CharField(max_length=20, choices=TYPES, default="academic")
     target_audience = models.CharField(max_length=20, choices=AUDIENCES, default="all")
+    # Optional: limit the event to one class (e.g. a JSS 1 excursion)
+    student_class = models.ForeignKey(Class, on_delete=models.SET_NULL, null=True, blank=True, related_name="events")
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta:

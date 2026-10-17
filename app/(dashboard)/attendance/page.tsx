@@ -46,7 +46,7 @@ export default function AttendancePage() {
     isStudentOrParent
       ? { include_all_periods: true }
       : {
-          class_id: selectedClass,
+          class_id: resolvedSelectedClass,
           date,
           session: settings.current_session,
           term: settings.current_term,
@@ -54,15 +54,21 @@ export default function AttendancePage() {
   );
 
   // Mutations
-  const { mutate: createAttendance } = useCreateAttendance();
-  const { mutate: updateAttendance } = useUpdateAttendance();
+  const { mutateAsync: createAttendance } = useCreateAttendance();
+  const { mutateAsync: updateAttendance } = useUpdateAttendance();
 
-  const handleUpsertAttendance = (att: Types.Attendance) => {
-    const existing = attendance.find((a) => a.id === att.id) || attendance[0];
+  // Find the register for this class and day. Never fall back to another register: that used to
+  // overwrite a different class's or day's attendance. The server also treats class + date as unique.
+  const handleUpsertAttendance = async (att: Types.Attendance) => {
+    const existing = attendance.find(
+      (a) =>
+        String(a.id) === String(att.id) ||
+        (String(a.class_id) === String(att.class_id) && a.date === att.date)
+    );
     if (existing) {
-      updateAttendance({ id: existing.id, updates: att });
+      await updateAttendance({ id: existing.id, updates: att });
     } else {
-      createAttendance(att);
+      await createAttendance(att);
     }
   };
 
@@ -102,7 +108,7 @@ export default function AttendancePage() {
       attendance={attendance}
       settings={settings}
       onSave={handleUpsertAttendance}
-      selectedClass={selectedClass}
+      selectedClass={String(resolvedSelectedClass)}
       setSelectedClass={setSelectedClass}
       date={date}
       setDate={setDate}
