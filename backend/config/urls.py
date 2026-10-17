@@ -23,6 +23,7 @@ from rest_framework_simplejwt.views import (
 from django.contrib import admin
 from django.urls import include, path
 
+from users.serializers import SchoolAwareTokenRefreshSerializer
 from users.views import CustomTokenObtainPairView
 
 urlpatterns = [
@@ -30,7 +31,11 @@ urlpatterns = [
     # Prioritize schools for landing page/public access
     path("api/schools/", include("schools.urls")),
     path("api/token/", CustomTokenObtainPairView.as_view(), name="token_obtain_pair"),
-    path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path(
+        "api/token/refresh/",
+        TokenRefreshView.as_view(serializer_class=SchoolAwareTokenRefreshSerializer),
+        name="token_refresh",
+    ),
     path("api/users/", include("users.urls")),
     path("api/blog/", include("blog.urls")),
     path("api/academic/", include("academic.urls")),

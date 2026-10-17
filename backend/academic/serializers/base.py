@@ -27,24 +27,29 @@ class Base64ImageField(serializers.CharField):
         if data and isinstance(data, str) and data.startswith("data:image"):
             try:
                 # Format: "data:image/png;base64,iVBORw0KG..."
-                header, imgstr = data.split(";base64,")
-                ext = header.split("/")[-1]
+                _header, imgstr = data.split(";base64,", 1)
 
                 import base64
+                import binascii
                 import uuid
                 from django.core.files.base import ContentFile
                 from django.core.files.storage import default_storage
 
+                from core.upload_validation import MAX_IMAGE_BYTES, verify_image
+
+                if len(imgstr) > MAX_IMAGE_BYTES * 4 // 3 + 4:
+                    raise serializers.ValidationError("Image is too large.")
+                decoded_file = base64.b64decode(imgstr, validate=True)
+                ext = verify_image(decoded_file)  # the real type, not the client's data: header
                 filename = f"passports/{uuid.uuid4()}.{ext}"
-                decoded_file = base64.b64decode(imgstr)
-
-                file_name = default_storage.save(filename, ContentFile(decoded_file))
-
-                # Store ONLY the relative path in DB
-                return file_name
+                return default_storage.save(filename, ContentFile(decoded_file))
+            except serializers.ValidationError:
+                raise
+            except (ValueError, binascii.Error):
+                raise serializers.ValidationError("Image data is not valid.")
             except Exception as e:
                 logger.error(f"Base64 Image Upload Failed: {e}")
-                return data
+                raise serializers.ValidationError("Could not save the image. Please try again.")
 
         # If it's already a path or full URL, return as is (avoiding re-upload)
         if data and isinstance(data, str) and (data.startswith("http") or "/" in data):
