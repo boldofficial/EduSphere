@@ -15865,6 +15865,81 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/users/2fa/backup-codes/:
+    post:
+      operationId: users_2fa_backup_codes_create
+      description: |-
+        Regenerate backup codes.
+        POST: Generate new backup codes (invalidates old ones)
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/users/2fa/login/:
+    post:
+      operationId: users_2fa_login_create
+      description: |-
+        Second step of login with 2FA.
+        POST: Verify 2FA code using the temporary two_factor_token
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/users/2fa/setup/:
+    post:
+      operationId: users_2fa_setup_create
+      description: |-
+        Setup 2FA for a user.
+        POST: Generate secret and QR code for user to scan
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+    delete:
+      operationId: users_2fa_setup_destroy
+      description: Disable 2FA for the user
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/users/2fa/status/:
+    get:
+      operationId: users_2fa_status_retrieve
+      description: |-
+        Get 2FA status for current user.
+        GET: Check if 2FA is enabled
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/users/2fa/verify/:
+    post:
+      operationId: users_2fa_verify_create
+      description: |-
+        Verify and activate 2FA.
+        POST: Verify the TOTP code and activate 2FA
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
   /api/users/account-setup/:
     post:
       operationId: users_account_setup_create
