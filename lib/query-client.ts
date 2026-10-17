@@ -9,7 +9,11 @@ import { QueryClient } from '@tanstack/react-query';
 export const defaultQueryOptions = {
   staleTime: 1000 * 60 * 5, // 5 minutes - data is fresh for 5 minutes
   gcTime: 1000 * 60 * 30, // 30 minutes - keep in cache for 30 minutes
-  retry: 1, // Only retry once on failure
+  // Retry once, but not on 4xx: a 403 (e.g. a module outside the school's plan) won't change on retry.
+  retry: (failureCount: number, error: unknown) => {
+    const status = (error as { response?: { status?: number } })?.response?.status;
+    return !(status && status >= 400 && status < 500) && failureCount < 1;
+  },
   refetchOnWindowFocus: false, // Don't refetch when window regains focus
   refetchOnReconnect: true, // Refetch when reconnecting
   dedupe: true, // Deduplicate identical requests

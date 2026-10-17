@@ -223,3 +223,45 @@ class AdmissionsAndConductScopingTests(RoleSecurityTests):
         self.assertEqual(self._get("/api/academic/conduct-warnings/").status_code, status.HTTP_200_OK)
         r = self._get("/api/academic/behavior-analytics/generate_all/", session="2025/2026", term="First Term")
         self.assertEqual(r.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class PlanModuleEnforcementTests(APITestCase):
+    """S9: modules outside the school's plan are blocked in the API, not just hidden in the menu."""
+
+    def setUp(self):
+        from django.core.cache import cache
+
+        from schools.models import Subscription, SubscriptionPlan
+
+        cache.clear()
+        self.school = School.objects.create(name="Free School", domain="free-school")
+        self.plan = SubscriptionPlan.objects.create(
+            name="Free test", slug="free-test-s9", price=0, allowed_modules=["students", "classes"]
+        )
+        self.sub, _ = Subscription.objects.update_or_create(
+            school=self.school,
+            defaults={"plan": self.plan, "status": "active", "end_date": timezone.now() + timedelta(days=365)},
+        )
+        self.admin = get_user_model().objects.create_user(
+            username="admin@free", password="pw-123456", role="SCHOOL_ADMIN", school=self.school
+        )
+        self.client.force_authenticate(user=self.admin)
+
+    def _get(self, url):
+        return self.client.get(url, HTTP_X_TENANT_ID=self.school.domain)
+
+    def test_module_outside_plan_is_blocked(self):
+        r = self._get("/api/bursary/fees/")
+        self.assertEqual(r.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(r.json()["code"], "module_not_in_plan")
+        self.assertEqual(self._get("/api/library/books/").status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_core_modules_stay_open(self):
+        self.assertEqual(self._get("/api/academic/classes/").status_code, status.HTTP_200_OK)
+
+    def test_upgrade_unlocks_immediately(self):
+        self.assertEqual(self._get("/api/bursary/fees/").status_code, status.HTTP_403_FORBIDDEN)
+        self.plan.allowed_modules = ["students", "classes", "bursary"]
+        self.plan.save()
+        self.sub.save()
+        self.assertEqual(self._get("/api/bursary/fees/").status_code, status.HTTP_200_OK)

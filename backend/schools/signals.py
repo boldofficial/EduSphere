@@ -75,3 +75,11 @@ def send_school_status_email(sender, instance, created, **kwargs):
             )
         except Exception as e:
             logger.error(f"Failed to queue approval email for {instance.name}: {e}")
+
+
+@receiver(post_save, sender="schools.Subscription")
+def refresh_plan_modules(sender, instance, **kwargs):
+    """Plan changes take effect immediately for that school (others refresh within a minute)."""
+    from core.module_access import clear_school_modules
+
+    clear_school_modules(instance.school_id)
