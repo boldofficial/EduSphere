@@ -151,6 +151,7 @@ MIDDLEWARE = [
     "core.security_middleware.RequestSizeLimitMiddleware",
     "core.security_middleware.IPAccessControlMiddleware",
     "core.middleware.TenantMiddleware",
+    "core.module_access.PlanModuleMiddleware",
     "core.middleware.AuditLogMiddleware",
 ]
 
