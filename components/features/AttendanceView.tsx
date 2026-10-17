@@ -13,7 +13,7 @@ interface AttendanceViewProps {
   classes: Types.Class[];
   attendance: Types.Attendance[];
   settings: Types.Settings;
-  onSave: (att: Types.Attendance) => void;
+  onSave: (att: Types.Attendance) => Promise<void> | void;
 
   // Lifted State Props
   selectedClass: string;
@@ -37,7 +37,10 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
 }) => {
   const { addToast } = useToast();
   const activeStudents = students; // Already filtered by parent
-  const existingRecord: Types.Attendance | undefined = attendance[0]; // Filtered by backend to match class/date
+  // Only this class's register for this date counts as "existing" — never another class's.
+  const existingRecord: Types.Attendance | undefined = attendance.find(
+    (a) => String(a.class_id) === String(selectedClass) && a.date === date
+  );
   const [prevKey, setPrevKey] = useState('');
   const [currentStatuses, setCurrentStatuses] = useState<
     Record<string, 'present' | 'absent' | 'late'>
@@ -57,7 +60,15 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
   const isTermMismatch = existingRecord && existingRecord.term !== settings.current_term;
   const isLocked = !!existingRecord && !isTermMismatch;
 
-  const handleSave = () => {
+  const errorMessage = (err: unknown) => {
+    const data = (
+      err as { response?: { data?: { detail?: string; errors?: Record<string, unknown> } } }
+    ).response?.data;
+    const first = data?.errors ? Object.values(data.errors).flat()[0] : undefined;
+    return String(first || data?.detail || 'Something went wrong. Please try again.');
+  };
+
+  const handleSave = async () => {
     if (isLocked) return; // Prevent overwriting
     const records = activeStudents.map((s) => ({
       student_id: s.id,
@@ -73,12 +84,16 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
       created_at: existingRecord?.created_at || Date.now(),
       updated_at: Date.now(),
     };
-    onSave(newEntry);
-    addToast('Attendance saved successfully', 'success');
+    try {
+      await onSave(newEntry);
+      addToast('Attendance saved', 'success');
+    } catch (err) {
+      addToast(`Attendance was not saved: ${errorMessage(err)}`, 'error');
+    }
   };
 
   // Fix term mismatch by updating the existing record to the current term
-  const handleFixTerm = () => {
+  const handleFixTerm = async () => {
     if (!existingRecord) return;
     const updatedEntry: Types.Attendance = {
       ...existingRecord,
@@ -86,8 +101,12 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
       session: settings.current_session, // Ensure session matches too
       updated_at: Date.now(),
     };
-    onSave(updatedEntry);
-    addToast('Attendance moved to current term', 'success');
+    try {
+      await onSave(updatedEntry);
+      addToast('Attendance moved to current term', 'success');
+    } catch (err) {
+      addToast(`Could not move attendance: ${errorMessage(err)}`, 'error');
+    }
   };
 
   const markAll = (status: 'present' | 'absent') => {

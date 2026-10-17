@@ -92,7 +92,32 @@ class ClassSerializer(serializers.ModelSerializer):
 
 
 class SubjectTeacherSerializer(serializers.ModelSerializer):
+    # The frontend sends and reads teacher_id / class_id.
+    teacher_id = serializers.PrimaryKeyRelatedField(source="teacher", queryset=Teacher.objects.all(), required=False)
+    class_id = serializers.PrimaryKeyRelatedField(source="student_class", queryset=Class.objects.all(), required=False)
+
     class Meta:
         model = SubjectTeacher
         fields = "__all__"
         read_only_fields = ("school",)
+        extra_kwargs = {"teacher": {"required": False}, "student_class": {"required": False}}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        school = _school_from_request(self)
+        if school:
+            for name in ("teacher_id", "teacher"):
+                self.fields[name].queryset = Teacher.objects.filter(school=school)
+            for name in ("class_id", "student_class"):
+                self.fields[name].queryset = Class.objects.filter(school=school)
+
+    def validate(self, attrs):
+        if not self.instance:
+            missing = {}
+            if not attrs.get("teacher"):
+                missing["teacher_id"] = "Choose a teacher."
+            if not attrs.get("student_class"):
+                missing["class_id"] = "Choose a class."
+            if missing:
+                raise serializers.ValidationError(missing)
+        return attrs
