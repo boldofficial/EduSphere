@@ -31,7 +31,7 @@ interface ExamConfig {
 export const ExamMode: React.FC<ExamModeProps> = ({ students, classes, session, term }) => {
   const confirm = useConfirm();
   const { addToast } = useToast();
-  const { data: scores = [] } = useScores({ include_all_periods: true });
+  const { data: scores = [] } = useScores({ include_all_periods: true, session }, !!session);
   const { mutate: updateScore } = useUpdateScore();
 
   const [isExamActive, setIsExamActive] = useState(false);
