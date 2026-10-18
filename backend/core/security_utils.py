@@ -293,7 +293,7 @@ def validate_file_upload(file, allowed_extensions: Optional[List[str]] = None) -
     ext = filename.split(".")[-1].lower() if "." in filename else ""
     if ext not in allowed_extensions:
         raise ValidationError(
-            {"detail": f'File type .{ext} is not allowed. Allowed types: {", ".join(allowed_extensions)}'}
+            {"detail": f"File type .{ext} is not allowed. Allowed types: {', '.join(allowed_extensions)}"}
         )
 
     max_size = 10 * 1024 * 1024

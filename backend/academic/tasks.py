@@ -189,3 +189,96 @@ def generate_school_report_cards(self, school_id, session, term):
     except Exception as e:
         logger.error(f"School report generation failed for {school_id}: {e}")
         return {"error": str(e)}
+
+
+@shared_task(bind=True, soft_time_limit=900, time_limit=960)
+def export_class_report_cards(self, job_id: str, class_id: int, school_id: int, session: str, term: str):
+    """Bulk report-card PDF for a class, built by the worker instead of the web request (P8)."""
+    from django.core.files.base import ContentFile
+    from django.core.files.storage import default_storage
+
+    from core.export_jobs import update_job
+
+    from .utils import ReportCardPDFGenerator
+
+    update_job(job_id, status="running")
+    try:
+        school = School.objects.get(pk=school_id)
+        student_class = Class.objects.get(pk=class_id, school=school)
+        buffer = ReportCardPDFGenerator(school).generate_bulk(student_class, session, term)
+        path = default_storage.save(f"exports/{school_id}/{job_id}.pdf", ContentFile(buffer.getvalue()))
+        update_job(job_id, status="done", path=path)
+    except Exception as exc:
+        logger.exception("Bulk report card export %s failed", job_id)
+        update_job(job_id, status="failed", error="Could not generate the report cards. Please try again.")
+        raise exc
+
+
+@shared_task(bind=True, soft_time_limit=1800, time_limit=1860)
+def import_students_csv(self, job_id: int, user_id: int, csv_text: str):
+    """Bulk student import (P9). Each row is saved on its own, so one bad row never undoes the others."""
+    import csv
+    from types import SimpleNamespace
+
+    from django.utils import timezone
+
+    from data_import.models import ImportJob
+    from users.models import User
+
+    from .serializers import StudentSerializer
+
+    job = ImportJob.objects.select_related("school").get(pk=job_id)
+    user = User.objects.get(pk=user_id)
+    school = job.school
+    # The serializer resolves the school from the request; give it the importing user's context.
+    context = {"request": SimpleNamespace(user=user, tenant=school, query_params={}, data={})}
+    class_map = {c.name.lower().strip(): c.pk for c in Class.objects.filter(school=school)}
+
+    job.status = "processing"
+    job.save(update_fields=["status"])
+    success, errors = 0, []
+    try:
+        for index, row in enumerate(csv.DictReader(csv_text.splitlines()), start=2):  # row 1 is the header
+            class_name = (row.get("class_name") or "").strip()
+            data = {
+                "student_no": row.get("student_no"),
+                "names": row.get("names"),
+                "gender": row.get("gender"),
+                "dob": row.get("date_of_birth") or None,
+                "parent_name": row.get("parent_name"),
+                "parent_email": row.get("parent_email"),
+                "parent_phone": row.get("parent_phone"),
+                "address": row.get("address"),
+                "password": row.get("password"),
+                "class_id": class_map.get(class_name.lower()),
+            }
+            # Blank cells mean "not provided", so serializer defaults apply (e.g. no password set yet).
+            data = {k: v.strip() if isinstance(v, str) else v for k, v in data.items() if v not in ("", None)}
+            try:
+                with transaction.atomic():
+                    serializer = StudentSerializer(data=data, context=context)
+                    if serializer.is_valid():
+                        serializer.save(school=school)
+                        success += 1
+                    else:
+                        reason = "; ".join(
+                            f"{field}: {', '.join(map(str, msgs))}" for field, msgs in serializer.errors.items()
+                        )
+                        errors.append({"row": index, "student": row.get("names") or "Unknown", "reason": reason})
+            except Exception as exc:
+                errors.append({"row": index, "student": row.get("names") or "Unknown", "reason": str(exc)})
+            if (success + len(errors)) % 25 == 0:
+                ImportJob.objects.filter(pk=job_id).update(
+                    processed_rows=success + len(errors), success_rows=success, failed_rows=len(errors)
+                )
+        job.status = "completed"
+    except Exception:
+        logger.exception("Student import %s failed", job_id)
+        job.status = "failed"
+        errors.append({"row": 0, "student": "", "reason": "The import stopped unexpectedly. Rows above were saved."})
+    job.processed_rows = success + len(errors)
+    job.success_rows = success
+    job.failed_rows = len(errors)
+    job.errors = errors
+    job.completed_at = timezone.now()
+    job.save()
