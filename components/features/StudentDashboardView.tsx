@@ -8,8 +8,6 @@ import {
   useClasses,
   useTeachers,
   useSettings,
-  usePayments,
-  useFees,
   useScores,
   useAttendance,
   useAnnouncements,
@@ -18,6 +16,7 @@ import {
 import { ReportCardTemplate } from './grading/ReportCardTemplate';
 import { ReportCardPDF } from './grading/ReportCardPDF';
 import * as Utils from '@/lib/utils';
+import { useStudentProfile } from '@/lib/hooks/use-student-profile';
 import * as Types from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { MessageInboxWidget } from './dashboard/MessageInboxWidget';
@@ -38,8 +37,6 @@ export const StudentDashboardView = () => {
   const { data: classes = [] } = useClasses();
   const { data: teachers = [] } = useTeachers();
   const { data: settings = Utils.INITIAL_SETTINGS } = useSettings();
-  const { data: payments = [] } = usePayments({ include_all_periods: true });
-  const { data: fees = [] } = useFees({ include_all_periods: true });
   const { data: scores = [] } = useScores({ include_all_periods: true });
   const { data: attendance = [] } = useAttendance({ include_all_periods: true });
   const { data: announcements = [] } = useAnnouncements();
@@ -82,7 +79,6 @@ export const StudentDashboardView = () => {
   const classTeacher = teachers.find(
     (t: Types.Teacher) => String(t.id) === String(currentClass?.class_teacher_id)
   );
-  const classmates = students.filter((s: Types.Student) => s.class_id === student.class_id);
 
   const availableSessions = useMemo(() => {
     const sessions = new Set(
@@ -103,6 +99,10 @@ export const StudentDashboardView = () => {
     }),
     [settings, targetSession, targetTerm]
   );
+  // Rank, class size and fees are computed by the server for this one student (students only receive
+  // their own records, so ranking across the class cannot be done in the browser).
+  const profileId = student.id !== 'unassigned' ? String(student.id) : undefined;
+  const { data: profile } = useStudentProfile(profileId, targetSession, targetTerm);
   const myScore = scores.find(
     (s) => s.student_id === student.id && s.session === targetSession && s.term === targetTerm
   );
@@ -113,59 +113,49 @@ export const StudentDashboardView = () => {
     [scores, student.id]
   );
 
-  const previousTermData = useMemo(() => {
-    const terms = settings.terms || ['First Term', 'Second Term', 'Third Term'];
-    const currentTermIndex = terms.indexOf(targetTerm);
-    let prevTerm = currentTermIndex > 0 ? terms[currentTermIndex - 1] : terms[terms.length - 1];
-    let prevSession =
-      currentTermIndex > 0
-        ? targetSession
-        : parseInt(targetSession.split('/')[0]) -
-          1 +
-          '/' +
-          (parseInt(targetSession.split('/')[1]) - 1);
+  const terms = settings.terms || ['First Term', 'Second Term', 'Third Term'];
+  const termIndex = terms.indexOf(targetTerm);
+  const prevTerm = termIndex > 0 ? terms[termIndex - 1] : terms[terms.length - 1];
+  const prevSession =
+    termIndex > 0 || !targetSession
+      ? targetSession
+      : `${parseInt(targetSession.split('/')[0]) - 1}/${parseInt(targetSession.split('/')[1]) - 1}`;
+  const { data: prevProfile } = useStudentProfile(profileId, prevSession, prevTerm);
 
+  const previousTermData = useMemo(() => {
     const prevScore = scores.find(
-      (s) =>
-        s.student_id === student.id &&
-        s.term === prevTerm &&
-        (s.session === targetSession || s.session === prevSession)
+      (s) => s.student_id === student.id && s.term === prevTerm && s.session === prevSession
     );
+    const prevAcademics = prevProfile?.academics;
     return {
       average: prevScore?.average || null,
-      position: prevScore
-        ? Utils.getStudentPosition(student.id, students, scores, prevScore.session, prevScore.term)
-        : null,
+      position: prevAcademics?.published ? prevAcademics.position : null,
       attendance:
         prevScore?.attendance_present && prevScore?.attendance_total
           ? Math.round((prevScore.attendance_present / prevScore.attendance_total) * 100)
           : null,
     };
-  }, [scores, student.id, students, settings.terms, targetSession, targetTerm]);
+  }, [scores, student.id, prevTerm, prevSession, prevProfile]);
 
-  const position = useMemo(() => {
-    const ms = scores.find(
-      (s) => s.student_id === student.id && s.session === targetSession && s.term === targetTerm
-    );
-    return ms?.is_passed
-      ? Utils.getStudentPosition(student.id, students, scores, targetSession, targetTerm)
-      : null;
-  }, [student.id, students, scores, targetSession, targetTerm]);
+  const position = profile?.academics?.published ? profile.academics.position : null;
   const myAttendance =
     myScore?.attendance_present && myScore?.attendance_total
       ? Math.round((myScore.attendance_present / myScore.attendance_total) * 100)
       : 0;
-  const { balance } = useMemo(
-    () => Utils.getStudentBalance(student, fees, payments, targetSession, targetTerm),
-    [student, fees, payments, targetSession, targetTerm]
-  );
-
+  const balance = profile?.finance.balance ?? 0;
   const periodPayments = useMemo(
     () =>
-      payments.filter(
-        (p) => p.student_id === student.id && p.session === targetSession && p.term === targetTerm
+      (profile?.finance.payments || []).map(
+        (p) =>
+          ({
+            ...p,
+            id: String(p.id),
+            student_id: student.id,
+            session: targetSession,
+            term: targetTerm,
+          }) as unknown as Types.Payment
       ),
-    [payments, student.id, targetSession, targetTerm]
+    [profile, student.id, targetSession, targetTerm]
   );
 
   const stats = [
@@ -363,7 +353,7 @@ export const StudentDashboardView = () => {
           <StudentInfoWidgets
             currentClass={currentClass}
             classTeacher={classTeacher}
-            classmatesCount={classmates.length - 1}
+            classmatesCount={Math.max((profile?.academics?.class_size ?? 1) - 1, 0)}
             classSubjects={classSubjects}
             recentAttendance={recentAttendance}
             upcomingEvents={eventsData.upcoming}
