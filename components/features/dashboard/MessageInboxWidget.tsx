@@ -5,7 +5,7 @@ import { Mail, ChevronRight, Clock, Reply, Send, User } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
-import { useMessages, useCreateMessage } from '@/lib/hooks/use-data';
+import { useRecentMessages, useCreateMessage } from '@/lib/hooks/use-data';
 import { useSchoolStore } from '@/lib/store';
 import { useToast } from '@/components/providers/toast-provider';
 import * as Types from '@/lib/types';
@@ -22,7 +22,7 @@ export const MessageInboxWidget: React.FC<MessageInboxWidgetProps> = ({
 }) => {
   const { currentUser } = useSchoolStore();
   const { addToast } = useToast();
-  const { data: messages = [] } = useMessages();
+  const { data: messages = [] } = useRecentMessages(maxMessages);
   const { mutate: createMessage, isPending: isSending } = useCreateMessage();
 
   // State for viewing/replying

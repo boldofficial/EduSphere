@@ -20,10 +20,11 @@ export interface ScoreFilters extends Record<string, unknown> {
 // =============================================
 // SCORES
 // =============================================
-export function useScores(filters?: ScoreFilters) {
+export function useScores(filters?: ScoreFilters, enabled = true) {
   return useQuery({
     queryKey: [...queryKeys.scores, filters || {}],
     queryFn: () => fetchAll<Types.Score>('academic/reports/', filters),
+    enabled,
   });
 }
 

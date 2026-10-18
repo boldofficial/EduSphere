@@ -316,6 +316,19 @@ export function useArchiveConversation() {
 // =============================================
 // MESSAGES
 // =============================================
+/** The newest `limit` messages across the user's conversations: one small request, not the whole inbox. */
+export function useRecentMessages(limit = 5) {
+  return useQuery({
+    queryKey: [...queryKeys.messages, 'recent', limit],
+    queryFn: async () => {
+      const response = await apiClient.get('core/messages/', {
+        params: { recent: 1, page_size: limit },
+      });
+      return (response.data?.results ?? response.data ?? []) as Types.Message[];
+    },
+  });
+}
+
 export function useMessages(conversationId?: string) {
   return useQuery({
     queryKey: conversationId ? ['messages', conversationId] : queryKeys.messages,

@@ -35,8 +35,16 @@ export default function GradingPage() {
 
   const { data: students = [] } = useStudents();
   const { data: classes = [] } = useClasses();
-  const { data: scores = [] } = useScores({ include_all_periods: true });
-  const { data: settings = Utils.INITIAL_SETTINGS } = useSettings();
+  const { data: settings = Utils.INITIAL_SETTINGS, isSuccess: settingsLoaded } = useSettings();
+  // Staff tabs all work on the current session, so load that session's three terms rather than
+  // every year on record. Students and parents keep their full (already self-scoped) history.
+  const isLearnerRole = currentRole === 'student' || currentRole === 'parent';
+  const { data: scores = [] } = useScores(
+    isLearnerRole
+      ? { include_all_periods: true }
+      : { include_all_periods: true, session: settings.current_session },
+    isLearnerRole || settingsLoaded
+  );
 
   const { mutate: createScore } = useCreateScore();
   const { mutate: updateScore } = useUpdateScore();

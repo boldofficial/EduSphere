@@ -354,9 +354,11 @@ class SchoolMessageViewSet(CachingMixin, viewsets.ModelViewSet):
 
         if not conversation_id:
             # Fallback for compatibility or global view (though grouped is better)
-            return SchoolMessage.objects.filter(
+            qs = SchoolMessage.objects.filter(
                 conversation__participants__user=user, conversation__school=school
             ).select_related("sender", "conversation")
+            # ?recent=1: newest first, so a widget can ask for one small page instead of everything.
+            return qs.order_by("-created_at") if self.request.query_params.get("recent") else qs
 
         # High security: must be a participant
         if not ConversationParticipant.objects.filter(user=user, conversation_id=conversation_id).exists():

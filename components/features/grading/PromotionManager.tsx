@@ -26,8 +26,12 @@ export const PromotionManager: React.FC = () => {
   // Data Hooks
   const { data: students = [] } = useStudents();
   const { data: classes = [] } = useClasses();
-  const { data: scores = [] } = useScores({ include_all_periods: true });
-  const { data: settings = Utils.INITIAL_SETTINGS } = useSettings();
+  const { data: settings = Utils.INITIAL_SETTINGS, isSuccess: settingsLoaded } = useSettings();
+  // Promotion only looks at the current session.
+  const { data: scores = [] } = useScores(
+    { include_all_periods: true, session: settings.current_session },
+    settingsLoaded
+  );
 
   // Mutations
   const { mutate: updateSettings } = useUpdateSettings();
