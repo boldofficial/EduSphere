@@ -48,18 +48,31 @@ export const DataMigrationTab = () => {
     formData.append('file', file);
 
     try {
-      const response = await apiClient.post('academic/data-migration/import-students/', formData, {
+      const queued = await apiClient.post('academic/data-migration/import-students/', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      setResults(response.data);
-      if (response.data.error_count === 0) {
-        addToast(`Successfully imported ${response.data.success_count} students!`, 'success');
+      // The import runs in the background (each row creates a login); poll until it finishes.
+      let job = queued.data;
+      for (
+        let attempt = 0;
+        attempt < 600 && !['completed', 'failed'].includes(job.status);
+        attempt++
+      ) {
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        job = (await apiClient.get(`academic/data-migration/jobs/${queued.data.job_id}/`)).data;
+      }
+      setResults(job);
+      if (job.status === 'completed' && job.error_count === 0) {
+        addToast(`Successfully imported ${job.success_count} students!`, 'success');
+      } else if (job.status === 'completed' || job.status === 'failed') {
+        addToast(`Import finished with ${job.error_count} errors.`, 'warning');
       } else {
-        addToast(`Import completed with ${response.data.error_count} errors.`, 'warning');
+        addToast('The import is still running. Check back in a few minutes.', 'info');
       }
     } catch (error) {
-      console.error('Upload failed', error);
-      addToast('Failed to upload file. Please check the format.', 'error');
+      const detail = (error as { response?: { data?: { detail?: string } } }).response?.data
+        ?.detail;
+      addToast(detail || 'Failed to upload file. Please check the format.', 'error');
     } finally {
       setIsUploading(false);
     }

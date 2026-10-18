@@ -316,11 +316,15 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Export all report cards for a class as a single PDF.
-         *     Query params: session, term */
+        /** @description Queue a PDF of every report card in the class (query params: session, term).
+         *     Returns 202 {job_id}; poll `export-jobs/<job_id>/`, then download from `export-jobs/<job_id>/download/`.
+         *     A whole class can take minutes, longer than a web request may run. */
         get: operations["academic_classes_bulk_export_report_cards_pdf_retrieve"];
         put?: never;
-        post?: never;
+        /** @description Queue a PDF of every report card in the class (query params: session, term).
+         *     Returns 202 {job_id}; poll `export-jobs/<job_id>/`, then download from `export-jobs/<job_id>/download/`.
+         *     A whole class can take minutes, longer than a web request may run. */
+        post: operations["academic_classes_bulk_export_report_cards_pdf_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -337,6 +341,44 @@ export interface paths {
         /** @description Export the master broadsheet for a class as a PDF.
          *     Query params: session, term */
         get: operations["academic_classes_export_broadsheet_pdf_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/academic/classes/export-jobs/{job_id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Mixin to add caching capabilities to ViewSets
+         *
+         *     Automatically invalidates cache on create, update, delete */
+        get: operations["academic_classes_export_jobs_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/academic/classes/export-jobs/{job_id}/download/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Mixin to add caching capabilities to ViewSets
+         *
+         *     Automatically invalidates cache on create, update, delete */
+        get: operations["academic_classes_export_jobs_download_retrieve"];
         put?: never;
         post?: never;
         delete?: never;
@@ -572,8 +614,28 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Bulk import students from a CSV file. */
+        /** @description Queue a bulk student import from a CSV file. Returns 202 {job_id}; poll `jobs/<job_id>/`.
+         *     Each row creates a login (password hashing), so a few hundred rows outlast a web request. */
         post: operations["academic_data_migration_import_students_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/academic/data-migration/jobs/{job_id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description ViewSet for handling data migration tasks:
+         *     1. Downloading CSV templates
+         *     2. Bulk importing students */
+        get: operations["academic_data_migration_jobs_retrieve"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -11607,6 +11669,34 @@ export interface operations {
             };
         };
     };
+    academic_classes_bulk_export_report_cards_pdf_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this class. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClassRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ClassRequest"];
+                "multipart/form-data": components["schemas"]["ClassRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Class"];
+                };
+            };
+        };
+    };
     academic_classes_export_broadsheet_pdf_retrieve: {
         parameters: {
             query?: never;
@@ -11614,6 +11704,48 @@ export interface operations {
             path: {
                 /** @description A unique integer value identifying this class. */
                 id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Class"];
+                };
+            };
+        };
+    };
+    academic_classes_export_jobs_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Class"];
+                };
+            };
+        };
+    };
+    academic_classes_export_jobs_download_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
             };
             cookie?: never;
         };
@@ -12166,6 +12298,26 @@ export interface operations {
             query?: never;
             header?: never;
             path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    academic_data_migration_jobs_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
