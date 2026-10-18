@@ -1,5 +1,7 @@
 from django.urls import path
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+
+from core.permissions import FinanceOnly
 from rest_framework.response import Response
 import csv
 import io
@@ -8,6 +10,7 @@ from .models import ImportJob, ImportRow
 
 
 @api_view(["POST"])
+@permission_classes([FinanceOnly])
 def import_data(request):
     """Generic import endpoint for various data types."""
     import_type = request.data.get("type", "students")
@@ -214,6 +217,7 @@ def process_score_import(job, rows, school):
 
 
 @api_view(["GET"])
+@permission_classes([FinanceOnly])
 def import_job_detail(request, job_id):
     """Get import job details."""
     try:
@@ -241,6 +245,7 @@ def import_job_detail(request, job_id):
 
 
 @api_view(["GET"])
+@permission_classes([FinanceOnly])
 def import_job_list(request):
     """List import jobs."""
     jobs = ImportJob.objects.filter(school=request.tenant).order_by("-created_at")[:20]

@@ -157,12 +157,12 @@ class AcademicAI:
 
         prompt = f"""
         Act as an experienced and empathetic school teacher. 
-        Write a professional terminal report remark for a student named {student_data['name']}.
+        Write a professional terminal report remark for a student named {student_data["name"]}.
         
         Performance Data:
-        - Academic Scores: {student_data['scores']}
-        - Behavioral/Conduct Logs: {student_data['conduct']}
-        - Attendance: {student_data['attendance']}
+        - Academic Scores: {student_data["scores"]}
+        - Behavioral/Conduct Logs: {student_data["conduct"]}
+        - Attendance: {student_data["attendance"]}
         
         Guidelines:
         1. Be encouraging but honest.
@@ -189,14 +189,14 @@ class AcademicAI:
 
         prompt = f"""
         Act as a professional Academic Dean.
-        Write a 2-3 sentence academic performance outlook for a student named {student_data['name']}.
+        Write a 2-3 sentence academic performance outlook for a student named {student_data["name"]}.
         
         Academic Context:
-        - Class: {student_data['class']}
-        - Scores: {student_data['scores']}
-        - Term Average: {student_data['average']}
-        - Attendance: {student_data['attendance_rate']}%
-        - Trend: {student_data['trend']}
+        - Class: {student_data["class"]}
+        - Scores: {student_data["scores"]}
+        - Term Average: {student_data["average"]}
+        - Attendance: {student_data["attendance_rate"]}%
+        - Trend: {student_data["trend"]}
         
         Guidelines:
         1. Summarize the student's overall academic standing this term.
@@ -231,10 +231,10 @@ class AcademicAI:
         Analyze the following school performance summary and provide 3 key actionable executive insights.
         
         School Data:
-        - At-Risk Students: {school_summary['at_risk_count']}
-        - Average Term Attendance: {school_summary['average_attendance']}%
-        - Top Performing Subjects: {school_summary.get('top_subjects', [])}
-        - Subject Trends: {school_summary.get('trends', {})}
+        - At-Risk Students: {school_summary["at_risk_count"]}
+        - Average Term Attendance: {school_summary["average_attendance"]}%
+        - Top Performing Subjects: {school_summary.get("top_subjects", [])}
+        - Subject Trends: {school_summary.get("trends", {})}
         
         Guidelines:
         1. Identify the most critical area for intervention.
@@ -270,13 +270,13 @@ class AcademicAI:
         Act as an objective Academic Grader. 
         Evaluate the following student answer based on the question and optional rubric.
         
-        Question: {data['question']}
-        Student's Answer: {data['answer']}
-        Max Points: {data['max_points']}{rubric_section}
+        Question: {data["question"]}
+        Student's Answer: {data["answer"]}
+        Max Points: {data["max_points"]}{rubric_section}
         
         Guidelines:
         1. Be fair and consistent.
-        2. Provide a suggested score out of {data['max_points']}.
+        2. Provide a suggested score out of {data["max_points"]}.
         3. Provide constructive feedback (1-3 sentences).
         4. Format the output as basic JSON:
            {{
@@ -317,13 +317,13 @@ class AcademicAI:
         Act as an Educational Data Analyst specializing in early warning systems.
         Analyze the following student data and predict their academic trajectory.
         
-        Student: {student_data['name']}
-        Class: {student_data['class_name']}
-        Current Scores: {student_data['scores']}
-        Current Average: {student_data['average']}
-        Attendance Rate: {student_data['attendance_rate']}%
-        Conduct/Behavior Scores: {student_data.get('conduct_scores', [])}
-        Historical Averages (past terms): {student_data.get('historical_averages', [])}
+        Student: {student_data["name"]}
+        Class: {student_data["class_name"]}
+        Current Scores: {student_data["scores"]}
+        Current Average: {student_data["average"]}
+        Attendance Rate: {student_data["attendance_rate"]}%
+        Conduct/Behavior Scores: {student_data.get("conduct_scores", [])}
+        Historical Averages (past terms): {student_data.get("historical_averages", [])}
         
         Provide your analysis as a JSON object with EXACTLY this structure:
         {{
@@ -377,10 +377,10 @@ class AcademicAI:
         Act as an experienced Curriculum Specialist and Education Expert.
         Create a detailed, structured lesson plan for the following:
         
-        Subject: {plan_data['subject']}
-        Class: {plan_data['class_name']}
-        Topic: {plan_data['topic']}
-        Duration: {plan_data['duration_minutes']} minutes{objectives_section}{notes_section}
+        Subject: {plan_data["subject"]}
+        Class: {plan_data["class_name"]}
+        Topic: {plan_data["topic"]}
+        Duration: {plan_data["duration_minutes"]} minutes{objectives_section}{notes_section}
         
         Provide your lesson plan as a JSON object with this structure:
         {{
@@ -444,15 +444,15 @@ class AcademicAI:
         Generate a weekly school timetable based on the following data:
         
         Classes & Subject Requirements:
-        {school_data['classes']}
+        {school_data["classes"]}
         
         Teachers & expertise:
-        {school_data['teachers']}
+        {school_data["teachers"]}
         
         Available Periods (Categories: Regular, Break, Assembly):
-        {school_data['periods']}
+        {school_data["periods"]}
         
-        Working Days: {school_data['days']}
+        Working Days: {school_data["days"]}
         
         CRITICAL RULES:
         1. NO TEACHER CLASHES: A teacher cannot be in two classes at the same time (same day/period).
@@ -551,10 +551,10 @@ class AcademicAI:
         You are a professional school communications officer.
         Draft a {tone} message for a school.
 
-        School: {context.get('school_name', 'Our School')}
-        Recipient: {context.get('recipient_type', 'Parents')}
-        Topic: {context.get('topic', topic)}
-        Key Points: {context.get('key_points', 'N/A')}
+        School: {context.get("school_name", "Our School")}
+        Recipient: {context.get("recipient_type", "Parents")}
+        Topic: {context.get("topic", topic)}
+        Key Points: {context.get("key_points", "N/A")}
 
         Write a clear, professional message. Include a greeting and sign-off.
         Return ONLY the message body text (no JSON wrapper).

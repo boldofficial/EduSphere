@@ -785,8 +785,9 @@ paths:
     get:
       operationId: academic_classes_bulk_export_report_cards_pdf_retrieve
       description: |-
-        Export all report cards for a class as a single PDF.
-        Query params: session, term
+        Queue a PDF of every report card in the class (query params: session, term).
+        Returns 202 {job_id}; poll `export-jobs/<job_id>/`, then download from `export-jobs/<job_id>/download/`.
+        A whole class can take minutes, longer than a web request may run.
       parameters:
       - in: path
         name: id
@@ -796,6 +797,42 @@ paths:
         required: true
       tags:
       - academic
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Class'
+          description: ''
+    post:
+      operationId: academic_classes_bulk_export_report_cards_pdf_create
+      description: |-
+        Queue a PDF of every report card in the class (query params: session, term).
+        Returns 202 {job_id}; poll `export-jobs/<job_id>/`, then download from `export-jobs/<job_id>/download/`.
+        A whole class can take minutes, longer than a web request may run.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this class.
+        required: true
+      tags:
+      - academic
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClassRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ClassRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ClassRequest'
+        required: true
       security:
       - jwtAuth: []
       responses:
@@ -817,6 +854,56 @@ paths:
         schema:
           type: integer
         description: A unique integer value identifying this class.
+        required: true
+      tags:
+      - academic
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Class'
+          description: ''
+  /api/academic/classes/export-jobs/{job_id}/:
+    get:
+      operationId: academic_classes_export_jobs_retrieve
+      description: |-
+        Mixin to add caching capabilities to ViewSets
+
+        Automatically invalidates cache on create, update, delete
+      parameters:
+      - in: path
+        name: job_id
+        schema:
+          type: string
+          pattern: ^[0-9a-f]{32}$
+        required: true
+      tags:
+      - academic
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Class'
+          description: ''
+  /api/academic/classes/export-jobs/{job_id}/download/:
+    get:
+      operationId: academic_classes_export_jobs_download_retrieve
+      description: |-
+        Mixin to add caching capabilities to ViewSets
+
+        Automatically invalidates cache on create, update, delete
+      parameters:
+      - in: path
+        name: job_id
+        schema:
+          type: string
+          pattern: ^[0-9a-f]{32}$
         required: true
       tags:
       - academic
@@ -1439,7 +1526,30 @@ paths:
   /api/academic/data-migration/import-students/:
     post:
       operationId: academic_data_migration_import_students_create
-      description: Bulk import students from a CSV file.
+      description: |-
+        Queue a bulk student import from a CSV file. Returns 202 {job_id}; poll `jobs/<job_id>/`.
+        Each row creates a login (password hashing), so a few hundred rows outlast a web request.
+      tags:
+      - academic
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/academic/data-migration/jobs/{job_id}/:
+    get:
+      operationId: academic_data_migration_jobs_retrieve
+      description: |-
+        ViewSet for handling data migration tasks:
+        1. Downloading CSV templates
+        2. Bulk importing students
+      parameters:
+      - in: path
+        name: job_id
+        schema:
+          type: string
+          pattern: ^[0-9]+$
+        required: true
       tags:
       - academic
       security:

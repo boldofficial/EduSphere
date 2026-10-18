@@ -77,10 +77,27 @@ export const ReportCardPDF: React.FC<ReportCardPDFProps> = ({
         throw new Error('Invalid download parameters');
       }
 
-      const response = await apiClient.get(url, {
-        params,
-        responseType: 'blob',
-      });
+      let response;
+      if (reportId) {
+        response = await apiClient.get(url, { params, responseType: 'blob' });
+      } else {
+        // A whole class is built in the background; wait for it, then download (up to ~10 minutes).
+        const queued = await apiClient.post(url, null, { params });
+        const jobId: string = queued.data.job_id;
+        let status = queued.data.status as string;
+        for (let attempt = 0; attempt < 200 && status !== 'done'; attempt++) {
+          await new Promise((resolve) => globalThis.setTimeout(resolve, 3000));
+          const poll = await apiClient.get(`classes/export-jobs/${jobId}/`);
+          status = poll.data.status;
+          if (status === 'failed')
+            throw new Error(poll.data.error || 'Could not generate the report cards.');
+        }
+        if (status !== 'done')
+          throw new Error('The export is taking too long. Please try again later.');
+        response = await apiClient.get(`classes/export-jobs/${jobId}/download/`, {
+          responseType: 'blob',
+        });
+      }
 
       const blob = new BrowserBlob([response.data], { type: 'application/pdf' });
       const downloadUrl = browserWindow.URL.createObjectURL(blob);
