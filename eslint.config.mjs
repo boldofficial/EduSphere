@@ -136,6 +136,6 @@ export default [
     rules: { 'no-restricted-syntax': 'off' },
   },
   {
-    ignores: ['node_modules/**', '.next/**', 'public/sw.js', 'public/workbox-*.js', 'backend/**'],
+    ignores: ['node_modules/**', '.next/**', 'public/sw.js', 'public/workbox-*.js', 'backend/**', 'lib/api/schema.d.ts'],
   },
 ];

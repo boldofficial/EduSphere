@@ -10,7 +10,7 @@ jobs:
   lint:
     name: Lint & Format Check
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -81,6 +81,21 @@ jobs:
           # Same install as the production Dockerfile: locked dependencies via uv.
           uv sync --frozen --no-install-project
 
+      - name: Check the OpenAPI schema is up to date
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql://test_user:test_pass@localhost:5432/test_db
+          REDIS_URL: redis://localhost:6379
+          DJANGO_SECRET_KEY: test-secret-key-for-ci
+          DEBUG: 'False'
+        run: |
+          uv run --no-sync python manage.py spectacular --file /tmp/openapi.yml
+          if ! diff -q openapi.yml /tmp/openapi.yml; then
+            d=$(diff -u openapi.yml /tmp/openapi.yml | head -60 | awk '{printf "%s%%0A", $0}')
+            echo "::error::backend/openapi.yml is stale. Run 'npm run api:schema && npm run api:types' and commit.%0A$d"
+            exit 1
+          fi
+
       - name: Run Django tests
         working-directory: backend
         env:
@@ -101,7 +116,7 @@ jobs:
   security:
     name: Security Scan
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
