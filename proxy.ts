@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { resolveTenantFromHost } from './lib/tenant-host';
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const hostname = request.headers.get('host') || '';
   let rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'myregistra.net';
   // Cleanup rootDomain to remove port if present

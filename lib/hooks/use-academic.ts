@@ -312,10 +312,11 @@ export function useDeleteTeacher() {
 // =============================================
 // STAFF
 // =============================================
-export function useStaff() {
+export function useStaff(enabled = true) {
   return useQuery({
     queryKey: queryKeys.staff,
     queryFn: () => fetchAll<Types.Staff>('academic/staff/'),
+    enabled,
   });
 }
 
