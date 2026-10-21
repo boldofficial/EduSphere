@@ -87,11 +87,13 @@ export default function OnboardingPage() {
     setError('');
     try {
       console.log('[ONBOARDING] Submitting data:', data);
-      await apiClient.post('schools/register/', data);
+      const response = await apiClient.post<{ admin_email: string }>('schools/register/', data);
       // Redirect to success / tenant login
-      const protocol = window.location.protocol;
-      const tenantUrl = `${protocol}//${data.domain}.${rootDomain}/login`;
-      router.push(`/onboarding/success?url=${encodeURIComponent(tenantUrl)}`);
+      const params = new URLSearchParams({
+        domain: data.domain,
+        email: response.data.admin_email,
+      });
+      router.push(`/onboarding/success?${params.toString()}`);
     } catch (err: any) {
       console.error('[ONBOARDING] Registration Error Details:', err.response?.data);
 

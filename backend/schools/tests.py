@@ -233,6 +233,30 @@ class AnnualPlanTests(APITestCase):
         self.assertEqual(school.student_limit, 30)
         self.assertFalse(school.custom_domain_allowed)
 
+    def test_registration_returns_the_admin_login_identity(self):
+        response = self.client.post(
+            "/api/schools/register/",
+            {
+                "school_name": "Login Academy",
+                "domain": "loginacademy",
+                "email": "owner@loginacademy.ng",
+                "password": "StrongPass!2026",
+                "plan_slug": "free",
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.data)
+        self.assertEqual(response.data["admin_email"], "owner@loginacademy.ng")
+
+        login_response = self.client.post(
+            "/api/token/",
+            {"username": response.data["admin_email"], "password": "StrongPass!2026"},
+            format="json",
+            HTTP_X_TENANT_ID="loginacademy",
+        )
+        self.assertEqual(login_response.status_code, status.HTTP_200_OK, login_response.data)
+
 
 class StudentLimitTests(APITestCase):
     def setUp(self):
