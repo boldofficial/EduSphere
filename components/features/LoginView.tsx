@@ -89,6 +89,11 @@ export const LoginView = () => {
     setIsSystemRoot(isRoot);
     setIsDemo(tenantId === 'demo');
 
+    const registeredEmail = new URLSearchParams(window.location.search).get('email');
+    if (registeredEmail) {
+      setEmail(registeredEmail);
+    }
+
     if (!isRoot) {
       setSelectedRole('teacher');
 
