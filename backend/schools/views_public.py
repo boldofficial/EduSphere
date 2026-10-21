@@ -160,7 +160,10 @@ class RegisterSchoolView(APIView):
 
             logger.info(f"New school registered: '{school.name}' by {data['email']}")
 
-            return Response({"success": True, "school_id": school.id}, status=201)
+            return Response(
+                {"success": True, "school_id": school.id, "admin_email": admin_user.email},
+                status=201,
+            )
 
         except ValidationError:
             raise
