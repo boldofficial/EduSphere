@@ -11,8 +11,6 @@ from academic.serializers_conduct import (
     ConductWarningSerializer,
     ConductWarningCreateSerializer,
     BehaviorAnalyticsSerializer,
-    ConductEntrySerializer,
-    ConductEntryCreateSerializer,
 )
 
 
@@ -259,26 +257,3 @@ class BehaviorAnalyticsViewSet(TenantViewSet):
         }
 
         return Response(data)
-
-
-class ConductEntryViewSet(TenantViewSet):
-    queryset = ConductEntry.objects.all()
-    serializer_class = ConductEntrySerializer
-    permission_classes = [EveryoneReadStaffWrite]
-
-    def get_serializer_class(self):
-        if self.action in ["create", "update", "partial_update"]:
-            return ConductEntryCreateSerializer
-        return ConductEntrySerializer
-
-    def get_queryset(self):
-        qs = scope_to_learner(super().get_queryset(), self.request.user)
-        student_id = self.request.query_params.get("student")
-        trait = self.request.query_params.get("trait")
-
-        if student_id:
-            qs = qs.filter(student_id=student_id)
-        if trait:
-            qs = qs.filter(trait=trait)
-
-        return qs.select_related("student", "recorded_by").order_by("-date")

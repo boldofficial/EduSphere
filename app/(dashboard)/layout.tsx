@@ -22,8 +22,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   // Data Fetching
   const { data: settings = Utils.INITIAL_SETTINGS, isLoading: settingsLoading } = useSettings();
   const { data: freshUser, isLoading: meLoading } = useMe();
-  const { data: staffList = [], isLoading: staffLoading } = useStaff();
-  const { data: teacherList = [], isLoading: teacherLoading } = useTeachers();
+  const { data: staffList = [], isLoading: staffLoading } = useStaff(currentRole === 'staff');
+  const { data: teacherList = [], isLoading: teacherLoading } = useTeachers(
+    currentRole === 'teacher'
+  );
 
   // UI State
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
