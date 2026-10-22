@@ -45,13 +45,44 @@ export interface SubscriptionPlan extends Entity {
 
 export type LandingSectionKey =
   | 'hero'
+  | 'stats'
   | 'about'
   | 'values'
   | 'programs'
   | 'gallery'
+  | 'testimonials'
+  | 'team'
+  | 'events'
+  | 'faqs'
   | 'cta'
   | 'contact'
   | 'custom';
+
+export interface WebsiteTheme {
+  preset?: string;
+  accent_color?: string;
+  heading_font?: string;
+  body_font?: string;
+}
+
+export interface WebsiteSocial {
+  facebook?: string;
+  instagram?: string;
+  x?: string;
+  youtube?: string;
+  tiktok?: string;
+  linkedin?: string;
+  whatsapp?: string;
+}
+
+export interface PublicEvent {
+  id: number;
+  title: string;
+  description: string;
+  start_date: string;
+  end_date: string | null;
+  event_type: string;
+}
 
 /** A photo on the school's public website (from the media library). */
 export interface GalleryImage {
@@ -149,6 +180,14 @@ export interface Settings extends Entity {
   landing_sections: LandingSection[];
   /** Public gallery photos, delivered with the public settings. */
   gallery?: GalleryImage[];
+  landing_theme: WebsiteTheme;
+  landing_stats: { value: string; label: string }[];
+  landing_team: { name: string; role: string; bio: string; image: string | null }[];
+  landing_faqs: { question: string; answer: string }[];
+  landing_social: WebsiteSocial;
+  landing_opening_hours: string;
+  /** Upcoming calendar events the school publishes on its website. */
+  events?: PublicEvent[];
 
   // Phase 2: Promotion Settings
   promotion_threshold: number; // Minimum average to pass (e.g., 50)
@@ -682,6 +721,8 @@ export interface SchoolEvent extends Entity {
   event_type: 'academic' | 'holiday' | 'exam' | 'meeting' | 'sports' | 'cultural' | 'other';
   target_audience: 'all' | 'teachers' | 'students' | 'parents' | 'staff';
   class_id?: string; // For class-specific events
+  /** Listed under "Upcoming events" on the public website. */
+  show_on_website?: boolean;
   is_recurring?: boolean;
   recurrence_pattern?: 'daily' | 'weekly' | 'monthly' | 'yearly';
   session?: string;

@@ -76,6 +76,7 @@ export const CalendarView: React.FC = () => {
   const [eventType, setEventType] = useState<Types.SchoolEvent['event_type']>('academic');
   const [targetAudience, setTargetAudience] = useState<Types.SchoolEvent['target_audience']>('all');
   const [selectedClassId, setSelectedClassId] = useState<string>('');
+  const [showOnWebsite, setShowOnWebsite] = useState(false);
 
   const resetForm = () => {
     setTitle('');
@@ -85,6 +86,7 @@ export const CalendarView: React.FC = () => {
     setEventType('academic');
     setTargetAudience('all');
     setSelectedClassId('');
+    setShowOnWebsite(false);
     setEditingEvent(null);
   };
 
@@ -104,6 +106,7 @@ export const CalendarView: React.FC = () => {
       setEventType(event.event_type);
       setTargetAudience(event.target_audience);
       setSelectedClassId(event.class_id || '');
+      setShowOnWebsite(Boolean(event.show_on_website));
     } else {
       resetForm();
       if (date) setStartDate(date);
@@ -125,6 +128,7 @@ export const CalendarView: React.FC = () => {
       event_type: eventType,
       target_audience: targetAudience,
       class_id: selectedClassId || undefined,
+      show_on_website: showOnWebsite,
       session: settings.current_session,
       term: settings.current_term,
       created_by: editingEvent?.created_by || currentUser?.id || undefined,
@@ -320,6 +324,8 @@ export const CalendarView: React.FC = () => {
           setTargetAudience,
           selectedClassId,
           setSelectedClassId,
+          showOnWebsite,
+          setShowOnWebsite,
         }}
         classes={classes}
         onSave={handleSave}

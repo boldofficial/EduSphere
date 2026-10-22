@@ -236,20 +236,20 @@ export const INITIAL_SETTINGS: Settings = {
   landing_academic_programs: [
     {
       title: 'Crèche',
-      image: '/fruitful2.jpg.jpg',
+      image: null,
       age_range: 'Ages 0 - 2',
       description: 'A safe and nurturing environment for infants and toddlers to explore and grow.',
     },
     {
       title: 'Pre-School',
-      image: '/fruitful5.jpg.jpg',
+      image: null,
       age_range: 'Ages 3 - 5',
       description:
         'Play-based learning that builds foundational skills in literacy, numeracy, and social interaction.',
     },
     {
       title: 'Primary School',
-      image: '/fruitful3.jpg.jpg',
+      image: null,
       age_range: 'Ages 6 - 11',
       description:
         'A robust curriculum developing critical thinking, creativity, and strong moral values.',
@@ -265,6 +265,12 @@ export const INITIAL_SETTINGS: Settings = {
   landing_custom_html: '',
   landing_custom_css: '',
   landing_sections: [],
+  landing_theme: {},
+  landing_stats: [],
+  landing_team: [],
+  landing_faqs: [],
+  landing_social: {},
+  landing_opening_hours: '',
   promotion_threshold: 50,
   promotion_rules: 'manual',
   role_permissions: {

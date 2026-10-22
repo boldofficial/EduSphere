@@ -16,6 +16,8 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ settings }) => {
   });
   const [formStatus, setFormStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [formMessage, setFormMessage] = useState('');
+  // Hidden from people; bots that fill every field reveal themselves.
+  const [honeypot, setHoneypot] = useState('');
 
   const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,21 +25,27 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ settings }) => {
     setFormMessage('');
 
     try {
-      const response = await fetch('/api/contact', {
+      // Saved for this school and emailed to the school's own address.
+      const response = await fetch('/api/proxy/schools/public/enquiry/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(contactForm),
+        body: JSON.stringify({ ...contactForm, website: honeypot }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
         setFormStatus('success');
-        setFormMessage(data.message || 'Message sent successfully!');
+        setFormMessage(data.detail || 'Message sent successfully!');
         setContactForm({ name: '', email: '', phone: '', subject: '', message: '' });
       } else {
         setFormStatus('error');
-        setFormMessage(data.error || 'Failed to send message. Please try again.');
+        setFormMessage(
+          data.detail ||
+            (response.status === 429
+              ? 'Too many messages from your connection. Please try again later.'
+              : 'Failed to send message. Please try again.')
+        );
       }
     } catch {
       setFormStatus('error');
@@ -75,7 +83,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ settings }) => {
                   <div>
                     <p className="text-sm text-brand-200">Email</p>
                     <p className="font-semibold text-lg break-all">
-                      {settings.school_email || 'info@myregistra.net'}
+                      {settings.school_email || 'Use the form to reach us'}
                     </p>
                   </div>
                 </div>
@@ -112,6 +120,16 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ settings }) => {
               </div>
             ) : (
               <form onSubmit={handleContactSubmit} className="space-y-4">
+                <input
+                  type="text"
+                  name="website"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  aria-hidden="true"
+                  value={honeypot}
+                  onChange={(e) => setHoneypot(e.target.value)}
+                  className="absolute -left-[9999px] h-px w-px opacity-0"
+                />
                 <div className="grid md:grid-cols-2 gap-4">
                   <input
                     type="text"

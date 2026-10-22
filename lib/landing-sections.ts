@@ -10,10 +10,15 @@ export const BUILTIN_SECTIONS: {
   anchor: string;
 }[] = [
   { key: 'hero', label: 'Hero banner', anchor: 'home' },
+  { key: 'stats', label: 'Key numbers', anchor: 'numbers' },
   { key: 'about', label: 'About us', anchor: 'about' },
   { key: 'values', label: 'Core values', anchor: 'features' },
   { key: 'programs', label: 'Academic programs', anchor: 'programs' },
   { key: 'gallery', label: 'Photo gallery', anchor: 'gallery' },
+  { key: 'testimonials', label: 'Testimonials', anchor: 'testimonials' },
+  { key: 'team', label: 'Leadership team', anchor: 'team' },
+  { key: 'events', label: 'Upcoming events', anchor: 'events' },
+  { key: 'faqs', label: 'FAQs', anchor: 'faqs' },
   { key: 'cta', label: 'Admission call-to-action', anchor: 'apply' },
   { key: 'contact', label: 'Contact', anchor: 'contact' },
 ];
@@ -56,9 +61,16 @@ export function resolveSections(settings: Settings): LandingSection[] {
     }
     return defaults;
   }
-  const present = new Set(saved.map((s) => s.key));
-  const missing = BUILTIN_SECTIONS.filter((b) => !present.has(b.key)).map((b) => builtin(b.key));
-  return [...saved, ...missing];
+  // Sections added to the platform later slot in at their natural place: just before the next
+  // built-in section (in default order) that the school's saved list already has.
+  const result = [...saved];
+  BUILTIN_SECTIONS.forEach((def, index) => {
+    if (result.some((s) => s.key === def.key)) return;
+    const nextKeys = BUILTIN_SECTIONS.slice(index + 1).map((b) => b.key);
+    const at = result.findIndex((s) => nextKeys.includes(s.key as (typeof nextKeys)[number]));
+    result.splice(at === -1 ? result.length : at, 0, builtin(def.key));
+  });
+  return result;
 }
 
 export function newCustomSection(existing: LandingSection[], html = '', css = ''): LandingSection {

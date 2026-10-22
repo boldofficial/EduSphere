@@ -186,7 +186,20 @@ def validate_website_css(value):
     return value
 
 
-BUILTIN_SECTION_KEYS = ("hero", "about", "values", "programs", "gallery", "cta", "contact")
+BUILTIN_SECTION_KEYS = (
+    "hero",
+    "stats",
+    "about",
+    "values",
+    "programs",
+    "gallery",
+    "testimonials",
+    "team",
+    "events",
+    "faqs",
+    "cta",
+    "contact",
+)
 SECTION_ID = re.compile(r"^[a-z0-9-]{1,40}$")
 MAX_SECTIONS = 30
 MAX_SECTION_HTML = 100_000

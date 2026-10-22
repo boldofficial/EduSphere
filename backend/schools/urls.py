@@ -55,10 +55,14 @@ urlpatterns = [
 from rest_framework.routers import DefaultRouter
 
 from .views_media import WebsiteMediaViewSet
+from .views_website import PublicEnquiryView, WebsiteEnquiryViewSet, WebsiteRevisionViewSet
 from .views_support import SupportTicketViewSet
 
 router = DefaultRouter()
 router.register(r"support/tickets", SupportTicketViewSet, basename="support-tickets")
 router.register(r"website-media", WebsiteMediaViewSet, basename="website-media")
+router.register(r"website-enquiries", WebsiteEnquiryViewSet, basename="website-enquiries")
+router.register(r"website-revisions", WebsiteRevisionViewSet, basename="website-revisions")
+urlpatterns += [path("public/enquiry/", PublicEnquiryView.as_view(), name="website-enquiry")]
 
 urlpatterns += router.urls

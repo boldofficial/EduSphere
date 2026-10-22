@@ -48,10 +48,15 @@ describe('resolveSections', () => {
   it('uses the default order when nothing is saved', () => {
     expect(resolveSections(INITIAL_SETTINGS).map((s) => s.key)).toEqual([
       'hero',
+      'stats',
       'about',
       'values',
       'programs',
       'gallery',
+      'testimonials',
+      'team',
+      'events',
+      'faqs',
       'cta',
       'contact',
     ]);
@@ -94,5 +99,25 @@ describe('getMediaUrl', () => {
     );
     // Private media still goes through the authenticated proxy.
     expect(getMediaUrl('/media/passports/x.jpg')).toBe('/api/proxy/media/passports/x.jpg');
+  });
+});
+
+describe('resolveSections with a saved order', () => {
+  it('slots newly added built-in sections into their natural place', () => {
+    const saved = ['hero', 'about', 'cta', 'contact'].map((key) => ({
+      id: key,
+      key: key as LandingSection['key'],
+      title: '',
+      enabled: true,
+      use_custom: false,
+      html: '',
+      css: '',
+    }));
+    const keys = resolveSections({ ...INITIAL_SETTINGS, landing_sections: saved }).map(
+      (s) => s.key
+    );
+    expect(keys.indexOf('stats')).toBe(1); // between hero and about
+    expect(keys.indexOf('faqs')).toBeLessThan(keys.indexOf('cta'));
+    expect(keys[keys.length - 1]).toBe('contact');
   });
 });

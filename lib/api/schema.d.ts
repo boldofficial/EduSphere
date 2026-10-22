@@ -5345,6 +5345,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/schools/public/enquiry/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description POST from a school website's contact form. Saved for the school and emailed to the school only. */
+        post: operations["schools_public_enquiry_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/schools/public/payment-options/": {
         parameters: {
             query?: never;
@@ -5495,6 +5512,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/schools/website-enquiries/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["schools_website_enquiries_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/schools/website-enquiries/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["schools_website_enquiries_update"];
+        post?: never;
+        delete: operations["schools_website_enquiries_destroy"];
+        options?: never;
+        head?: never;
+        patch: operations["schools_website_enquiries_partial_update"];
+        trace?: never;
+    };
+    "/api/schools/website-enquiries/summary/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["schools_website_enquiries_summary_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/schools/website-media/": {
         parameters: {
             query?: never;
@@ -5543,6 +5608,38 @@ export interface paths {
         put?: never;
         /** @description Body: {"ids": [3, 1, 2]} — the new gallery order. */
         post: operations["schools_website_media_reorder_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/schools/website-revisions/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["schools_website_revisions_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/schools/website-revisions/{id}/restore/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["schools_website_revisions_restore_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -9054,6 +9151,21 @@ export interface components {
             previous?: string | null;
             results: components["schemas"]["TransportPayment"][];
         };
+        PaginatedWebsiteEnquiryList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous?: string | null;
+            results: components["schemas"]["WebsiteEnquiry"][];
+        };
         /**
          * @description * `sms` - SMS
          *     * `whatsapp` - WhatsApp
@@ -9709,6 +9821,7 @@ export interface components {
             event_type?: components["schemas"]["SchoolEventEventTypeEnum"];
             target_audience?: components["schemas"]["TargetAudienceEnum"];
             class_id?: number | null;
+            show_on_website?: boolean;
         };
         PatchedSchoolMessageRequest: {
             /** Format: uuid */
@@ -9858,6 +9971,9 @@ export interface components {
             paid_on?: string | null;
             payment_method?: string;
             reference?: string;
+        };
+        PatchedWebsiteEnquiryRequest: {
+            status?: components["schemas"]["WebsiteEnquiryStatusEnum"];
         };
         PatchedWebsiteMediaRequest: {
             alt_text?: string;
@@ -10388,6 +10504,7 @@ export interface components {
             event_type?: components["schemas"]["SchoolEventEventTypeEnum"];
             target_audience?: components["schemas"]["TargetAudienceEnum"];
             class_id?: number | null;
+            show_on_website?: boolean;
             readonly created_by: number | null;
             readonly created_by_name: string;
             /** Format: date-time */
@@ -10414,6 +10531,7 @@ export interface components {
             event_type?: components["schemas"]["SchoolEventEventTypeEnum"];
             target_audience?: components["schemas"]["TargetAudienceEnum"];
             class_id?: number | null;
+            show_on_website?: boolean;
         };
         SchoolMessage: {
             readonly id: number;
@@ -11018,6 +11136,29 @@ export interface components {
          * @enum {string}
          */
         TypeEnum: "DIRECT" | "GROUP" | "BROADCAST";
+        WebsiteEnquiry: {
+            readonly id: number;
+            readonly name: string;
+            /** Format: email */
+            readonly email: string;
+            readonly phone: string;
+            readonly subject: string;
+            readonly message: string;
+            status?: components["schemas"]["WebsiteEnquiryStatusEnum"];
+            /** Format: date-time */
+            readonly created_at: string;
+        };
+        WebsiteEnquiryRequest: {
+            status?: components["schemas"]["WebsiteEnquiryStatusEnum"];
+        };
+        /**
+         * @description * `new` - New
+         *     * `read` - Read
+         *     * `replied` - Replied
+         *     * `archived` - Archived
+         * @enum {string}
+         */
+        WebsiteEnquiryStatusEnum: "new" | "read" | "replied" | "archived";
         WebsiteMedia: {
             alt_text?: string;
             caption?: string;
@@ -24646,6 +24787,24 @@ export interface operations {
             };
         };
     };
+    schools_public_enquiry_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     schools_public_payment_options_retrieve: {
         parameters: {
             query?: never;
@@ -24934,6 +25093,126 @@ export interface operations {
             };
         };
     };
+    schools_website_enquiries_list: {
+        parameters: {
+            query?: {
+                /** @description A page number within the paginated result set. */
+                page?: number;
+                /** @description Number of results to return per page. */
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedWebsiteEnquiryList"];
+                };
+            };
+        };
+    };
+    schools_website_enquiries_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this website enquiry. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["WebsiteEnquiryRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["WebsiteEnquiryRequest"];
+                "multipart/form-data": components["schemas"]["WebsiteEnquiryRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WebsiteEnquiry"];
+                };
+            };
+        };
+    };
+    schools_website_enquiries_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this website enquiry. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    schools_website_enquiries_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this website enquiry. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedWebsiteEnquiryRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedWebsiteEnquiryRequest"];
+                "multipart/form-data": components["schemas"]["PatchedWebsiteEnquiryRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WebsiteEnquiry"];
+                };
+            };
+        };
+    };
+    schools_website_enquiries_summary_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WebsiteEnquiry"];
+                };
+            };
+        };
+    };
     schools_website_media_list: {
         parameters: {
             query?: never;
@@ -25077,6 +25356,45 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["WebsiteMedia"];
                 };
+            };
+        };
+    };
+    schools_website_revisions_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    schools_website_revisions_restore_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this website revision. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
