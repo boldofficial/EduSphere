@@ -182,9 +182,7 @@ class PublicSettingsView(APIView):
         try:
             school = School.objects.get(Q(domain=domain) | Q(custom_domain=domain))
             settings_obj, _ = SchoolSettings.objects.get_or_create(school=school)
-            subscription_status = (
-                school.subscription.status if hasattr(school, "subscription") else "none"
-            )
+            subscription_status = school.subscription.status if hasattr(school, "subscription") else "none"
 
             return Response(
                 {
