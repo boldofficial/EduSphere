@@ -50,7 +50,7 @@ class SectionSanitizerTests(SimpleTestCase):
 
     def test_css_box_rejects_fixed_positioning_and_imports(self):
         self.assertEqual(validate_website_css(".card { padding: 2rem; }"), ".card { padding: 2rem; }")
-        for bad in (".x { position: fixed; }", ".x{position:sticky}", "@import url(x.css);"):
+        for bad in (".x { position: fixed; }", ".x{position:sticky}", "@import url(x.css);", "</template><img src=x>"):
             with self.assertRaises(ValueError):
                 validate_website_css(bad)
 

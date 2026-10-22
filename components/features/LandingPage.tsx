@@ -14,6 +14,7 @@ import { ProgramsSection } from './landing-tenant/ProgramsSection';
 import { CTASection } from './landing-tenant/CTASection';
 import { ContactSection } from './landing-tenant/ContactSection';
 import { CustomCodeSection } from './landing-tenant/CustomCodeSection';
+import { GallerySection } from './landing-tenant/GallerySection';
 
 interface LandingPageProps {
   settings: Settings;
@@ -29,6 +30,13 @@ function BuiltinSection({ section, settings }: { section: LandingSection; settin
       return <CoreValuesSection settings={settings} />;
     case 'programs':
       return <ProgramsSection settings={settings} />;
+    case 'gallery':
+      return (
+        <GallerySection
+          images={settings.gallery || []}
+          brandColor={settings.landing_primary_color || undefined}
+        />
+      );
     case 'cta':
       return <CTASection />;
     case 'contact':

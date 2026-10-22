@@ -16,6 +16,12 @@ def get_media_url(path):
 
     path_str = str(path)
 
+    # Public website images (logo, hero, gallery…) have a permanent address; never a signed link.
+    from core.website_media import is_website_path, public_url
+
+    if is_website_path(path_str):
+        return public_url(path_str)
+
     # If it's already a full URL, return as-is
     if path_str.startswith("http"):
         return path_str

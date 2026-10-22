@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { headers } from 'next/headers';
+import { getPublicSite } from '@/lib/public-site';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { ToastProvider } from '@/components/providers/toast-provider';
@@ -13,8 +14,6 @@ import { FeedbackPortal } from '@/components/features/feedback/FeedbackPortal';
 
 const inter = Inter({ subsets: ['latin'] });
 
-const DJANGO_API_URL = (process.env.DJANGO_API_URL || 'http://127.0.0.1:8000').replace(/\/$/, '');
-
 export async function generateMetadata(): Promise<Metadata> {
   const headersList = await headers();
   const host = headersList.get('host') || '';
@@ -23,21 +22,27 @@ export async function generateMetadata(): Promise<Metadata> {
 
   let schoolName = 'Registra';
   let schoolTagline = 'The operating system for modern schools';
+  // School sites use their own logo (or a letter icon) everywhere a browser shows an icon.
+  let icons: Metadata['icons'] = {
+    icon: [
+      { url: '/favicon.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon.png', sizes: '16x16', type: 'image/png' },
+    ],
+    apple: [{ url: '/favicon.png', sizes: '180x180', type: 'image/png' }],
+    shortcut: '/favicon.png',
+  };
 
   if (tenantId) {
-    try {
-      const res = await fetch(`${DJANGO_API_URL}/api/core/public-settings/`, {
-        headers: { 'X-Tenant-ID': tenantId },
-        next: { revalidate: 3600 },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        schoolName = data.school_name || 'Registra';
-        schoolTagline = data.school_tagline || 'The operating system for modern schools';
-      }
-    } catch {
-      // Fallback to defaults
+    const site = await getPublicSite(tenantId);
+    if (site) {
+      schoolName = site.school_name || 'Registra';
+      schoolTagline = site.school_tagline || 'The operating system for modern schools';
     }
+    // The version changes when the logo or colour changes, so browsers drop their cached icon.
+    const logoKey = String(site?.logo_media || '').split('?')[0];
+    const version = iconVersion(`${logoKey}|${site?.landing_primary_color || ''}`);
+    const iconUrl = `/site-icon?v=${version}`;
+    icons = { icon: [{ url: iconUrl }], apple: [{ url: iconUrl }], shortcut: iconUrl };
   }
 
   const title = isRootHost
@@ -79,16 +84,14 @@ export async function generateMetadata(): Promise<Metadata> {
       title: title,
       description: description,
     },
-    manifest: '/manifest.json',
-    icons: {
-      icon: [
-        { url: '/favicon.png', sizes: '32x32', type: 'image/png' },
-        { url: '/favicon.png', sizes: '16x16', type: 'image/png' },
-      ],
-      apple: [{ url: '/favicon.png', sizes: '180x180', type: 'image/png' }],
-      shortcut: '/favicon.png',
-    },
+    icons,
   };
+}
+
+function iconVersion(value: string) {
+  let hash = 0;
+  for (let i = 0; i < value.length; i++) hash = (hash * 31 + value.charCodeAt(i)) | 0;
+  return (hash >>> 0).toString(36);
 }
 
 export const viewport: Viewport = {

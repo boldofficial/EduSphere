@@ -28,13 +28,20 @@ export function useSettings() {
   });
 }
 
-export function usePublicSettings() {
+/**
+ * The school's public website settings. Pass `initialData` when the server already loaded them (the
+ * public pages do), so the first paint shows the school's real content instead of platform defaults.
+ */
+export function usePublicSettings(initialData?: Types.Settings) {
   return useQuery({
     queryKey: queryKeys.publicSettings,
     queryFn: async () => {
       const response = await apiClient.get('core/public-settings/');
       return { ...INITIAL_SETTINGS, ...response.data } as Types.Settings;
     },
+    initialData,
+    // Server data is at most a few minutes old; don't refetch it the moment the page hydrates.
+    staleTime: initialData ? 5 * 60 * 1000 : undefined,
   });
 }
 

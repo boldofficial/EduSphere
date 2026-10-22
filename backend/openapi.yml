@@ -7973,6 +7973,26 @@ paths:
       responses:
         '200':
           description: No response body
+  /api/core/site-media/{path}:
+    get:
+      operationId: core_site_media_retrieve
+      description: |-
+        Permanent address for public website images (website/<school>/<random>.webp). Files never change once
+        written (random names), so browsers and CDNs may cache them for a year. Only the website/ folder is
+        served; student photos and documents are never reachable here.
+      parameters:
+      - in: path
+        name: path
+        schema:
+          type: string
+        required: true
+      tags:
+      - core
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
   /api/core/upload/:
     post:
       operationId: core_upload_create
@@ -14781,6 +14801,161 @@ paths:
       responses:
         '200':
           description: No response body
+  /api/schools/website-media/:
+    get:
+      operationId: schools_website_media_list
+      description: Admins only. Listing returns the whole library (it is bounded by
+        the storage quota).
+      tags:
+      - schools
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WebsiteMedia'
+          description: ''
+    post:
+      operationId: schools_website_media_create
+      description: Admins only. Listing returns the whole library (it is bounded by
+        the storage quota).
+      tags:
+      - schools
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebsiteMediaRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/WebsiteMediaRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/WebsiteMediaRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebsiteMedia'
+          description: ''
+  /api/schools/website-media/{id}/:
+    put:
+      operationId: schools_website_media_update
+      description: Admins only. Listing returns the whole library (it is bounded by
+        the storage quota).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this website media.
+        required: true
+      tags:
+      - schools
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebsiteMediaRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/WebsiteMediaRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/WebsiteMediaRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebsiteMedia'
+          description: ''
+    patch:
+      operationId: schools_website_media_partial_update
+      description: Admins only. Listing returns the whole library (it is bounded by
+        the storage quota).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this website media.
+        required: true
+      tags:
+      - schools
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedWebsiteMediaRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedWebsiteMediaRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedWebsiteMediaRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebsiteMedia'
+          description: ''
+    delete:
+      operationId: schools_website_media_destroy
+      description: Admins only. Listing returns the whole library (it is bounded by
+        the storage quota).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this website media.
+        required: true
+      tags:
+      - schools
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/schools/website-media/reorder/:
+    post:
+      operationId: schools_website_media_reorder_create
+      description: 'Body: {"ids": [3, 1, 2]} — the new gallery order.'
+      tags:
+      - schools
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebsiteMediaRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/WebsiteMediaRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/WebsiteMediaRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebsiteMedia'
+          description: ''
   /api/token/:
     post:
       operationId: token_create
@@ -24140,6 +24315,24 @@ components:
         reference:
           type: string
           maxLength: 100
+    PatchedWebsiteMediaRequest:
+      type: object
+      properties:
+        alt_text:
+          type: string
+          maxLength: 200
+        caption:
+          type: string
+          maxLength: 300
+        album:
+          type: string
+          maxLength: 80
+        show_in_gallery:
+          type: boolean
+        position:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
     Payment:
       type: object
       properties:
@@ -26933,6 +27126,42 @@ components:
         * `DIRECT` - Direct Message
         * `GROUP` - Group Chat
         * `BROADCAST` - Broadcast
+    WebsiteMedia:
+      type: object
+      properties:
+        alt_text:
+          type: string
+          maxLength: 200
+        caption:
+          type: string
+          maxLength: 300
+        album:
+          type: string
+          maxLength: 80
+        show_in_gallery:
+          type: boolean
+        position:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+    WebsiteMediaRequest:
+      type: object
+      properties:
+        alt_text:
+          type: string
+          maxLength: 200
+        caption:
+          type: string
+          maxLength: 300
+        album:
+          type: string
+          maxLength: 80
+        show_in_gallery:
+          type: boolean
+        position:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
   securitySchemes:
     jwtAuth:
       type: http

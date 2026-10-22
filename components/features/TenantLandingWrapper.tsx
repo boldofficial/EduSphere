@@ -4,6 +4,7 @@ import { LandingPage } from '@/components/features/LandingPage';
 import * as Utils from '@/lib/utils';
 import { usePublicSettings } from '@/lib/hooks/use-data';
 import Script from 'next/script';
+import type { Settings } from '@/lib/types';
 
 // JSON-LD Structured Data for SEO (Dynamic based on settings in future)
 const getStructuredData = (settings: any) => ({
@@ -22,9 +23,9 @@ const getStructuredData = (settings: any) => ({
   },
 });
 
-export function TenantLandingWrapper() {
-  // Use TanStack Query - renders immediately with defaults, updates when data loads
-  const { data: settings = Utils.INITIAL_SETTINGS } = usePublicSettings();
+export function TenantLandingWrapper({ initialSettings }: { initialSettings?: Settings }) {
+  // Server-loaded settings render immediately; the query only refreshes them in the background.
+  const { data: settings = Utils.INITIAL_SETTINGS } = usePublicSettings(initialSettings);
 
   if (settings.subscription_status === 'pending') {
     return (

@@ -2984,6 +2984,25 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/core/site-media/{path}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Permanent address for public website images (website/<school>/<random>.webp). Files never change once
+         *     written (random names), so browsers and CDNs may cache them for a year. Only the website/ folder is
+         *     served; student photos and documents are never reachable here. */
+        get: operations["core_site_media_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/core/upload/": {
         parameters: {
             query?: never;
@@ -5470,6 +5489,60 @@ export interface paths {
         get: operations["schools_verify_slug_retrieve"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/schools/website-media/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Admins only. Listing returns the whole library (it is bounded by the storage quota). */
+        get: operations["schools_website_media_list"];
+        put?: never;
+        /** @description Admins only. Listing returns the whole library (it is bounded by the storage quota). */
+        post: operations["schools_website_media_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/schools/website-media/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** @description Admins only. Listing returns the whole library (it is bounded by the storage quota). */
+        put: operations["schools_website_media_update"];
+        post?: never;
+        /** @description Admins only. Listing returns the whole library (it is bounded by the storage quota). */
+        delete: operations["schools_website_media_destroy"];
+        options?: never;
+        head?: never;
+        /** @description Admins only. Listing returns the whole library (it is bounded by the storage quota). */
+        patch: operations["schools_website_media_partial_update"];
+        trace?: never;
+    };
+    "/api/schools/website-media/reorder/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Body: {"ids": [3, 1, 2]} — the new gallery order. */
+        post: operations["schools_website_media_reorder_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -9786,6 +9859,13 @@ export interface components {
             payment_method?: string;
             reference?: string;
         };
+        PatchedWebsiteMediaRequest: {
+            alt_text?: string;
+            caption?: string;
+            album?: string;
+            show_in_gallery?: boolean;
+            position?: number;
+        };
         Payment: {
             readonly id: number;
             student: number;
@@ -10938,6 +11018,20 @@ export interface components {
          * @enum {string}
          */
         TypeEnum: "DIRECT" | "GROUP" | "BROADCAST";
+        WebsiteMedia: {
+            alt_text?: string;
+            caption?: string;
+            album?: string;
+            show_in_gallery?: boolean;
+            position?: number;
+        };
+        WebsiteMediaRequest: {
+            alt_text?: string;
+            caption?: string;
+            album?: string;
+            show_in_gallery?: boolean;
+            position?: number;
+        };
     };
     responses: never;
     parameters: never;
@@ -18273,6 +18367,26 @@ export interface operations {
             };
         };
     };
+    core_site_media_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                path: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     core_upload_create: {
         parameters: {
             query?: never;
@@ -24817,6 +24931,152 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    schools_website_media_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WebsiteMedia"][];
+                };
+            };
+        };
+    };
+    schools_website_media_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["WebsiteMediaRequest"];
+                "multipart/form-data": components["schemas"]["WebsiteMediaRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["WebsiteMediaRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WebsiteMedia"];
+                };
+            };
+        };
+    };
+    schools_website_media_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this website media. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["WebsiteMediaRequest"];
+                "multipart/form-data": components["schemas"]["WebsiteMediaRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["WebsiteMediaRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WebsiteMedia"];
+                };
+            };
+        };
+    };
+    schools_website_media_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this website media. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    schools_website_media_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this website media. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedWebsiteMediaRequest"];
+                "multipart/form-data": components["schemas"]["PatchedWebsiteMediaRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedWebsiteMediaRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WebsiteMedia"];
+                };
+            };
+        };
+    };
+    schools_website_media_reorder_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["WebsiteMediaRequest"];
+                "multipart/form-data": components["schemas"]["WebsiteMediaRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["WebsiteMediaRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WebsiteMedia"];
+                };
             };
         };
     };
