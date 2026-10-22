@@ -198,6 +198,13 @@ export const INITIAL_SETTINGS: Settings = {
   landing_hero_image: null,
   landing_about_text:
     'We are a faith-based school dedicated to training and raising a total child with godly values and excellent character, who will excel through the grace and the wisdom of God, by blending biblical principles with modern scholarship, educating children to thrive and reach their highest height in life.',
+  landing_about_eyebrow: 'Who we are',
+  landing_about_title: 'A tradition of excellence and strong values',
+  landing_about_html:
+    '<p>We combine excellent teaching, thoughtful mentoring, and a supportive community to help every learner grow with confidence.</p>',
+  landing_about_primary_image: null,
+  landing_about_secondary_image: null,
+  landing_about_image_position: 'left',
   landing_gallery_images: [],
   landing_primary_color: '#1A3A5C',
   landing_show_stats: true,
@@ -250,6 +257,9 @@ export const INITIAL_SETTINGS: Settings = {
     teachers: true,
     classes: true,
   },
+  landing_custom_enabled: false,
+  landing_custom_html: '',
+  landing_custom_css: '',
   promotion_threshold: 50,
   promotion_rules: 'manual',
   role_permissions: {

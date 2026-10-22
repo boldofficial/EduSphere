@@ -44,4 +44,20 @@ describe('Website CMS', () => {
       );
     });
   });
+
+  it('shows field validation feedback returned by the backend', async () => {
+    vi.spyOn(global, 'fetch').mockResolvedValue(
+      new Response(
+        JSON.stringify({ errors: { landing_custom_css: ['Custom CSS contains an unsafe rule.'] } }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      )
+    );
+
+    render(<CMSPage />);
+    fireEvent.click(screen.getByRole('button', { name: 'Publish Changes' }));
+
+    await waitFor(() => {
+      expect(addToast).toHaveBeenCalledWith('Custom CSS contains an unsafe rule.', 'error');
+    });
+  });
 });

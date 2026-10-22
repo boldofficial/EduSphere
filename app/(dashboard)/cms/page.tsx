@@ -11,6 +11,7 @@ import {
   Heart,
   GraduationCap,
   Palette,
+  Code2,
 } from 'lucide-react';
 import { useSettings } from '@/lib/hooks/use-data';
 import { Settings, CoreValue, AcademicProgram } from '@/lib/types';
@@ -22,6 +23,21 @@ import { CmsIdentityTab } from '@/components/features/cms/CmsIdentityTab';
 import { CmsHeroTab } from '@/components/features/cms/CmsHeroTab';
 import { CmsContentTabs } from '@/components/features/cms/CmsContentTabs';
 import { CmsAppearanceTab } from '@/components/features/cms/CmsAppearanceTab';
+import { CmsAdvancedDesignTab } from '@/components/features/cms/CmsAdvancedDesignTab';
+
+function getErrorMessage(result: unknown) {
+  if (!result || typeof result !== 'object') return 'Failed to save settings';
+  const payload = result as {
+    detail?: string;
+    error?: string;
+    errors?: Record<string, string | string[]>;
+  };
+  if (payload.detail) return payload.detail;
+  if (payload.error) return payload.error;
+  const firstError = payload.errors && Object.values(payload.errors)[0];
+  if (Array.isArray(firstError)) return firstError[0] || 'Failed to save settings';
+  return firstError || 'Failed to save settings';
+}
 
 export default function CMSPage() {
   const { data: settings = Utils.INITIAL_SETTINGS, isLoading } = useSettings();
@@ -29,7 +45,7 @@ export default function CMSPage() {
   const [localSettings, setLocalSettings] = useState<Settings>(settings);
   const [isSaving, setIsSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<
-    'branding' | 'hero' | 'about' | 'values' | 'programs' | 'appearance'
+    'branding' | 'hero' | 'about' | 'values' | 'programs' | 'appearance' | 'advanced'
   >('branding');
 
   useEffect(() => {
@@ -48,8 +64,7 @@ export default function CMSPage() {
       const result = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        const errorMsg = result.detail || result.error || 'Failed to save settings';
-        throw new Error(errorMsg);
+        throw new Error(getErrorMessage(result));
       }
       addToast('Website content updated successfully!', 'success');
     } catch (error: any) {
@@ -131,6 +146,7 @@ export default function CMSPage() {
     { id: 'values', name: 'Core Values', icon: Heart },
     { id: 'programs', name: 'Academic Divisions', icon: GraduationCap },
     { id: 'appearance', name: 'Branding & Theme', icon: Palette },
+    { id: 'advanced', name: 'Advanced HTML & CSS', icon: Code2 },
   ];
 
   return (
@@ -223,6 +239,9 @@ export default function CMSPage() {
             )}
             {activeTab === 'appearance' && (
               <CmsAppearanceTab localSettings={localSettings} updateField={updateField} />
+            )}
+            {activeTab === 'advanced' && (
+              <CmsAdvancedDesignTab localSettings={localSettings} updateField={updateField} />
             )}
           </div>
         </div>
