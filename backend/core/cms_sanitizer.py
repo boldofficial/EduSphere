@@ -176,6 +176,9 @@ def validate_website_css(value):
     value = (value or "").strip()
     if len(value) > 50_000:
         raise ValueError("Custom CSS must be 50,000 characters or fewer.")
+    if "<" in value:
+        # CSS never needs "<"; blocking it means section CSS can never close its <style>/<template> early.
+        raise ValueError('Custom CSS cannot contain "<". Put HTML in the HTML box.')
     if UNSAFE_CSS.search(value):
         raise ValueError(
             "Custom CSS contains a rule that is not allowed (imports, scripts, or fixed/sticky positioning)."
@@ -183,7 +186,7 @@ def validate_website_css(value):
     return value
 
 
-BUILTIN_SECTION_KEYS = ("hero", "about", "values", "programs", "cta", "contact")
+BUILTIN_SECTION_KEYS = ("hero", "about", "values", "programs", "gallery", "cta", "contact")
 SECTION_ID = re.compile(r"^[a-z0-9-]{1,40}$")
 MAX_SECTIONS = 30
 MAX_SECTION_HTML = 100_000

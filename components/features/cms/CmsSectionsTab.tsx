@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import {
   ArrowDown,
   ArrowUp,
@@ -9,6 +9,7 @@ import {
   Copy,
   Eye,
   EyeOff,
+  ImagePlus,
   LayoutTemplate,
   Link2,
   Lock,
@@ -26,6 +27,8 @@ import {
   sectionLabel,
 } from '@/lib/landing-sections';
 import { useConfirm } from '@/components/ui/confirm-dialog';
+import { Modal } from '@/components/ui/modal';
+import { MediaPickerGrid } from './CmsMediaTab';
 
 interface CmsSectionsTabProps {
   localSettings: Settings;
@@ -60,6 +63,8 @@ export function CmsSectionsTab({ localSettings, updateField }: CmsSectionsTabPro
   const [showCss, setShowCss] = useState<Record<string, boolean>>({});
   const [copied, setCopied] = useState('');
   const brand = localSettings.landing_primary_color || '#1A3A5C';
+  const htmlRef = useRef<HTMLTextAreaElement>(null);
+  const [pickerFor, setPickerFor] = useState<string | null>(null);
 
   const save = (next: LandingSection[]) => updateField('landing_sections', next);
   const patch = (id: string, changes: Partial<LandingSection>) =>
@@ -89,6 +94,19 @@ export function CmsSectionsTab({ localSettings, updateField }: CmsSectionsTabPro
     });
     if (ok) save(sections.filter((s) => s.id !== section.id));
   };
+  // Insert a library image at the cursor in the open section's HTML.
+  const insertImage = (sectionId: string, url: string, alt: string) => {
+    const section = sections.find((s) => s.id === sectionId);
+    if (!section) return;
+    const safeAlt = alt.replace(/"/g, '&quot;');
+    const tag = `<img src="${url}" alt="${safeAlt}" style="width: 100%; height: auto; border-radius: 16px;">`;
+    const el = htmlRef.current;
+    const start = el ? el.selectionStart : section.html.length;
+    const end = el ? el.selectionEnd : section.html.length;
+    patch(sectionId, { html: section.html.slice(0, start) + tag + section.html.slice(end) });
+    setPickerFor(null);
+  };
+
   const copyLink = async (href: string) => {
     try {
       await navigator.clipboard.writeText(href);
@@ -275,11 +293,22 @@ export function CmsSectionsTab({ localSettings, updateField }: CmsSectionsTabPro
 
                   <div className="grid gap-4 xl:grid-cols-2">
                     <div className="space-y-3">
-                      <label className="block space-y-1">
-                        <span className="text-sm font-bold text-gray-700">
-                          HTML (inline styles)
-                        </span>
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-sm font-bold text-gray-700">
+                            HTML (inline styles)
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setPickerFor(section.id)}
+                            className="flex items-center gap-1 rounded-control border border-gray-200 px-2.5 py-1 text-xs font-semibold text-gray-700 hover:border-brand-400"
+                          >
+                            <ImagePlus size={14} /> Insert image
+                          </button>
+                        </div>
                         <textarea
+                          ref={htmlRef}
+                          aria-label="Section HTML"
                           value={section.html}
                           onChange={(e) => patch(section.id, { html: e.target.value })}
                           rows={16}
@@ -289,7 +318,7 @@ export function CmsSectionsTab({ localSettings, updateField }: CmsSectionsTabPro
                             '<section style="padding: 64px 24px; text-align: center;">\n  <h2 style="color: var(--brand);">Welcome</h2>\n  <a href="/admission">Apply now</a>\n</section>'
                           }
                         />
-                      </label>
+                      </div>
                       {showCss[section.id] || section.css ? (
                         <label className="block space-y-1">
                           <span className="text-sm font-bold text-gray-700">
@@ -341,6 +370,18 @@ export function CmsSectionsTab({ localSettings, updateField }: CmsSectionsTabPro
       >
         <Plus size={18} /> Add section
       </button>
+      <Modal
+        isOpen={pickerFor !== null}
+        onClose={() => setPickerFor(null)}
+        title="Insert an image from your media library"
+        size="lg"
+      >
+        <MediaPickerGrid
+          onPick={(item) =>
+            pickerFor && insertImage(pickerFor, item.url, item.alt_text || item.caption)
+          }
+        />
+      </Modal>
     </div>
   );
 }

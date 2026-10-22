@@ -12,6 +12,7 @@ import {
   GraduationCap,
   Palette,
   Code2,
+  Images,
 } from 'lucide-react';
 import { useSettings } from '@/lib/hooks/use-data';
 import { Settings, CoreValue, AcademicProgram } from '@/lib/types';
@@ -24,6 +25,7 @@ import { CmsHeroTab } from '@/components/features/cms/CmsHeroTab';
 import { CmsContentTabs } from '@/components/features/cms/CmsContentTabs';
 import { CmsAppearanceTab } from '@/components/features/cms/CmsAppearanceTab';
 import { CmsSectionsTab } from '@/components/features/cms/CmsSectionsTab';
+import { CmsMediaTab } from '@/components/features/cms/CmsMediaTab';
 
 function getErrorMessage(result: unknown) {
   if (!result || typeof result !== 'object') return 'Failed to save settings';
@@ -45,7 +47,7 @@ export default function CMSPage() {
   const [localSettings, setLocalSettings] = useState<Settings>(settings);
   const [isSaving, setIsSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<
-    'branding' | 'hero' | 'about' | 'values' | 'programs' | 'appearance' | 'sections'
+    'branding' | 'hero' | 'about' | 'values' | 'programs' | 'media' | 'appearance' | 'sections'
   >('branding');
 
   useEffect(() => {
@@ -145,6 +147,7 @@ export default function CMSPage() {
     { id: 'about', name: 'About Us', icon: Info },
     { id: 'values', name: 'Core Values', icon: Heart },
     { id: 'programs', name: 'Academic Divisions', icon: GraduationCap },
+    { id: 'media', name: 'Media & Gallery', icon: Images },
     { id: 'appearance', name: 'Branding & Theme', icon: Palette },
     { id: 'sections', name: 'Page Sections & Code', icon: Code2 },
   ];
@@ -240,6 +243,7 @@ export default function CMSPage() {
             {activeTab === 'appearance' && (
               <CmsAppearanceTab localSettings={localSettings} updateField={updateField} />
             )}
+            {activeTab === 'media' && <CmsMediaTab />}
             {activeTab === 'sections' && (
               <CmsSectionsTab localSettings={localSettings} updateField={updateField} />
             )}

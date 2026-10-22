@@ -4,6 +4,7 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     ConversationViewSet,
     FileUploadView,
+    SiteMediaView,
     NewsletterViewSet,
     NotificationViewSet,
     PublicSettingsView,
@@ -36,6 +37,7 @@ urlpatterns = [
     path("public-settings/", PublicSettingsView.as_view(), name="public-settings"),
     path("public-stats/", PublicStatsView.as_view(), name="public-stats"),
     path("upload/", FileUploadView.as_view(), name="file-upload"),
+    path("site-media/<path:path>", SiteMediaView.as_view(), name="site-media"),
     # Termii notifications
     path("notifications/sms/", send_sms, name="send-sms"),
     path("notifications/whatsapp/", send_whatsapp, name="send-whatsapp"),

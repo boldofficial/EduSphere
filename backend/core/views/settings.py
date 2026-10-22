@@ -99,6 +99,7 @@ class SettingsView(APIView):
                     "landing_custom_html": settings_obj.landing_custom_html or "",
                     "landing_custom_css": settings_obj.landing_custom_css or "",
                     "landing_sections": settings_obj.landing_sections or [],
+                    "gallery": public_gallery(school),
                     "promotion_threshold": settings_obj.promotion_threshold,
                     "promotion_rules": settings_obj.promotion_rules,
                     "show_bank_details": settings_obj.show_bank_details,
@@ -165,6 +166,30 @@ class SettingsView(APIView):
             )
 
 
+GALLERY_LIMIT = 120
+
+
+def public_gallery(school):
+    """Gallery photos for the public site, in the admin's order. Shipped with the settings so the page renders once."""
+    from core.website_media import public_url
+    from schools.models import WebsiteMedia
+
+    items = WebsiteMedia.objects.filter(school=school, show_in_gallery=True).order_by("position", "-created_at")
+    return [
+        {
+            "id": m.id,
+            "url": public_url(m.path),
+            "thumb_url": public_url(m.thumb_path or m.path),
+            "width": m.width,
+            "height": m.height,
+            "alt": m.alt_text or m.caption or school.name,
+            "caption": m.caption,
+            "album": m.album,
+        }
+        for m in items[:GALLERY_LIMIT]
+    ]
+
+
 class PublicSettingsView(APIView):
     """
     Lightweight, unauthenticated endpoint for SEO metadata and landing pages.
@@ -221,6 +246,7 @@ class PublicSettingsView(APIView):
                     "landing_custom_html": settings_obj.landing_custom_html or "",
                     "landing_custom_css": settings_obj.landing_custom_css or "",
                     "landing_sections": settings_obj.landing_sections or [],
+                    "gallery": public_gallery(school),
                     "subscription_status": subscription_status,
                     "domain": school.domain,
                 }

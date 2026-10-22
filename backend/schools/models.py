@@ -451,3 +451,27 @@ class TicketResponse(models.Model):
 
     class Meta:
         ordering = ["created_at"]
+
+
+class WebsiteMedia(models.Model):
+    """An image in a school's website media library (gallery photos, section images)."""
+
+    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name="website_media")
+    path = models.CharField(max_length=255)
+    thumb_path = models.CharField(max_length=255, blank=True)
+    width = models.PositiveIntegerField(default=0)
+    height = models.PositiveIntegerField(default=0)
+    size_bytes = models.PositiveIntegerField(default=0)  # stored size (full + thumbnail), for the quota
+    alt_text = models.CharField(max_length=200, blank=True)
+    caption = models.CharField(max_length=300, blank=True)
+    album = models.CharField(max_length=80, blank=True)
+    show_in_gallery = models.BooleanField(default=True)
+    position = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["position", "-created_at"]
+        indexes = [models.Index(fields=["school", "show_in_gallery", "position"])]
+
+    def __str__(self):
+        return f"{self.school_id}: {self.caption or self.path}"

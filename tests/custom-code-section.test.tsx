@@ -51,6 +51,7 @@ describe('resolveSections', () => {
       'about',
       'values',
       'programs',
+      'gallery',
       'cta',
       'contact',
     ]);
@@ -81,5 +82,17 @@ describe('resolveSections', () => {
     const ids = resolveSections({ ...INITIAL_SETTINGS, landing_sections: saved }).map((s) => s.id);
     expect(ids.slice(0, 2)).toEqual(['news', 'hero']);
     expect(ids).toContain('contact');
+  });
+});
+
+describe('getMediaUrl', () => {
+  it('keeps permanent website image addresses as they are', async () => {
+    const { getMediaUrl } = await import('@/lib/utils');
+    expect(getMediaUrl('/site-media/website/3/abc.webp')).toBe('/site-media/website/3/abc.webp');
+    expect(getMediaUrl('https://school.example/site-media/website/3/abc.webp')).toBe(
+      '/site-media/website/3/abc.webp'
+    );
+    // Private media still goes through the authenticated proxy.
+    expect(getMediaUrl('/media/passports/x.jpg')).toBe('/api/proxy/media/passports/x.jpg');
   });
 });

@@ -7,7 +7,7 @@ import uuid
 from django.core.files.storage import default_storage
 from rest_framework.exceptions import ValidationError
 from rest_framework.parsers import FormParser, MultiPartParser
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -49,3 +49,34 @@ class FileUploadView(APIView):
         except Exception:
             return Response({"detail": "Could not store the file. Please try again."}, status=500)
         return Response({"url": default_storage.url(saved_path), "path": saved_path, "filename": filename})
+
+
+class SiteMediaView(APIView):
+    """
+    Permanent address for public website images (website/<school>/<random>.webp). Files never change once
+    written (random names), so browsers and CDNs may cache them for a year. Only the website/ folder is
+    served; student photos and documents are never reachable here.
+    """
+
+    permission_classes = [AllowAny]
+    authentication_classes = []
+    throttle_classes = []  # a page loads many images; the anonymous API throttle would break galleries
+
+    def get(self, request, path):
+        import mimetypes
+
+        from django.core.files.storage import default_storage
+        from django.http import FileResponse, Http404
+
+        from core.website_media import is_website_path
+
+        if not is_website_path(path):
+            raise Http404
+        try:
+            handle = default_storage.open(path, "rb")
+        except Exception:
+            raise Http404
+        response = FileResponse(handle, content_type=mimetypes.guess_type(path)[0] or "application/octet-stream")
+        response["Cache-Control"] = "public, max-age=31536000, immutable"
+        response["X-Content-Type-Options"] = "nosniff"
+        return response

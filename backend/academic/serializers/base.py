@@ -23,7 +23,43 @@ class Base64ImageField(serializers.CharField):
     Saves to storage and returns the URL.
     """
 
+    def __init__(self, *args, website=False, logo=False, school_id=None, **kwargs):
+        # website=True: a public website image (optimised, permanent address under website/<school>/).
+        self.website = website
+        self.logo = logo
+        self.school_id = school_id
+        super().__init__(*args, **kwargs)
+
+    def _website_school_id(self):
+        if self.school_id:
+            return self.school_id
+        school = _school_from_request(self.parent) if self.parent is not None else None
+        if not school:
+            raise serializers.ValidationError("Could not determine the school for this image.")
+        return school.pk
+
     def to_internal_value(self, data):
+        from core.website_media import path_from_url
+
+        website_path = path_from_url(data)
+        if website_path:
+            return website_path  # an existing website image sent back unchanged
+
+        if self.website and data and isinstance(data, str) and data.startswith("data:image"):
+            import base64
+            import binascii
+
+            from core.website_media import MAX_SOURCE_BYTES, save_website_image
+
+            try:
+                _header, imgstr = data.split(";base64,", 1)
+                if len(imgstr) > MAX_SOURCE_BYTES * 4 // 3 + 4:
+                    raise serializers.ValidationError("Image is too large (max 15 MB).")
+                decoded = base64.b64decode(imgstr, validate=True)
+            except (ValueError, binascii.Error):
+                raise serializers.ValidationError("Image data is not valid.")
+            return save_website_image(self._website_school_id(), decoded, logo=self.logo)["path"]
+
         if data and isinstance(data, str) and data.startswith("data:image"):
             try:
                 # Format: "data:image/png;base64,iVBORw0KG..."
