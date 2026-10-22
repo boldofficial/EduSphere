@@ -4,6 +4,7 @@ import React from 'react';
 import { Info, Heart, GraduationCap, Plus, Star, Trash2, Image as ImageIcon } from 'lucide-react';
 import { Settings, CoreValue, AcademicProgram } from '@/lib/types';
 import * as Utils from '@/lib/utils';
+import { RichTextEditor } from '@/components/features/blog/RichTextEditor';
 
 interface CmsContentTabsProps {
   localSettings: Settings;
@@ -43,17 +44,102 @@ export const CmsContentTabs: React.FC<CmsContentTabsProps> = ({
               <Info className="text-blue-500" size={24} />
               About Us Section
             </h2>
-            <p className="text-gray-500 text-sm">Tell your school&apos;s history and mission.</p>
+            <p className="text-gray-500 text-sm">
+              Build a polished introduction with formatted content and responsive imagery.
+            </p>
           </div>
-          <div className="space-y-4">
-            <label className="text-sm font-bold text-gray-700">Detailed Introduction</label>
-            <textarea
-              rows={10}
-              value={localSettings.landing_about_text}
-              onChange={(e) => updateField('landing_about_text', e.target.value)}
-              className="w-full px-6 py-5 rounded-[2rem] bg-gray-50 border-2 border-transparent focus:border-brand-500 focus:bg-white outline-none transition-all font-medium leading-relaxed"
-              placeholder="Write about your school's journey, values, and vision..."
+          <div className="grid gap-5 md:grid-cols-2">
+            <label className="space-y-2">
+              <span className="text-sm font-bold text-gray-700">Section label</span>
+              <input
+                value={localSettings.landing_about_eyebrow}
+                onChange={(e) => updateField('landing_about_eyebrow', e.target.value)}
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 outline-none focus:border-brand-500"
+                placeholder="Who we are"
+              />
+            </label>
+            <label className="space-y-2">
+              <span className="text-sm font-bold text-gray-700">Section heading</span>
+              <input
+                value={localSettings.landing_about_title}
+                onChange={(e) => updateField('landing_about_title', e.target.value)}
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 outline-none focus:border-brand-500"
+                placeholder="A tradition of excellence"
+              />
+            </label>
+          </div>
+
+          <div className="space-y-3">
+            <label className="text-sm font-bold text-gray-700">Formatted story</label>
+            <RichTextEditor
+              content={localSettings.landing_about_html || localSettings.landing_about_text}
+              onChange={(html) => updateField('landing_about_html', html)}
+              placeholder="Share your school's story, mission, achievements, and approach..."
             />
+          </div>
+
+          <div className="grid gap-5 md:grid-cols-2">
+            {(
+              [
+                ['landing_about_primary_image', 'Main image'],
+                ['landing_about_secondary_image', 'Supporting image'],
+              ] as const
+            ).map(([field, label]) => (
+              <div key={field} className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <span className="text-sm font-bold text-gray-700">{label}</span>
+                  {localSettings[field] && (
+                    <button
+                      type="button"
+                      onClick={() => updateField(field, null)}
+                      className="text-xs font-bold text-red-500"
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+                {localSettings[field] ? (
+                  <img
+                    src={Utils.getMediaUrl(localSettings[field])}
+                    alt=""
+                    className="mb-3 h-40 w-full rounded-xl object-cover"
+                  />
+                ) : (
+                  <div className="mb-3 flex h-40 items-center justify-center rounded-xl border-2 border-dashed border-gray-200 bg-white text-gray-400">
+                    <ImageIcon size={32} />
+                  </div>
+                )}
+                <label className="block cursor-pointer rounded-xl bg-white px-4 py-2 text-center text-sm font-bold text-brand-600 shadow-sm">
+                  {localSettings[field] ? 'Replace image' : 'Upload image'}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(event) => handleImageUpload(event, (url) => updateField(field, url))}
+                  />
+                </label>
+              </div>
+            ))}
+          </div>
+
+          <div className="space-y-2">
+            <span className="text-sm font-bold text-gray-700">Image placement</span>
+            <div className="grid grid-cols-2 gap-3">
+              {(['left', 'right'] as const).map((position) => (
+                <button
+                  key={position}
+                  type="button"
+                  onClick={() => updateField('landing_about_image_position', position)}
+                  className={`rounded-xl border px-4 py-3 text-sm font-bold capitalize transition-colors ${
+                    localSettings.landing_about_image_position === position
+                      ? 'border-brand-600 bg-brand-50 text-brand-700'
+                      : 'border-gray-200 text-gray-600'
+                  }`}
+                >
+                  Images on the {position}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       )}

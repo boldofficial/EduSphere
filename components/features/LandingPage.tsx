@@ -11,6 +11,7 @@ import { CoreValuesSection } from './landing-tenant/CoreValuesSection';
 import { ProgramsSection } from './landing-tenant/ProgramsSection';
 import { CTASection } from './landing-tenant/CTASection';
 import { ContactSection } from './landing-tenant/ContactSection';
+import { CustomCodeSection } from './landing-tenant/CustomCodeSection';
 
 interface LandingPageProps {
   settings: import('@/lib/types').Settings;
@@ -27,6 +28,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ settings }) => {
         <CoreValuesSection settings={settings} />
         <ProgramsSection settings={settings} />
         <CTASection />
+        <CustomCodeSection settings={settings} />
         <ContactSection settings={settings} />
       </main>
 

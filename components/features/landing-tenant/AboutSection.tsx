@@ -1,77 +1,68 @@
 import Image from 'next/image';
 import React from 'react';
-import { CheckCircle } from 'lucide-react';
 import { Settings } from '@/lib/types';
+import * as Utils from '@/lib/utils';
 
 interface AboutSectionProps {
   settings: Settings;
 }
 
 export const AboutSection: React.FC<AboutSectionProps> = ({ settings }) => {
+  const title = settings.landing_about_title || 'A tradition of excellence';
+  const primaryImage = Utils.getMediaUrl(
+    settings.landing_about_primary_image || '/fruitful1.jpg.jpg'
+  );
+  const secondaryImage = Utils.getMediaUrl(
+    settings.landing_about_secondary_image || '/fruitfulnew.jpg'
+  );
+  const imagesFirst = settings.landing_about_image_position !== 'right';
+
   return (
-    <section id="about" className="py-24 bg-white relative overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-2 gap-20 items-center">
-          {/* Image Composition */}
-          <div className="relative">
-            <div className="relative rounded-3xl overflow-hidden shadow-2xl">
+    <section id="about" className="relative overflow-hidden bg-white py-20 sm:py-24">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid items-center gap-14 lg:grid-cols-2 lg:gap-20">
+          <div className={`relative pb-10 ${imagesFirst ? 'lg:order-1' : 'lg:order-2'}`}>
+            <div className="absolute -left-5 -top-5 h-full w-full rounded-[2rem] bg-brand-50" />
+            <div className="relative overflow-hidden rounded-[2rem] shadow-2xl">
               <Image
-                src="/fruitful1.jpg.jpg"
-                alt="Students Learning"
-                width={600}
-                height={320}
-                className="w-full h-80 object-cover"
+                src={primaryImage}
+                alt={title}
+                width={800}
+                height={560}
+                className="h-[25rem] w-full object-cover"
                 unoptimized
               />
             </div>
-            <div className="absolute -bottom-12 -right-8 w-2/3 rounded-2xl overflow-hidden shadow-xl border-4 border-white">
-              <Image
-                src="/fruitfulnew.jpg"
-                alt="School Activities"
-                width={400}
-                height={192}
-                className="w-full h-48 object-cover"
-                unoptimized
-              />
-            </div>
-            <div className="absolute top-8 left-8 w-full h-full bg-brand-100 rounded-3xl -z-10"></div>
+            {secondaryImage && (
+              <div className="absolute -bottom-1 right-3 w-2/5 overflow-hidden rounded-2xl border-4 border-white shadow-xl sm:right-8">
+                <Image
+                  src={secondaryImage}
+                  alt={`${title} — additional view`}
+                  width={400}
+                  height={260}
+                  className="h-36 w-full object-cover sm:h-44"
+                  unoptimized
+                />
+              </div>
+            )}
           </div>
 
-          {/* Content */}
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-brand-50 text-brand-600 rounded-full text-sm font-bold tracking-wide mb-6">
-              <span className="w-2 h-2 rounded-full bg-brand-600"></span>
-              WHO WE ARE
+          <div className={imagesFirst ? 'lg:order-2' : 'lg:order-1'}>
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-brand-50 px-3 py-1 text-sm font-bold uppercase tracking-wider text-brand-700">
+              <span className="h-2 w-2 rounded-full bg-brand-600" />
+              {settings.landing_about_eyebrow || 'Who we are'}
             </div>
-            <h2 className="text-4xl font-bold text-gray-900 mb-6 leading-tight">
-              A Tradition of Excellence & <span className="text-brand-600">Godly Values</span>
+            <h2 className="mb-6 text-4xl font-black leading-tight text-gray-950 sm:text-5xl">
+              {title}
             </h2>
-            <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-              {settings.landing_about_text ||
-                'Registra provides a comprehensive management and learning platform that balances academic rigour with administrative efficiency.'}
-            </p>
-
-            <div className="grid sm:grid-cols-2 gap-8 mb-10">
-              {[
-                {
-                  title: 'Holistic Education',
-                  desc: 'Focusing on the total child: spirit, soul, and body.',
-                },
-                { title: 'Expert Faculty', desc: 'Qualified & experienced teachers who mentor.' },
-                { title: 'Safe Environment', desc: 'Secure, conducive learning atmosphere.' },
-                { title: 'Modern Facilities', desc: 'Labs, ICT, Library, and Sports fields.' },
-              ].map((item, idx) => (
-                <div key={idx} className="flex gap-4">
-                  <div className="shrink-0 h-10 w-10 bg-brand-100 rounded-lg flex items-center justify-center text-brand-600 mt-1">
-                    <CheckCircle size={20} />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-gray-900">{item.title}</h4>
-                    <p className="text-sm text-gray-500 mt-1">{item.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+            {settings.landing_about_html ? (
+              <div
+                className="space-y-4 text-lg leading-8 text-gray-600 [&_a]:font-bold [&_a]:text-brand-700 [&_blockquote]:border-l-4 [&_blockquote]:border-brand-300 [&_blockquote]:pl-5 [&_h2]:text-2xl [&_h2]:font-black [&_h2]:text-gray-900 [&_h3]:text-xl [&_h3]:font-bold [&_h3]:text-gray-900 [&_li]:ml-5 [&_ol]:list-decimal [&_strong]:text-gray-900 [&_ul]:list-disc"
+                dangerouslySetInnerHTML={{ __html: settings.landing_about_html }}
+              />
+            ) : (
+              <p className="text-lg leading-8 text-gray-600">{settings.landing_about_text}</p>
+            )}
           </div>
         </div>
       </div>

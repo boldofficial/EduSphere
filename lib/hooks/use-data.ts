@@ -32,6 +32,7 @@ export const queryKeys = {
   messages: ['messages'] as const,
   conversations: ['conversations'] as const,
   publicStats: ['public_stats'] as const,
+  publicSettings: ['public_settings'] as const,
   systemHealth: ['system_health'] as const,
   adminSchools: ['admin_schools'] as const,
   adminPlans: ['admin_plans'] as const,
@@ -116,6 +117,7 @@ export const fetchPaginated = async <T>(
 // =============================================
 export {
   useSettings,
+  usePublicSettings,
   useUpdateSettings,
   usePublicStats,
   useMe,

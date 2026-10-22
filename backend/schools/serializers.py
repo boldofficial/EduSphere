@@ -239,6 +239,7 @@ def _enabled_methods(obj):
 from academic.serializers import Base64ImageField
 from django.db import transaction
 from .models import SchoolSettings
+from core.cms_sanitizer import sanitize_website_html, validate_website_css
 
 
 class SchoolSettingsSerializer(serializers.ModelSerializer):
@@ -257,11 +258,30 @@ class SchoolSettingsSerializer(serializers.ModelSerializer):
     director_signature = Base64ImageField(required=False, allow_null=True)
     head_of_school_signature = Base64ImageField(required=False, allow_null=True)
     landing_hero_image = Base64ImageField(required=False, allow_null=True)
+    landing_about_primary_image = Base64ImageField(required=False, allow_null=True)
+    landing_about_secondary_image = Base64ImageField(required=False, allow_null=True)
 
     class Meta:
         model = SchoolSettings
         fields = "__all__"
         read_only_fields = ("school",)
+
+    def validate_landing_about_image_position(self, value):
+        if value not in ("left", "right"):
+            raise serializers.ValidationError("Image position must be left or right.")
+        return value
+
+    def validate_landing_about_html(self, value):
+        return sanitize_website_html(value)
+
+    def validate_landing_custom_html(self, value):
+        return sanitize_website_html(value)
+
+    def validate_landing_custom_css(self, value):
+        try:
+            return validate_website_css(value)
+        except ValueError as error:
+            raise serializers.ValidationError(str(error)) from error
 
     def update(self, instance, validated_data):
         school_data = validated_data.pop("school", {})
