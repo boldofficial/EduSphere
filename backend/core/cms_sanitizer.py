@@ -7,6 +7,37 @@ from urllib.parse import urlparse
 
 ALLOWED_TAGS = {
     "a",
+    "abbr",
+    "address",
+    "article",
+    "aside",
+    "b",
+    "caption",
+    "cite",
+    "code",
+    "dd",
+    "dl",
+    "dt",
+    "footer",
+    "h5",
+    "h6",
+    "header",
+    "i",
+    "mark",
+    "nav",
+    "pre",
+    "small",
+    "sub",
+    "sup",
+    "table",
+    "tbody",
+    "td",
+    "tfoot",
+    "th",
+    "thead",
+    "time",
+    "tr",
+    "u",
     "blockquote",
     "br",
     "div",
@@ -32,6 +63,9 @@ GLOBAL_ATTRIBUTES = {"class", "id", "title", "aria-label", "style"}
 TAG_ATTRIBUTES = {
     "a": {"href", "target", "rel"},
     "img": {"src", "alt", "width", "height", "loading"},
+    "td": {"colspan", "rowspan"},
+    "th": {"colspan", "rowspan", "scope"},
+    "time": {"datetime"},
 }
 SAFE_URL_SCHEMES = {"", "http", "https", "mailto", "tel"}
 CSS_PROPERTY = re.compile(r"^(?:--[a-z0-9_-]+|-?[a-z][a-z0-9-]*)$", re.IGNORECASE)
@@ -57,11 +91,9 @@ def sanitize_inline_style(value):
         property_name, property_value = declaration.split(":", 1)
         property_name = property_name.strip().lower()
         property_value = property_value.strip()
-        if (
-            not CSS_PROPERTY.fullmatch(property_name)
-            or not property_value
-            or UNSAFE_INLINE_CSS.search(property_value)
-        ):
+        if property_name == "position" and property_value.lower().startswith(("fixed", "sticky")):
+            continue
+        if not CSS_PROPERTY.fullmatch(property_name) or not property_value or UNSAFE_INLINE_CSS.search(property_value):
             continue
         clean.append(f"{property_name}: {property_value}")
     return "; ".join(clean)
@@ -135,7 +167,7 @@ def sanitize_website_html(value):
 
 
 UNSAFE_CSS = re.compile(
-    r"@import|expression\s*\(|javascript\s*:|behavior\s*:|-moz-binding|</?style",
+    r"@import|expression\s*\(|javascript\s*:|behavior\s*:|-moz-binding|</?style|position\s*:\s*(?:fixed|sticky)",
     re.IGNORECASE,
 )
 
@@ -145,5 +177,58 @@ def validate_website_css(value):
     if len(value) > 50_000:
         raise ValueError("Custom CSS must be 50,000 characters or fewer.")
     if UNSAFE_CSS.search(value):
-        raise ValueError("Custom CSS contains an unsafe rule.")
+        raise ValueError(
+            "Custom CSS contains a rule that is not allowed (imports, scripts, or fixed/sticky positioning)."
+        )
     return value
+
+
+BUILTIN_SECTION_KEYS = ("hero", "about", "values", "programs", "cta", "contact")
+SECTION_ID = re.compile(r"^[a-z0-9-]{1,40}$")
+MAX_SECTIONS = 30
+MAX_SECTION_HTML = 100_000
+
+
+def sanitize_landing_sections(value):
+    """Validate the ordered section list and clean every section's HTML and CSS before it is stored."""
+    if value in (None, ""):
+        return []
+    if not isinstance(value, list):
+        raise ValueError("Sections must be a list.")
+    if len(value) > MAX_SECTIONS:
+        raise ValueError(f"A page can have at most {MAX_SECTIONS} sections.")
+    clean, seen_ids, seen_builtins = [], set(), set()
+    for index, item in enumerate(value, start=1):
+        if not isinstance(item, dict):
+            raise ValueError(f"Section {index} is not valid.")
+        key = str(item.get("key") or "")
+        if key not in BUILTIN_SECTION_KEYS and key != "custom":
+            raise ValueError(f"Section {index} has an unknown type.")
+        if key != "custom":
+            if key in seen_builtins:
+                raise ValueError(f"The {key} section appears twice.")
+            seen_builtins.add(key)
+        section_id = str(item.get("id") or key)
+        if not SECTION_ID.fullmatch(section_id) or section_id in seen_ids:
+            raise ValueError(f"Section {index} has an invalid or duplicate id.")
+        seen_ids.add(section_id)
+        html = str(item.get("html") or "")
+        if len(html) > MAX_SECTION_HTML:
+            raise ValueError(f"Section {index}: HTML must be {MAX_SECTION_HTML:,} characters or fewer.")
+        try:
+            css = validate_website_css(str(item.get("css") or ""))
+        except ValueError as error:
+            raise ValueError(f"Section {index}: {error}") from error
+        clean.append(
+            {
+                "id": section_id,
+                "key": key,
+                "title": str(item.get("title") or "")[:120],
+                "enabled": bool(item.get("enabled", True)),
+                # School-made sections are always custom code.
+                "use_custom": True if key == "custom" else bool(item.get("use_custom")),
+                "html": sanitize_website_html(html),
+                "css": css,
+            }
+        )
+    return clean

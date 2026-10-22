@@ -98,6 +98,7 @@ class SettingsView(APIView):
                     "landing_custom_enabled": settings_obj.landing_custom_enabled,
                     "landing_custom_html": settings_obj.landing_custom_html or "",
                     "landing_custom_css": settings_obj.landing_custom_css or "",
+                    "landing_sections": settings_obj.landing_sections or [],
                     "promotion_threshold": settings_obj.promotion_threshold,
                     "promotion_rules": settings_obj.promotion_rules,
                     "show_bank_details": settings_obj.show_bank_details,
@@ -221,6 +222,7 @@ class PublicSettingsView(APIView):
                     "landing_custom_enabled": settings_obj.landing_custom_enabled,
                     "landing_custom_html": settings_obj.landing_custom_html or "",
                     "landing_custom_css": settings_obj.landing_custom_css or "",
+                    "landing_sections": settings_obj.landing_sections or [],
                     "subscription_status": subscription_status,
                     "domain": school.domain,
                 }
