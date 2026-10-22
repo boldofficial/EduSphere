@@ -65,7 +65,8 @@ class SchoolSettingsTests(APITestCase):
             "/api/core/settings/",
             {
                 "landing_custom_html": (
-                    '<section onclick="alert(1)"><h2>Welcome</h2>'
+                    '<section onclick="alert(1)" style="padding: 48px; background: #ffffff; '
+                    'background-image: url(javascript:alert(1))"><h2 style="color: navy">Welcome</h2>'
                     '<script>alert(1)</script></section>'
                 ),
                 "landing_custom_css": "@import url(https://bad.example/style.css);",
@@ -81,7 +82,8 @@ class SchoolSettingsTests(APITestCase):
             "/api/core/settings/",
             {
                 "landing_custom_html": (
-                    '<section onclick="alert(1)"><h2>Welcome</h2>'
+                    '<section onclick="alert(1)" style="padding: 48px; background: #ffffff; '
+                    'background-image: url(javascript:alert(1))"><h2 style="color: navy">Welcome</h2>'
                     '<script>alert(1)</script></section>'
                 ),
                 "landing_custom_css": ".welcome { color: #123456; }",
@@ -93,6 +95,9 @@ class SchoolSettingsTests(APITestCase):
         self.assertEqual(safe_response.status_code, status.HTTP_200_OK)
         self.assertNotIn("onclick", safe_response.data["landing_custom_html"])
         self.assertNotIn("<script", safe_response.data["landing_custom_html"])
+        self.assertIn('style="padding: 48px; background: #ffffff"', safe_response.data["landing_custom_html"])
+        self.assertIn('style="color: navy"', safe_response.data["landing_custom_html"])
+        self.assertNotIn("javascript:", safe_response.data["landing_custom_html"])
 
 
 class AnnouncementTests(APITestCase):

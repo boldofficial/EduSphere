@@ -28,12 +28,17 @@ ALLOWED_TAGS = {
     "ul",
 }
 VOID_TAGS = {"br", "hr", "img"}
-GLOBAL_ATTRIBUTES = {"class", "id", "title", "aria-label"}
+GLOBAL_ATTRIBUTES = {"class", "id", "title", "aria-label", "style"}
 TAG_ATTRIBUTES = {
     "a": {"href", "target", "rel"},
     "img": {"src", "alt", "width", "height", "loading"},
 }
 SAFE_URL_SCHEMES = {"", "http", "https", "mailto", "tel"}
+CSS_PROPERTY = re.compile(r"^(?:--[a-z0-9_-]+|-?[a-z][a-z0-9-]*)$", re.IGNORECASE)
+UNSAFE_INLINE_CSS = re.compile(
+    r"expression\s*\(|javascript\s*:|vbscript\s*:|behavior\s*:|-moz-binding|@import|</?style",
+    re.IGNORECASE,
+)
 
 
 def _safe_url(value):
@@ -41,6 +46,25 @@ def _safe_url(value):
     if value.startswith(("/", "#")):
         return value
     return value if urlparse(value).scheme.lower() in SAFE_URL_SCHEMES else ""
+
+
+def sanitize_inline_style(value):
+    """Keep ordinary inline declarations while dropping executable or malformed CSS."""
+    clean = []
+    for declaration in (value or "").split(";"):
+        if ":" not in declaration:
+            continue
+        property_name, property_value = declaration.split(":", 1)
+        property_name = property_name.strip().lower()
+        property_value = property_value.strip()
+        if (
+            not CSS_PROPERTY.fullmatch(property_name)
+            or not property_value
+            or UNSAFE_INLINE_CSS.search(property_value)
+        ):
+            continue
+        clean.append(f"{property_name}: {property_value}")
+    return "; ".join(clean)
 
 
 class _WebsiteHTMLSanitizer(HTMLParser):
@@ -65,6 +89,10 @@ class _WebsiteHTMLSanitizer(HTMLParser):
                 continue
             if name in {"href", "src"}:
                 value = _safe_url(value)
+                if not value:
+                    continue
+            if name == "style":
+                value = sanitize_inline_style(value)
                 if not value:
                     continue
             if tag == "a" and name == "target" and value != "_blank":
