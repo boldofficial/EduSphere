@@ -13,6 +13,7 @@ export const BUILTIN_SECTIONS: {
   { key: 'about', label: 'About us', anchor: 'about' },
   { key: 'values', label: 'Core values', anchor: 'features' },
   { key: 'programs', label: 'Academic programs', anchor: 'programs' },
+  { key: 'gallery', label: 'Photo gallery', anchor: 'gallery' },
   { key: 'cta', label: 'Admission call-to-action', anchor: 'apply' },
   { key: 'contact', label: 'Contact', anchor: 'contact' },
 ];
@@ -78,7 +79,7 @@ export function newCustomSection(existing: LandingSection[], html = '', css = ''
 export const SITE_LINKS = [
   { label: 'Apply for admission', href: '/admission' },
   { label: 'Portal login', href: '/login' },
-  { label: 'News & blog', href: '/blog' },
+  { label: 'Photo gallery', href: '/gallery' },
   { label: 'Home (top)', href: '/#home' },
   { label: 'About', href: '/#about' },
   { label: 'Programs', href: '/#programs' },

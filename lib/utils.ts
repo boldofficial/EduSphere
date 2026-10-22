@@ -22,6 +22,10 @@ export const getMediaUrl = (url: string | null | undefined): string => {
   if (url.startsWith('blob:')) return url;
   if (url.startsWith('/api/proxy')) return url;
 
+  // Permanent public website images (logo, hero, gallery). Checked before "/media/", which it contains.
+  const siteMediaIndex = url.indexOf('/site-media/');
+  if (siteMediaIndex !== -1) return url.substring(siteMediaIndex);
+
   // If it's an absolute URL containing /media/, make it relative via proxy
   const mediaIndex = url.indexOf('/media/');
   if (mediaIndex !== -1) {

@@ -4,22 +4,28 @@ import { Menu, X } from 'lucide-react';
 import * as Utils from '@/lib/utils';
 
 interface SiteHeaderProps {
+  /** Always use the solid (white) header, for pages without a dark hero behind it. */
+  solid?: boolean;
   settings: {
     school_name?: string;
     logo_media?: string | null;
     landing_primary_color?: string;
     school_tagline?: string;
+    gallery?: unknown[];
   };
 }
 
-const SiteHeader = ({ settings }: SiteHeaderProps) => {
+const SiteHeader = ({ settings, solid: forceSolid = false }: SiteHeaderProps) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const solid = isScrolled || forceSolid;
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
     };
+    handleScroll(); // pages opened mid-way (e.g. /#gallery) start scrolled
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -29,13 +35,15 @@ const SiteHeader = ({ settings }: SiteHeaderProps) => {
     { href: '/#about', label: 'About' },
     { href: '/#programs', label: 'Programs' },
     { href: '/#features', label: 'Features' },
+    // Shown once the school has published gallery photos.
+    ...(settings.gallery?.length ? [{ href: '/gallery', label: 'Gallery' }] : []),
     { href: '/#contact', label: 'Contact' },
   ];
 
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        isScrolled ? 'bg-white/95 backdrop-blur-md shadow-lg py-2' : 'bg-transparent py-4'
+        solid ? 'bg-white/95 backdrop-blur-md shadow-lg py-2' : 'bg-transparent py-4'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -50,13 +58,13 @@ const SiteHeader = ({ settings }: SiteHeaderProps) => {
                   className="h-12 w-12 rounded-xl object-contain bg-white/10"
                 />
                 <div
-                  className={`transition-colors duration-300 ${isScrolled ? 'text-brand-900' : 'text-white'}`}
+                  className={`transition-colors duration-300 ${solid ? 'text-brand-900' : 'text-white'}`}
                 >
                   <h1 className="text-xl font-bold leading-none">
                     {settings.school_name || 'Registra'}
                   </h1>
                   <p
-                    className={`text-xs font-medium ${isScrolled ? 'text-brand-500' : 'text-white/80'}`}
+                    className={`text-xs font-medium ${solid ? 'text-brand-500' : 'text-white/80'}`}
                   >
                     {settings.school_tagline || 'The operating system for modern schools.'}
                   </p>
@@ -75,7 +83,7 @@ const SiteHeader = ({ settings }: SiteHeaderProps) => {
               <Link
                 key={link.label}
                 href={link.href}
-                className={`text-sm font-medium transition-colors hover:text-accent-400 ${isScrolled ? 'text-gray-700' : 'text-white/90'}`}
+                className={`text-sm font-medium transition-colors hover:text-accent-400 ${solid ? 'text-gray-700' : 'text-white/90'}`}
               >
                 {link.label}
               </Link>
@@ -92,7 +100,7 @@ const SiteHeader = ({ settings }: SiteHeaderProps) => {
           <div className="md:hidden">
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className={`p-2 rounded-lg transition-colors ${isScrolled ? 'text-gray-900' : 'text-white'}`}
+              className={`p-2 rounded-lg transition-colors ${solid ? 'text-gray-900' : 'text-white'}`}
             >
               {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
             </button>

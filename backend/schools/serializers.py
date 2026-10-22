@@ -251,15 +251,15 @@ class SchoolSettingsSerializer(serializers.ModelSerializer):
     custom_domain = serializers.CharField(
         source="school.custom_domain", required=False, allow_blank=True, allow_null=True
     )
-    logo_media = Base64ImageField(source="school.logo", required=False, allow_null=True)
+    logo_media = Base64ImageField(source="school.logo", required=False, allow_null=True, website=True, logo=True)
 
     # Media fields
     watermark_media = Base64ImageField(required=False, allow_null=True)
     director_signature = Base64ImageField(required=False, allow_null=True)
     head_of_school_signature = Base64ImageField(required=False, allow_null=True)
-    landing_hero_image = Base64ImageField(required=False, allow_null=True)
-    landing_about_primary_image = Base64ImageField(required=False, allow_null=True)
-    landing_about_secondary_image = Base64ImageField(required=False, allow_null=True)
+    landing_hero_image = Base64ImageField(required=False, allow_null=True, website=True)
+    landing_about_primary_image = Base64ImageField(required=False, allow_null=True, website=True)
+    landing_about_secondary_image = Base64ImageField(required=False, allow_null=True, website=True)
 
     class Meta:
         model = SchoolSettings
@@ -328,7 +328,7 @@ class SchoolSettingsSerializer(serializers.ModelSerializer):
                 images = validated_data["landing_gallery_images"]
                 if isinstance(images, list):
                     processed = []
-                    field = Base64ImageField()
+                    field = Base64ImageField(website=True, school_id=instance.school_id)
                     for img in images:
                         processed.append(field.to_internal_value(img))
                     validated_data["landing_gallery_images"] = processed
@@ -337,7 +337,7 @@ class SchoolSettingsSerializer(serializers.ModelSerializer):
             if "landing_academic_programs" in validated_data:
                 programs = validated_data["landing_academic_programs"]
                 if isinstance(programs, list):
-                    field = Base64ImageField()
+                    field = Base64ImageField(website=True, school_id=instance.school_id)
                     for p in programs:
                         if isinstance(p, dict) and p.get("image"):
                             p["image"] = field.to_internal_value(p["image"])
@@ -346,7 +346,7 @@ class SchoolSettingsSerializer(serializers.ModelSerializer):
             if "landing_testimonials" in validated_data:
                 testimonials = validated_data["landing_testimonials"]
                 if isinstance(testimonials, list):
-                    field = Base64ImageField()
+                    field = Base64ImageField(website=True, school_id=instance.school_id)
                     for t in testimonials:
                         if isinstance(t, dict) and t.get("image"):
                             t["image"] = field.to_internal_value(t["image"])

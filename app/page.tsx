@@ -2,6 +2,7 @@ import { headers } from 'next/headers';
 import { TenantLandingWrapper } from '@/components/features/TenantLandingWrapper';
 import { SystemLandingPage } from '@/components/features/SystemLandingPage';
 import { resolveTenantFromHost } from '@/lib/tenant-host';
+import { getPublicSite } from '@/lib/public-site';
 
 export default async function Page() {
   const headersList = await headers();
@@ -20,5 +21,6 @@ export default async function Page() {
     return <SystemLandingPage />;
   }
 
-  return <TenantLandingWrapper />;
+  const initialSettings = (await getPublicSite(effectiveTenantId)) ?? undefined;
+  return <TenantLandingWrapper initialSettings={initialSettings} />;
 }

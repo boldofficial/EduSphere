@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidateTag } from 'next/cache';
+import { siteCacheTag } from '@/lib/site-cache';
 import { cookies } from 'next/headers';
 import { resolveTenantFromHost } from '@/lib/tenant-host';
 import { validateRequestBody } from '@/lib/request-validation';
@@ -60,6 +62,10 @@ export async function PATCH(
   return handleProxy(request, params);
 }
 
+function affectsPublicSite(path: string) {
+  return /^(core\/settings|schools\/website-media)(\/|$)/.test(path);
+}
+
 async function handleProxy(request: NextRequest, params: Promise<{ path: string[] }>) {
   const resolvedParams = await params;
   const pathSegments = resolvedParams.path;
@@ -108,10 +114,13 @@ async function handleProxy(request: NextRequest, params: Promise<{ path: string[
     );
   }
 
+  // File uploads (multipart) are forwarded byte-for-byte with their boundary; everything else is JSON.
+  const incomingType = request.headers.get('content-type') || '';
+  const isMultipart = incomingType.startsWith('multipart/form-data');
   const headers: Record<string, string> = isMedia
     ? {}
     : {
-        'Content-Type': 'application/json',
+        'Content-Type': isMultipart ? incomingType : 'application/json',
       };
 
   if (accessToken && !isMedia) {
@@ -138,8 +147,10 @@ async function handleProxy(request: NextRequest, params: Promise<{ path: string[
   }
 
   try {
-    const bodyText =
-      request.method !== 'GET' && request.method !== 'HEAD' ? await request.text() : undefined;
+    const hasBody = request.method !== 'GET' && request.method !== 'HEAD';
+    const bodyText = hasBody && !isMultipart ? await request.text() : undefined;
+    const body: BodyInit | undefined =
+      hasBody && isMultipart ? await request.arrayBuffer() : bodyText;
 
     // Validate request body for mutations
     if (bodyText && ['POST', 'PUT', 'PATCH'].includes(request.method)) {
@@ -158,10 +169,15 @@ async function handleProxy(request: NextRequest, params: Promise<{ path: string[
     const response = await fetch(fullUrl, {
       method: request.method,
       headers: headers,
-      body: bodyText,
+      body,
       cache: 'no-store',
       signal: AbortSignal.timeout(60000),
     });
+
+    // A school's public website is cached on the server; refresh it as soon as its content changes.
+    if (response.ok && tenantId && request.method !== 'GET' && affectsPublicSite(path)) {
+      revalidateTag(siteCacheTag(tenantId), { expire: 0 });
+    }
 
     if (response.status === 204) {
       return new Response(null, { status: 204 });

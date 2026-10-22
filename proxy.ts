@@ -28,6 +28,10 @@ export async function proxy(request: NextRequest) {
     '/resources',
     '/success-stories',
     '/admission',
+    // School website: gallery page, per-school icon, permanent image addresses.
+    '/gallery',
+    '/site-icon',
+    '/site-media',
     '/opengraph-image',
     '/twitter-image',
     '/design-system', // internal component gallery; 404s in production

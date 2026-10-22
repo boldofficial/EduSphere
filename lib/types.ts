@@ -48,9 +48,38 @@ export type LandingSectionKey =
   | 'about'
   | 'values'
   | 'programs'
+  | 'gallery'
   | 'cta'
   | 'contact'
   | 'custom';
+
+/** A photo on the school's public website (from the media library). */
+export interface GalleryImage {
+  id: number;
+  url: string;
+  thumb_url: string;
+  width: number;
+  height: number;
+  alt: string;
+  caption: string;
+  album: string;
+}
+
+/** An image in the CMS media library (admin view). */
+export interface WebsiteMediaItem {
+  id: number;
+  url: string;
+  thumb_url: string;
+  width: number;
+  height: number;
+  alt_text: string;
+  caption: string;
+  album: string;
+  show_in_gallery: boolean;
+  position: number;
+  size_bytes: number;
+  created_at: string;
+}
 
 /** One block of the public page between the fixed header and footer. */
 export interface LandingSection {
@@ -118,6 +147,8 @@ export interface Settings extends Entity {
   landing_custom_html: string;
   landing_custom_css: string;
   landing_sections: LandingSection[];
+  /** Public gallery photos, delivered with the public settings. */
+  gallery?: GalleryImage[];
 
   // Phase 2: Promotion Settings
   promotion_threshold: number; // Minimum average to pass (e.g., 50)
