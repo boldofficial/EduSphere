@@ -76,6 +76,12 @@ class SettingsView(APIView):
                     "landing_hero_subtitle": settings_obj.landing_hero_subtitle or "",
                     "landing_features": settings_obj.landing_features or "",
                     "landing_about_text": settings_obj.landing_about_text or "",
+                    "landing_about_eyebrow": settings_obj.landing_about_eyebrow or "",
+                    "landing_about_title": settings_obj.landing_about_title or "",
+                    "landing_about_html": settings_obj.landing_about_html or "",
+                    "landing_about_primary_image": get_media_url(settings_obj.landing_about_primary_image),
+                    "landing_about_secondary_image": get_media_url(settings_obj.landing_about_secondary_image),
+                    "landing_about_image_position": settings_obj.landing_about_image_position,
                     "landing_hero_image": get_media_url(settings_obj.landing_hero_image),
                     "landing_gallery_images": [get_media_url(img) for img in settings_obj.landing_gallery_images],
                     "landing_primary_color": settings_obj.landing_primary_color,
@@ -89,6 +95,9 @@ class SettingsView(APIView):
                         {**t, "image": get_media_url(t.get("image"))} for t in settings_obj.landing_testimonials
                     ],
                     "landing_stats_config": settings_obj.landing_stats_config,
+                    "landing_custom_enabled": settings_obj.landing_custom_enabled,
+                    "landing_custom_html": settings_obj.landing_custom_html or "",
+                    "landing_custom_css": settings_obj.landing_custom_css or "",
                     "promotion_threshold": settings_obj.promotion_threshold,
                     "promotion_rules": settings_obj.promotion_rules,
                     "show_bank_details": settings_obj.show_bank_details,
@@ -172,6 +181,9 @@ class PublicSettingsView(APIView):
         try:
             school = School.objects.get(Q(domain=domain) | Q(custom_domain=domain))
             settings_obj, _ = SchoolSettings.objects.get_or_create(school=school)
+            subscription_status = (
+                school.subscription.status if hasattr(school, "subscription") else "none"
+            )
 
             return Response(
                 {
@@ -179,8 +191,37 @@ class PublicSettingsView(APIView):
                     "school_tagline": settings_obj.school_tagline or "",
                     "school_email": school.email or "",
                     "school_phone": school.phone or "",
+                    "school_address": school.address or "",
                     "logo_media": get_media_url(school.logo),
+                    "landing_hero_title": settings_obj.landing_hero_title or "",
+                    "landing_hero_subtitle": settings_obj.landing_hero_subtitle or "",
+                    "landing_features": settings_obj.landing_features or "",
+                    "landing_hero_image": get_media_url(settings_obj.landing_hero_image),
+                    "landing_about_text": settings_obj.landing_about_text or "",
+                    "landing_about_eyebrow": settings_obj.landing_about_eyebrow or "",
+                    "landing_about_title": settings_obj.landing_about_title or "",
+                    "landing_about_html": settings_obj.landing_about_html or "",
+                    "landing_about_primary_image": get_media_url(settings_obj.landing_about_primary_image),
+                    "landing_about_secondary_image": get_media_url(settings_obj.landing_about_secondary_image),
+                    "landing_about_image_position": settings_obj.landing_about_image_position,
+                    "landing_gallery_images": [get_media_url(img) for img in settings_obj.landing_gallery_images],
                     "landing_primary_color": settings_obj.landing_primary_color,
+                    "landing_show_stats": settings_obj.landing_show_stats,
+                    "landing_cta_text": settings_obj.landing_cta_text,
+                    "landing_core_values": settings_obj.landing_core_values,
+                    "landing_academic_programs": [
+                        {**program, "image": get_media_url(program.get("image"))}
+                        for program in settings_obj.landing_academic_programs
+                    ],
+                    "landing_testimonials": [
+                        {**testimonial, "image": get_media_url(testimonial.get("image"))}
+                        for testimonial in settings_obj.landing_testimonials
+                    ],
+                    "landing_stats_config": settings_obj.landing_stats_config,
+                    "landing_custom_enabled": settings_obj.landing_custom_enabled,
+                    "landing_custom_html": settings_obj.landing_custom_html or "",
+                    "landing_custom_css": settings_obj.landing_custom_css or "",
+                    "subscription_status": subscription_status,
                     "domain": school.domain,
                 }
             )

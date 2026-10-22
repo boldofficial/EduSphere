@@ -224,6 +224,12 @@ class SchoolSettings(models.Model):
     landing_features = models.TextField(null=True, blank=True)
     landing_hero_image = models.TextField(null=True, blank=True)
     landing_about_text = models.TextField(null=True, blank=True)
+    landing_about_eyebrow = models.CharField(max_length=100, default="Who we are", blank=True)
+    landing_about_title = models.CharField(max_length=255, default="A tradition of excellence", blank=True)
+    landing_about_html = models.TextField(null=True, blank=True)
+    landing_about_primary_image = models.TextField(null=True, blank=True)
+    landing_about_secondary_image = models.TextField(null=True, blank=True)
+    landing_about_image_position = models.CharField(max_length=10, default="left")
     landing_gallery_images = models.JSONField(default=list, blank=True)
     landing_primary_color = models.CharField(max_length=7, default="#1A3A5C")
     landing_show_stats = models.BooleanField(default=True)
@@ -236,6 +242,9 @@ class SchoolSettings(models.Model):
     )  # list of {title, age_range, description, image}
     landing_testimonials = models.JSONField(default=list, blank=True)  # list of {name, role, quote, image}
     landing_stats_config = models.JSONField(default=dict, blank=True)  # {students: true, teachers: true, etc}
+    landing_custom_enabled = models.BooleanField(default=False)
+    landing_custom_html = models.TextField(null=True, blank=True)
+    landing_custom_css = models.TextField(null=True, blank=True)
 
     # Promotion & Finance
     promotion_threshold = models.IntegerField(default=50)

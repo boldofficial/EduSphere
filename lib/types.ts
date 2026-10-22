@@ -78,6 +78,12 @@ export interface Settings extends Entity {
   landing_features: string; // JSON string or simple comma-sep
   landing_hero_image: string | null; // Base64 hero background
   landing_about_text: string; // About section content
+  landing_about_eyebrow: string;
+  landing_about_title: string;
+  landing_about_html: string;
+  landing_about_primary_image: string | null;
+  landing_about_secondary_image: string | null;
+  landing_about_image_position: 'left' | 'right';
   landing_gallery_images: string[]; // Gallery images (Base64)
   landing_primary_color: string; // Customizable accent color
   landing_show_stats: boolean; // Show/hide stats section
@@ -86,6 +92,9 @@ export interface Settings extends Entity {
   landing_academic_programs: AcademicProgram[];
   landing_testimonials: Testimonial[];
   landing_stats_config: Record<string, boolean>;
+  landing_custom_enabled: boolean;
+  landing_custom_html: string;
+  landing_custom_css: string;
 
   // Phase 2: Promotion Settings
   promotion_threshold: number; // Minimum average to pass (e.g., 50)
@@ -109,6 +118,7 @@ export interface Settings extends Entity {
     status: string;
     end_date: string;
   };
+  subscription_status?: string;
 
   // Role Permissions Configuration
   role_permissions: Record<UserRole, RolePermissions>;

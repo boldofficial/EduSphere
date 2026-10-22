@@ -28,6 +28,16 @@ export function useSettings() {
   });
 }
 
+export function usePublicSettings() {
+  return useQuery({
+    queryKey: queryKeys.publicSettings,
+    queryFn: async () => {
+      const response = await apiClient.get('core/public-settings/');
+      return { ...INITIAL_SETTINGS, ...response.data } as Types.Settings;
+    },
+  });
+}
+
 export function useUpdateSettings() {
   const queryClient = useQueryClient();
   return useMutation({

@@ -2,7 +2,7 @@
 
 import { LandingPage } from '@/components/features/LandingPage';
 import * as Utils from '@/lib/utils';
-import { useSettings, usePublicStats } from '@/lib/hooks/use-data';
+import { usePublicSettings } from '@/lib/hooks/use-data';
 import Script from 'next/script';
 
 // JSON-LD Structured Data for SEO (Dynamic based on settings in future)
@@ -24,14 +24,7 @@ const getStructuredData = (settings: any) => ({
 
 export function TenantLandingWrapper() {
   // Use TanStack Query - renders immediately with defaults, updates when data loads
-  const { data: settings = Utils.INITIAL_SETTINGS } = useSettings();
-  const { data: publicStats } = usePublicStats();
-
-  const stats = {
-    studentsCount: publicStats?.students_count || 0,
-    teachersCount: publicStats?.teachers_count || 0,
-    classesCount: publicStats?.classes_count || 0,
-  };
+  const { data: settings = Utils.INITIAL_SETTINGS } = usePublicSettings();
 
   if (settings.subscription_status === 'pending') {
     return (

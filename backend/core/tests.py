@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 
-from schools.models import School
+from schools.models import School, SchoolSettings
 
 from .models import GlobalActivityLog, SchoolAnnouncement
 
@@ -37,6 +37,62 @@ class SchoolSettingsTests(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["school_name"], "Updated School")
+
+    def test_public_settings_include_published_website_content(self):
+        SchoolSettings.objects.update_or_create(
+            school=self.school,
+            defaults={
+                "landing_about_title": "Learning with purpose",
+                "landing_about_html": "<p>Our <strong>story</strong></p>",
+                "landing_custom_enabled": True,
+                "landing_custom_html": "<section><h2>Campus life</h2></section>",
+                "landing_custom_css": ".campus { color: navy; }",
+            },
+        )
+
+        self.client.force_authenticate(user=None)
+        response = self.client.get(
+            "/api/core/public-settings/", HTTP_X_TENANT_ID=self.school.domain
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["landing_about_title"], "Learning with purpose")
+        self.assertIn("<strong>story</strong>", response.data["landing_about_html"])
+        self.assertTrue(response.data["landing_custom_enabled"])
+
+    def test_custom_html_is_sanitized_and_unsafe_css_is_rejected(self):
+        response = self.client.put(
+            "/api/core/settings/",
+            {
+                "landing_custom_html": (
+                    '<section onclick="alert(1)"><h2>Welcome</h2>'
+                    '<script>alert(1)</script></section>'
+                ),
+                "landing_custom_css": "@import url(https://bad.example/style.css);",
+            },
+            format="json",
+            HTTP_X_TENANT_ID=self.school.domain,
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("landing_custom_css", response.data["errors"])
+
+        safe_response = self.client.put(
+            "/api/core/settings/",
+            {
+                "landing_custom_html": (
+                    '<section onclick="alert(1)"><h2>Welcome</h2>'
+                    '<script>alert(1)</script></section>'
+                ),
+                "landing_custom_css": ".welcome { color: #123456; }",
+            },
+            format="json",
+            HTTP_X_TENANT_ID=self.school.domain,
+        )
+
+        self.assertEqual(safe_response.status_code, status.HTTP_200_OK)
+        self.assertNotIn("onclick", safe_response.data["landing_custom_html"])
+        self.assertNotIn("<script", safe_response.data["landing_custom_html"])
 
 
 class AnnouncementTests(APITestCase):
