@@ -17,10 +17,11 @@ const nextConfig = {
   async headers() {
     const isProd = process.env.NODE_ENV === 'production';
 
-    // Only enforce CSP in production
+    // Only enforce CSP in production. Images may come from any https host: school website sections
+    // link photos hosted elsewhere, and images cannot run code.
     const csp = isProd
-      ? "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://*.r2.cloudflarestorage.com https://*.r2.dev; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; frame-ancestors 'none'; upgrade-insecure-requests;"
-      : "default-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src *;";
+      ? "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; frame-ancestors 'none'; upgrade-insecure-requests;"
+      : "default-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self' data: blob: https: http:; connect-src *;";
 
     return [
       {

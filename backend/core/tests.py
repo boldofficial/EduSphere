@@ -51,9 +51,7 @@ class SchoolSettingsTests(APITestCase):
         )
 
         self.client.force_authenticate(user=None)
-        response = self.client.get(
-            "/api/core/public-settings/", HTTP_X_TENANT_ID=self.school.domain
-        )
+        response = self.client.get("/api/core/public-settings/", HTTP_X_TENANT_ID=self.school.domain)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["landing_about_title"], "Learning with purpose")
@@ -67,7 +65,7 @@ class SchoolSettingsTests(APITestCase):
                 "landing_custom_html": (
                     '<section onclick="alert(1)" style="padding: 48px; background: #ffffff; '
                     'background-image: url(javascript:alert(1))"><h2 style="color: navy">Welcome</h2>'
-                    '<script>alert(1)</script></section>'
+                    "<script>alert(1)</script></section>"
                 ),
                 "landing_custom_css": "@import url(https://bad.example/style.css);",
             },
@@ -84,7 +82,7 @@ class SchoolSettingsTests(APITestCase):
                 "landing_custom_html": (
                     '<section onclick="alert(1)" style="padding: 48px; background: #ffffff; '
                     'background-image: url(javascript:alert(1))"><h2 style="color: navy">Welcome</h2>'
-                    '<script>alert(1)</script></section>'
+                    "<script>alert(1)</script></section>"
                 ),
                 "landing_custom_css": ".welcome { color: #123456; }",
             },

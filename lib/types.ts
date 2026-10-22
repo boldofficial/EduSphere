@@ -43,6 +43,28 @@ export interface SubscriptionPlan extends Entity {
   custom_domain_enabled: boolean;
 }
 
+export type LandingSectionKey =
+  | 'hero'
+  | 'about'
+  | 'values'
+  | 'programs'
+  | 'cta'
+  | 'contact'
+  | 'custom';
+
+/** One block of the public page between the fixed header and footer. */
+export interface LandingSection {
+  id: string;
+  key: LandingSectionKey;
+  title: string;
+  enabled: boolean;
+  /** Built-in sections: replace the standard design with `html`/`css`. Always true for custom sections. */
+  use_custom: boolean;
+  html: string;
+  /** Optional, scoped to this section only. */
+  css: string;
+}
+
 export interface Settings extends Entity {
   school_name: string;
   school_address: string;
@@ -95,6 +117,7 @@ export interface Settings extends Entity {
   landing_custom_enabled: boolean;
   landing_custom_html: string;
   landing_custom_css: string;
+  landing_sections: LandingSection[];
 
   // Phase 2: Promotion Settings
   promotion_threshold: number; // Minimum average to pass (e.g., 50)

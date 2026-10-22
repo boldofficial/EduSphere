@@ -239,7 +239,7 @@ def _enabled_methods(obj):
 from academic.serializers import Base64ImageField
 from django.db import transaction
 from .models import SchoolSettings
-from core.cms_sanitizer import sanitize_website_html, validate_website_css
+from core.cms_sanitizer import sanitize_landing_sections, sanitize_website_html, validate_website_css
 
 
 class SchoolSettingsSerializer(serializers.ModelSerializer):
@@ -276,6 +276,12 @@ class SchoolSettingsSerializer(serializers.ModelSerializer):
 
     def validate_landing_custom_html(self, value):
         return sanitize_website_html(value)
+
+    def validate_landing_sections(self, value):
+        try:
+            return sanitize_landing_sections(value)
+        except ValueError as error:
+            raise serializers.ValidationError(str(error)) from error
 
     def validate_landing_custom_css(self, value):
         try:
