@@ -39,7 +39,7 @@ export default function CMSPage() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const response = await fetch('/api/proxy/settings', {
+      const response = await fetch('/api/proxy/core/settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(localSettings),
