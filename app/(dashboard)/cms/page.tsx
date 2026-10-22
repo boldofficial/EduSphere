@@ -23,7 +23,7 @@ import { CmsIdentityTab } from '@/components/features/cms/CmsIdentityTab';
 import { CmsHeroTab } from '@/components/features/cms/CmsHeroTab';
 import { CmsContentTabs } from '@/components/features/cms/CmsContentTabs';
 import { CmsAppearanceTab } from '@/components/features/cms/CmsAppearanceTab';
-import { CmsAdvancedDesignTab } from '@/components/features/cms/CmsAdvancedDesignTab';
+import { CmsSectionsTab } from '@/components/features/cms/CmsSectionsTab';
 
 function getErrorMessage(result: unknown) {
   if (!result || typeof result !== 'object') return 'Failed to save settings';
@@ -45,7 +45,7 @@ export default function CMSPage() {
   const [localSettings, setLocalSettings] = useState<Settings>(settings);
   const [isSaving, setIsSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<
-    'branding' | 'hero' | 'about' | 'values' | 'programs' | 'appearance' | 'advanced'
+    'branding' | 'hero' | 'about' | 'values' | 'programs' | 'appearance' | 'sections'
   >('branding');
 
   useEffect(() => {
@@ -146,7 +146,7 @@ export default function CMSPage() {
     { id: 'values', name: 'Core Values', icon: Heart },
     { id: 'programs', name: 'Academic Divisions', icon: GraduationCap },
     { id: 'appearance', name: 'Branding & Theme', icon: Palette },
-    { id: 'advanced', name: 'Advanced HTML & CSS', icon: Code2 },
+    { id: 'sections', name: 'Page Sections & Code', icon: Code2 },
   ];
 
   return (
@@ -240,8 +240,8 @@ export default function CMSPage() {
             {activeTab === 'appearance' && (
               <CmsAppearanceTab localSettings={localSettings} updateField={updateField} />
             )}
-            {activeTab === 'advanced' && (
-              <CmsAdvancedDesignTab localSettings={localSettings} updateField={updateField} />
+            {activeTab === 'sections' && (
+              <CmsSectionsTab localSettings={localSettings} updateField={updateField} />
             )}
           </div>
         </div>

@@ -260,6 +260,7 @@ export const INITIAL_SETTINGS: Settings = {
   landing_custom_enabled: false,
   landing_custom_html: '',
   landing_custom_css: '',
+  landing_sections: [],
   promotion_threshold: 50,
   promotion_rules: 'manual',
   role_permissions: {

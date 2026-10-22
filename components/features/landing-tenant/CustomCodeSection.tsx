@@ -1,17 +1,22 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { Settings } from '@/lib/types';
+import { SECTION_BASE_CSS } from '@/lib/landing-sections';
 
-const BASE_STYLES = `
-  :host { display: block; color: #111827; font-family: ui-sans-serif, system-ui, sans-serif; }
-  *, *::before, *::after { box-sizing: border-box; }
-  img { display: block; max-width: 100%; height: auto; }
-  a { color: inherit; }
-`;
+interface CustomCodeSectionProps {
+  html: string;
+  css?: string;
+  /** Kept on the outer element so header links like /#about still scroll here. */
+  anchorId: string;
+  brandColor?: string;
+}
 
-export function CustomCodeSection({ settings }: { settings: Settings }) {
-  const hostRef = useRef<HTMLDivElement>(null);
+/**
+ * A school-coded section. HTML is sanitized by the server on save; it renders inside a shadow root so
+ * the section's CSS cannot leak into the fixed header, footer or other sections (and vice versa).
+ */
+export function CustomCodeSection({ html, css, anchorId, brandColor }: CustomCodeSectionProps) {
+  const hostRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -20,12 +25,16 @@ export function CustomCodeSection({ settings }: { settings: Settings }) {
     root.replaceChildren();
 
     const style = document.createElement('style');
-    style.textContent = `${BASE_STYLES}\n${settings.landing_custom_css || ''}`;
+    style.textContent = `:host { display: block; }\n${SECTION_BASE_CSS}\n${css || ''}`;
     const content = document.createElement('div');
-    content.innerHTML = settings.landing_custom_html || '';
+    content.className = 'section-root';
+    if (brandColor) content.style.setProperty('--brand', brandColor);
+    content.innerHTML = html;
     root.append(style, content);
-  }, [settings.landing_custom_css, settings.landing_custom_html]);
+  }, [html, css, brandColor]);
 
-  if (!settings.landing_custom_enabled || !settings.landing_custom_html) return null;
-  return <div ref={hostRef} data-custom-school-section />;
+  if (!html) return null;
+  return (
+    <section id={anchorId} ref={hostRef} data-custom-school-section className="scroll-mt-20" />
+  );
 }

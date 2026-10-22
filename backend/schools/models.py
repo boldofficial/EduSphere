@@ -245,6 +245,10 @@ class SchoolSettings(models.Model):
     landing_custom_enabled = models.BooleanField(default=False)
     landing_custom_html = models.TextField(null=True, blank=True)
     landing_custom_css = models.TextField(null=True, blank=True)
+    # Ordered page sections between the fixed header and footer:
+    # [{id, key, title, enabled, use_custom, html, css}]. Built-in keys can be swapped for custom code;
+    # key "custom" sections are school-made. Empty list = the default layout.
+    landing_sections = models.JSONField(default=list, blank=True)
 
     # Promotion & Finance
     promotion_threshold = models.IntegerField(default=50)
