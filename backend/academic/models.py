@@ -475,6 +475,8 @@ class SchoolEvent(TenantModel):
     target_audience = models.CharField(max_length=20, choices=AUDIENCES, default="all")
     # Optional: limit the event to one class (e.g. a JSS 1 excursion)
     student_class = models.ForeignKey(Class, on_delete=models.SET_NULL, null=True, blank=True, related_name="events")
+    # Listed under "Upcoming events" on the school's public website.
+    show_on_website = models.BooleanField(default=False)
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta:

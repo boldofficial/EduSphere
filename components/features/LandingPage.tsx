@@ -15,6 +15,15 @@ import { CTASection } from './landing-tenant/CTASection';
 import { ContactSection } from './landing-tenant/ContactSection';
 import { CustomCodeSection } from './landing-tenant/CustomCodeSection';
 import { GallerySection } from './landing-tenant/GallerySection';
+import {
+  EventsSection,
+  FaqSection,
+  StatsSection,
+  TeamSection,
+  TestimonialsSection,
+} from './landing-tenant/ContentSections';
+import { SiteTheme } from './SiteTheme';
+import { WhatsAppButton } from './landing-tenant/WhatsAppButton';
 
 interface LandingPageProps {
   settings: Settings;
@@ -24,6 +33,16 @@ function BuiltinSection({ section, settings }: { section: LandingSection; settin
   switch (section.key) {
     case 'hero':
       return <HeroSection settings={settings} />;
+    case 'stats':
+      return <StatsSection settings={settings} />;
+    case 'testimonials':
+      return <TestimonialsSection settings={settings} />;
+    case 'team':
+      return <TeamSection settings={settings} />;
+    case 'events':
+      return <EventsSection settings={settings} />;
+    case 'faqs':
+      return <FaqSection settings={settings} />;
     case 'about':
       return <AboutSection settings={settings} />;
     case 'values':
@@ -51,7 +70,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ settings }) => {
   const sections = resolveSections(settings).filter((s) => s.enabled);
 
   return (
-    <div className="min-h-screen bg-white overflow-x-hidden font-sans">
+    <SiteTheme settings={settings} className="min-h-screen overflow-x-hidden bg-white">
       <SiteHeader settings={settings} />
 
       <main>
@@ -72,6 +91,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ settings }) => {
       </main>
 
       <SiteFooter settings={settings} />
-    </div>
+      <WhatsAppButton settings={settings} />
+    </SiteTheme>
   );
 };

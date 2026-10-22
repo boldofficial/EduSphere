@@ -277,6 +277,42 @@ class SchoolSettingsSerializer(serializers.ModelSerializer):
     def validate_landing_custom_html(self, value):
         return sanitize_website_html(value)
 
+    def _content(self, cleaner, value):
+        from core.website_content import ContentError
+
+        try:
+            return cleaner(value)
+        except ContentError as error:
+            raise serializers.ValidationError(str(error)) from error
+
+    def validate_landing_theme(self, value):
+        from core.website_content import clean_theme
+
+        return self._content(clean_theme, value)
+
+    def validate_landing_stats(self, value):
+        from core.website_content import clean_stats
+
+        return self._content(clean_stats, value)
+
+    def validate_landing_faqs(self, value):
+        from core.website_content import clean_faqs
+
+        return self._content(clean_faqs, value)
+
+    def validate_landing_team(self, value):
+        from core.website_content import clean_team
+
+        return self._content(clean_team, value)
+
+    def validate_landing_social(self, value):
+        from core.website_content import clean_social
+
+        return self._content(clean_social, value)
+
+    def validate_landing_opening_hours(self, value):
+        return " ".join((value or "").split())[:200]
+
     def validate_landing_sections(self, value):
         try:
             return sanitize_landing_sections(value)
@@ -341,6 +377,13 @@ class SchoolSettingsSerializer(serializers.ModelSerializer):
                     for p in programs:
                         if isinstance(p, dict) and p.get("image"):
                             p["image"] = field.to_internal_value(p["image"])
+
+            # Team photos are website images too
+            if "landing_team" in validated_data:
+                field = Base64ImageField(website=True, school_id=instance.school_id)
+                for member in validated_data["landing_team"]:
+                    if member.get("image"):
+                        member["image"] = field.to_internal_value(member["image"])
 
             # Handle landing_testimonials images
             if "landing_testimonials" in validated_data:

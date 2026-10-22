@@ -100,6 +100,15 @@ class SettingsView(APIView):
                     "landing_custom_css": settings_obj.landing_custom_css or "",
                     "landing_sections": settings_obj.landing_sections or [],
                     "gallery": public_gallery(school),
+                    "landing_theme": settings_obj.landing_theme or {},
+                    "landing_stats": settings_obj.landing_stats or [],
+                    "landing_team": [
+                        {**m, "image": get_media_url(m.get("image"))} for m in (settings_obj.landing_team or [])
+                    ],
+                    "landing_faqs": settings_obj.landing_faqs or [],
+                    "landing_social": settings_obj.landing_social or {},
+                    "landing_opening_hours": settings_obj.landing_opening_hours or "",
+                    "events": public_events(school),
                     "promotion_threshold": settings_obj.promotion_threshold,
                     "promotion_rules": settings_obj.promotion_rules,
                     "show_bank_details": settings_obj.show_bank_details,
@@ -150,6 +159,11 @@ class SettingsView(APIView):
             )
             serializer.is_valid(raise_exception=True)
             serializer.save()
+            if set(request.data) & set(WEBSITE_FIELDS) or "logo_media" in request.data:
+                from schools.views_website import record_revision
+
+                settings_obj.refresh_from_db()
+                record_revision(settings_obj, request.user, note="Published")
 
             return self.get(request)
         except ValidationError as e:
@@ -166,7 +180,34 @@ class SettingsView(APIView):
             )
 
 
+from core.website_content import WEBSITE_FIELDS  # noqa: E402
+
 GALLERY_LIMIT = 120
+
+
+def public_events(school, limit=6):
+    """Upcoming calendar events the school chose to show on its website."""
+    from django.utils import timezone
+
+    from academic.models import SchoolEvent
+
+    now = timezone.now()
+    events = (
+        SchoolEvent.objects.filter(school=school, show_on_website=True)
+        .filter(Q(start_date__gte=now) | Q(end_date__gte=now))
+        .order_by("start_date")[:limit]
+    )
+    return [
+        {
+            "id": e.id,
+            "title": e.title,
+            "description": (e.description or "")[:300],
+            "start_date": e.start_date,
+            "end_date": e.end_date,
+            "event_type": e.event_type,
+        }
+        for e in events
+    ]
 
 
 def public_gallery(school):
@@ -247,6 +288,15 @@ class PublicSettingsView(APIView):
                     "landing_custom_css": settings_obj.landing_custom_css or "",
                     "landing_sections": settings_obj.landing_sections or [],
                     "gallery": public_gallery(school),
+                    "landing_theme": settings_obj.landing_theme or {},
+                    "landing_stats": settings_obj.landing_stats or [],
+                    "landing_team": [
+                        {**m, "image": get_media_url(m.get("image"))} for m in (settings_obj.landing_team or [])
+                    ],
+                    "landing_faqs": settings_obj.landing_faqs or [],
+                    "landing_social": settings_obj.landing_social or {},
+                    "landing_opening_hours": settings_obj.landing_opening_hours or "",
+                    "events": public_events(school),
                     "subscription_status": subscription_status,
                     "domain": school.domain,
                 }

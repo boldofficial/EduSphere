@@ -22,6 +22,7 @@ class SchoolEventSerializer(serializers.ModelSerializer):
             "event_type",
             "target_audience",
             "class_id",
+            "show_on_website",
             "created_by",
             "created_by_name",
             "created_at",

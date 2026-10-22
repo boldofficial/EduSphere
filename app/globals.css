@@ -279,3 +279,11 @@
 .animation-delay-4000 {
   animation-delay: 4s;
 }
+
+/* School public websites: fonts come from the school's theme (components/features/SiteTheme.tsx). */
+.site-theme {
+  font-family: var(--site-font-body), ui-sans-serif, system-ui, sans-serif;
+}
+.site-theme :is(h1, h2, h3, h4) {
+  font-family: var(--site-font-heading), ui-serif, Georgia, serif;
+}

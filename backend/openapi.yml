@@ -14529,6 +14529,18 @@ paths:
       responses:
         '200':
           description: No response body
+  /api/schools/public/enquiry/:
+    post:
+      operationId: schools_public_enquiry_create
+      description: POST from a school website's contact form. Saved for the school
+        and emailed to the school only.
+      tags:
+      - schools
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
   /api/schools/public/payment-options/:
     get:
       operationId: schools_public_payment_options_retrieve
@@ -14801,6 +14813,126 @@ paths:
       responses:
         '200':
           description: No response body
+  /api/schools/website-enquiries/:
+    get:
+      operationId: schools_website_enquiries_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - schools
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedWebsiteEnquiryList'
+          description: ''
+  /api/schools/website-enquiries/{id}/:
+    put:
+      operationId: schools_website_enquiries_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this website enquiry.
+        required: true
+      tags:
+      - schools
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebsiteEnquiryRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/WebsiteEnquiryRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/WebsiteEnquiryRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebsiteEnquiry'
+          description: ''
+    patch:
+      operationId: schools_website_enquiries_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this website enquiry.
+        required: true
+      tags:
+      - schools
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedWebsiteEnquiryRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedWebsiteEnquiryRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedWebsiteEnquiryRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebsiteEnquiry'
+          description: ''
+    delete:
+      operationId: schools_website_enquiries_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this website enquiry.
+        required: true
+      tags:
+      - schools
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/schools/website-enquiries/summary/:
+    get:
+      operationId: schools_website_enquiries_summary_retrieve
+      tags:
+      - schools
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebsiteEnquiry'
+          description: ''
   /api/schools/website-media/:
     get:
       operationId: schools_website_media_list
@@ -14956,6 +15088,33 @@ paths:
               schema:
                 $ref: '#/components/schemas/WebsiteMedia'
           description: ''
+  /api/schools/website-revisions/:
+    get:
+      operationId: schools_website_revisions_retrieve
+      tags:
+      - schools
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/schools/website-revisions/{id}/restore/:
+    post:
+      operationId: schools_website_revisions_restore_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this website revision.
+        required: true
+      tags:
+      - schools
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
   /api/token/:
     post:
       operationId: token_create
@@ -22529,6 +22688,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/TransportPayment'
+    PaginatedWebsiteEnquiryList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/WebsiteEnquiry'
     ParentNotificationMethodEnum:
       enum:
       - sms
@@ -23995,6 +24177,8 @@ components:
         class_id:
           type: integer
           nullable: true
+        show_on_website:
+          type: boolean
     PatchedSchoolMessageRequest:
       type: object
       properties:
@@ -24315,6 +24499,11 @@ components:
         reference:
           type: string
           maxLength: 100
+    PatchedWebsiteEnquiryRequest:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/WebsiteEnquiryStatusEnum'
     PatchedWebsiteMediaRequest:
       type: object
       properties:
@@ -25619,6 +25808,8 @@ components:
         class_id:
           type: integer
           nullable: true
+        show_on_website:
+          type: boolean
         created_by:
           type: integer
           readOnly: true
@@ -25679,6 +25870,8 @@ components:
         class_id:
           type: integer
           nullable: true
+        show_on_website:
+          type: boolean
       required:
       - start_date
       - title
@@ -27126,6 +27319,59 @@ components:
         * `DIRECT` - Direct Message
         * `GROUP` - Group Chat
         * `BROADCAST` - Broadcast
+    WebsiteEnquiry:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+        phone:
+          type: string
+          readOnly: true
+        subject:
+          type: string
+          readOnly: true
+        message:
+          type: string
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/WebsiteEnquiryStatusEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - email
+      - id
+      - message
+      - name
+      - phone
+      - subject
+    WebsiteEnquiryRequest:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/WebsiteEnquiryStatusEnum'
+    WebsiteEnquiryStatusEnum:
+      enum:
+      - new
+      - read
+      - replied
+      - archived
+      type: string
+      description: |-
+        * `new` - New
+        * `read` - Read
+        * `replied` - Replied
+        * `archived` - Archived
     WebsiteMedia:
       type: object
       properties:

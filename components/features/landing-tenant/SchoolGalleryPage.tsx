@@ -5,13 +5,15 @@ import { usePublicSettings } from '@/lib/hooks/use-data';
 import SiteHeader from '../SiteHeader';
 import SiteFooter from '../SiteFooter';
 import { GallerySection } from './GallerySection';
+import { SiteTheme } from '../SiteTheme';
+import { WhatsAppButton } from './WhatsAppButton';
 
 export function SchoolGalleryPage({ initialSettings }: { initialSettings: Settings }) {
   const { data: settings = initialSettings } = usePublicSettings(initialSettings);
   const images = settings.gallery || [];
 
   return (
-    <div className="min-h-screen bg-white font-sans">
+    <SiteTheme settings={settings} className="min-h-screen bg-white">
       <SiteHeader settings={settings} solid />
       <main>
         {images.length > 0 ? (
@@ -28,6 +30,7 @@ export function SchoolGalleryPage({ initialSettings }: { initialSettings: Settin
         )}
       </main>
       <SiteFooter settings={settings} />
-    </div>
+      <WhatsAppButton settings={settings} />
+    </SiteTheme>
   );
 }

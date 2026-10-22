@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Globe,
   Save,
@@ -13,8 +13,13 @@ import {
   Palette,
   Code2,
   Images,
+  Eye,
+  History,
+  Inbox,
+  ListPlus,
 } from 'lucide-react';
-import { useSettings } from '@/lib/hooks/use-data';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys, useSettings } from '@/lib/hooks/use-data';
 import { Settings, CoreValue, AcademicProgram } from '@/lib/types';
 import * as Utils from '@/lib/utils';
 import { useToast } from '@/components/providers/toast-provider';
@@ -26,6 +31,14 @@ import { CmsContentTabs } from '@/components/features/cms/CmsContentTabs';
 import { CmsAppearanceTab } from '@/components/features/cms/CmsAppearanceTab';
 import { CmsSectionsTab } from '@/components/features/cms/CmsSectionsTab';
 import { CmsMediaTab } from '@/components/features/cms/CmsMediaTab';
+import { CmsExtrasTab } from '@/components/features/cms/CmsExtrasTab';
+import { CmsEnquiriesTab, useNewEnquiryCount } from '@/components/features/cms/CmsEnquiriesTab';
+import {
+  type CmsTabId,
+  WebsiteChecklist,
+  WebsiteHistory,
+  WebsitePreview,
+} from '@/components/features/cms/CmsWebsiteTools';
 
 function getErrorMessage(result: unknown) {
   if (!result || typeof result !== 'object') return 'Failed to save settings';
@@ -46,13 +59,30 @@ export default function CMSPage() {
   const { addToast } = useToast();
   const [localSettings, setLocalSettings] = useState<Settings>(settings);
   const [isSaving, setIsSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<
-    'branding' | 'hero' | 'about' | 'values' | 'programs' | 'media' | 'appearance' | 'sections'
-  >('branding');
+  const [activeTab, setActiveTab] = useState<CmsTabId>('branding');
+  const [showPreview, setShowPreview] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const queryClient = useQueryClient();
+  const { data: newEnquiries = 0 } = useNewEnquiryCount();
 
   useEffect(() => {
     if (settings) setLocalSettings(settings);
   }, [settings]);
+
+  // Unpublished edits: shown next to Publish, and the browser warns before leaving the page.
+  const hasChanges = useMemo(
+    () => !isLoading && JSON.stringify(localSettings) !== JSON.stringify(settings),
+    [localSettings, settings, isLoading]
+  );
+  useEffect(() => {
+    if (!hasChanges) return;
+    const warn = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [hasChanges]);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -68,7 +98,14 @@ export default function CMSPage() {
       if (!response.ok) {
         throw new Error(getErrorMessage(result));
       }
-      addToast('Website content updated successfully!', 'success');
+      // The response is the saved settings: uploaded images now have their permanent addresses,
+      // so a later publish doesn't upload them again.
+      const saved = { ...Utils.INITIAL_SETTINGS, ...result } as Settings;
+      queryClient.setQueryData(queryKeys.settings, saved);
+      queryClient.invalidateQueries({ queryKey: queryKeys.publicSettings });
+      queryClient.invalidateQueries({ queryKey: ['website-revisions'] });
+      setLocalSettings(saved);
+      addToast('Website published', 'success');
     } catch (error: any) {
       console.error(error);
       addToast(error.message || 'Failed to save changes.', 'error');
@@ -147,9 +184,11 @@ export default function CMSPage() {
     { id: 'about', name: 'About Us', icon: Info },
     { id: 'values', name: 'Core Values', icon: Heart },
     { id: 'programs', name: 'Academic Divisions', icon: GraduationCap },
+    { id: 'extras', name: 'More Content', icon: ListPlus },
     { id: 'media', name: 'Media & Gallery', icon: Images },
     { id: 'appearance', name: 'Branding & Theme', icon: Palette },
     { id: 'sections', name: 'Page Sections & Code', icon: Code2 },
+    { id: 'enquiries', name: 'Enquiries', icon: Inbox, badge: newEnquiries },
   ];
 
   return (
@@ -168,6 +207,20 @@ export default function CMSPage() {
           </div>
         </div>
         <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setShowHistory(true)}
+            className="px-4 py-2.5 bg-gray-50 text-gray-700 font-bold rounded-xl hover:bg-gray-100 transition-all flex items-center gap-2 text-sm border border-gray-200"
+          >
+            <History size={18} /> History
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowPreview(true)}
+            className="px-4 py-2.5 bg-gray-50 text-gray-700 font-bold rounded-xl hover:bg-gray-100 transition-all flex items-center gap-2 text-sm border border-gray-200"
+          >
+            <Eye size={18} /> Preview
+          </button>
           <a
             href="/"
             target="_blank"
@@ -178,7 +231,7 @@ export default function CMSPage() {
           </a>
           <button
             onClick={handleSave}
-            disabled={isSaving}
+            disabled={isSaving || !hasChanges}
             className="px-6 py-2.5 bg-brand-600 text-white font-bold rounded-xl hover:bg-brand-700 transition-all flex items-center gap-2 text-sm shadow-lg shadow-brand-200 disabled:bg-brand-400 group"
           >
             {isSaving ? (
@@ -186,10 +239,12 @@ export default function CMSPage() {
             ) : (
               <Save size={18} className="group-hover:scale-110 transition-transform" />
             )}
-            {isSaving ? 'Saving Changes...' : 'Publish Changes'}
+            {isSaving ? 'Publishing…' : hasChanges ? 'Publish Changes' : 'Published'}
           </button>
         </div>
       </div>
+
+      <WebsiteChecklist settings={localSettings} onOpen={setActiveTab} />
 
       <div className="grid lg:grid-cols-12 gap-8">
         {/* Navigation Sidebar */}
@@ -197,7 +252,7 @@ export default function CMSPage() {
           {navigation.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id as CmsTabId)}
               className={`w-full flex items-center gap-3 px-5 py-4 rounded-2xl font-bold transition-all text-sm border-2 ${
                 activeTab === tab.id
                   ? 'bg-brand-600 text-white border-brand-600 shadow-lg shadow-brand-100'
@@ -205,6 +260,13 @@ export default function CMSPage() {
               }`}
             >
               <tab.icon size={20} /> {tab.name}
+              {'badge' in tab && tab.badge ? (
+                <span
+                  className={`ml-auto rounded-full px-2 py-0.5 text-xs ${activeTab === tab.id ? 'bg-white text-brand-700' : 'bg-brand-600 text-white'}`}
+                >
+                  {tab.badge}
+                </span>
+              ) : null}
             </button>
           ))}
         </div>
@@ -244,12 +306,20 @@ export default function CMSPage() {
               <CmsAppearanceTab localSettings={localSettings} updateField={updateField} />
             )}
             {activeTab === 'media' && <CmsMediaTab />}
+            {activeTab === 'extras' && (
+              <CmsExtrasTab localSettings={localSettings} updateField={updateField} />
+            )}
+            {activeTab === 'enquiries' && <CmsEnquiriesTab />}
             {activeTab === 'sections' && (
               <CmsSectionsTab localSettings={localSettings} updateField={updateField} />
             )}
           </div>
         </div>
       </div>
+      {showPreview && (
+        <WebsitePreview settings={localSettings} onClose={() => setShowPreview(false)} />
+      )}
+      <WebsiteHistory isOpen={showHistory} onClose={() => setShowHistory(false)} />
     </div>
   );
 }

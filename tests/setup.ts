@@ -28,3 +28,18 @@ vi.mock('next/navigation', () => ({
 // Mock environment variables
 vi.stubEnv('NODE_ENV', 'test');
 vi.stubEnv('NEXT_PUBLIC_ROOT_DOMAIN', 'localhost');
+
+// next/font only works inside the Next.js compiler; tests get a stand-in with the same shape.
+vi.mock('next/font/google', () => {
+  const font = () => ({ className: '', variable: '', style: { fontFamily: 'sans-serif' } });
+  return {
+    Inter: font,
+    Poppins: font,
+    Montserrat: font,
+    Playfair_Display: font,
+    Merriweather: font,
+    Nunito: font,
+    Lora: font,
+    Raleway: font,
+  };
+});

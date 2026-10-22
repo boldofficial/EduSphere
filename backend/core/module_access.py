@@ -34,6 +34,8 @@ MODULE_PREFIXES = {
     "/api/core/messages/": "messages",
     "/api/core/newsletters/": "newsletter",
     "/api/schools/website-media/": "cms",
+    "/api/schools/website-enquiries/": "cms",
+    "/api/schools/website-revisions/": "cms",
 }
 _ORDERED = sorted(MODULE_PREFIXES.items(), key=lambda kv: -len(kv[0]))
 CACHE_SECONDS = 60

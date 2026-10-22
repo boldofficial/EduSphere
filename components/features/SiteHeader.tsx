@@ -12,6 +12,7 @@ interface SiteHeaderProps {
     landing_primary_color?: string;
     school_tagline?: string;
     gallery?: unknown[];
+    landing_academic_programs?: unknown[];
   };
 }
 
@@ -33,7 +34,10 @@ const SiteHeader = ({ settings, solid: forceSolid = false }: SiteHeaderProps) =>
   const navLinks = [
     { href: '/#home', label: 'Home' },
     { href: '/#about', label: 'About' },
-    { href: '/#programs', label: 'Programs' },
+    // Only link to sections the school actually shows.
+    ...(settings.landing_academic_programs?.length
+      ? [{ href: '/#programs', label: 'Programs' }]
+      : []),
     { href: '/#features', label: 'Features' },
     // Shown once the school has published gallery photos.
     ...(settings.gallery?.length ? [{ href: '/gallery', label: 'Gallery' }] : []),

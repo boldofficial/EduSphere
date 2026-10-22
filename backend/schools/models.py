@@ -249,6 +249,13 @@ class SchoolSettings(models.Model):
     # [{id, key, title, enabled, use_custom, html, css}]. Built-in keys can be swapped for custom code;
     # key "custom" sections are school-made. Empty list = the default layout.
     landing_sections = models.JSONField(default=list, blank=True)
+    # Website look and extra content (validated in core.website_content)
+    landing_theme = models.JSONField(default=dict, blank=True)  # {preset, accent_color, heading_font, body_font}
+    landing_stats = models.JSONField(default=list, blank=True)  # [{value, label}]
+    landing_team = models.JSONField(default=list, blank=True)  # [{name, role, bio, image}]
+    landing_faqs = models.JSONField(default=list, blank=True)  # [{question, answer}]
+    landing_social = models.JSONField(default=dict, blank=True)  # {facebook, instagram, …, whatsapp}
+    landing_opening_hours = models.CharField(max_length=200, blank=True, default="")
 
     # Promotion & Finance
     promotion_threshold = models.IntegerField(default=50)
@@ -475,3 +482,39 @@ class WebsiteMedia(models.Model):
 
     def __str__(self):
         return f"{self.school_id}: {self.caption or self.path}"
+
+
+class WebsiteEnquiry(models.Model):
+    """A message sent through a school's website contact form."""
+
+    STATUSES = (("new", "New"), ("read", "Read"), ("replied", "Replied"), ("archived", "Archived"))
+
+    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name="website_enquiries")
+    name = models.CharField(max_length=100)
+    email = models.EmailField(max_length=150)
+    phone = models.CharField(max_length=30, blank=True)
+    subject = models.CharField(max_length=200, blank=True)
+    message = models.TextField(max_length=5000)
+    status = models.CharField(max_length=10, choices=STATUSES, default="new")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [models.Index(fields=["school", "status", "-created_at"])]
+
+    def __str__(self):
+        return f"{self.name} → {self.school_id}"
+
+
+class WebsiteRevision(models.Model):
+    """A saved copy of a school's website content, so a change can be undone."""
+
+    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name="website_revisions")
+    data = models.JSONField()
+    note = models.CharField(max_length=120, blank=True)
+    created_by = models.ForeignKey("users.User", on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [models.Index(fields=["school", "-created_at"])]

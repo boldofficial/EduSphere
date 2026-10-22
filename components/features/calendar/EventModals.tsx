@@ -33,6 +33,8 @@ interface EventModalsProps {
     setTargetAudience: (v: Types.SchoolEvent['target_audience']) => void;
     selectedClassId: string;
     setSelectedClassId: (v: string) => void;
+    showOnWebsite: boolean;
+    setShowOnWebsite: (v: boolean) => void;
   };
   classes: any[];
   onSave: () => void;
@@ -202,6 +204,22 @@ export const EventModals: React.FC<EventModalsProps> = ({
               ))}
             </Select>
           )}
+          <label className="flex items-start gap-3 rounded-xl border border-gray-200 p-3">
+            <input
+              type="checkbox"
+              checked={formState.showOnWebsite}
+              onChange={(e) => formState.setShowOnWebsite(e.target.checked)}
+              className="mt-0.5 h-4 w-4 accent-brand-600"
+            />
+            <span>
+              <span className="block text-sm font-semibold text-gray-900">
+                Show on school website
+              </span>
+              <span className="block text-xs text-gray-500">
+                Lists this event under &quot;Upcoming events&quot; for parents and visitors.
+              </span>
+            </span>
+          </label>
           <div className="flex justify-between pt-4">
             <div>
               {editingEvent && (

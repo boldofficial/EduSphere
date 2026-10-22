@@ -332,6 +332,7 @@ REST_FRAMEWORK = {
         "api": "100/minute",
         "burst": "20/minute",
         "sustained": "500/hour",
+        "website_enquiry": "5/hour",
     },
     "EXCEPTION_HANDLER": "core.exceptions.custom_exception_handler",
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
@@ -580,8 +581,8 @@ else:
         import warnings
 
         warnings.warn(
-            "REDIS_URL is not set: falling back to per-process LocMemCache. "
-            "Rate limits and caches will not be shared across workers.",
+            "Shared cache is off (REDIS_URL is not set, or USE_REDIS_CACHE=false): using a "
+            "per-process LocMemCache. Rate limits and caches will not be shared across workers.",
             RuntimeWarning,
         )
     CACHES = {
