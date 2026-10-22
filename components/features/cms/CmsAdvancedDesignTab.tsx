@@ -40,8 +40,8 @@ export function CmsAdvancedDesignTab({ localSettings, updateField }: CmsAdvanced
         <div className="flex gap-3">
           <ShieldCheck className="mt-0.5 shrink-0" size={20} />
           <p>
-            HTML is sanitized before publishing. JavaScript, forms, iframes, event handlers, and
-            unsafe CSS rules are blocked. CSS runs inside this section only.
+            Paste a complete HTML section with standard inline style attributes. JavaScript, forms,
+            iframes, event handlers, and unsafe CSS values are removed before publishing.
           </p>
         </div>
       </div>
@@ -54,7 +54,9 @@ export function CmsAdvancedDesignTab({ localSettings, updateField }: CmsAdvanced
           rows={12}
           spellCheck={false}
           className="w-full rounded-2xl border border-gray-200 bg-gray-950 p-5 font-mono text-sm leading-6 text-gray-100 outline-none focus:border-purple-500"
-          placeholder={'<section class="welcome">\n  <h2>Welcome to our school</h2>\n</section>'}
+          placeholder={
+            '<section style="padding: 64px 24px; background: #ffffff; text-align: center;">\n  <h2 style="font-size: 36px; color: #1a3a5c;">Welcome to our school</h2>\n</section>'
+          }
         />
       </label>
 
