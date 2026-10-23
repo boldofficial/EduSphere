@@ -1,7 +1,7 @@
 """Class, Subject, and SubjectTeacher serializers."""
 
 from rest_framework import serializers
-from ..models import Class, Subject, SubjectTeacher, Teacher
+from ..models import Class, SchoolSection, Subject, SubjectTeacher, Teacher
 from .base import _school_from_request
 
 
@@ -29,6 +29,10 @@ class ClassSerializer(serializers.ModelSerializer):
             "class_teacher",
             "class_teacher_id",
             "subjects_input",
+            "section",
+            "arm",
+            "department",
+            "level_order",
             "created_at",
             "updated_at",
         ]
@@ -39,6 +43,9 @@ class ClassSerializer(serializers.ModelSerializer):
         school = _school_from_request(self)
         if school:
             self.fields["class_teacher_id"].queryset = Teacher.objects.filter(school=school)
+            self.fields["section"].queryset = SchoolSection.objects.filter(school=school)
+        else:
+            self.fields["section"].queryset = SchoolSection.objects.none()
 
     def to_internal_value(self, data):
         # Map frontend 'subjects' to 'subjects_input'

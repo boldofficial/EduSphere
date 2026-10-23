@@ -27,6 +27,7 @@ import {
   Library,
   FileText,
   BookMarked,
+  Layers,
 } from 'lucide-react';
 
 export const NAVIGATION_ITEMS = [
@@ -78,6 +79,13 @@ export const NAVIGATION_ITEMS = [
   },
 
   { id: 'classes', name: 'Classes', href: '/classes', icon: BookOpen, category: 'Academics' },
+  {
+    id: 'school-structure',
+    name: 'School Structure',
+    href: '/school-structure',
+    icon: Layers,
+    category: 'Academics',
+  },
   {
     id: 'timetables',
     name: 'Timetable',

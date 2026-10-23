@@ -48,6 +48,7 @@ export function useNavigationFilter(
       'data',
       'timetables',
       'support',
+      'school-structure',
       // New modules - always visible for admins/teachers
       'library',
       'inventory',

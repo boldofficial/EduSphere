@@ -20,7 +20,11 @@ class SubjectViewSet(TenantViewSet):
 
 
 class ClassViewSet(TenantViewSet):
-    queryset = Class.objects.select_related("class_teacher", "school").prefetch_related("subjects").all()
+    queryset = (
+        Class.objects.select_related("class_teacher", "school", "section")
+        .prefetch_related("subjects")
+        .order_by("level_order", "name")
+    )
     serializer_class = ClassSerializer
     pagination_class = StandardPagination
 

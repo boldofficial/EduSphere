@@ -29,6 +29,11 @@ from .timetables import (  # noqa: F401
 )
 
 from .conduct import ConductEntryViewSet  # noqa: F401
+from .school_structure import (  # noqa: F401
+    SchoolStructureApplyView,
+    SchoolStructurePreviewView,
+    SchoolStructureView,
+)
 from .events import SchoolEventViewSet  # noqa: F401
 from .grading import GradeRangeViewSet, GradingSchemeViewSet  # noqa: F401
 from .lessons import LessonViewSet  # noqa: F401

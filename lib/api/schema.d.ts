@@ -1115,6 +1115,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/academic/school-structure/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description GET the school's sections and the catalogue the wizard offers. */
+        get: operations["academic_school_structure_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/academic/school-structure/apply/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description POST the wizard's choices; creates sections, classes, subjects and promotion links. */
+        post: operations["academic_school_structure_apply_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/academic/school-structure/preview/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description POST the wizard's choices; returns exactly what would be created, without saving anything. */
+        post: operations["academic_school_structure_preview_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/academic/scores/": {
         parameters: {
             query?: never;
@@ -7076,6 +7127,10 @@ export interface components {
             report_mode?: components["schemas"]["ReportModeEnum"];
             readonly class_teacher: number | null;
             class_teacher_id?: number | null;
+            section?: number | null;
+            arm?: string;
+            department?: string;
+            level_order?: number;
             /** Format: date-time */
             readonly created_at: string;
             /** Format: date-time */
@@ -7098,6 +7153,10 @@ export interface components {
             report_mode?: components["schemas"]["ReportModeEnum"];
             class_teacher_id?: number | null;
             subjects_input?: string[];
+            section?: number | null;
+            arm?: string;
+            department?: string;
+            level_order?: number;
         };
         Commendation: {
             readonly id: number;
@@ -9441,6 +9500,10 @@ export interface components {
             report_mode?: components["schemas"]["ReportModeEnum"];
             class_teacher_id?: number | null;
             subjects_input?: string[];
+            section?: number | null;
+            arm?: string;
+            department?: string;
+            level_order?: number;
         };
         PatchedCommendationCreateRequest: {
             student?: number;
@@ -13694,6 +13757,60 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ReportCard"];
                 };
+            };
+        };
+    };
+    academic_school_structure_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    academic_school_structure_apply_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    academic_school_structure_preview_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
