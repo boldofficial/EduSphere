@@ -36,6 +36,10 @@ SECTIONS = {
             ("Handwriting", False),
             ("French", False),
             ("Nigerian Language", False),
+            ("Social Norms", False),
+            ("Health Education", False),
+            ("Art and Craft", False),
+            ("Christian Religious Studies", False),
         ],
     },
     "primary": {
@@ -68,6 +72,14 @@ SECTIONS = {
             ("Quantitative Reasoning", True),
             ("History", False),
             ("Handwriting", False),
+            ("National Values Education", False),
+            ("Pre-Vocational Studies", False),
+            ("Basic Science and Technology", False),
+            ("Information and Communication Technology", False),
+            ("Diction", False),
+            ("Music", False),
+            ("Coding and Robotics", False),
+            ("Chess", False),
         ],
     },
     "junior": {
@@ -201,7 +213,10 @@ def catalogue():
 
 
 _NAME_RULES = (
-    (r"^(creche|cr[eè]che|pre[- ]?nursery|nursery|kg|kindergarten|reception|playgroup)(?![a-z])", "early_years"),
+    (
+        r"^(creche|cr[eè]che|pre[- ]?nursery|nursery|kg|kindergarten|reception|playgroup|preparatory|prep|pre[- ]?school|toddlers?)(?![a-z])",
+        "early_years",
+    ),
     (r"^(primary|pry|basic\s*[1-6](?!\d)|grade\s*[1-6](?!\d))", "primary"),
     (r"^(jss|j\.s\.s|junior|basic\s*[7-9](?!\d))", "junior"),
     (r"^(sss|ss\s*\d|s\.s\.s|senior)", "senior"),

@@ -3,7 +3,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
+  ArrowDown,
   ArrowRight,
+  ArrowUp,
   Baby,
   BookOpen,
   Check,
@@ -88,6 +90,115 @@ function toggle(list: string[], value: string) {
 function errorText(error: unknown) {
   const data = (error as { response?: { data?: { detail?: string } } }).response?.data;
   return data?.detail || 'Something went wrong. Please check your choices.';
+}
+
+/**
+ * The section's classes in promotion order. Names are the school's own (e.g. Reception, Preparatory,
+ * Grade 1); the catalogue names are one-click suggestions.
+ */
+function LevelsEditor({
+  value,
+  suggestions,
+  onChange,
+}: {
+  value: string[];
+  suggestions: string[];
+  onChange: (levels: string[]) => void;
+}) {
+  const [draft, setDraft] = useState('');
+  const move = (index: number, delta: number) => {
+    const next = [...value];
+    const [item] = next.splice(index, 1);
+    next.splice(index + delta, 0, item);
+    onChange(next);
+  };
+  const add = (name: string) => {
+    const clean = name.trim().replace(/\s+/g, ' ');
+    if (!clean || value.some((v) => v.toLowerCase() === clean.toLowerCase())) return;
+    onChange([...value, clean]);
+  };
+  const unused = suggestions.filter((sug) => !value.includes(sug));
+
+  return (
+    <div>
+      <p className="mb-1 text-sm font-semibold text-gray-700">Classes, in promotion order</p>
+      <p className="mb-2 text-xs text-gray-500">
+        Use your school&apos;s own names. Students move down this list each session.
+      </p>
+      <ol className="space-y-2">
+        {value.map((level, index) => (
+          <li key={index} className="flex items-center gap-2">
+            <span className="w-6 text-right text-xs font-semibold text-gray-400">{index + 1}.</span>
+            <input
+              value={level}
+              maxLength={40}
+              aria-label={`Class ${index + 1} name`}
+              onChange={(e) => onChange(value.map((v, i) => (i === index ? e.target.value : v)))}
+              className="w-56 rounded-control border border-gray-200 px-3 py-1.5 text-sm"
+            />
+            <button
+              type="button"
+              aria-label="Move up"
+              disabled={index === 0}
+              onClick={() => move(index, -1)}
+              className="rounded p-1 text-gray-400 hover:text-gray-900 disabled:opacity-30"
+            >
+              <ArrowUp size={16} />
+            </button>
+            <button
+              type="button"
+              aria-label="Move down"
+              disabled={index === value.length - 1}
+              onClick={() => move(index, 1)}
+              className="rounded p-1 text-gray-400 hover:text-gray-900 disabled:opacity-30"
+            >
+              <ArrowDown size={16} />
+            </button>
+            <button
+              type="button"
+              aria-label={`Remove ${level}`}
+              onClick={() => onChange(value.filter((_, i) => i !== index))}
+              className="rounded p-1 text-gray-400 hover:text-danger-600"
+            >
+              <X size={16} />
+            </button>
+          </li>
+        ))}
+      </ol>
+      <form
+        className="mt-2 flex flex-wrap items-center gap-2"
+        onSubmit={(e) => {
+          e.preventDefault();
+          add(draft);
+          setDraft('');
+        }}
+      >
+        <input
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          maxLength={40}
+          placeholder="Add a class, e.g. Grade 1"
+          className="w-56 rounded-control border border-gray-200 px-3 py-1.5 text-sm"
+        />
+        <button
+          type="submit"
+          className="flex items-center gap-1 rounded-control border border-gray-200 px-3 py-1.5 text-sm font-semibold text-gray-700 hover:border-brand-400"
+        >
+          <Plus size={14} /> Add
+        </button>
+        {unused.map((sug) => (
+          <button
+            key={sug}
+            type="button"
+            onClick={() => add(sug)}
+            className="rounded-full border border-dashed border-gray-300 px-2.5 py-1 text-xs text-gray-600 hover:border-brand-400"
+          >
+            + {sug}
+          </button>
+        ))}
+      </form>
+    </div>
+  );
 }
 
 /** Tell us what the school runs; we create its classes, arms, subjects and promotion chain. */
@@ -295,22 +406,11 @@ export function SchoolStructureWizard() {
               >
                 <h3 className="text-base font-bold text-gray-900">{section.label}</h3>
 
-                <div>
-                  <p className="mb-2 text-sm font-semibold text-gray-700">Classes</p>
-                  <div className="flex flex-wrap gap-2">
-                    {levels.map((level) => (
-                      <button
-                        key={level}
-                        type="button"
-                        onClick={() => update(section.key, { levels: toggle(s.levels, level) })}
-                        aria-pressed={s.levels.includes(level)}
-                        className={`rounded-full px-3 py-1.5 text-sm font-semibold ${s.levels.includes(level) ? 'bg-brand-600 text-white' : 'border border-gray-200 text-gray-600'}`}
-                      >
-                        {level}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                <LevelsEditor
+                  value={s.levels}
+                  suggestions={levels}
+                  onChange={(next) => update(section.key, { levels: next })}
+                />
 
                 {section.key !== 'senior' && (
                   <div>

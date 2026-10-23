@@ -52,11 +52,11 @@ def validate_payload(data):
         key = raw.get("key") if isinstance(raw, dict) else None
         if key not in SECTIONS:
             raise serializers.ValidationError({"sections": f"Unknown section '{key}'."})
-        catalogue_levels = SECTIONS[key]["levels"][naming]
-        levels = _clean_names(raw.get("levels") or catalogue_levels, "levels", 10)
-        unknown = [lvl for lvl in levels if lvl not in catalogue_levels]
-        if unknown:
-            raise serializers.ValidationError({"levels": f"Unknown class level: {', '.join(unknown)}."})
+        # Levels are the school's own names, in the school's order (e.g. Reception, Preparatory,
+        # Preschool 1 or Grade 1–6). The catalogue only supplies the suggestions.
+        levels = _clean_names(raw.get("levels") or SECTIONS[key]["levels"][naming], "levels", 12, max_len=40)
+        if not levels:
+            raise serializers.ValidationError({"levels": f"Add at least one class to {SECTIONS[key]['label']}."})
         arms = _clean_names(raw.get("arms") or [], "arms", 10, max_len=20)
         bad = [a for a in arms if not ARM_PATTERN.fullmatch(a)]
         if bad:
@@ -69,7 +69,7 @@ def validate_payload(data):
                     raise serializers.ValidationError({"departments": f"Unknown department '{dkey}'."})
                 departments[dkey] = _clean_names(dept.get("subjects") or [], "subjects", 30)
         sections[key] = {
-            "levels": [lvl for lvl in catalogue_levels if lvl in levels],  # keep the natural order
+            "levels": levels,
             "arms": arms,
             "subjects": _clean_names(raw.get("subjects") or [], "subjects", 40),
             "departments": departments,
