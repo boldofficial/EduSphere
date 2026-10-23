@@ -6,6 +6,13 @@ from emails.utils import send_template_email
 
 class EmailUtilsTests(TestCase):
     def setUp(self):
+        # Sending requires a configured provider (an unconfigured send is logged as failed, never "sent").
+        from schools.models import PlatformSettings
+
+        PlatformSettings.objects.update_or_create(
+            id=1,
+            defaults={"email_provider": "smtp", "email_host": "smtp.test", "email_user": "u", "email_password": "p"},
+        )
         # Create a test template
         self.template = EmailTemplate.objects.create(
             name="Test Template",
