@@ -1,7 +1,5 @@
 """Website contact form (public), enquiry inbox and website revision history (admins)."""
 
-import html
-
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
@@ -33,30 +31,22 @@ def _public_school(request):
 
 
 def _notify_school(enquiry):
-    """Email the school's own address. Never blocks or fails the submission."""
-    school = enquiry.school
-    if not school.email:
-        return
-    rows = [
-        ("Name", enquiry.name),
-        ("Email", enquiry.email),
-        ("Phone", enquiry.phone or "Not provided"),
-        ("Subject", enquiry.subject or "Website enquiry"),
-    ]
-    table = "".join(
-        f"<tr><td style='padding:4px 12px 4px 0;color:#6b7280'>{k}</td><td>{html.escape(v)}</td></tr>" for k, v in rows
-    )
-    body = (
-        f"<p>New message from your website ({html.escape(school.name)}):</p><table>{table}</table>"
-        f"<p style='white-space:pre-wrap;border-left:3px solid #e5e7eb;padding-left:12px'>"
-        f"{html.escape(enquiry.message)}</p><p>You can also see it in Website CMS → Enquiries.</p>"
-    )
-    try:
-        from emails.tasks import send_custom_email_task
+    """Email the school (its address and admins). Replying answers the parent directly."""
+    from emails.notify import queue_template_email, school_recipients
 
-        send_custom_email_task.delay(school.email, f"Website enquiry: {enquiry.subject or enquiry.name}", body)
-    except Exception:  # the message is saved; email is a convenience
-        pass
+    queue_template_email(
+        "website_enquiry",
+        school_recipients(enquiry.school),
+        {
+            "name": enquiry.name,
+            "email": enquiry.email,
+            "phone": enquiry.phone,
+            "subject": enquiry.subject,
+            "message": enquiry.message,
+            "school_name": enquiry.school.name,
+        },
+        reply_to=enquiry.email,
+    )
 
 
 class PublicEnquiryView(APIView):
@@ -99,7 +89,7 @@ class PublicEnquiryView(APIView):
             return Response({"detail": first, "errors": errors}, status=status.HTTP_400_BAD_REQUEST)
 
         enquiry = WebsiteEnquiry.objects.create(school=school, **clean)
-        transaction.on_commit(lambda: _notify_school(enquiry))
+        _notify_school(enquiry)
         return Response(
             {"detail": "Thank you. Your message has been sent and the school will get back to you."},
             status=status.HTTP_201_CREATED,

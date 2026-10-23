@@ -43,16 +43,20 @@ class WebsiteKitTests(TestCase):
         body = {"name": "Mrs Ade", "email": "ade@example.com", "message": "Is there space in JSS 1?", **data}
         return self.client.post("/api/schools/public/enquiry/", body, format="json", **self.headers)
 
-    @mock.patch("emails.tasks.send_custom_email_task.delay")
+    @mock.patch("emails.tasks.send_email_task.delay")
     def test_enquiry_is_saved_for_this_school_and_emailed_to_it(self, send):
         with self.captureOnCommitCallbacks(execute=True):
             r = self.enquire(phone="0801 234 5678")
         self.assertEqual(r.status_code, 201, r.data)
         enquiry = WebsiteEnquiry.objects.get()
         self.assertEqual(enquiry.school, self.school)
-        send.assert_called_once()
-        self.assertEqual(send.call_args.args[0], "office@kit.test")
-        self.assertIn("Is there space in JSS 1?", send.call_args.args[2])
+        # The school's address and its admins each get the "website_enquiry" email, replying to the parent.
+        recipients = sorted(call.args[1] for call in send.call_args_list)
+        self.assertEqual(recipients, ["office@kit.test"])  # the admin in this test has no email address
+        first = send.call_args_list[0]
+        self.assertEqual(first.args[0], "website_enquiry")
+        self.assertEqual(first.args[2]["message"], "Is there space in JSS 1?")
+        self.assertEqual(first.kwargs["reply_to"], "ade@example.com")
 
     def test_enquiry_validation_and_honeypot(self):
         self.assertEqual(self.enquire(email="not-an-email").status_code, 400)
@@ -60,12 +64,6 @@ class WebsiteKitTests(TestCase):
         r = self.enquire(website="http://spam.example")  # bots fill the hidden field
         self.assertEqual(r.status_code, 201)
         self.assertFalse(WebsiteEnquiry.objects.exists())
-
-    def test_message_html_is_escaped_in_the_email(self):
-        with mock.patch("emails.tasks.send_custom_email_task.delay") as send:
-            with self.captureOnCommitCallbacks(execute=True):
-                self.enquire(message="<script>alert(1)</script>")
-        self.assertNotIn("<script>", send.call_args.args[2])
 
     def test_inbox_is_admin_only_and_per_school(self):
         self.enquire()

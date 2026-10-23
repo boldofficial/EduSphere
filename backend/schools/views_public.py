@@ -1,3 +1,5 @@
+from django.conf import settings as django_settings
+
 """
 Public Views
 
@@ -156,6 +158,38 @@ class RegisterSchoolView(APIView):
                     school=school,
                     user=admin_user,
                     description=f"New school '{school.name}' registered (Status: ACTIVE) with plan '{plan.name}'",
+                )
+
+                # 6. Emails, sent once the registration is committed.
+                from emails.notify import (
+                    queue_template_email,
+                    school_login_url,
+                    school_portal_url,
+                    super_admin_recipients,
+                )
+
+                queue_template_email(
+                    "welcome_email",
+                    [admin_user.email, school.email],
+                    {
+                        "school_name": school.name,
+                        "admin_name": data.get("contact_person") or "",
+                        "portal_url": school_portal_url(school),
+                        "login_url": school_login_url(school),
+                        "login_email": admin_user.email,
+                    },
+                )
+                queue_template_email(
+                    "new_school_registration",
+                    super_admin_recipients(),
+                    {
+                        "school_name": school.name,
+                        "domain": school.domain,
+                        "admin_email": admin_user.email,
+                        "phone": school.phone or "",
+                        "requested_plan": requested.name if requested else "Free",
+                        "review_url": f"{getattr(django_settings, 'FRONTEND_URL', '')}/dashboard/super-admin/tenants",
+                    },
                 )
 
             logger.info(f"New school registered: '{school.name}' by {data['email']}")

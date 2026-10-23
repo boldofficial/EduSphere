@@ -8309,6 +8309,33 @@ paths:
               schema:
                 $ref: '#/components/schemas/EmailLog'
           description: ''
+  /api/emails/status/:
+    get:
+      operationId: emails_status_retrieve
+      description: |-
+        GET: is email configured, through which provider and sender, and the most recent failures.
+        POST {"recipient"}: send a test email now and report the provider's answer.
+        Secrets (passwords, API keys) are never returned.
+      tags:
+      - emails
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: emails_status_create
+      description: |-
+        GET: is email configured, through which provider and sender, and the most recent failures.
+        POST {"recipient"}: send a test email now and report the provider's answer.
+        Secrets (passwords, API keys) are never returned.
+      tags:
+      - emails
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
   /api/emails/templates/:
     get:
       operationId: emails_templates_list

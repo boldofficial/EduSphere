@@ -27,7 +27,9 @@ class EmailTasksTests(TestCase):
     def test_send_email_task_orchestration(self, mock_send):
         """Verify that the celery task correctly calls the utility function."""
         send_email_task("task-template", "user@test.com", context={"key": "val"})
-        mock_send.assert_called_once_with("task-template", "user@test.com", {"key": "val"}, campaign=None)
+        mock_send.assert_called_once_with(
+            "task-template", "user@test.com", {"key": "val"}, campaign=None, reply_to=None
+        )
 
     @patch("emails.tasks.send_template_email")
     @patch("time.sleep", return_value=None)  # Speed up test

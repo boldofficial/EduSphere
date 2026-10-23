@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { CreditCard, Zap, Server, Mail } from 'lucide-react';
 import { useUpdatePlatformSettings } from '@/lib/hooks/use-data';
 import { useToast } from '@/components/providers/toast-provider';
+import { EmailHealthPanel } from './EmailHealthPanel';
 
 export function PlatformSettingsTab({ settings }: { settings: any }) {
   const { addToast } = useToast();
@@ -131,6 +132,7 @@ export function PlatformSettingsTab({ settings }: { settings: any }) {
             Email Delivery Configuration
           </h3>
           <div className="space-y-6">
+            <EmailHealthPanel />
             <div className="space-y-2">
               <label className="text-xs font-black uppercase tracking-widest text-gray-400">
                 Email Provider
