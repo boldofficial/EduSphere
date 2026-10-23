@@ -104,7 +104,13 @@ jobs:
           DJANGO_SECRET_KEY: test-secret-key-for-ci
           DEBUG: 'False'
         run: |
-          uv run --no-sync python manage.py test --verbosity=2
+          set -o pipefail
+          uv run --no-sync python manage.py test --verbosity=2 2>&1 | tee /tmp/django-tests.log || {
+            # Surface failing test names (and their assertion) as annotations on the run.
+            grep -E "^(FAIL|ERROR):" /tmp/django-tests.log | head -20 | sed 's/^/::error::/'
+            grep -E "^(AssertionError|[A-Za-z]+Error):" /tmp/django-tests.log | head -10 | sed 's/^/::error::/'
+            exit 1
+          }
 
       - name: Upload coverage to Codecov
         working-directory: backend
