@@ -8,7 +8,7 @@ from schools.models import School
 from users.models import User
 
 
-class SchoolSetupTests(TestCase):
+class SetupTestBase(TestCase):
     def setUp(self):
         self.school = School.objects.create(name="Setup School", domain="setup-school")
         self.admin = User.objects.create_user(
@@ -24,6 +24,8 @@ class SchoolSetupTests(TestCase):
     def classes(self):
         return {c.name: c for c in Class.objects.filter(school=self.school)}
 
+
+class SchoolSetupTests(SetupTestBase):
     def test_primary_only_school(self):
         r = self.post(
             "apply/",
@@ -116,6 +118,9 @@ class SchoolSetupTests(TestCase):
     def test_validation_and_permissions(self):
         self.assertEqual(self.post("preview/", {"sections": []}).status_code, 400)
         self.assertEqual(self.post("preview/", {"sections": [{"key": "university"}]}).status_code, 400)
+        self.assertEqual(
+            self.post("preview/", {"sections": [{"key": "primary", "levels": ["x" * 41]}]}).status_code, 400
+        )
         self.assertEqual(self.post("preview/", {"sections": [{"key": "primary", "arms": ["<b>"]}]}).status_code, 400)
         teacher = User.objects.create_user(
             username="t@setup", password="Strong-Pass!2026", role="TEACHER", school=self.school
@@ -146,3 +151,34 @@ class SectionGuessTests(TestCase):
         }
         for (name, category), expected in cases.items():
             self.assertEqual(section_for_class(name, category), expected, name)
+
+
+class CustomLevelTests(SetupTestBase):
+    def test_school_specific_class_names_in_their_own_order(self):
+        """Heritage Kastle style: Reception … Preschool 2, then Grade 1–6."""
+        r = self.post(
+            "apply/",
+            {
+                "sections": [
+                    {
+                        "key": "early_years",
+                        "levels": ["Reception", "Preparatory", "Preschool 1", "Preschool 2"],
+                        "subjects": ["Literacy", "Numeracy", "Social Norms"],
+                    },
+                    {"key": "primary", "levels": [f"Grade {n}" for n in range(1, 7)], "subjects": ["Diction", "Chess"]},
+                ]
+            },
+        )
+        self.assertEqual(r.status_code, 201, r.data)
+        c = self.classes()
+        self.assertEqual(c["Reception"].next_class, c["Preparatory"])
+        self.assertEqual(c["Preschool 2"].next_class, c["Grade 1"])
+        self.assertTrue(c["Grade 6"].is_graduation_class)
+        self.assertEqual(c["Preparatory"].report_mode, "early_years")
+        self.assertEqual(c["Grade 3"].section.key, "primary")
+
+    def test_preparatory_and_preschool_are_recognised_as_early_years(self):
+        from academic.curriculum import section_for_class
+
+        for name in ("Reception", "Preparatory", "Preschool 1", "Pre-School 2"):
+            self.assertEqual(section_for_class(name, "Primary"), "early_years", name)
