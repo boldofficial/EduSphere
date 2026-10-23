@@ -2830,6 +2830,41 @@ paths:
               schema:
                 $ref: '#/components/schemas/ReportCard'
           description: ''
+  /api/academic/school-structure/:
+    get:
+      operationId: academic_school_structure_retrieve
+      description: GET the school's sections and the catalogue the wizard offers.
+      tags:
+      - academic
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/academic/school-structure/apply/:
+    post:
+      operationId: academic_school_structure_apply_create
+      description: POST the wizard's choices; creates sections, classes, subjects
+        and promotion links.
+      tags:
+      - academic
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/academic/school-structure/preview/:
+    post:
+      operationId: academic_school_structure_preview_create
+      description: POST the wizard's choices; returns exactly what would be created,
+        without saving anything.
+      tags:
+      - academic
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
   /api/academic/scores/:
     get:
       operationId: academic_scores_list
@@ -18540,6 +18575,19 @@ components:
         class_teacher_id:
           type: integer
           nullable: true
+        section:
+          type: integer
+          nullable: true
+        arm:
+          type: string
+          maxLength: 20
+        department:
+          type: string
+          maxLength: 20
+        level_order:
+          type: integer
+          maximum: 32767
+          minimum: 0
         created_at:
           type: string
           format: date-time
@@ -18592,6 +18640,19 @@ components:
             type: string
             minLength: 1
           writeOnly: true
+        section:
+          type: integer
+          nullable: true
+        arm:
+          type: string
+          maxLength: 20
+        department:
+          type: string
+          maxLength: 20
+        level_order:
+          type: integer
+          maximum: 32767
+          minimum: 0
       required:
       - name
     Commendation:
@@ -23305,6 +23366,19 @@ components:
             type: string
             minLength: 1
           writeOnly: true
+        section:
+          type: integer
+          nullable: true
+        arm:
+          type: string
+          maxLength: 20
+        department:
+          type: string
+          maxLength: 20
+        level_order:
+          type: integer
+          maximum: 32767
+          minimum: 0
     PatchedCommendationCreateRequest:
       type: object
       properties:

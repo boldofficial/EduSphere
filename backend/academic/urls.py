@@ -45,6 +45,9 @@ router.register(r"data-migration", AcademicDataMigrationViewSet, basename="data-
 
 urlpatterns = [
     path("global-search/", views.GlobalSearchView.as_view(), name="global-search"),
+    path("school-structure/", views.SchoolStructureView.as_view(), name="school-structure"),
+    path("school-structure/preview/", views.SchoolStructurePreviewView.as_view(), name="school-structure-preview"),
+    path("school-structure/apply/", views.SchoolStructureApplyView.as_view(), name="school-structure-apply"),
     path("ai-insights/", views.AIInsightsView.as_view(), name="ai-insights"),
     path("timetables/magic-generate/", views.AITimetableGenerateView.as_view(), name="magic-generate"),
     path("predictive-insights/", views.AIPredictiveInsightsView.as_view(), name="predictive-insights"),

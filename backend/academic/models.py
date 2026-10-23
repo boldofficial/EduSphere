@@ -70,6 +70,29 @@ class Teacher(TenantModel):
         return f"{self.name} ({self.school.name}) - {self.staff_type}"
 
 
+class SchoolSection(TenantModel):
+    """A part of the school with its own classes and leadership: Early Years, Primary, Junior, Senior."""
+
+    KEYS = [
+        ("early_years", "Early Years"),
+        ("primary", "Primary"),
+        ("junior", "Junior Secondary"),
+        ("senior", "Senior Secondary"),
+    ]
+    key = models.CharField(max_length=20, choices=KEYS)
+    name = models.CharField(max_length=120)  # shown on report cards, e.g. "Heritage Kastle Nursery & Primary"
+    head_title = models.CharField(max_length=60, blank=True)  # Head Teacher, Principal…
+    head_name = models.CharField(max_length=120, blank=True)
+    position = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        ordering = ["position"]
+        constraints = [models.UniqueConstraint(fields=["school", "key"], name="unique_section_per_school")]
+
+    def __str__(self):
+        return f"{self.name} ({self.school.name})"
+
+
 class Class(TenantModel):
     CATEGORY_CHOICES = [
         ("Nursery", "Nursery/Pre-School"),
@@ -101,6 +124,12 @@ class Class(TenantModel):
         help_text="The class students will be promoted to.",
     )
     is_graduation_class = models.BooleanField(default=False, help_text="Check if this is the final class (e.g., SS3).")
+
+    # School structure (see academic/school_setup.py)
+    section = models.ForeignKey(SchoolSection, on_delete=models.SET_NULL, null=True, blank=True, related_name="classes")
+    arm = models.CharField(max_length=20, blank=True)  # "A", "Gold"…
+    department = models.CharField(max_length=20, blank=True)  # senior secondary: science / arts / commercial
+    level_order = models.PositiveSmallIntegerField(default=0)  # position in the school, for sorting and promotion
 
     def __str__(self):
         return f"{self.name} ({self.school.name}) - {self.category}"
