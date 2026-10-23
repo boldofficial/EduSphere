@@ -59,13 +59,19 @@ export function BroadcastsTab({ announcements = [], onBroadcastChanged }: any) {
   const [title, setTitle] = useState('');
   const [message, setMessage] = useState('');
   const [priority, setPriority] = useState('low');
+  const [sendEmail, setSendEmail] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     setIsProcessing(true);
     try {
-      await apiClient.post('schools/governance/', { title, message, priority });
+      await apiClient.post('schools/governance/', {
+        title,
+        message,
+        priority,
+        send_email: sendEmail,
+      });
       addToast('Announcement broadcasted successfully!', 'success');
       setTitle('');
       setMessage('');
@@ -160,6 +166,20 @@ export function BroadcastsTab({ announcements = [], onBroadcastChanged }: any) {
                   <option value="high">High (Urgent Action Required)</option>
                 </select>
               </div>
+              <label className="flex items-start gap-3 rounded-2xl border border-gray-100 p-4">
+                <input
+                  type="checkbox"
+                  checked={sendEmail}
+                  onChange={(e) => setSendEmail(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 accent-brand-600"
+                />
+                <span>
+                  <span className="block text-sm font-bold text-gray-900">Also send by email</span>
+                  <span className="block text-xs text-gray-500">
+                    Emails every school admin, as well as showing it in their dashboard.
+                  </span>
+                </span>
+              </label>
               <div className="flex gap-3 pt-4">
                 <button
                   type="button"

@@ -24,20 +24,14 @@ def check_subscription_expiry():
         sub.status = "expired"
         sub.save(update_fields=["status"])
 
-        # Notify the school admin
-        # Assuming we have a school email or an admin user we can notify
-        try:
-            from emails.tasks import send_custom_email_task
+        # Notify the school (its address and its admins)
+        from emails.notify import queue_template_email, school_login_url, school_recipients
 
-            school_email = sub.school.email or sub.school.contact_email
-            if school_email:
-                send_custom_email_task.delay(
-                    subject="Your Registra Subscription Has Expired",
-                    message=f"Hello, your subscription for {sub.school.name} has expired. Please renew your plan to restore access.",
-                    recipient_list=[school_email],
-                )
-        except Exception as e:
-            logger.error(f"Failed to send expiration email for {sub.school.name}: {e}")
+        queue_template_email(
+            "subscription_expired",
+            school_recipients(sub.school),
+            {"school_name": sub.school.name, "login_url": school_login_url(sub.school)},
+        )
 
         logger.info(f"Subscription {sub.id} for school {sub.school.name} marked as expired.")
         count += 1

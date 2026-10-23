@@ -3186,6 +3186,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/emails/status/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description GET: is email configured, through which provider and sender, and the most recent failures.
+         *     POST {"recipient"}: send a test email now and report the provider's answer.
+         *     Secrets (passwords, API keys) are never returned. */
+        get: operations["emails_status_retrieve"];
+        put?: never;
+        /** @description GET: is email configured, through which provider and sender, and the most recent failures.
+         *     POST {"recipient"}: send a test email now and report the provider's answer.
+         *     Secrets (passwords, API keys) are never returned. */
+        post: operations["emails_status_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/emails/templates/": {
         parameters: {
             query?: never;
@@ -18861,6 +18883,42 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["EmailLog"];
                 };
+            };
+        };
+    };
+    emails_status_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    emails_status_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

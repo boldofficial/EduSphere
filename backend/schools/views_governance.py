@@ -76,7 +76,22 @@ class PlatformGovernanceView(APIView):
             title=title, message=message, priority=priority, created_by=request.user
         )
 
-        return Response({"success": True, "id": announcement.id})
+        # Optionally email it too (school admins by default), not just show it in dashboards.
+        emailed = str(request.data.get("send_email", "")).lower() in ("true", "1", "yes")
+        if emailed:
+            from django.db import transaction
+
+            from emails.tasks import send_announcement_task
+
+            def queue():
+                try:
+                    send_announcement_task.delay(announcement.id)
+                except Exception:  # queue down: send now
+                    send_announcement_task(announcement.id)
+
+            transaction.on_commit(queue)
+
+        return Response({"success": True, "id": announcement.id, "emailed": emailed})
 
 
 class UserAnnouncementsView(APIView):

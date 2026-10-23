@@ -1,4 +1,8 @@
+from datetime import timedelta
+
+from django.utils import timezone
 from rest_framework import viewsets
+from rest_framework.views import APIView
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -83,3 +87,51 @@ class EmailLogViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = EmailLog.objects.select_related("template", "campaign").all().order_by("-sent_at")
     serializer_class = EmailLogSerializer
     permission_classes = [IsSuperAdmin]
+
+
+class EmailStatusView(APIView):
+    """
+    GET: is email configured, through which provider and sender, and the most recent failures.
+    POST {"recipient"}: send a test email now and report the provider's answer.
+    Secrets (passwords, API keys) are never returned.
+    """
+
+    permission_classes = [IsSuperAdmin]
+
+    def get(self, request):
+        from .utils import NOT_CONFIGURED, email_config
+
+        config = email_config()
+        failures = EmailLog.objects.filter(status="failed").order_by("-sent_at")[:10]
+        last_24h = EmailLog.objects.filter(sent_at__gte=timezone.now() - timedelta(hours=24))
+        return Response(
+            {
+                "configured": config["configured"],
+                "problem": "" if config["configured"] else NOT_CONFIGURED,
+                "provider": "Brevo API" if config["provider"] == "brevo_api" else "SMTP",
+                "from": f"{config['from_name']} <{config['from_email']}>",
+                "smtp_host": config["host"] if config["provider"] != "brevo_api" else "",
+                "last_24h": {
+                    "sent": last_24h.filter(status="sent").count(),
+                    "failed": last_24h.filter(status="failed").count(),
+                },
+                "recent_failures": [
+                    {"recipient": f.recipient, "subject": f.subject, "error": f.error_message[:300], "at": f.sent_at}
+                    for f in failures
+                ],
+            }
+        )
+
+    def post(self, request):
+        from .utils import email_config, send_template_email
+
+        recipient = (request.data.get("recipient") or request.user.email or "").strip()
+        if not recipient:
+            return Response({"detail": "Enter an email address to send the test to."}, status=400)
+        provider = "Brevo API" if email_config()["provider"] == "brevo_api" else "SMTP"
+        if send_template_email("test_email", recipient, {"provider": provider}):
+            return Response({"detail": f"Test email sent to {recipient} via {provider}."})
+        error = EmailLog.objects.filter(recipient=recipient).order_by("-sent_at").first()
+        return Response(
+            {"detail": f"Test email failed: {error.error_message if error else 'unknown error'}"}, status=502
+        )

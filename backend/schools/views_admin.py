@@ -1,3 +1,5 @@
+from django.conf import settings as django_settings
+
 """
 Admin Views
 
@@ -24,7 +26,6 @@ from rest_framework.views import APIView
 from core.pagination import StandardPagination
 from core.tenant_utils import get_request_school
 from core.models import GlobalActivityLog
-from emails.tasks import send_custom_email_task, send_email_task
 from users.permissions import IsSuperAdmin
 
 from .models import PlatformModule, School, SchoolPayment, SchoolPaymentConfig, Subscription, SubscriptionPlan
@@ -89,53 +90,14 @@ class SchoolManagementView(APIView):
 
     @staticmethod
     def _queue_school_decision_email(school, action):
-        recipients = []
-        if school.email:
-            recipients.append(school.email.strip())
+        """Approval/rejection email to the school's address and its admins."""
+        from emails.notify import queue_template_email, school_login_url, school_recipients
 
-        admin_user = school.users.filter(role="SCHOOL_ADMIN").exclude(email__isnull=True).exclude(email="").first()
-        if admin_user and admin_user.email:
-            admin_email = admin_user.email.strip()
-            if admin_email.lower() not in {r.lower() for r in recipients}:
-                recipients.append(admin_email)
-
-        if not recipients:
-            return
-
-        login_url = f"https://{school.domain}.myregistra.net/login"
-        if action == "approve":
-            for recipient in recipients:
-                try:
-                    send_email_task.delay(
-                        "school_approved",
-                        recipient,
-                        {"school_name": school.name, "login_url": login_url},
-                    )
-                except Exception:
-                    send_custom_email_task.delay(
-                        recipient,
-                        f"School Registration Approved - {school.name}",
-                        f"""
-                        <h2>Registration Approved</h2>
-                        <p>Hello {school.name},</p>
-                        <p>Your school registration has been approved and your account is now active.</p>
-                        <p>You can now login here: <a href="{login_url}">{login_url}</a></p>
-                        """,
-                    )
-            return
-
-        if action == "reject":
-            for recipient in recipients:
-                send_custom_email_task.delay(
-                    recipient,
-                    f"School Registration Update - {school.name}",
-                    f"""
-                    <h2>Registration Not Approved</h2>
-                    <p>Hello {school.name},</p>
-                    <p>We reviewed your school registration and it was not approved at this time.</p>
-                    <p>You may contact support for clarification or submit an updated application.</p>
-                    """,
-                )
+        slug = {"approve": "school_approved", "reject": "school_rejected"}.get(action)
+        if slug:
+            queue_template_email(
+                slug, school_recipients(school), {"school_name": school.name, "login_url": school_login_url(school)}
+            )
 
     def get(self, request):
         """List all schools."""
@@ -519,7 +481,7 @@ class AdminDemoRequestView(APIView):
         context = {
             "name": demo_req.name,
             "school_name": demo_req.school_name,
-            "login_url": "https://demo.myregistra.net/login",
+            "login_url": f"https://demo.{django_settings.ROOT_DOMAIN}/login",
             "password": demo_password or "Contact support for your temporary password.",
         }
 

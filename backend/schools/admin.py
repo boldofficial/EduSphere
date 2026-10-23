@@ -1,3 +1,6 @@
+import os
+
+from django.conf import settings
 from django.contrib import admin
 
 from .models import DemoRequest
@@ -28,9 +31,10 @@ def approve_demo_requests(modeladmin, request, queryset):
                     "name": demo_req.name,
                     "email": demo_req.email,
                     "school_name": demo_req.school_name,
-                    "login_url": "https://demo.myregistra.net/login",  # Typically constant for demo
+                    "login_url": f"https://demo.{settings.ROOT_DOMAIN}/login",
                     "username": "demo_admin",  # Generic demo credentials
-                    "password": "demo_pressure_2025",  # Generic demo credentials
+                    "password": os.environ.get("DEMO_DEFAULT_PASSWORD")
+                    or "Contact support for your temporary password.",
                 }
 
                 if send_template_email("demo-approved", demo_req.email, context):
