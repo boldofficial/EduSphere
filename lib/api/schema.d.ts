@@ -5058,10 +5058,7 @@ export interface paths {
          *     Automatically invalidates cache on create, update, delete */
         get: operations["library_settings_list"];
         put?: never;
-        /** @description Mixin to add caching capabilities to ViewSets
-         *
-         *     Automatically invalidates cache on create, update, delete */
-        post: operations["library_settings_create"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -5084,10 +5081,7 @@ export interface paths {
          *     Automatically invalidates cache on create, update, delete */
         put: operations["library_settings_update"];
         post?: never;
-        /** @description Mixin to add caching capabilities to ViewSets
-         *
-         *     Automatically invalidates cache on create, update, delete */
-        delete: operations["library_settings_destroy"];
+        delete?: never;
         options?: never;
         head?: never;
         /** @description Mixin to add caching capabilities to ViewSets
@@ -24050,31 +24044,6 @@ export interface operations {
             };
         };
     };
-    library_settings_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["LibrarySettingsRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["LibrarySettingsRequest"];
-                "multipart/form-data": components["schemas"]["LibrarySettingsRequest"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["LibrarySettings"];
-                };
-            };
-        };
-    };
     library_settings_retrieve: {
         parameters: {
             query?: never;
@@ -24122,27 +24091,6 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["LibrarySettings"];
                 };
-            };
-        };
-    };
-    library_settings_destroy: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description A unique integer value identifying this library settings. */
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
             };
         };
     };

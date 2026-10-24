@@ -13784,34 +13784,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedLibrarySettingsList'
           description: ''
-    post:
-      operationId: library_settings_create
-      description: |-
-        Mixin to add caching capabilities to ViewSets
-
-        Automatically invalidates cache on create, update, delete
-      tags:
-      - library
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LibrarySettingsRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/LibrarySettingsRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/LibrarySettingsRequest'
-      security:
-      - jwtAuth: []
-      responses:
-        '201':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/LibrarySettings'
-          description: ''
   /api/library/settings/{id}/:
     get:
       operationId: library_settings_retrieve
@@ -13907,26 +13879,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/LibrarySettings'
           description: ''
-    delete:
-      operationId: library_settings_destroy
-      description: |-
-        Mixin to add caching capabilities to ViewSets
-
-        Automatically invalidates cache on create, update, delete
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this library settings.
-        required: true
-      tags:
-      - library
-      security:
-      - jwtAuth: []
-      responses:
-        '204':
-          description: No response body
   /api/lms/messages/:
     get:
       operationId: lms_messages_list

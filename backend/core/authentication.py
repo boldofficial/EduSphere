@@ -31,3 +31,15 @@ class TenantJWTAuthentication(JWTAuthentication):
             if tenant is None:
                 raw.tenant = school
         return result
+
+
+try:
+    from drf_spectacular.contrib.rest_framework_simplejwt import SimpleJWTScheme
+
+    class TenantJWTScheme(SimpleJWTScheme):
+        """Document it exactly like plain SimpleJWT (bearer token, `jwtAuth`)."""
+
+        target_class = "core.authentication.TenantJWTAuthentication"
+
+except ImportError:  # schema tooling not installed
+    pass
