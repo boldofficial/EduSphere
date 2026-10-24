@@ -83,3 +83,19 @@ class AuditTrailTests(TestCase):
         self.student.names = "Changed By Script"
         self.student.save()
         self.assertIsNone(FieldChangeLog.objects.get(field_name="names").user)
+
+
+class AuditNeverBlocksSavesTests(TestCase):
+    def test_a_failing_audit_write_does_not_undo_the_change(self):
+        from unittest import mock
+
+        from django.db import IntegrityError, transaction
+
+        school = School.objects.create(name="Safe School", domain="audit-safe")
+        student = Student.objects.create(school=school, names="Ada", student_no="S1", gender="Female")
+        with mock.patch("core.audit._write", side_effect=IntegrityError("audit table broken")):
+            with transaction.atomic():  # as inside a request
+                student.names = "Ada Obi"
+                student.save()
+                student.refresh_from_db()  # the transaction is still usable
+        self.assertEqual(Student.objects.get(pk=student.pk).names, "Ada Obi")

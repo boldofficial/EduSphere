@@ -53,49 +53,6 @@ class FieldChangeLog(models.Model):
         return f"{self.content_type}.{self.object_id}.{self.field_name}: {self.old_value} → {self.new_value}"
 
 
-def log_field_change(
-    instance,
-    field_name: str,
-    old_value,
-    new_value,
-    user=None,
-    action="UPDATE",
-    school=None,
-    request=None,
-):
-    """
-    Log a field change to FieldChangeLog.
-    Call this from model's save() or in a signal handler.
-    """
-    try:
-        school = school or getattr(instance, "school", None)
-        if school is None and hasattr(instance, "school_id"):
-            school = School.objects.filter(pk=instance.school_id).first()
-
-        ip = None
-        ua = None
-        if request:
-            ip = request.META.get("REMOTE_ADDR")
-            ua = request.META.get("HTTP_USER_AGENT", "")[:500]
-
-        FieldChangeLog.objects.create(
-            school=school,
-            user=user,
-            content_type=f"{instance._meta.app_label}.{instance._meta.model_name}",
-            object_id=str(instance.pk),
-            action=action,
-            field_name=field_name,
-            old_value=str(old_value) if old_value is not None else None,
-            new_value=str(new_value) if new_value is not None else None,
-            ip_address=ip,
-            user_agent=ua,
-        )
-    except Exception as e:
-        import logging
-
-        logging.getLogger(__name__).error(f"Failed to log field change: {e}")
-
-
 class GlobalActivityLog(models.Model):
     ACTION_CHOICES = (
         ("SCHOOL_SIGNUP", "School Signup"),

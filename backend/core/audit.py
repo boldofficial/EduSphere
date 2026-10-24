@@ -8,6 +8,8 @@ attributed without passing the user around. Tracked models use core.security_uti
 
 from contextvars import ContextVar
 
+from django.db import transaction
+
 _actor = ContextVar("audit_actor", default=None)
 
 # What a school admin sees as the "area" of a change, keyed by app_label.model_name.
@@ -79,14 +81,21 @@ def _text(value):
 
 def log_changes(instance, action, changes):
     """changes: [(field_name, old, new)]. One row per field, written in a single insert."""
-    from core.models import FieldChangeLog
-
     if not changes:
         return
     actor = current_actor()
-    user = actor.get("user")
     school_id = getattr(instance, "school_id", None)
     label = record_label(instance)
+    # Own savepoint: if writing the audit row fails, only that is rolled back. The change it
+    # describes (a score, a payment) must never fail because of its audit entry.
+    with transaction.atomic():
+        _write(instance, action, changes, actor, label, school_id)
+
+
+def _write(instance, action, changes, actor, label, school_id):
+    from core.models import FieldChangeLog
+
+    user = actor.get("user")
     FieldChangeLog.objects.bulk_create(
         [
             FieldChangeLog(
