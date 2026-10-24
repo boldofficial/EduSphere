@@ -10,7 +10,7 @@ import { useToast } from '@/components/providers/toast-provider';
 import * as Utils from '@/lib/utils';
 import * as Types from '@/lib/types';
 import {
-  useStudents,
+  useClassStudents,
   useClasses,
   useScores,
   useSettings,
@@ -24,14 +24,9 @@ export const PromotionManager: React.FC = () => {
   const { addToast } = useToast();
 
   // Data Hooks
-  const { data: students = [] } = useStudents();
   const { data: classes = [] } = useClasses();
   const { data: settings = Utils.INITIAL_SETTINGS, isSuccess: settingsLoaded } = useSettings();
   // Promotion only looks at the current session.
-  const { data: scores = [] } = useScores(
-    { include_all_periods: true, session: settings.current_session },
-    settingsLoaded
-  );
 
   // Mutations
   const { mutate: updateSettings } = useUpdateSettings();
@@ -39,7 +34,14 @@ export const PromotionManager: React.FC = () => {
   const { mutate: bulkPromote } = useBulkPromoteStudents();
   const setSettings = (newSettings: Types.Settings) => updateSettings(newSettings); // Adapter for state setter style
 
-  const [selectedClass, setSelectedClass] = useState(String(classes[0]?.id || ''));
+  const [chosenClass, setSelectedClass] = useState('');
+  const selectedClass = chosenClass || String(classes[0]?.id || '');
+  // Only the chosen class: a whole school's students and scores is far too much to load at once.
+  const { data: students = [] } = useClassStudents(selectedClass);
+  const { data: scores = [] } = useScores(
+    { include_all_periods: true, session: settings.current_session, class: selectedClass },
+    settingsLoaded && !!selectedClass
+  );
   const [localThreshold, setLocalThreshold] = useState(settings.promotion_threshold);
   const [promotionResults, setPromotionResults] = useState<Map<string, string | null>>(new Map());
   const [isProcessing, setIsProcessing] = useState(false);

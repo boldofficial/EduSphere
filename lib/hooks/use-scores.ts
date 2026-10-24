@@ -13,7 +13,8 @@ export interface ScoreFilters extends Record<string, unknown> {
   session?: string;
   term?: string;
   student?: string;
-  class_id?: string;
+  /** Report cards of one class (server-side filter). */
+  class?: string;
   include_all_periods?: boolean;
 }
 

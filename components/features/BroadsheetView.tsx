@@ -11,6 +11,9 @@ interface BroadsheetViewProps {
   classes: Types.Class[];
   scores: Types.Score[];
   settings: Types.Settings;
+  /** When given, the page owns the class choice (and loads only that class's students). */
+  selectedClass?: string;
+  onSelectClass?: (classId: string) => void;
 }
 
 export const BroadsheetView: React.FC<BroadsheetViewProps> = ({
@@ -18,11 +21,15 @@ export const BroadsheetView: React.FC<BroadsheetViewProps> = ({
   classes,
   scores,
   settings,
+  selectedClass: controlledClass,
+  onSelectClass,
 }) => {
-  const [selectedClass, setSelectedClass] = useState(classes[0]?.id || '');
+  const [localClass, setLocalClass] = useState(String(classes[0]?.id || ''));
+  const selectedClass = controlledClass ?? localClass;
+  const setSelectedClass = onSelectClass ?? setLocalClass;
   const [isExporting, setIsExporting] = useState(false);
-  const currentClass = classes.find((c) => c.id === selectedClass);
-  const activeStudents = students.filter((s) => s.class_id === selectedClass);
+  const currentClass = classes.find((c) => Utils.sameId(c.id, selectedClass));
+  const activeStudents = students.filter((s) => Utils.sameId(s.class_id, selectedClass));
   const subjects = Utils.getSubjectsForClass(currentClass);
 
   const sheetData = activeStudents

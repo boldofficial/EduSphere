@@ -151,6 +151,7 @@ export {
   useUpdateClass,
   useDeleteClass,
   useStudents,
+  useClassStudents,
   usePaginatedStudents,
   useCreateStudent,
   useUpdateStudent,

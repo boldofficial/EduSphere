@@ -35,6 +35,9 @@ interface GradingViewProps {
   settings: Types.Settings;
   onUpsertScore: (score: Types.Score) => void;
   currentRole?: string;
+  /** When given, the page owns the class choice (and loads only that class's data). */
+  selectedClass?: string;
+  onSelectClass?: (classId: string) => void;
 }
 
 export const GradingView: React.FC<GradingViewProps> = ({
@@ -44,10 +47,14 @@ export const GradingView: React.FC<GradingViewProps> = ({
   settings,
   onUpsertScore,
   currentRole = 'admin',
+  selectedClass: controlledClass,
+  onSelectClass,
 }) => {
   const { addToast } = useToast();
 
-  const [selectedClass, setSelectedClass] = useState(String(classes[0]?.id || ''));
+  const [localClass, setLocalClass] = useState(String(classes[0]?.id || ''));
+  const selectedClass = controlledClass ?? localClass;
+  const setSelectedClass = onSelectClass ?? setLocalClass;
   const currentClass = classes.find((c) => Utils.sameId(c.id, selectedClass));
   const classSubjects = Utils.getSubjectsForClass(currentClass);
   const isEarlyYears = Utils.isEarlyYearsClass(currentClass);

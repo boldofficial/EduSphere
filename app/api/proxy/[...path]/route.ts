@@ -95,8 +95,8 @@ async function handleProxy(request: NextRequest, params: Promise<{ path: string[
   }
 
   // Rate limiting
-  const identifier = getClientIdentifier(request);
-  const rateLimitConfig = getRateLimitConfig(path);
+  const identifier = getClientIdentifier(request, accessToken);
+  const rateLimitConfig = getRateLimitConfig(path, request.method);
   const rateLimitResult = await checkRateLimit(identifier, rateLimitConfig);
 
   if (!rateLimitResult.success) {

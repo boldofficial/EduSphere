@@ -17,6 +17,9 @@ interface ExamModeProps {
   classes: Types.Class[];
   session: string;
   term: string;
+  /** When given, the page owns the class choice (and loads only that class's data). */
+  selectedClass?: string;
+  onSelectClass?: (classId: string) => void;
 }
 
 interface ExamConfig {
@@ -28,14 +31,26 @@ interface ExamConfig {
   instructions: string;
 }
 
-export const ExamMode: React.FC<ExamModeProps> = ({ students, classes, session, term }) => {
+export const ExamMode: React.FC<ExamModeProps> = ({
+  students,
+  classes,
+  session,
+  term,
+  selectedClass: controlledClass,
+  onSelectClass,
+}) => {
   const confirm = useConfirm();
   const { addToast } = useToast();
-  const { data: scores = [] } = useScores({ include_all_periods: true, session }, !!session);
   const { mutate: updateScore } = useUpdateScore();
 
   const [isExamActive, setIsExamActive] = useState(false);
-  const [selectedClass, setSelectedClass] = useState(String(classes[0]?.id || ''));
+  const [localClass, setLocalClass] = useState(String(classes[0]?.id || ''));
+  const selectedClass = controlledClass ?? localClass;
+  const setSelectedClass = onSelectClass ?? setLocalClass;
+  const { data: scores = [] } = useScores(
+    { include_all_periods: true, session, class: selectedClass || String(classes[0]?.id || '') },
+    !!session && !!(selectedClass || classes[0]?.id)
+  );
   const [selectedSubject, setSelectedSubject] = useState('');
   const [examConfig, setExamConfig] = useState<ExamConfig>({
     title: '',

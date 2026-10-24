@@ -1,65 +1,65 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Download, Upload, Cloud } from 'lucide-react';
 import * as Utils from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/components/providers/toast-provider';
-import {
-  useStudents,
-  useTeachers,
-  useStaff,
-  useClasses,
-  useScores,
-  useFees,
-  usePayments,
-  useExpenses,
-  useAttendance,
-  useSettings,
-} from '@/lib/hooks/use-data';
+import { fetchAll, useSettings } from '@/lib/hooks/use-data';
+
+const ALL_PERIODS = { include_all_periods: true };
 
 export const DataManagementView: React.FC = () => {
   const { addToast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Get data from TanStack Query
   const { data: settings = Utils.INITIAL_SETTINGS } = useSettings();
-  const { data: students = [] } = useStudents();
-  const { data: teachers = [] } = useTeachers();
-  const { data: staff = [] } = useStaff();
-  const { data: classes = [] } = useClasses();
-  const { data: scores = [] } = useScores({ include_all_periods: true });
-  const { data: fees = [] } = useFees({ include_all_periods: true });
-  const { data: payments = [] } = usePayments({ include_all_periods: true });
-  const { data: expenses = [] } = useExpenses({ include_all_periods: true });
-  const { data: attendance = [] } = useAttendance({ include_all_periods: true });
+  const [isExporting, setIsExporting] = useState(false);
 
-  const handleExport = () => {
-    // Export from store (which is synced with database)
-    const data = {
-      settings,
-      students,
-      teachers,
-      staff,
-      classes,
-      scores,
-      fees,
-      payments,
-      expenses,
-      attendance,
-      exportedAt: new Date().toISOString(),
-      version: '2.0', // Database version
-    };
+  // The backup holds every record the school has, so it is fetched when asked for, not on page load.
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      const [students, teachers, staff, classes, scores, fees, payments, expenses, attendance] =
+        await Promise.all([
+          fetchAll('academic/students/'),
+          fetchAll('academic/teachers/'),
+          fetchAll('academic/staff/'),
+          fetchAll('academic/classes/'),
+          fetchAll('academic/reports/', ALL_PERIODS),
+          fetchAll('bursary/fees/', ALL_PERIODS),
+          fetchAll('bursary/payments/', ALL_PERIODS),
+          fetchAll('bursary/expenses/', ALL_PERIODS),
+          fetchAll('academic/attendance-sessions/', ALL_PERIODS),
+        ]);
+      const data = {
+        settings,
+        students,
+        teachers,
+        staff,
+        classes,
+        scores,
+        fees,
+        payments,
+        expenses,
+        attendance,
+        exportedAt: new Date().toISOString(),
+        version: '2.0', // Database version
+      };
 
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `school_backup_${Utils.getTodayString()}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    addToast('Backup downloaded successfully', 'success');
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `school_backup_${Utils.getTodayString()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      addToast('Backup downloaded successfully', 'success');
+    } catch {
+      addToast('Could not prepare the backup. Please try again.', 'error');
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -105,7 +105,9 @@ export const DataManagementView: React.FC = () => {
                 Download a complete JSON backup of all school records from the database.
               </p>
             </div>
-            <Button onClick={handleExport}>Download Backup</Button>
+            <Button onClick={handleExport} disabled={isExporting}>
+              {isExporting ? 'Preparing…' : 'Download Backup'}
+            </Button>
           </div>
 
           <div className="flex items-center gap-4 p-4 border rounded-lg bg-orange-50 border-orange-100">
