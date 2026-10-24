@@ -8,6 +8,7 @@ import apiClient from '@/lib/api-client';
 import type { PartKey } from '@/lib/assessment';
 import { queryKeys } from '@/lib/hooks/use-data';
 import { useToast } from '@/components/providers/toast-provider';
+import * as Utils from '@/lib/utils';
 
 type Part = { label: string; max: number; enabled: boolean };
 type Assessment = Record<PartKey, Part>;
@@ -18,6 +19,7 @@ export interface SectionSettings {
   name: string;
   head_title: string;
   head_name: string;
+  head_signature?: string;
   assessment: Assessment;
   grading_scheme: number | null;
   show_position: boolean;
@@ -88,7 +90,12 @@ function SectionCard({
           assessment: draft.assessment,
           grading_scheme: draft.grading_scheme,
           show_position: draft.show_position,
+          head_title: draft.head_title,
           head_name: draft.head_name,
+          // Only a newly chosen image (data URL) or a removal is sent; the saved one stays otherwise.
+          ...(draft.head_signature !== section.head_signature
+            ? { head_signature: draft.head_signature || '' }
+            : {}),
           name: draft.name,
         })
       ).data,
@@ -124,6 +131,16 @@ function SectionCard({
             className="w-full rounded-control border border-gray-200 px-3 py-2 text-sm font-semibold"
           />
         </label>
+        <label className="block min-w-[160px] space-y-1">
+          <span className="text-xs font-semibold text-gray-500">Head&apos;s title</span>
+          <input
+            value={draft.head_title}
+            maxLength={60}
+            placeholder="Head Teacher, Principal…"
+            onChange={(e) => setDraft({ ...draft, head_title: e.target.value })}
+            className="w-full rounded-control border border-gray-200 px-3 py-2 text-sm"
+          />
+        </label>
         <label className="block min-w-[200px] space-y-1">
           <span className="text-xs font-semibold text-gray-500">{draft.head_title || 'Head'}</span>
           <input
@@ -133,6 +150,53 @@ function SectionCard({
             className="w-full rounded-control border border-gray-200 px-3 py-2 text-sm"
           />
         </label>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-3 rounded-control border border-dashed border-gray-200 p-3">
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold text-gray-700">Signature on report cards</p>
+          <p className="text-xs text-gray-500">
+            Signs this section&apos;s report cards with the name and title above. Without one, the
+            school&apos;s head of school signature is used.
+          </p>
+        </div>
+        {draft.head_signature && (
+          <img
+            src={Utils.getMediaUrl(draft.head_signature) || draft.head_signature}
+            alt={`${draft.head_title || 'Head'} signature`}
+            className="h-10 max-w-[140px] object-contain"
+          />
+        )}
+        <label className="cursor-pointer rounded-control border border-gray-200 px-3 py-1.5 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+          {draft.head_signature ? 'Change' : 'Upload'}
+          <input
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              if (file.size > 2 * 1024 * 1024) {
+                addToast('Choose an image under 2 MB.', 'error');
+                return;
+              }
+              const reader = new FileReader();
+              reader.onloadend = () =>
+                setDraft((d) => ({ ...d, head_signature: reader.result as string }));
+              reader.readAsDataURL(file);
+              e.target.value = '';
+            }}
+          />
+        </label>
+        {draft.head_signature && (
+          <button
+            type="button"
+            onClick={() => setDraft({ ...draft, head_signature: '' })}
+            className="text-sm font-semibold text-danger-700 hover:underline"
+          >
+            Remove
+          </button>
+        )}
       </div>
 
       <div>

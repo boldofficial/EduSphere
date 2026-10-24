@@ -32,6 +32,7 @@ class SchoolStructureView(APIView):
                 "name": s.name,
                 "head_title": s.head_title,
                 "head_name": s.head_name,
+                "head_signature": s.head_signature,
                 "class_count": s.classes.count(),
                 "assessment": section_assessment_config(s),
                 "grading_scheme": s.grading_scheme_id,
@@ -114,6 +115,18 @@ class SchoolSectionView(APIView):
             if field in data:
                 setattr(section, field, " ".join(str(data[field] or "").split())[:limit])
                 changed.append(field)
+        if "head_signature" in data:
+            value = data["head_signature"] or ""
+            if value.startswith("data:image"):
+                from ..serializers import Base64ImageField
+
+                try:
+                    value = Base64ImageField().to_internal_value(value)
+                except drf_serializers.ValidationError as error:
+                    detail = error.detail[0] if isinstance(error.detail, list) else error.detail
+                    return Response({"detail": str(detail)}, status=400)
+            section.head_signature = value
+            changed.append("head_signature")
         if changed:
             section.save(update_fields=changed)
         return Response(
@@ -122,6 +135,7 @@ class SchoolSectionView(APIView):
                 "name": section.name,
                 "head_title": section.head_title,
                 "head_name": section.head_name,
+                "head_signature": section.head_signature,
                 "assessment": section_assessment_config(section),
                 "grading_scheme": section.grading_scheme_id,
                 "show_position": section.show_position,

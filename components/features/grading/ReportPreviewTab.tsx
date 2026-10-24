@@ -105,8 +105,11 @@ export const ReportPreviewTab: React.FC<ReportPreviewTabProps> = ({
         ? `Development Snapshot: Secure ${secureCount}, Developing ${developingCount}, Emerging ${emergingCount}`
         : `Average Score: ${(previewScore.average || 0).toFixed(1)}%`,
       `Attendance: ${attendancePresent}/${attendanceTotal} (${attendancePercent}%)`,
-      `Teacher Remark: ${previewScore.teacher_remark || 'Steady progress this term.'}`,
-      `Head Remark: ${previewScore.head_teacher_remark || 'Keep striving for excellence.'}`,
+      // Only remarks someone actually wrote: never a stock phrase passed off as the teacher's.
+      ...(previewScore.teacher_remark ? [`Teacher Remark: ${previewScore.teacher_remark}`] : []),
+      ...(previewScore.head_teacher_remark
+        ? [`Head Remark: ${previewScore.head_teacher_remark}`]
+        : []),
       '',
       'Kindly check the attached PDF report card for full details.',
     ].join('\n');

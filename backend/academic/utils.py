@@ -1,3 +1,4 @@
+from xml.sax.saxutils import escape
 import io
 import os
 
@@ -57,13 +58,14 @@ class BroadsheetPDFGenerator:
         header_style = ParagraphStyle(
             "HeaderStyle", parent=self.styles["Heading1"], alignment=TA_CENTER, fontSize=16, spaceAfter=10
         )
-        elements.append(Paragraph(self.school.name.upper(), header_style))
+        elements.append(Paragraph(escape(self.school.name.upper()), header_style))
 
         sub_header_style = ParagraphStyle(
             "SubHeaderStyle", parent=self.styles["Normal"], alignment=TA_CENTER, fontSize=12, spaceAfter=20
         )
         sub_text = (
-            f"Master Broadsheet Report - {self.student_class.name}<br/>Session: {self.session} | Term: {self.term}"
+            f"Master Broadsheet Report - {escape(self.student_class.name)}<br/>"
+            f"Session: {escape(self.session)} | Term: {escape(self.term)}"
         )
         elements.append(Paragraph(sub_text, sub_header_style))
 
@@ -256,17 +258,17 @@ class ReportCardPDFGenerator:
             [
                 passport or "",
                 [
-                    Paragraph(f"<b>NAME:</b> {student.names.upper()}", styles["Normal"]),
-                    Paragraph(f"<b>GENDER:</b> {getattr(student, 'gender', 'N/A')}", styles["Normal"]),
+                    Paragraph(f"<b>NAME:</b> {escape(student.names.upper())}", styles["Normal"]),
+                    Paragraph(f"<b>GENDER:</b> {escape(str(getattr(student, 'gender', 'N/A')))}", styles["Normal"]),
                     Paragraph(
                         f"<b>CLASS:</b> {report.student_class.name if report.student_class else 'N/A'}",
                         styles["Normal"],
                     ),
                 ],
                 [
-                    Paragraph(f"<b>TERM:</b> {report.term}", styles["Normal"]),
-                    Paragraph(f"<b>YEAR:</b> {report.session}", styles["Normal"]),
-                    Paragraph(f"<b>ADM NO:</b> {student.student_no}", styles["Normal"]),
+                    Paragraph(f"<b>TERM:</b> {escape(report.term)}", styles["Normal"]),
+                    Paragraph(f"<b>YEAR:</b> {escape(report.session)}", styles["Normal"]),
+                    Paragraph(f"<b>ADM NO:</b> {escape(student.student_no or '')}", styles["Normal"]),
                 ],
             ]
         ]
@@ -301,7 +303,7 @@ class ReportCardPDFGenerator:
                 borderRadius=4,
             )
             elements.append(
-                Paragraph(f"<b>ACADEMIC PERFORMANCE OUTLOOK (AI ANALYSIS):</b><br/>{ai_intro}", intro_style)
+                Paragraph(f"<b>ACADEMIC PERFORMANCE OUTLOOK (AI ANALYSIS):</b><br/>{escape(ai_intro)}", intro_style)
             )
             elements.append(Spacer(1, 0.2 * inch))
 
@@ -546,15 +548,30 @@ class ReportCardPDFGenerator:
             spaceAfter=15,
         )
 
+        # The class's section signs its own reports (Head Teacher of the nursery, Principal of the
+        # college…); the school-wide head is the fallback.
+        section = getattr(report.student_class, "section", None) if report.student_class else None
+        head_title = (section.head_title if section else "") or "Head Teacher"
+        head_name = (section.head_name if section else "") or (
+            getattr(self.settings, "head_of_school_name", "") if self.settings else ""
+        )
+        head_signature = (section.head_signature if section else "") or (
+            self.settings.head_of_school_signature if self.settings else None
+        )
+
+        # Remarks are the teacher's own words, escaped for the PDF markup. When none was written the
+        # box is left for handwriting: never a stock phrase printed as if someone had said it.
+        blank = "<br/><br/>"
         elements.append(
             Paragraph(
-                f"<b>Class Teacher's Remark:</b><br/>{report.teacher_remark or 'Consult class teacher for detailed feedback.'}",
+                f"<b>Class Teacher's Remark:</b><br/>{escape(report.teacher_remark) if report.teacher_remark else blank}",
                 remark_box_style,
             )
         )
         elements.append(
             Paragraph(
-                f"<b>Head Teacher's Remark:</b><br/>{report.head_teacher_remark or 'Satisfactory performance.'}",
+                f"<b>{escape(head_title)}'s Remark:</b><br/>"
+                f"{escape(report.head_teacher_remark) if report.head_teacher_remark else blank}",
                 remark_box_style,
             )
         )
@@ -568,7 +585,7 @@ class ReportCardPDFGenerator:
             # We use the signature_url field which we just added
             teacher_sig = self._get_image(report.student_class.class_teacher.signature_url, width=0.8 * inch)
 
-        head_sig = self._get_image(self.settings.head_of_school_signature if self.settings else None, width=0.8 * inch)
+        head_sig = self._get_image(head_signature, width=0.8 * inch)
 
         # Generate QR Code for Verification
         qr_image = self._generate_qr_code(report)
@@ -587,7 +604,10 @@ class ReportCardPDFGenerator:
                 [
                     head_sig or Spacer(1, 0.4 * inch),
                     Paragraph("________________", styles["Normal"]),
-                    Paragraph("Head of School (Stamp)", styles["Normal"]),
+                    Paragraph(
+                        escape(f"{head_name} · {head_title}" if head_name else f"{head_title} (Stamp)"),
+                        styles["Normal"],
+                    ),
                 ],
             ]
         ]

@@ -9,10 +9,19 @@ export interface AssessmentPart {
   enabled: boolean;
 }
 
+export interface ClassSection {
+  name: string;
+  head_title: string;
+  head_name: string;
+  head_signature: string;
+}
+
 export interface ClassAssessment {
   parts: AssessmentPart[];
   show_position: boolean;
   grading: { min: number; grade: string; remark: string }[];
+  /** Who signs this class's reports; null when the class has no section. */
+  section?: ClassSection | null;
 }
 
 /** Matches backend/academic/assessment.py: CA 1 (20) + CA 2 (20) + Exam (60), A–F grades. */
