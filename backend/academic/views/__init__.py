@@ -30,6 +30,7 @@ from .timetables import (  # noqa: F401
 
 from .conduct import ConductEntryViewSet  # noqa: F401
 from .school_structure import (  # noqa: F401
+    SchoolSectionView,
     SchoolStructureApplyView,
     SchoolStructurePreviewView,
     SchoolStructureView,

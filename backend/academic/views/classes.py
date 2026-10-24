@@ -21,8 +21,8 @@ class SubjectViewSet(TenantViewSet):
 
 class ClassViewSet(TenantViewSet):
     queryset = (
-        Class.objects.select_related("class_teacher", "school", "section")
-        .prefetch_related("subjects")
+        Class.objects.select_related("class_teacher", "school", "section", "section__grading_scheme")
+        .prefetch_related("subjects", "section__grading_scheme__ranges")
         .order_by("level_order", "name")
     )
     serializer_class = ClassSerializer

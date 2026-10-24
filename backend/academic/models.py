@@ -84,6 +84,12 @@ class SchoolSection(TenantModel):
     head_title = models.CharField(max_length=60, blank=True)  # Head Teacher, Principal…
     head_name = models.CharField(max_length=120, blank=True)
     position = models.PositiveSmallIntegerField(default=0)
+    # Assessment and grading for this section (academic/assessment.py). Empty = CA 1 20 + CA 2 20 + Exam 60.
+    assessment = models.JSONField(default=dict, blank=True)
+    grading_scheme = models.ForeignKey(
+        "GradingScheme", on_delete=models.SET_NULL, null=True, blank=True, related_name="sections"
+    )
+    show_position = models.BooleanField(default=True)  # many schools no longer rank pupils
 
     class Meta:
         ordering = ["position"]

@@ -28,6 +28,9 @@ export interface SchoolStructure {
     head_title: string;
     head_name: string;
     class_count: number;
+    assessment: Record<'ca1' | 'ca2' | 'exam', { label: string; max: number; enabled: boolean }>;
+    grading_scheme: number | null;
+    show_position: boolean;
   }[];
   suggested_sections: SectionKey[];
   class_count: number;

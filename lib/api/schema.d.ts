@@ -1080,6 +1080,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/academic/reports/bulk-import/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Import many subject scores at once (from the CSV upload in Grading).
+         *     Body: {"session", "term", "mode": "upsert" | "create" | "update", "data": [{student_id, subject, ca1, ca2, exam}]}
+         *     Each row is checked against its student's class: the section's score limits apply and the grade comes
+         *     from the section's grading scale. Bad rows are reported and skipped; good rows are saved. */
+        post: operations["academic_reports_bulk_import_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/academic/reports/recalculate-positions/": {
         parameters: {
             query?: never;
@@ -1164,6 +1184,23 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/academic/school-structure/sections/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** @description PATCH a section: its name, head, assessment parts, grading scheme and whether positions show. */
+        patch: operations["academic_school_structure_sections_partial_update"];
         trace?: never;
     };
     "/api/academic/scores/": {
@@ -13714,6 +13751,31 @@ export interface operations {
             };
         };
     };
+    academic_reports_bulk_import_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReportCardRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ReportCardRequest"];
+                "multipart/form-data": components["schemas"]["ReportCardRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportCard"];
+                };
+            };
+        };
+    };
     academic_reports_recalculate_positions_create: {
         parameters: {
             query?: never;
@@ -13801,6 +13863,26 @@ export interface operations {
             query?: never;
             header?: never;
             path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    academic_school_structure_sections_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
             cookie?: never;
         };
         requestBody?: never;

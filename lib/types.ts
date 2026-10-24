@@ -255,6 +255,12 @@ export interface Class extends Entity {
   report_mode?: 'numeric' | 'early_years' | 'hybrid';
   class_teacher_id: string | null;
   subjects: string[] | null;
+  section?: number | null;
+  arm?: string;
+  department?: string;
+  level_order?: number;
+  /** Score parts, grading scale and position display from the class's section (read-only). */
+  assessment?: import('./assessment').ClassAssessment;
 }
 
 export interface Teacher {

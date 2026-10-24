@@ -1,7 +1,8 @@
 /**
  * Score Entry Tab (Broadsheet)
  *
- * Table for entering CA1, CA2, and Exam scores per student per subject.
+ * Table for entering scores per student per subject. Columns, labels and maximum marks come from
+ * the class's section (School Structure → assessment), e.g. CA 1/CA 2/Exam or CA 40 + Exam 60.
  */
 import React, { useState } from 'react';
 import { Save } from 'lucide-react';
@@ -10,6 +11,7 @@ import { Card } from '@/components/ui/card';
 import { Select } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/providers/toast-provider';
+import { classAssessment, gradeTone } from '@/lib/assessment';
 
 const ScoreInput = ({
   value,
@@ -80,6 +82,8 @@ export const ScoreEntryTab: React.FC<ScoreEntryTabProps> = ({
   handleScoreChange,
 }) => {
   const { addToast } = useToast();
+  const assessment = classAssessment(classes.find((c) => String(c.id) === String(selectedClass)));
+  const parts = assessment.parts.filter((p) => p.enabled);
 
   return (
     <Card className="min-h-[420px] overflow-hidden rounded-3xl border border-brand-100 bg-white shadow-sm">
@@ -118,15 +122,20 @@ export const ScoreEntryTab: React.FC<ScoreEntryTabProps> = ({
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[760px] text-sm">
+        <table className="w-full min-w-[680px] text-sm">
           <thead className="bg-brand-900 text-xs font-semibold uppercase tracking-[0.14em] text-white">
             <tr>
               <th className="sticky left-0 min-w-[180px] bg-brand-900 px-4 py-3 text-left">
                 Student
               </th>
-              <th className="px-3 py-3 text-center">CA 1</th>
-              <th className="px-3 py-3 text-center">CA 2</th>
-              <th className="px-3 py-3 text-center">Exam</th>
+              {parts.map((part) => (
+                <th key={part.key} className="px-3 py-3 text-center">
+                  {part.label}
+                  <span className="block text-xs font-medium normal-case tracking-normal text-white/70">
+                    /{part.max}
+                  </span>
+                </th>
+              ))}
               <th className="px-3 py-3 text-center">Total</th>
               <th className="px-3 py-3 text-center">Grade</th>
               <th className="px-4 py-3 text-left">Remark</th>
@@ -153,18 +162,7 @@ export const ScoreEntryTab: React.FC<ScoreEntryTabProps> = ({
                           ? 'bg-red-50 text-red-700'
                           : 'bg-gray-50 text-gray-400';
 
-                const gradeBg =
-                  row.grade === 'A'
-                    ? 'bg-green-100 text-green-800 border-green-200'
-                    : row.grade === 'B'
-                      ? 'bg-cyan-100 text-cyan-800 border-cyan-200'
-                      : row.grade === 'C'
-                        ? 'bg-blue-100 text-blue-800 border-blue-200'
-                        : row.grade === 'D'
-                          ? 'bg-amber-100 text-amber-800 border-amber-200'
-                          : row.grade === 'F'
-                            ? 'bg-red-100 text-red-800 border-red-200'
-                            : 'bg-gray-100 text-gray-600 border-gray-200';
+                const gradeBg = gradeTone(row.grade);
 
                 return (
                   <tr key={student.id} className="transition-colors hover:bg-brand-50/40">
@@ -172,27 +170,15 @@ export const ScoreEntryTab: React.FC<ScoreEntryTabProps> = ({
                       <p className="font-semibold text-gray-900">{student.names}</p>
                       <p className="text-xs text-gray-500">{student.student_no}</p>
                     </td>
-                    <td className="px-3 py-3 text-center">
-                      <ScoreInput
-                        value={row.ca1}
-                        max={20}
-                        onChange={(v) => handleScoreChange(student.id, 'ca1', v)}
-                      />
-                    </td>
-                    <td className="px-3 py-3 text-center">
-                      <ScoreInput
-                        value={row.ca2}
-                        max={20}
-                        onChange={(v) => handleScoreChange(student.id, 'ca2', v)}
-                      />
-                    </td>
-                    <td className="px-3 py-3 text-center">
-                      <ScoreInput
-                        value={row.exam}
-                        max={60}
-                        onChange={(v) => handleScoreChange(student.id, 'exam', v)}
-                      />
-                    </td>
+                    {parts.map((part) => (
+                      <td key={part.key} className="px-3 py-3 text-center">
+                        <ScoreInput
+                          value={row[part.key]}
+                          max={part.max}
+                          onChange={(v) => handleScoreChange(student.id, part.key, v)}
+                        />
+                      </td>
+                    ))}
                     <td className="px-3 py-3 text-center">
                       <span
                         className={`inline-flex min-w-16 justify-center rounded-full px-3 py-1 text-sm font-bold ${totalBg}`}
