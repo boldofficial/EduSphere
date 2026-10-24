@@ -28,6 +28,7 @@ import {
   FileText,
   BookMarked,
   Layers,
+  History,
 } from 'lucide-react';
 
 export const NAVIGATION_ITEMS = [
@@ -153,6 +154,7 @@ export const NAVIGATION_ITEMS = [
   { id: 'cms', name: 'Website CMS', href: '/cms', icon: Globe, category: 'Tools' },
   { id: 'analytics', name: 'Analytics', href: '/analytics', icon: BarChart3, category: 'Tools' },
   { id: 'data', name: 'System Data', href: '/data', icon: Database, category: 'Tools' },
+  { id: 'audit', name: 'Audit Trail', href: '/audit', icon: History, category: 'Tools' },
   {
     id: 'support',
     name: 'Support & Tickets',

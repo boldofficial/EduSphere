@@ -26,6 +26,7 @@ class FieldChangeLog(models.Model):
     # What was changed
     content_type = models.CharField(max_length=100)  # e.g., "academic.Student"
     object_id = models.CharField(max_length=50)  # PK of the object
+    object_label = models.CharField(max_length=255, blank=True)  # e.g. "Ada Obi · Mathematics · First Term"
     action = models.CharField(max_length=10, choices=ACTION_CHOICES)
 
     # Field changes
@@ -45,6 +46,7 @@ class FieldChangeLog(models.Model):
             models.Index(fields=["content_type", "object_id"]),
             models.Index(fields=["created_at"]),
             models.Index(fields=["field_name"]),
+            models.Index(fields=["school", "-created_at"], name="changelog_school_recent"),
         ]
 
     def __str__(self):

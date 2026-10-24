@@ -90,7 +90,13 @@ class AuditLogMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        response = self.get_response(request)
+        from core.audit import clear_actor
+
+        clear_actor()  # worker threads are reused; never attribute a change to the previous request's user
+        try:
+            response = self.get_response(request)
+        finally:
+            clear_actor()
 
         # Only log mutations (POST, PUT, PATCH, DELETE)
         if request.user.is_authenticated and request.method in ["POST", "PUT", "PATCH", "DELETE"]:

@@ -11,6 +11,8 @@ directly are therefore as safe as those that call get_request_school.
 from rest_framework.exceptions import PermissionDenied
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
+from core.audit import set_actor
+
 
 class TenantJWTAuthentication(JWTAuthentication):
     def authenticate(self, request):
@@ -18,6 +20,7 @@ class TenantJWTAuthentication(JWTAuthentication):
         if result is None:
             return None
         user, token = result
+        set_actor(user, request._request)  # attributes this request's changes in the audit trail
         # Platform admins work across schools on purpose (tenant header selects the school).
         if user.is_superuser or (getattr(user, "role", "") or "").upper() == "SUPER_ADMIN":
             return result

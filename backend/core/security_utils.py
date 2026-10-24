@@ -95,50 +95,35 @@ class AuditTrailMixin:
         deferred = self.get_deferred_fields()
         return {f.name: getattr(self, f.attname, None) for f in self._meta.fields if f.attname not in deferred}
 
+    # Not worth an audit row: bookkeeping timestamps.
+    _audit_skip = frozenset({"id", "created_at", "updated_at"})
+
     def track_changes(self, user=None, request=None):
-        """Compare current values with original, log any changes."""
+        """
+        Log every field that differs from when the row was loaded. The user comes from the request
+        (core.audit); `user`/`request` are kept for older callers and ignored.
+        """
         if not self.pk or not self._original_values:
             return
+        from core.audit import log_changes
 
-        from core.models import log_field_change
-
-        school = getattr(self, "school", None)
-
-        for field in self._meta.fields:
-            field_name = field.name
-            if field_name.startswith("_") or field_name == "id":
-                continue
-
-            if field_name not in self._original_values:
-                continue  # was not loaded, so there is no original value to compare
-            old_value = self._original_values[field_name]
-            new_value = getattr(self, field.attname, None)
-
-            # Skip timestamps and non-tracked fields
-            if field_name in ["created_at", "updated_at", "id"]:
-                continue
-
-            # Compare values
-            if old_value != new_value:
-                log_field_change(
-                    instance=self,
-                    field_name=field_name,
-                    old_value=old_value,
-                    new_value=new_value,
-                    user=user,
-                    action="UPDATE",
-                    school=school,
-                    request=request,
-                )
+        changes = [
+            (field.name, self._original_values[field.name], getattr(self, field.attname, None))
+            for field in self._meta.fields
+            if field.name not in self._audit_skip
+            and field.name in self._original_values  # deferred fields have no original to compare
+            and self._original_values[field.name] != getattr(self, field.attname, None)
+        ]
+        try:
+            log_changes(self, "UPDATE", changes)
+        except Exception:
+            logger.exception("Audit trail: could not record changes to %s", self._meta.label)
 
     def save(self, *args, **kwargs):
-        """Override save to track changes after the save completes."""
-        is_new = self.pk is None
         super().save(*args, **kwargs)
-
-        # Update original values after save
-        if not is_new:
-            self._original_values = self._snapshot_values()
+        # The saved values are the new baseline, for new rows too (a later save of the same instance
+        # is then tracked).
+        self._original_values = self._snapshot_values()
 
 
 def blacklist_token(jti: str):
