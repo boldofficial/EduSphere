@@ -7168,6 +7168,10 @@ export interface components {
             arm?: string;
             department?: string;
             level_order?: number;
+            /** @description The class students will be promoted to. */
+            readonly next_class: number | null;
+            /** @description Check if this is the final class (e.g., SS3). */
+            readonly is_graduation_class: boolean;
             /** Format: date-time */
             readonly created_at: string;
             /** Format: date-time */
