@@ -8,6 +8,9 @@ import { useSettings, useStaff, useTeachers, useMe } from '@/lib/hooks/use-data'
 import * as Utils from '@/lib/utils';
 
 import { LoginView } from '@/components/features/LoginView';
+import { OfflineStatus, usePendingOfflineSaves } from '@/components/features/OfflineStatus';
+import { useConfirm } from '@/components/ui/confirm-dialog';
+import { OFFLINE_OWNER_KEY, clearOfflineCopy } from '@/lib/offline';
 import { ChangePasswordGate } from '@/components/features/auth/PasswordForms';
 import { DemoBanner } from '@/components/features/DemoBanner';
 import { UniversalSearch } from '@/components/features/UniversalSearch';
@@ -21,6 +24,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const { currentRole, currentUser, logout, login: storeLogin } = useSchoolStore();
   const pathname = usePathname();
   const queryClient = useQueryClient();
+  const confirm = useConfirm();
+  const pendingSaves = usePendingOfflineSaves();
 
   // Data Fetching
   const { data: settings = Utils.INITIAL_SETTINGS, isLoading: settingsLoading } = useSettings();
@@ -51,6 +56,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       storeLogin(role, freshUser);
     }
   }, [freshUser, storeLogin]);
+
+  // Data kept on this device for offline use belongs to one person: on a shared school computer,
+  // a different person signing in never sees (or sends) the previous person's copy.
+  const freshUserId = freshUser?.id;
+  useEffect(() => {
+    if (!freshUserId) return;
+    try {
+      const owner = window.localStorage.getItem(OFFLINE_OWNER_KEY);
+      if (owner && owner !== String(freshUserId)) {
+        queryClient.getMutationCache().clear();
+        queryClient.removeQueries({ predicate: (q) => q.queryKey[0] !== 'me' });
+        clearOfflineCopy();
+      }
+      window.localStorage.setItem(OFFLINE_OWNER_KEY, String(freshUserId));
+    } catch {
+      // storage unavailable: nothing is kept on the device
+    }
+  }, [freshUserId, queryClient]);
 
   // Desktop sidebar behavior
   useEffect(() => {
@@ -104,6 +127,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   );
 
   const handleLogout = async () => {
+    if (pendingSaves > 0) {
+      const ok = await confirm({
+        title: 'Some changes have not synced yet',
+        description: `${pendingSaves} score or attendance change${pendingSaves === 1 ? ' is' : 's are'} saved only on this device. Signing out now deletes ${pendingSaves === 1 ? 'it' : 'them'}. Reconnect to the internet first to keep ${pendingSaves === 1 ? 'it' : 'them'}.`,
+        confirmLabel: 'Sign out anyway',
+        tone: 'danger',
+      });
+      if (!ok) return;
+    }
+    // Nothing from this session stays on the device.
+    queryClient.getMutationCache().clear();
+    queryClient.clear();
+    clearOfflineCopy();
+    try {
+      window.localStorage.removeItem(OFFLINE_OWNER_KEY);
+    } catch {
+      // storage unavailable
+    }
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
       const isSuperAdmin = currentRole === 'super_admin';
@@ -155,6 +196,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <main className="flex-1 flex flex-col min-w-0 h-full overflow-hidden transition-all duration-300 lg:ml-64">
         {(currentUser?.school === 'Bold Ideas Innovations School' ||
           (currentUser as any)?.school?.name === 'Bold Ideas Innovations School') && <DemoBanner />}
+
+        <OfflineStatus />
 
         <TopBar
           onMenuToggle={() => setIsSidebarOpen(!isSidebarOpen)}

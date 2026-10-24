@@ -12,6 +12,7 @@ import {
 } from '@/lib/hooks/use-data';
 import * as Utils from '@/lib/utils';
 import * as Types from '@/lib/types';
+import { isLocalId } from '@/lib/offline';
 import { GradingView } from '@/components/features/GradingView';
 import { SubjectTeacherManager } from '@/components/features/grading/SubjectTeacherManager';
 import { TermComparisonView } from '@/components/features/grading/TermComparisonView';
@@ -83,10 +84,12 @@ export default function GradingPage() {
     );
     const sanitizedPayload = sanitizeScorePayload(score);
 
-    if (existing) {
+    // A report card saved on this device but not yet on the server has no server id: save it again
+    // in full (the server creates or updates by student + term) instead of updating an unknown id.
+    if (existing && !isLocalId(existing.id)) {
       updateScore({ id: existing.id, updates: sanitizedPayload });
     } else {
-      createScore(sanitizedPayload as Types.Score);
+      createScore({ ...existing, ...sanitizedPayload } as Types.Score);
     }
   };
 

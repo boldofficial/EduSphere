@@ -1,4 +1,6 @@
 'use client';
+import { onlineManager } from '@tanstack/react-query';
+import { isLocalId } from '@/lib/offline';
 import { useMemo, useState } from 'react';
 import { useSchoolStore } from '@/lib/store';
 import { AttendanceView } from '@/components/features/AttendanceView';
@@ -65,11 +67,17 @@ export default function AttendancePage() {
         String(a.id) === String(att.id) ||
         (String(a.class_id) === String(att.class_id) && a.date === att.date)
     );
-    if (existing) {
-      await updateAttendance({ id: existing.id, updates: att });
-    } else {
-      await createAttendance(att);
+    const saving =
+      existing && !isLocalId(existing.id)
+        ? updateAttendance({ id: existing.id, updates: att })
+        : createAttendance({ ...existing, ...att });
+    // Offline the save waits on this device until the connection returns; don't keep the
+    // teacher waiting for it.
+    if (!onlineManager.isOnline()) {
+      saving.catch(() => undefined);
+      return 'queued' as const;
     }
+    await saving;
   };
 
   // Get student for student/parent role

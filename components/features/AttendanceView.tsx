@@ -13,7 +13,8 @@ interface AttendanceViewProps {
   classes: Types.Class[];
   attendance: Types.Attendance[];
   settings: Types.Settings;
-  onSave: (att: Types.Attendance) => Promise<void> | void;
+  /** Resolves 'queued' when the save is kept on this device until the connection returns. */
+  onSave: (att: Types.Attendance) => Promise<void | 'queued'> | void;
 
   // Lifted State Props
   selectedClass: string;
@@ -85,8 +86,13 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
       updated_at: Date.now(),
     };
     try {
-      await onSave(newEntry);
-      addToast('Attendance saved', 'success');
+      const result = await onSave(newEntry);
+      addToast(
+        result === 'queued'
+          ? 'Saved on this device. It will sync when the connection returns.'
+          : 'Attendance saved',
+        result === 'queued' ? 'info' : 'success'
+      );
     } catch (err) {
       addToast(`Attendance was not saved: ${errorMessage(err)}`, 'error');
     }

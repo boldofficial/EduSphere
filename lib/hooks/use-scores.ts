@@ -8,6 +8,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from '@/lib/api-client';
 import * as Types from '@/lib/types';
 import { queryKeys, fetchAll, fetchPaginated } from './use-data';
+import { OFFLINE_SCOPE, localId, offlineKeys, offlineRequests } from '@/lib/offline';
 
 export interface ScoreFilters extends Record<string, unknown> {
   session?: string;
@@ -29,68 +30,80 @@ export function useScores(filters?: ScoreFilters, enabled = true) {
   });
 }
 
+type ListSnapshot<T> = [readonly unknown[], T[] | undefined][];
+
+/** Apply a change to every cached list under `key` (each class / period has its own list). */
+function patchLists<T>(
+  queryClient: ReturnType<typeof useQueryClient>,
+  key: readonly unknown[],
+  change: (rows: T[], filters: Record<string, unknown>) => T[]
+): ListSnapshot<T> {
+  const snapshot = queryClient.getQueriesData<T[]>({ queryKey: key });
+  for (const [queryKey, rows] of snapshot) {
+    if (!Array.isArray(rows)) continue; // paginated lists keep their own shape; refreshed after sync
+    const filters = (queryKey[1] as Record<string, unknown>) || {};
+    queryClient.setQueryData<T[]>(queryKey, change(rows, filters));
+  }
+  return snapshot;
+}
+
+function restoreLists<T>(
+  queryClient: ReturnType<typeof useQueryClient>,
+  snapshot: ListSnapshot<T> | undefined
+) {
+  for (const [queryKey, rows] of snapshot ?? []) queryClient.setQueryData(queryKey, rows);
+}
+
+const sameTermScore = (a: Types.Score, b: Types.Score) =>
+  String(a.student_id) === String(b.student_id) && a.session === b.session && a.term === b.term;
+
+/**
+ * Save a student's report card for a term (the server creates it or updates the existing one).
+ * Works offline: the change shows at once and is sent when the connection returns.
+ */
 export function useCreateScore() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (item: Types.Score) => {
-      const response = await apiClient.post('academic/reports/', item);
-      return response.data;
-    },
-    onMutate: async (newItem) => {
+    mutationKey: offlineKeys.saveScore,
+    mutationFn: offlineRequests.saveScore,
+    scope: OFFLINE_SCOPE,
+    onMutate: async (item) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.scores });
-      const previousScores = queryClient.getQueryData<Types.Score[]>(queryKeys.scores);
-
-      // Optimistically add the new score
-      queryClient.setQueryData<Types.Score[]>(queryKeys.scores, (old) => {
-        return old ? [...old, newItem] : [newItem];
+      const snapshot = patchLists<Types.Score>(queryClient, queryKeys.scores, (rows, filters) => {
+        if (filters.class && String(filters.class) !== String(item.class_id)) return rows;
+        const index = rows.findIndex((row) => sameTermScore(row, item));
+        if (index >= 0)
+          return rows.map((row, i) => (i === index ? { ...row, ...item, id: row.id } : row));
+        return [
+          ...rows,
+          // Always a local id until the server answers: screens propose their own random ids, and
+          // an edit to one of those would otherwise be sent as an update to a record the server
+          // has never seen (and lost).
+          { ...item, id: localId('score', item.student_id, item.session, item.term) },
+        ];
       });
-
-      return { previousScores };
+      return { snapshot };
     },
-    onError: (err, newItem, context) => {
-      if (context?.previousScores) {
-        queryClient.setQueryData(queryKeys.scores, context.previousScores);
-      }
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.scores });
-    },
+    onError: (_err, _item, context) => restoreLists(queryClient, context?.snapshot),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: queryKeys.scores }),
   });
 }
 
 export function useUpdateScore() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Types.Score> }) => {
-      const response = await apiClient.patch(`academic/reports/${id}/`, updates);
-      return response.data;
-    },
+    mutationKey: offlineKeys.updateScore,
+    mutationFn: offlineRequests.updateScore,
+    scope: OFFLINE_SCOPE,
     onMutate: async ({ id, updates }) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.scores });
-      const previousScores = queryClient.getQueryData<Types.Score[]>(queryKeys.scores);
-
-      // Optimistically update
-      queryClient.setQueryData<Types.Score[]>(queryKeys.scores, (old) => {
-        if (!old) return [];
-        return old.map((score) => {
-          if (score.id === id) {
-            const updatedScore = { ...score, ...updates };
-            return updatedScore;
-          }
-          return score;
-        });
-      });
-
-      return { previousScores };
+      const snapshot = patchLists<Types.Score>(queryClient, queryKeys.scores, (rows) =>
+        rows.map((row) => (String(row.id) === String(id) ? { ...row, ...updates } : row))
+      );
+      return { snapshot };
     },
-    onError: (err, variables, context) => {
-      if (context?.previousScores) {
-        queryClient.setQueryData(queryKeys.scores, context.previousScores);
-      }
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.scores });
-    },
+    onError: (_err, _vars, context) => restoreLists(queryClient, context?.snapshot),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: queryKeys.scores }),
   });
 }
 
@@ -131,29 +144,46 @@ export function usePaginatedAttendance(page = 1, pageSize = 50, filters?: Attend
   });
 }
 
+const sameRegister = (a: Types.Attendance, b: Types.Attendance) =>
+  String(a.class_id) === String(b.class_id) && a.date === b.date;
+
+/** Save a class register for a day (create-or-update on the server). Works offline. */
 export function useCreateAttendance() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (item: Types.Attendance) => {
-      const response = await apiClient.post('academic/attendance-sessions/', item);
-      return response.data;
+    mutationKey: offlineKeys.saveAttendance,
+    mutationFn: offlineRequests.saveAttendance,
+    scope: OFFLINE_SCOPE,
+    onMutate: async (item) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.attendance });
+      const snapshot = patchLists<Types.Attendance>(queryClient, queryKeys.attendance, (rows) => {
+        const index = rows.findIndex((row) => sameRegister(row, item));
+        if (index >= 0)
+          return rows.map((row, i) => (i === index ? { ...row, ...item, id: row.id } : row));
+        return [...rows, { ...item, id: localId('register', item.class_id, item.date) }]; // see scores
+      });
+      return { snapshot };
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.attendance });
-    },
+    onError: (_err, _item, context) => restoreLists(queryClient, context?.snapshot),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: queryKeys.attendance }),
   });
 }
 
 export function useUpdateAttendance() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Types.Attendance> }) => {
-      const response = await apiClient.patch(`academic/attendance-sessions/${id}/`, updates);
-      return response.data;
+    mutationKey: offlineKeys.updateAttendance,
+    mutationFn: offlineRequests.updateAttendance,
+    scope: OFFLINE_SCOPE,
+    onMutate: async ({ id, updates }) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.attendance });
+      const snapshot = patchLists<Types.Attendance>(queryClient, queryKeys.attendance, (rows) =>
+        rows.map((row) => (String(row.id) === String(id) ? { ...row, ...updates } : row))
+      );
+      return { snapshot };
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.attendance });
-    },
+    onError: (_err, _vars, context) => restoreLists(queryClient, context?.snapshot),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: queryKeys.attendance }),
   });
 }
 
