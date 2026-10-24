@@ -24,4 +24,7 @@ export interface IDCardViewProps {
   teachers?: Types.Teacher[];
   classes: Types.Class[];
   settings: Types.Settings;
+  /** When given, the page owns the class choice (and loads only that class's students). */
+  selectedClass?: string;
+  onSelectClass?: (classId: string) => void;
 }

@@ -69,6 +69,15 @@ export function useStudents(enabled = true) {
   });
 }
 
+/** Students in one class: what score, broadsheet, ID card and promotion screens actually need. */
+export function useClassStudents(classId: string | number | null | undefined, enabled = true) {
+  return useQuery({
+    queryKey: [...queryKeys.students, 'class', String(classId ?? '')],
+    queryFn: () => fetchAll<Types.Student>('academic/students/', { class: classId }),
+    enabled: enabled && !!classId,
+  });
+}
+
 export function usePaginatedStudents(
   page = 1,
   pageSize = 50,

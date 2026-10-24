@@ -80,7 +80,6 @@ export const MessagesView: React.FC = () => {
   const { addToast } = useToast();
 
   // Data Hooks
-  const { data: students = [] } = useStudents();
   const { data: teachers = [] } = useTeachers();
   const { data: staff = [] } = useStaff();
   const { data: conversations = [], isLoading: isLoadingConversations } = useConversations();
@@ -108,6 +107,10 @@ export const MessagesView: React.FC = () => {
   // Compose form state
   const [recipientType, setRecipientType] = useState<RecipientType>(
     currentRole === 'admin' ? 'teacher' : 'admin'
+  );
+  // Pupils are only listed when an admin writes to students, so the whole roll is loaded then only.
+  const { data: students = [] } = useStudents(
+    currentRole !== 'admin' || recipientType === 'student'
   );
   const [selectedRecipient, setSelectedRecipient] = useState<number | ''>('');
   const [newConvSubject, setNewConvSubject] = useState('');

@@ -3,6 +3,7 @@ import { useState, useMemo } from 'react';
 import { useSchoolStore } from '@/lib/store';
 import {
   useStudents,
+  useClassStudents,
   useClasses,
   useScores,
   useSettings,
@@ -33,18 +34,31 @@ import {
 export default function GradingPage() {
   const { currentRole, currentUser } = useSchoolStore();
 
-  const { data: students = [] } = useStudents();
+  const [activeTab, setActiveTab] = useState<
+    'grading' | 'comparison' | 'promotion' | 'assignments' | 'import' | 'analytics' | 'exam'
+  >('grading');
   const { data: classes = [] } = useClasses();
   const { data: settings = Utils.INITIAL_SETTINGS, isSuccess: settingsLoaded } = useSettings();
-  // Staff tabs all work on the current session, so load that session's three terms rather than
-  // every year on record. Students and parents keep their full (already self-scoped) history.
   const isLearnerRole = currentRole === 'student' || currentRole === 'parent';
+
+  // Staff work one class at a time, chosen once and shared by every tab: only that class's
+  // students and this session's report cards are loaded, so big schools stay fast. Students and
+  // parents keep their full (server-scoped) history.
+  const [chosenClass, setChosenClass] = useState('');
+  const classId = chosenClass || String(classes[0]?.id || '');
+  const { data: learnerStudents = [] } = useStudents(isLearnerRole);
+  const { data: classStudents = [] } = useClassStudents(classId, !isLearnerRole);
+  const students = isLearnerRole ? learnerStudents : classStudents;
+  // The import matches admission numbers across the school, so it needs everyone, but only then.
+  const { data: allStudents = [] } = useStudents(!isLearnerRole && activeTab === 'import');
   const { data: scores = [] } = useScores(
     isLearnerRole
       ? { include_all_periods: true }
-      : { include_all_periods: true, session: settings.current_session },
-    isLearnerRole || settingsLoaded
+      : { include_all_periods: true, session: settings.current_session, class: classId },
+    isLearnerRole || (settingsLoaded && !!classId)
   );
+  const classProps = { selectedClass: classId, onSelectClass: setChosenClass };
+  const analyticsClass = classes.find((c: Types.Class) => Utils.sameId(c.id, classId));
 
   const { mutate: createScore } = useCreateScore();
   const { mutate: updateScore } = useUpdateScore();
@@ -60,10 +74,6 @@ export default function GradingPage() {
 
     return payload;
   };
-
-  const [activeTab, setActiveTab] = useState<
-    'grading' | 'comparison' | 'promotion' | 'assignments' | 'import' | 'analytics' | 'exam'
-  >('grading');
 
   const handleUpsertScore = (score: Types.Score) => {
     const existing = scores.find(
@@ -148,12 +158,13 @@ export default function GradingPage() {
           settings={settings}
           onUpsertScore={handleUpsertScore}
           currentRole={currentRole}
+          {...classProps}
         />
       )}
 
       {activeTab === 'import' && (
         <BulkScoreImport
-          students={students}
+          students={allStudents}
           session={settings.current_session}
           term={settings.current_term}
           onSuccess={() => {
@@ -164,18 +175,32 @@ export default function GradingPage() {
 
       {activeTab === 'analytics' && (
         <div className="space-y-6">
+          <label className="flex flex-wrap items-center gap-3 text-sm font-semibold text-gray-700">
+            Class
+            <select
+              value={classId}
+              onChange={(e) => setChosenClass(e.target.value)}
+              className="rounded-control border border-gray-200 bg-white px-3 py-2 text-sm font-normal"
+            >
+              {classes.map((c: Types.Class) => (
+                <option key={c.id} value={String(c.id)}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </label>
           <SubjectAnalytics
             scores={scores}
             students={students}
-            classId={classes[0]?.id || ''}
+            classId={classId}
             classes={classes}
             session={settings.current_session}
             term={settings.current_term}
           />
           <StatisticsPanel
             scores={scores}
-            classId={classes[0]?.id || ''}
-            subject={classes[0]?.subjects?.[0] || ''}
+            classId={classId}
+            subject={analyticsClass?.subjects?.[0] || ''}
             session={settings.current_session}
             term={settings.current_term}
             studentCount={students.length}
@@ -189,6 +214,7 @@ export default function GradingPage() {
           classes={classes}
           scores={scores}
           settings={settings}
+          {...classProps}
         />
       )}
 
@@ -198,6 +224,7 @@ export default function GradingPage() {
           classes={classes}
           session={settings.current_session}
           term={settings.current_term}
+          {...classProps}
         />
       )}
 

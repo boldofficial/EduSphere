@@ -20,7 +20,13 @@ import {
 import { CardDesigner } from './id-cards/CardDesigner';
 import { StudentSelector } from './id-cards/StudentSelector';
 
-export const IDCardView: React.FC<IDCardViewProps> = ({ students, classes, settings }) => {
+export const IDCardView: React.FC<IDCardViewProps> = ({
+  students,
+  classes,
+  settings,
+  selectedClass: controlledClass,
+  onSelectClass,
+}) => {
   const { currentRole, currentUser } = useSchoolStore();
 
   // 1. Role-based constraints
@@ -42,7 +48,9 @@ export const IDCardView: React.FC<IDCardViewProps> = ({ students, classes, setti
     ? students.find((s) => s.id === restrictedStudentId)?.class_id || classes[0]?.id
     : classes[0]?.id;
 
-  const [selectedClass, setSelectedClass] = useState(initialClass || '');
+  const [localClass, setLocalClass] = useState(String(initialClass || ''));
+  const selectedClass = controlledClass ?? localClass;
+  const setSelectedClass = onSelectClass ?? setLocalClass;
   const [selectedStudents, setSelectedStudents] = useState<Set<string>>(
     restrictedStudentId ? new Set([restrictedStudentId]) : new Set()
   );
@@ -51,14 +59,14 @@ export const IDCardView: React.FC<IDCardViewProps> = ({ students, classes, setti
   const [accentColor, setAccentColor] = useState(ACCENT_COLORS[0]);
 
   // 3. Derived State
-  const activeStudents = students.filter((s) => s.class_id === selectedClass);
-  const currentClass = classes.find((c) => c.id === selectedClass);
+  const activeStudents = students.filter((s) => String(s.class_id) === String(selectedClass));
+  const currentClass = classes.find((c) => String(c.id) === String(selectedClass));
   const validityPeriod = settings.current_session;
 
   if (restrictedStudentId) {
     const s = students.find((s) => s.id === restrictedStudentId);
-    if (s && s.class_id !== selectedClass) {
-      setSelectedClass(s.class_id);
+    if (s && String(s.class_id) !== String(selectedClass)) {
+      setSelectedClass(String(s.class_id));
       setSelectedStudents(new Set([s.id]));
     }
   }

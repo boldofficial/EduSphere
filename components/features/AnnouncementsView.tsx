@@ -37,7 +37,10 @@ export const AnnouncementsView: React.FC = () => {
   const { addToast } = useToast();
 
   // Data Hooks
-  const { data: students = [] } = useStudents();
+  // Only students and parents need this (to find their class); it is scoped to them by the server.
+  const { data: students = [] } = useStudents(
+    currentRole === 'student' || currentRole === 'parent'
+  );
   const { data: classes = [] } = useClasses();
   const { data: announcements = [] } = useAnnouncements();
   // Mutations

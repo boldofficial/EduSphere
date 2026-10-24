@@ -24,6 +24,9 @@ interface TermComparisonViewProps {
   classes: Types.Class[];
   scores: Types.Score[];
   settings: Types.Settings;
+  /** When given, the page owns the class choice (and loads only that class's data). */
+  selectedClass?: string;
+  onSelectClass?: (classId: string) => void;
 }
 
 export const TermComparisonView: React.FC<TermComparisonViewProps> = ({
@@ -31,8 +34,12 @@ export const TermComparisonView: React.FC<TermComparisonViewProps> = ({
   classes,
   scores,
   settings,
+  selectedClass: controlledClass,
+  onSelectClass,
 }) => {
-  const [selectedClass, setSelectedClass] = useState(String(classes[0]?.id || ''));
+  const [localClass, setLocalClass] = useState(String(classes[0]?.id || ''));
+  const selectedClass = controlledClass ?? localClass;
+  const setSelectedClass = onSelectClass ?? setLocalClass;
   const [selectedStudent, setSelectedStudent] = useState('');
   const [compareMode, setCompareMode] = useState<'student' | 'class'>('student');
 

@@ -46,6 +46,35 @@ describe('getRateLimitConfig', () => {
     expect(config.limit).toBe(RATE_LIMITS.auth.limit);
   });
 
+  it('keeps the strict limit for expensive work, not for reading report cards', async () => {
+    const { getRateLimitConfig, RATE_LIMITS } = await import('@/lib/rate-limit');
+
+    expect(getRateLimitConfig('academic/reports', 'GET').limit).toBe(RATE_LIMITS.read.limit);
+    expect(getRateLimitConfig('academic/classes/4/export-broadsheet-pdf', 'GET').limit).toBe(
+      RATE_LIMITS.reports.limit
+    );
+    expect(getRateLimitConfig('academic/reports/9/suggest-remark', 'POST').limit).toBe(
+      RATE_LIMITS.reports.limit
+    );
+  });
+
+  it('counts each category separately and each signed-in user separately', async () => {
+    const { checkRateLimit, getClientIdentifier } = await import('@/lib/rate-limit');
+    const tight = { name: 'test-tight', limit: 2, window: '60s' };
+    const other = { name: 'test-other', limit: 2, window: '60s' };
+
+    expect((await checkRateLimit('user:1', tight)).success).toBe(true);
+    expect((await checkRateLimit('user:1', tight)).success).toBe(true);
+    expect((await checkRateLimit('user:1', tight)).success).toBe(false);
+    expect((await checkRateLimit('user:1', other)).success).toBe(true); // other category unaffected
+    expect((await checkRateLimit('user:2', tight)).success).toBe(true); // other user unaffected
+
+    const payload = btoa(JSON.stringify({ user_id: 42 })).replace(/=+$/, '');
+    const request = new Request('http://x', { headers: { 'x-forwarded-for': '1.2.3.4' } });
+    expect(getClientIdentifier(request, `h.${payload}.s`)).toBe('user:42');
+    expect(getClientIdentifier(request)).toBe('ip:1.2.3.4');
+  });
+
   it('should return default config for other endpoints', async () => {
     const { getRateLimitConfig, RATE_LIMITS } = await import('@/lib/rate-limit');
 

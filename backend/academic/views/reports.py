@@ -92,6 +92,10 @@ class ReportCardViewSet(TenantViewSet):
             qs = qs.filter(term=term)
         if student_id:
             qs = qs.filter(student__id=student_id)
+        # One class at a time keeps score screens fast in big schools.
+        class_id = self.request.query_params.get("class")
+        if class_id:
+            qs = qs.filter(student_class_id=class_id)
 
         return qs
 
