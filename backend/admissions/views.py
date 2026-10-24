@@ -106,11 +106,12 @@ class AdmissionViewSet(TenantViewSet):
             if not User.objects.filter(username=username).exists():
                 user = User.objects.create(
                     username=username,
-                    email=student.parent_email or f"{username}.com",
+                    email="",  # students sign in with their admission number
                     password=make_password(password),
                     role="STUDENT",
                     school=student.school,
                     is_active=True,
+                    must_change_password=True,  # the starting password may be shared or written down
                 )
                 student.user = user
                 student.save()

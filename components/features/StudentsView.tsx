@@ -5,10 +5,12 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import {
   ChevronRight,
   Edit,
+  KeyRound,
   Library,
   Plus,
   Search,
   Trash2,
+  Upload,
   User,
   UserCheck,
   Users,
@@ -23,6 +25,12 @@ import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Modal } from '@/components/ui/modal';
 import { PageHeader } from '@/components/ui/page-header';
+import {
+  IssueLoginsModal,
+  type LoginSlip,
+  ResetPasswordResult,
+  useResetStudentPassword,
+} from './students/StudentLogins';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PhotoUpload } from '@/components/ui/photo-upload';
 import { useToast } from '@/components/providers/toast-provider';
@@ -76,6 +84,28 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: settings } = useSettings();
+  const schoolName = settings?.school_name || 'School';
+  const [showLogins, setShowLogins] = useState(false);
+  const [resetSlip, setResetSlip] = useState<LoginSlip | null>(null);
+  const resetPassword = useResetStudentPassword();
+
+  const handleResetPassword = async (student: Types.Student) => {
+    const ok = await confirm({
+      title: `Reset ${student.names}'s password?`,
+      description:
+        'A new temporary password is created and shown once. Their current password stops working.',
+      confirmLabel: 'Reset password',
+    });
+    if (!ok) return;
+    resetPassword.mutate(student.id, {
+      onSuccess: (slip) => setResetSlip(slip),
+      onError: (error) => {
+        const detail = (error as { response?: { data?: { detail?: string } } }).response?.data
+          ?.detail;
+        addToast(detail || 'Could not reset the password.', 'error');
+      },
+    });
+  };
   const autoPromoteMutation = useAutoPromoteStudents();
 
   React.useEffect(() => {
@@ -231,6 +261,15 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
         }
         actions={
           <>
+            <Link
+              href="/students/import"
+              className="inline-flex items-center gap-1.5 rounded-control border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+            >
+              <Upload className="h-4 w-4" /> Import
+            </Link>
+            <Button variant="secondary" onClick={() => setShowLogins(true)}>
+              <KeyRound className="mr-1.5 h-4 w-4" /> Student logins
+            </Button>
             <Button variant="secondary" onClick={() => setShowPromoteModal(true)}>
               <Zap className="mr-1.5 h-4 w-4" /> Auto-promote
             </Button>
@@ -347,6 +386,15 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                           aria-label={`Edit ${s.names}`}
                         >
                           <Edit className="h-4 w-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleResetPassword(s)}
+                          className="rounded-md p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-900"
+                          aria-label={`Reset password for ${s.names}`}
+                          title="Reset password"
+                        >
+                          <KeyRound className="h-4 w-4" />
                         </button>
                         <button
                           type="button"
@@ -641,6 +689,17 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
           </form>
         </div>
       </Modal>
+      <IssueLoginsModal
+        isOpen={showLogins}
+        onClose={() => setShowLogins(false)}
+        classes={classes}
+        schoolName={schoolName}
+      />
+      <ResetPasswordResult
+        slip={resetSlip}
+        schoolName={schoolName}
+        onClose={() => setResetSlip(null)}
+      />
     </div>
   );
 };

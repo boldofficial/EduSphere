@@ -18,6 +18,7 @@ export async function proxy(request: NextRequest) {
   const publicPaths = [
     '/',
     '/login',
+    '/reset-password',
     '/onboarding',
     '/privacy-policy',
     '/terms-of-service',

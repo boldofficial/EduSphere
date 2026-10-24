@@ -46,6 +46,49 @@ class StudentViewSet(TenantViewSet):
             )
         super().perform_create(serializer)
 
+    def _can_manage_logins(self, request):
+        from core.permissions import FINANCE, role_of
+
+        return role_of(request.user) in FINANCE  # admins and office staff
+
+    @action(detail=True, methods=["post"], url_path="reset-password")
+    def reset_password(self, request, pk=None):
+        """New temporary password for one student (shown once); they choose their own at next sign-in."""
+        from ..student_onboarding import ensure_login
+
+        if not self._can_manage_logins(request):
+            return Response({"detail": "Only admins and office staff can reset student passwords."}, status=403)
+        student = self.get_object()
+        if not student.student_no:
+            return Response({"detail": "Give this student an admission number first."}, status=400)
+        password = ensure_login(student)
+        return Response({"student_no": student.student_no, "names": student.names, "password": password})
+
+    @action(detail=False, methods=["post"], url_path="issue-logins")
+    def issue_logins(self, request):
+        """
+        Sign-in accounts for a class at once (e.g. existing students who never had one).
+        Body: {"class_id", "only_missing": true}. Returns login slips; passwords are shown once.
+        """
+        from ..models import Class
+        from ..student_onboarding import ensure_login
+
+        if not self._can_manage_logins(request):
+            return Response({"detail": "Only admins and office staff can issue student logins."}, status=403)
+        school = get_request_school(request)
+        cls = Class.objects.filter(school=school, pk=request.data.get("class_id")).first()
+        if not cls:
+            return Response({"detail": "Choose a class."}, status=400)
+        only_missing = str(request.data.get("only_missing", "true")).lower() != "false"
+        students = Student.objects.filter(school=school, current_class=cls, status="active").exclude(student_no="")
+        if only_missing:
+            students = students.filter(user__isnull=True)
+        slips = [
+            {"student_no": st.student_no, "names": st.names, "class_name": cls.name, "password": ensure_login(st)}
+            for st in students.select_related("user", "school").order_by("names")[:500]
+        ]
+        return Response({"count": len(slips), "slips": slips})
+
     @action(detail=True, methods=["get"], url_path="profile")
     def profile(self, request, pk=None):
         """One student's academics, attendance, fees and conduct for ?session=&term= (default: current)."""

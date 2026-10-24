@@ -2,11 +2,13 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { useSchoolStore } from '@/lib/store';
 import { useSettings, useStaff, useTeachers, useMe } from '@/lib/hooks/use-data';
 import * as Utils from '@/lib/utils';
 
 import { LoginView } from '@/components/features/LoginView';
+import { ChangePasswordGate } from '@/components/features/auth/PasswordForms';
 import { DemoBanner } from '@/components/features/DemoBanner';
 import { UniversalSearch } from '@/components/features/UniversalSearch';
 
@@ -18,6 +20,7 @@ import { useNavigationFilter } from '@/components/features/dashboard/useNavigati
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { currentRole, currentUser, logout, login: storeLogin } = useSchoolStore();
   const pathname = usePathname();
+  const queryClient = useQueryClient();
 
   // Data Fetching
   const { data: settings = Utils.INITIAL_SETTINGS, isLoading: settingsLoading } = useSettings();
@@ -128,6 +131,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   if (!currentUser) return <LoginView />;
+  if (freshUser?.must_change_password)
+    return (
+      <ChangePasswordGate
+        onDone={() => queryClient.invalidateQueries({ queryKey: ['me'] })}
+        onLogout={handleLogout}
+      />
+    );
 
   return (
     <div className="h-screen bg-gray-50 flex overflow-hidden">

@@ -200,6 +200,15 @@ async function handleProxy(request: NextRequest, params: Promise<{ path: string[
       }
     }
 
+    // Files (CSV exports, PDFs, login slips) pass through unchanged, keeping their download name.
+    const backendType = response.headers.get('Content-Type') || '';
+    if (response.ok && backendType && !backendType.includes('json')) {
+      const passHeaders: Record<string, string> = { 'Content-Type': backendType };
+      const disposition = response.headers.get('Content-Disposition');
+      if (disposition) passHeaders['Content-Disposition'] = disposition;
+      return new Response(await response.blob(), { status: response.status, headers: passHeaders });
+    }
+
     const responseText = await response.text();
     const isProd = process.env.NODE_ENV === 'production';
     let data;

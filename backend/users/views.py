@@ -39,6 +39,8 @@ def get_user_me_data(user):
         "subscription": None,
         "profile_id": None,
         "student_id": None,  # Kept for potential frontend compatibility
+        # True after a temporary password: the app asks the user to choose their own before continuing.
+        "must_change_password": getattr(user, "must_change_password", False),
     }
 
     # Fetch profile ID based on role (guard against missing reverse relations)
@@ -277,39 +279,96 @@ class DemoLoginView(APIView):
 
 class PasswordResetRequestView(APIView):
     """
-    Endpoint to request a password reset email.
+    Request a password reset link.
+
+    Staff and parents: {"email"}. Students: {"student_no", "email"} where email is the parent email the
+    school has on record; the link goes to that address. The response is the same whether or not an
+    account matched, so this can't be used to discover accounts.
     """
 
     permission_classes = [AllowAny]
     throttle_classes = [AuthRateThrottle]
 
     def post(self, request):
-        email = request.data.get("email")
+        from django.db.models import Q
+
+        from academic.models import Student
+        from core.tenant_utils import get_request_school
+        from emails.notify import queue_template_email, school_portal_url
+
+        email = (request.data.get("email") or "").strip()
+        student_no = (request.data.get("student_no") or "").strip()
         if not email:
             raise ValidationError({"detail": "email is required"})
 
         User = get_user_model()
-        try:
-            user = User.objects.get(email=email)
-            # Generate a real, secure reset token
+        user = None
+        school = None
+        if student_no:
+            school = get_request_school(request) if getattr(request, "tenant", None) else None
+            student = (
+                Student.objects.filter(school=school, student_no__iexact=student_no, parent_email__iexact=email)
+                .select_related("user", "school")
+                .first()
+                if school
+                else None
+            )
+            user = student.user if student and student.user and student.user.is_active else None
+        else:
+            # Never guess between accounts that share an address; students reset with their admission number.
+            matches = list(User.objects.filter(Q(email__iexact=email), is_active=True).exclude(role="STUDENT")[:2])
+            user = matches[0] if len(matches) == 1 else None
+            school = user.school if user else None
+
+        if user:
             from django.contrib.auth.tokens import PasswordResetTokenGenerator
             from django.utils.encoding import force_bytes
             from django.utils.http import urlsafe_base64_encode
 
-            token_generator = PasswordResetTokenGenerator()
-            token = token_generator.make_token(user)
+            token = PasswordResetTokenGenerator().make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
-            root_domain = getattr(settings, "ROOT_DOMAIN", "myregistra.net")
-            reset_url = f"https://{root_domain}/reset-password?uid={uid}&token={token}"
+            base = (
+                school_portal_url(school) if school else f"https://{getattr(settings, 'ROOT_DOMAIN', 'myregistra.net')}"
+            )
+            queue_template_email(
+                "password_reset",
+                [email],
+                {
+                    "reset_url": f"{base}/reset-password?uid={uid}&token={token}",
+                    "name": user.get_full_name() or user.username,
+                    "is_student": user.role == "STUDENT",
+                },
+            )
+            logger.info("Password reset link sent for user %s", user.pk)
+        else:
+            logger.info("Password reset requested with no unique matching account.")
+        return Response({"message": "If the details match an account, a reset link has been sent."})
 
-            send_email_task.delay("password_reset", email, {"reset_url": reset_url})
-            logger.info(f"Password reset requested for {email}")
-        except User.DoesNotExist:
-            # For security, don't reveal if user exists
-            logger.info(f"Password reset requested for non-existent email: {email}")
-            pass
 
-        return Response({"message": "If an account exists with this email, a reset link has been sent."})
+class ChangePasswordView(APIView):
+    """Signed-in users change their own password (required after a temporary one)."""
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        from django.contrib.auth.password_validation import validate_password
+        from django.core.exceptions import ValidationError as DjangoValidationError
+
+        user = request.user
+        current = request.data.get("current_password") or ""
+        new = request.data.get("new_password") or ""
+        if not user.check_password(current):
+            return Response({"detail": "Your current password is not correct."}, status=400)
+        if new == current:
+            return Response({"detail": "Choose a password different from the current one."}, status=400)
+        try:
+            validate_password(new, user)
+        except DjangoValidationError as error:
+            return Response({"detail": " ".join(error.messages)}, status=400)
+        user.set_password(new)
+        user.must_change_password = False
+        user.save(update_fields=["password", "must_change_password"])
+        return Response({"detail": "Password changed."})
 
 
 class PasswordResetConfirmView(APIView):
@@ -348,6 +407,7 @@ class PasswordResetConfirmView(APIView):
             return Response({"detail": " ".join(e.messages), "errors": list(e.messages)}, status=400)
 
         user.set_password(new_password)
+        user.must_change_password = False
         user.save()
         logger.info(f"Password reset completed for {user.email}")
 

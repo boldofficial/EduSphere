@@ -1527,8 +1527,20 @@ paths:
     post:
       operationId: academic_data_migration_import_students_create
       description: |-
-        Queue a bulk student import from a CSV file. Returns 202 {job_id}; poll `jobs/<job_id>/`.
-        Each row creates a login (password hashing), so a few hundred rows outlast a web request.
+        Import students from an Excel/CSV file in the background. Returns 202 {job_id}; poll `jobs/<job_id>/`,
+        then download the new accounts' login slips from `jobs/<job_id>/credentials/`.
+      tags:
+      - academic
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/academic/data-migration/import-students/preview/:
+    post:
+      operationId: academic_data_migration_import_students_preview_create
+      description: 'Check a file without saving anything: what will be created, updated
+        or rejected, row by row.'
       tags:
       - academic
       security:
@@ -1557,10 +1569,31 @@ paths:
       responses:
         '200':
           description: No response body
+  /api/academic/data-migration/jobs/{job_id}/credentials/:
+    get:
+      operationId: academic_data_migration_jobs_credentials_retrieve
+      description: |-
+        Login slips for the accounts this import created: admission number + temporary password.
+        Kept for 24 hours only; students must change the password at first sign-in.
+      parameters:
+      - in: path
+        name: job_id
+        schema:
+          type: string
+          pattern: ^[0-9]+$
+        required: true
+      tags:
+      - academic
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
   /api/academic/data-migration/student-template/:
     get:
       operationId: academic_data_migration_student_template_retrieve
-      description: Generate and download the CSV template for bulk student import.
+      description: CSV template for the student import (Excel files with the same
+        headings work too).
       tags:
       - academic
       security:
@@ -3780,12 +3813,76 @@ paths:
               schema:
                 $ref: '#/components/schemas/Student'
           description: ''
+  /api/academic/students/{id}/reset-password/:
+    post:
+      operationId: academic_students_reset_password_create
+      description: New temporary password for one student (shown once); they choose
+        their own at next sign-in.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this student.
+        required: true
+      tags:
+      - academic
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StudentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StudentRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Student'
+          description: ''
   /api/academic/students/bulk-promote/:
     post:
       operationId: academic_students_bulk_promote_create
       description: |-
         Promote or repeat multiple students at once.
         Body: { "promotions": { "student_id": "next_class_id", ... } }
+      tags:
+      - academic
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StudentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StudentRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Student'
+          description: ''
+  /api/academic/students/issue-logins/:
+    post:
+      operationId: academic_students_issue_logins_create
+      description: |-
+        Sign-in accounts for a class at once (e.g. existing students who never had one).
+        Body: {"class_id", "only_missing": true}. Returns login slips; passwords are shown once.
       tags:
       - academic
       requestBody:
@@ -16508,6 +16605,18 @@ paths:
       responses:
         '200':
           description: No response body
+  /api/users/change-password/:
+    post:
+      operationId: users_change_password_create
+      description: Signed-in users change their own password (required after a temporary
+        one).
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
   /api/users/demo-login/:
     post:
       operationId: users_demo_login_create
@@ -16559,7 +16668,12 @@ paths:
   /api/users/password-reset-request/:
     post:
       operationId: users_password_reset_request_create
-      description: Endpoint to request a password reset email.
+      description: |-
+        Request a password reset link.
+
+        Staff and parents: {"email"}. Students: {"student_no", "email"} where email is the parent email the
+        school has on record; the link goes to that address. The response is the same whether or not an
+        account matched, so this can't be used to discover accounts.
       tags:
       - users
       security:

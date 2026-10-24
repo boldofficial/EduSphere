@@ -95,7 +95,7 @@ class StudentSerializer(serializers.ModelSerializer):
             # Format: ST001@vine-heritage
             school_suffix = instance.school.domain if instance.school and instance.school.domain else "school"
             username = f"{instance.student_no}@{school_suffix}"
-            email = instance.parent_email or f"{username}.com"  # distinct from real emails
+            email = ""  # students sign in with their admission number; the parent email lives on the student
 
             # Check if user exists (should not exist with this scoped username)
             if not User.objects.filter(username=username).exists():
@@ -106,6 +106,7 @@ class StudentSerializer(serializers.ModelSerializer):
                     role="STUDENT",
                     school=instance.school,
                     is_active=True,
+                    must_change_password=True,
                 )
                 instance.user = user
                 instance.save()
@@ -141,7 +142,7 @@ class StudentSerializer(serializers.ModelSerializer):
                 # Create user if it doesn't exist during update
                 school_suffix = instance.school.domain if instance.school and instance.school.domain else "school"
                 username = f"{instance.student_no}@{school_suffix}"
-                email = instance.parent_email or f"{username}.com"
+                email = ""
 
                 if not User.objects.filter(username=username).exists():
                     user = User.objects.create(
@@ -151,6 +152,7 @@ class StudentSerializer(serializers.ModelSerializer):
                         role="STUDENT",
                         school=instance.school,
                         is_active=True,
+                        must_change_password=True,
                     )
                     instance.user = user
                     instance.save()

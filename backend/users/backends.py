@@ -1,31 +1,30 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import ModelBackend
-from django.db.models import Q
 
 User = get_user_model()
 
 
 class EmailOrUsernameModelBackend(ModelBackend):
     """
-    Custom authentication backend that allows login using either
-    username or email.
+    Sign in with a username (e.g. a student's "ST001@school") or an email address.
+
+    An exact username match always wins. An email is accepted only when exactly one account uses it:
+    never guess between accounts (e.g. a parent and a child sharing an address).
     """
 
     def authenticate(self, request, username=None, password=None, **kwargs):
         if username is None:
             username = kwargs.get(User.USERNAME_FIELD)
-
-        try:
-            # Check if the 'username' provided is actually an email or the username
-            user = User.objects.get(Q(username__iexact=username) | Q(email__iexact=username))
-        except User.DoesNotExist:
-            # Run the default password hasher once to avoid timing attacks
-            User().set_password(password)
+        if not username or password is None:
             return None
-        except User.MultipleObjectsReturned:
-            # Fallback if multiple users have the same email (shouldn't happen with unique constraints)
-            user = User.objects.filter(Q(username__iexact=username) | Q(email__iexact=username)).first()
 
+        user = User.objects.filter(username__iexact=username).first()
+        if user is None:
+            matches = list(User.objects.filter(email__iexact=username)[:2])
+            user = matches[0] if len(matches) == 1 else None
+        if user is None:
+            User().set_password(password)  # same work as a real check, to avoid timing differences
+            return None
         if user.check_password(password) and self.user_can_authenticate(user):
             return user
         return None

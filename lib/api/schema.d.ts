@@ -614,9 +614,26 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Queue a bulk student import from a CSV file. Returns 202 {job_id}; poll `jobs/<job_id>/`.
-         *     Each row creates a login (password hashing), so a few hundred rows outlast a web request. */
+        /** @description Import students from an Excel/CSV file in the background. Returns 202 {job_id}; poll `jobs/<job_id>/`,
+         *     then download the new accounts' login slips from `jobs/<job_id>/credentials/`. */
         post: operations["academic_data_migration_import_students_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/academic/data-migration/import-students/preview/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Check a file without saving anything: what will be created, updated or rejected, row by row. */
+        post: operations["academic_data_migration_import_students_preview_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -642,6 +659,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/academic/data-migration/jobs/{job_id}/credentials/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Login slips for the accounts this import created: admission number + temporary password.
+         *     Kept for 24 hours only; students must change the password at first sign-in. */
+        get: operations["academic_data_migration_jobs_credentials_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/academic/data-migration/student-template/": {
         parameters: {
             query?: never;
@@ -649,7 +684,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Generate and download the CSV template for bulk student import. */
+        /** @description CSV template for the student import (Excel files with the same headings work too). */
         get: operations["academic_data_migration_student_template_retrieve"];
         put?: never;
         post?: never;
@@ -1470,6 +1505,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/academic/students/{id}/reset-password/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description New temporary password for one student (shown once); they choose their own at next sign-in. */
+        post: operations["academic_students_reset_password_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/academic/students/bulk-promote/": {
         parameters: {
             query?: never;
@@ -1482,6 +1534,24 @@ export interface paths {
         /** @description Promote or repeat multiple students at once.
          *     Body: { "promotions": { "student_id": "next_class_id", ... } } */
         post: operations["academic_students_bulk_promote_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/academic/students/issue-logins/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Sign-in accounts for a class at once (e.g. existing students who never had one).
+         *     Body: {"class_id", "only_missing": true}. Returns login slips; passwords are shown once. */
+        post: operations["academic_students_issue_logins_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -6269,6 +6339,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/users/change-password/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Signed-in users change their own password (required after a temporary one). */
+        post: operations["users_change_password_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/users/demo-login/": {
         parameters: {
             query?: never;
@@ -6346,7 +6433,11 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Endpoint to request a password reset email. */
+        /** @description Request a password reset link.
+         *
+         *     Staff and parents: {"email"}. Students: {"student_no", "email"} where email is the parent email the
+         *     school has on record; the link goes to that address. The response is the same whether or not an
+         *     account matched, so this can't be used to discover accounts. */
         post: operations["users_password_reset_request_create"];
         delete?: never;
         options?: never;
@@ -12672,7 +12763,45 @@ export interface operations {
             };
         };
     };
+    academic_data_migration_import_students_preview_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     academic_data_migration_jobs_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    academic_data_migration_jobs_credentials_retrieve: {
         parameters: {
             query?: never;
             header?: never;
@@ -14644,7 +14773,60 @@ export interface operations {
             };
         };
     };
+    academic_students_reset_password_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this student. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudentRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["StudentRequest"];
+                "multipart/form-data": components["schemas"]["StudentRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Student"];
+                };
+            };
+        };
+    };
     academic_students_bulk_promote_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudentRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["StudentRequest"];
+                "multipart/form-data": components["schemas"]["StudentRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Student"];
+                };
+            };
+        };
+    };
+    academic_students_issue_logins_create: {
         parameters: {
             query?: never;
             header?: never;
@@ -26799,6 +26981,24 @@ export interface operations {
         };
     };
     users_account_setup_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    users_change_password_create: {
         parameters: {
             query?: never;
             header?: never;
