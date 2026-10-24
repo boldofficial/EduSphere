@@ -18637,6 +18637,15 @@ components:
           type: integer
           maximum: 32767
           minimum: 0
+        next_class:
+          type: integer
+          readOnly: true
+          nullable: true
+          description: The class students will be promoted to.
+        is_graduation_class:
+          type: boolean
+          readOnly: true
+          description: Check if this is the final class (e.g., SS3).
         created_at:
           type: string
           format: date-time
@@ -18649,7 +18658,9 @@ components:
       - class_teacher
       - created_at
       - id
+      - is_graduation_class
       - name
+      - next_class
       - updated_at
     ClassCategoryEnum:
       enum:

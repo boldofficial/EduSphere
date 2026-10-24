@@ -1,5 +1,17 @@
 import React, { useState } from 'react';
-import { BookOpen, User, Library, Search, Trash2 } from 'lucide-react';
+import Link from 'next/link';
+import {
+  ArrowRight,
+  BookOpen,
+  GraduationCap,
+  Layers,
+  Library,
+  Plus,
+  Search,
+  Settings2,
+  Trash2,
+  User,
+} from 'lucide-react';
 import * as Types from '@/lib/types';
 import * as Utils from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -8,6 +20,46 @@ import { Select } from '@/components/ui/select';
 import { Modal } from '@/components/ui/modal';
 import { useToast } from '@/components/providers/toast-provider';
 import { useConfirm } from '@/components/ui/confirm-dialog';
+import { PageHeader } from '@/components/ui/page-header';
+import { useSchoolStructure } from '@/lib/hooks/use-school-structure';
+
+const REPORT_LABEL: Record<string, string> = {
+  numeric: 'Scores',
+  early_years: 'Early years',
+  hybrid: 'Scores + narrative',
+};
+
+function initials(name: string) {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join('');
+}
+
+function SummaryTile({
+  label,
+  value,
+  tone = 'default',
+}: {
+  label: string;
+  value: number;
+  tone?: 'default' | 'warning' | 'success';
+}) {
+  const color =
+    tone === 'warning'
+      ? 'text-warning-700'
+      : tone === 'success'
+        ? 'text-success-700'
+        : 'text-gray-900';
+  return (
+    <div className="rounded-card border border-gray-100 bg-white px-4 py-3 shadow-card">
+      <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">{label}</p>
+      <p className={`mt-1 text-2xl font-black ${color}`}>{value}</p>
+    </div>
+  );
+}
 
 interface ClassesViewProps {
   classes: Types.Class[];
@@ -30,6 +82,7 @@ export const ClassesView: React.FC<ClassesViewProps> = ({
   const [searchSubject, setSearchSubject] = useState('');
   const [newSubject, setNewSubject] = useState('');
   const { addToast } = useToast();
+  const { data: structure } = useSchoolStructure();
 
   // ... existing presets ...
   const allKnownSubjects = Array.from(
@@ -200,92 +253,211 @@ export const ClassesView: React.FC<ClassesViewProps> = ({
     s.toLowerCase().includes(searchSubject.toLowerCase())
   );
 
+  // Group classes by school section, in promotion order (the API sorts by level).
+  const sectionNames = new Map((structure?.sections ?? []).map((sec) => [sec.id, sec.name]));
+  const groups: { key: string; title: string; classes: Types.Class[] }[] = [];
+  classes.forEach((cls) => {
+    const sectionId = cls.section ?? null;
+    const key = sectionId ? `section-${sectionId}` : 'unassigned';
+    let group = groups.find((g) => g.key === key);
+    if (!group) {
+      group = {
+        key,
+        title: sectionId
+          ? sectionNames.get(sectionId) || 'Section'
+          : groups.length || classes.some((c) => c.section)
+            ? 'Other classes'
+            : 'All classes',
+        classes: [],
+      };
+      groups.push(group);
+    }
+    group.classes.push(cls);
+  });
+  groups.sort((a, b) => (a.key === 'unassigned' ? 1 : b.key === 'unassigned' ? -1 : 0));
+
+  const withoutTeacher = classes.filter((c) => !c.class_teacher_id).length;
+  const withoutSubjects = classes.filter(
+    (c) => (c.subjects ?? Utils.getSubjectsForClass(c)).length === 0
+  ).length;
+  const nameOf = (id?: string | number | null) =>
+    classes.find((c) => String(c.id) === String(id))?.name;
+
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Class & Subject Configuration</h1>
-          <p className="text-gray-500">Assign teachers and manage subjects for each class.</p>
+    <div className="space-y-8">
+      <PageHeader
+        eyebrow="Academics"
+        title="Classes & Subjects"
+        description="Assign class teachers and choose the subjects each class takes."
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href="/school-structure"
+              className="inline-flex items-center gap-2 rounded-control border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+            >
+              <Layers size={16} /> School structure
+            </Link>
+            {onCreate && (
+              <Button onClick={handleCreate}>
+                <Plus size={16} className="mr-1" /> Add class
+              </Button>
+            )}
+          </div>
+        }
+      />
+
+      {classes.length > 0 && (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <SummaryTile label="Classes" value={classes.length} />
+          <SummaryTile
+            label="Without a class teacher"
+            value={withoutTeacher}
+            tone={withoutTeacher ? 'warning' : 'success'}
+          />
+          <SummaryTile
+            label="Without subjects"
+            value={withoutSubjects}
+            tone={withoutSubjects ? 'warning' : 'success'}
+          />
         </div>
-        {onCreate && <Button onClick={handleCreate}>Add Class</Button>}
-      </div>
+      )}
+
       {classes.length === 0 ? (
-        <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed">
-          <BookOpen className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-          <h3 className="text-lg font-medium text-gray-900">No Classes Found</h3>
-          <p className="text-gray-500 mb-4">Get started by creating your first class.</p>
-          <div className="flex justify-center gap-3">
+        <div className="rounded-card border border-dashed border-gray-300 bg-white px-6 py-14 text-center">
+          <BookOpen className="mx-auto mb-3 h-10 w-10 text-gray-300" />
+          <h3 className="text-lg font-bold text-gray-900">No classes yet</h3>
+          <p className="mx-auto mt-1 max-w-md text-sm text-gray-500">
+            Set up your school structure to create all your classes, arms and subjects in one go, or
+            add a single class.
+          </p>
+          <div className="mt-5 flex flex-wrap justify-center gap-3">
+            <Link
+              href="/school-structure"
+              className="inline-flex items-center gap-2 rounded-control bg-brand-600 px-4 py-2 text-sm font-bold text-white hover:bg-brand-700"
+            >
+              <Layers size={16} /> Set up school structure
+            </Link>
             {onCreate && (
               <Button onClick={handleCreate} variant="outline">
-                Create Class
+                Add a class
               </Button>
             )}
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {classes.map((c) => {
-            const teacher = teachers.find((t) => String(t.id) === String(c.class_teacher_id));
-            const subjectCount = (c.subjects ?? Utils.getSubjectsForClass(c)).length;
-            return (
-              <Card
-                key={c.id}
-                className="hover:border-brand-400 transition-all cursor-pointer group"
-              >
-                <div className="flex flex-col h-full justify-between">
-                  <div>
-                    <div className="flex justify-between items-start mb-2">
-                      <h3 className="font-bold text-xl text-gray-800">{c.name}</h3>
-                      <div className="bg-gray-100 p-2 rounded-full group-hover:bg-brand-50 transition-colors">
-                        <BookOpen className="h-5 w-5 text-gray-500 group-hover:text-brand-600" />
+        groups.map((group) => (
+          <section key={group.key} className="space-y-3">
+            <div className="flex items-baseline justify-between gap-3">
+              <h2 className="text-sm font-bold uppercase tracking-wide text-gray-500">
+                {group.title}
+              </h2>
+              <span className="text-xs text-gray-400">
+                {group.classes.length} class{group.classes.length === 1 ? '' : 'es'}
+              </span>
+            </div>
+            <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {group.classes.map((c) => {
+                const teacher = teachers.find((t) => String(t.id) === String(c.class_teacher_id));
+                const subjectCount = (c.subjects ?? Utils.getSubjectsForClass(c)).length;
+                const nextName = nameOf(c.next_class);
+                return (
+                  <li key={c.id} className="min-w-0">
+                    <article className="flex h-full min-w-0 flex-col rounded-card border border-gray-100 bg-white shadow-card transition hover:border-brand-200 hover:shadow-raised">
+                      <div className="min-w-0 flex-1 p-4">
+                        <div className="flex min-w-0 items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <h3
+                              className="truncate text-base font-bold text-gray-900"
+                              title={c.name}
+                            >
+                              {c.name}
+                            </h3>
+                            <p className="mt-0.5 truncate text-xs text-gray-500">
+                              {REPORT_LABEL[c.report_mode || 'numeric']} · {subjectCount} subject
+                              {subjectCount === 1 ? '' : 's'}
+                            </p>
+                          </div>
+                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-brand-50 text-brand-600">
+                            <BookOpen size={18} />
+                          </span>
+                        </div>
+
+                        <div className="mt-4 flex min-w-0 items-center gap-2.5">
+                          {teacher ? (
+                            <>
+                              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-600 text-xs font-bold text-white">
+                                {initials(teacher.name)}
+                              </span>
+                              <span className="min-w-0">
+                                <span className="block text-xs text-gray-500">Class teacher</span>
+                                <span className="block truncate text-sm font-semibold text-gray-800">
+                                  {teacher.name}
+                                </span>
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-dashed border-gray-300 text-gray-400">
+                                <User size={14} />
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => handleEdit(c)}
+                                className="text-sm font-semibold text-brand-700 hover:underline"
+                              >
+                                Assign class teacher
+                              </button>
+                            </>
+                          )}
+                        </div>
+
+                        <p className="mt-3 flex min-w-0 items-center gap-1.5 text-xs text-gray-500">
+                          {c.is_graduation_class ? (
+                            <>
+                              <GraduationCap size={14} className="shrink-0 text-success-600" />
+                              <span className="truncate">Final class: students graduate</span>
+                            </>
+                          ) : nextName ? (
+                            <>
+                              <ArrowRight size={14} className="shrink-0 text-gray-400" />
+                              <span className="truncate">Promotes to {nextName}</span>
+                            </>
+                          ) : (
+                            <>
+                              <ArrowRight size={14} className="shrink-0 text-gray-300" />
+                              <span className="truncate text-gray-400">No promotion set</span>
+                            </>
+                          )}
+                        </p>
                       </div>
-                    </div>
-                    <div className="text-sm text-gray-600 mb-4 flex items-center gap-2">
-                      <User className="h-4 w-4 text-gray-400" />
-                      {teacher ? (
-                        <span className="font-medium text-brand-700">{teacher.name}</span>
-                      ) : (
-                        <span className="italic text-gray-400">No Class Teacher</span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="border-t pt-4 flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium bg-cyan-50 px-2 py-1 rounded text-cyan-700 border border-cyan-100">
-                        {c.category || 'Primary'}
-                      </span>
-                      <span className="text-xs font-medium bg-green-50 px-2 py-1 rounded text-green-700 border border-green-100">
-                        {c.report_mode === 'early_years'
-                          ? 'Early Years'
-                          : c.report_mode === 'hybrid'
-                            ? 'Hybrid'
-                            : 'Numeric'}
-                      </span>
-                      <span className="text-xs font-medium bg-gray-100 px-2 py-1 rounded text-gray-600">
-                        {subjectCount} Subjects
-                      </span>
-                      {onDelete && (
+
+                      <div className="flex items-center justify-between gap-2 border-t border-gray-100 px-4 py-2.5">
                         <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDelete(c);
-                          }}
-                          className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                          title="Delete Class"
+                          type="button"
+                          onClick={() => handleEdit(c)}
+                          className="inline-flex items-center gap-1.5 rounded-control px-2 py-1 text-sm font-semibold text-brand-700 hover:bg-brand-50"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Settings2 size={15} /> Configure
                         </button>
-                      )}
-                    </div>
-                    <Button size="sm" variant="secondary" onClick={() => handleEdit(c)}>
-                      Configure
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            );
-          })}
-        </div>
+                        {onDelete && (
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(c)}
+                            aria-label={`Delete ${c.name}`}
+                            title="Delete class"
+                            className="rounded-control p-1.5 text-gray-400 transition-colors hover:bg-danger-50 hover:text-danger-600"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        )}
+                      </div>
+                    </article>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        ))
       )}
 
       <Modal

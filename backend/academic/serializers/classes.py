@@ -33,10 +33,13 @@ class ClassSerializer(serializers.ModelSerializer):
             "arm",
             "department",
             "level_order",
+            "next_class",
+            "is_graduation_class",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ("id", "school", "class_teacher")
+        # Promotion links are set by the school-structure wizard (same-school classes only).
+        read_only_fields = ("id", "school", "class_teacher", "next_class", "is_graduation_class")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

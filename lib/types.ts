@@ -259,6 +259,8 @@ export interface Class extends Entity {
   arm?: string;
   department?: string;
   level_order?: number;
+  next_class?: number | string | null;
+  is_graduation_class?: boolean;
   /** Score parts, grading scale and position display from the class's section (read-only). */
   assessment?: import('./assessment').ClassAssessment;
 }
