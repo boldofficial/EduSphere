@@ -413,7 +413,7 @@ class SubjectScore(AuditTrailMixin, TenantModel):
     ca2 = models.FloatField(default=0)
     exam = models.FloatField(default=0)
     total = models.FloatField(default=0)
-    grade = models.CharField(max_length=5, blank=True)
+    grade = models.CharField(max_length=10, blank=True)  # as long as GradeRange.grade (e.g. "Credit")
     comment = models.CharField(max_length=255, blank=True)
 
     class Meta:

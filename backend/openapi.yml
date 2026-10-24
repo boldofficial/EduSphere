@@ -24487,7 +24487,7 @@ components:
           format: double
         grade:
           type: string
-          maxLength: 5
+          maxLength: 10
         comment:
           type: string
           maxLength: 255
@@ -26679,7 +26679,7 @@ components:
           format: double
         grade:
           type: string
-          maxLength: 5
+          maxLength: 10
         comment:
           type: string
           maxLength: 255
@@ -26705,7 +26705,7 @@ components:
           format: double
         grade:
           type: string
-          maxLength: 5
+          maxLength: 10
         comment:
           type: string
           maxLength: 255

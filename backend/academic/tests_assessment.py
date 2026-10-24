@@ -111,7 +111,7 @@ class SectionGradingTests(GradingTestBase):
     def test_section_grading_scheme_overrides_the_built_in_scale(self):
         scheme = GradingScheme.objects.create(school=self.school, name="House scale")
         GradeRange.objects.create(
-            school=self.school, scheme=scheme, grade="Distinction", min_score=80, max_score=100, remark="Top"
+            school=self.school, scheme=scheme, grade="Credit+", min_score=80, max_score=100, remark="Top"
         )
         GradeRange.objects.create(
             school=self.school, scheme=scheme, grade="Merit", min_score=0, max_score=79.99, remark="Keep going"
@@ -124,7 +124,7 @@ class SectionGradingTests(GradingTestBase):
         )
         self.assertEqual(r.status_code, 200, r.data)
         self.save_scores(self.ss1, [{"subject": "Physics", "ca1": 20, "ca2": 20, "exam": 45}])
-        self.assertEqual(self.scores()["Physics"].grade, "Distinction")
+        self.assertEqual(self.scores()["Physics"].grade, "Credit+")
 
     def test_section_settings_are_validated_and_admin_only(self):
         url = f"/api/academic/school-structure/sections/{self.primary.id}/"
