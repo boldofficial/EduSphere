@@ -1,4 +1,7 @@
 from rest_framework import viewsets, permissions, status
+from rest_framework.exceptions import PermissionDenied
+
+from core.tenant_utils import get_request_school
 from rest_framework.response import Response
 from .models import DiscussionThread, DiscussionMessage
 from .serializers import DiscussionThreadSerializer, DiscussionMessageSerializer
@@ -10,8 +13,7 @@ class DiscussionThreadViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        # Always filter by school (TenantMiddleware sets request.tenant)
-        return super().get_queryset().filter(school=self.request.tenant)
+        return super().get_queryset().filter(school=get_request_school(self.request))
 
     def create(self, request, *args, **kwargs):
         # Automatically handle thread creation if it doesn't exist for the resource
@@ -19,7 +21,7 @@ class DiscussionThreadViewSet(viewsets.ModelViewSet):
         object_id = request.data.get("object_id")
 
         thread, created = DiscussionThread.objects.get_or_create(
-            school=request.tenant, content_type_id=content_type_id, object_id=object_id
+            school=get_request_school(request), content_type_id=content_type_id, object_id=object_id
         )
 
         serializer = self.get_serializer(thread)
@@ -32,11 +34,14 @@ class DiscussionMessageViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return super().get_queryset().filter(school=self.request.tenant)
+        return super().get_queryset().filter(school=get_request_school(self.request))
 
     def perform_create(self, serializer):
-        # Automatically set author and school
-        serializer.save(author=self.request.user, school=self.request.tenant)
+        school = get_request_school(self.request)
+        for related in (serializer.validated_data.get("thread"), serializer.validated_data.get("parent")):
+            if related is not None and related.school_id != school.pk:
+                raise PermissionDenied("This discussion belongs to another school.")
+        serializer.save(author=self.request.user, school=school)
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()

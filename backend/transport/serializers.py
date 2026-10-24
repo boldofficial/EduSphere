@@ -124,9 +124,9 @@ class TransportFeeSerializer(serializers.ModelSerializer):
         ]
 
     def get_students_count(self, obj):
-        return obj.route.assignments.filter(
-            is_active=True, start_date__lte=obj.term  # Simplified; refine as needed
-        ).count()
+        # Students currently riding the route. (This used to compare start_date with the term's name,
+        # which crashed the fee list as soon as any fee existed.)
+        return obj.route.assignments.filter(is_active=True).count()
 
 
 class BusAttendanceSerializer(serializers.ModelSerializer):

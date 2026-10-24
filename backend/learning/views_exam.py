@@ -343,7 +343,9 @@ class ExamAnswerViewSet(TenantViewSet):
         if not paper_id:
             return Response({"error": "paper_id required"}, status=400)
 
-        paper = ExamPaper.objects.get(id=paper_id)
+        paper = ExamPaper.objects.filter(pk=paper_id, school=get_request_school(request)).first()
+        if paper is None:
+            return Response({"error": "Paper not found"}, status=404)
 
         for g in grades:
             answer_id = g.get("answer_id")

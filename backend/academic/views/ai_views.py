@@ -11,6 +11,8 @@ from rest_framework.views import APIView
 
 from core.tenant_utils import get_request_school
 
+from .base import is_school_staff, scope_to_learner
+
 from ..ai_utils import AcademicAI
 from ..models import (
     AttendanceRecord,
@@ -209,13 +211,18 @@ class GradeTrendView(APIView):
         student_id = request.query_params.get("student_id")
         class_id = request.query_params.get("class_id")
         school = get_request_school(request)
+        if class_id and not is_school_staff(request.user):
+            raise PermissionDenied("Only staff can view class-wide trends.")
 
         if not school:
             return Response({"error": "No school context found"}, status=400)
 
         if student_id:
             try:
-                student = Student.objects.get(id=student_id, school=school)
+                # Students and parents only their own; teachers their classes.
+                student = scope_to_learner(Student.objects.filter(school=school), request.user, student_path="pk").get(
+                    id=student_id
+                )
                 reports = ReportCard.objects.filter(student=student, school=school).order_by("created_at")
 
                 return Response(
@@ -261,6 +268,8 @@ class AIPredictiveInsightsView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
+        if not is_school_staff(request.user):
+            raise PermissionDenied("Only staff can view predictive insights.")
         school = get_request_school(request)
         if not school:
             return Response({"error": "No school context found"}, status=400)

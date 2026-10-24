@@ -181,8 +181,3 @@ class ReturnBookSerializer(serializers.Serializer):
     record_id = serializers.IntegerField()
     condition = serializers.CharField(required=False, default="Good")
     fine_amount = serializers.DecimalField(max_digits=10, decimal_places=2, required=False, default=0)
-
-    def validate_record_id(self, value):
-        if not BorrowRecord.objects.filter(id=value).exists():
-            raise serializers.ValidationError("Borrow record not found")
-        return value

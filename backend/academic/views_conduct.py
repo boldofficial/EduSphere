@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from django.db.models import Avg
 
 from academic.views.base import TenantViewSet, is_school_staff, scope_to_learner
+from core.tenant_utils import get_request_school
 from core.permissions import EveryoneReadStaffWrite
 from academic.models import Commendation, ConductWarning, BehaviorAnalytics, ConductEntry, Student
 from academic.serializers_conduct import (
@@ -128,7 +129,7 @@ class BehaviorAnalyticsViewSet(TenantViewSet):
         if not session or not term:
             return Response({"detail": "session and term required"}, status=400)
 
-        students = Student.objects.filter(school=request.tenant, status="active")
+        students = Student.objects.filter(school=get_request_school(request), status="active")
 
         for student in students:
             self.generate_student_analytics(student, session, term)
@@ -216,9 +217,12 @@ class BehaviorAnalyticsViewSet(TenantViewSet):
         if not student_id or not session:
             return Response({"error": "student_id and session required"}, status=400)
 
-        try:
-            student = Student.objects.get(id=student_id)
-        except Student.DoesNotExist:
+        # Same school only; students and parents see their own, teachers their classes.
+        students = scope_to_learner(
+            Student.objects.filter(school=get_request_school(request)), request.user, student_path="pk"
+        )
+        student = students.filter(pk=student_id).first()
+        if student is None:
             return Response({"error": "Student not found"}, status=404)
 
         recent_comms = Commendation.objects.filter(student=student, session=session).order_by("-award_date")[:5]
@@ -236,7 +240,7 @@ class BehaviorAnalyticsViewSet(TenantViewSet):
                 # Generate for latest term
                 from schools.models import SchoolSettings
 
-                school = request.tenant
+                school = get_request_school(request)
                 settings = SchoolSettings.objects.filter(school=school).first()
                 if settings:
                     analytics = self.generate_student_analytics(student, session, settings.current_term)

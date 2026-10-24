@@ -7,6 +7,8 @@ from rest_framework.views import APIView
 
 from core.tenant_utils import get_request_school
 
+from .base import is_school_staff
+
 from ..models import Class, Student, Teacher
 
 
@@ -25,6 +27,9 @@ class GlobalSearchView(APIView):
         school = get_request_school(request)
         if not school:
             return Response({"error": "No school context found"}, status=400)
+        if not is_school_staff(request.user):
+            # The directory of students and staff (with emails) is for staff only.
+            return Response({"students": [], "staff": [], "classes": []})
 
         # 1. Search Students
         students = Student.objects.filter(
