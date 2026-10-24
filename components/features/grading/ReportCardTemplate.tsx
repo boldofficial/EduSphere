@@ -57,6 +57,14 @@ const hashString = (value: string) => {
   return hash.toString(36).toUpperCase().padStart(7, '0');
 };
 
+/** Ruled lines to write a remark by hand when none was entered. */
+const WriteInLines = () => (
+  <span className="block space-y-3 pt-2" aria-label="No remark entered">
+    <span className="block border-b border-slate-300" />
+    <span className="block border-b border-slate-300" />
+  </span>
+);
+
 const DotRating = ({ value, color }: { value: number; color: string }) => {
   const safe = Math.max(0, Math.min(5, Math.round(value || 0)));
   const inactiveBorder = toRgba(color, 0.35);
@@ -167,6 +175,13 @@ export const ReportCardTemplate: React.FC<ReportCardTemplateProps> = ({
 
   // Score columns, grading key and position display follow the class's section settings.
   const assessment = classAssessment(currentClass);
+  // The class's section signs its reports (e.g. Head Teacher of the nursery, Principal of the
+  // college); the school-wide head is the fallback.
+  const section = assessment.section;
+  const headTitle = section?.head_title || settings?.head_teacher_label || 'Head Teacher';
+  const headName = section?.head_name || settings?.head_of_school_name || '';
+  const headSignature = section?.head_signature || settings?.head_of_school_signature || '';
+  const termSummary = score?.ai_performance_remark || score?.teacher_remark || '';
   const scoreParts = assessment.parts.filter((part) => part.enabled);
   const gradingKey = [...assessment.grading]
     .sort((a, b) => b.min - a.min)
@@ -492,29 +507,27 @@ export const ReportCardTemplate: React.FC<ReportCardTemplateProps> = ({
           </div>
         </div>
 
-        <div
-          className="relative mt-3 overflow-hidden rounded-xl border px-3 py-2.5 text-[10px] leading-relaxed text-slate-700"
-          style={{
-            borderColor: themeSoftBorder,
-            background: `linear-gradient(95deg, ${toRgba(themePrimary, 0.12)} 0%, #ffffff 55%)`,
-          }}
-        >
+        {termSummary && (
           <div
-            className="absolute -right-4 -top-4 h-16 w-16 rounded-full"
-            style={{ backgroundColor: toRgba(themePrimary, 0.14) }}
-          />
-          <p
-            className="relative z-10 text-[9px] font-bold uppercase tracking-[0.14em]"
-            style={{ color: themeDeep }}
+            className="relative mt-3 overflow-hidden rounded-xl border px-3 py-2.5 text-[10px] leading-relaxed text-slate-700"
+            style={{
+              borderColor: themeSoftBorder,
+              background: `linear-gradient(95deg, ${toRgba(themePrimary, 0.12)} 0%, #ffffff 55%)`,
+            }}
           >
-            Term Summary
-          </p>
-          <p className="relative z-10 mt-1 font-medium">
-            {score?.ai_performance_remark ||
-              score?.teacher_remark ||
-              'A commendable termly performance. Continue to build discipline, confidence, and consistency in all learning tasks.'}
-          </p>
-        </div>
+            <div
+              className="absolute -right-4 -top-4 h-16 w-16 rounded-full"
+              style={{ backgroundColor: toRgba(themePrimary, 0.14) }}
+            />
+            <p
+              className="relative z-10 text-[9px] font-bold uppercase tracking-[0.14em]"
+              style={{ color: themeDeep }}
+            >
+              Term Summary
+            </p>
+            <p className="relative z-10 mt-1 font-medium">{termSummary}</p>
+          </div>
+        )}
       </div>
 
       <div
@@ -1033,8 +1046,7 @@ export const ReportCardTemplate: React.FC<ReportCardTemplateProps> = ({
             {settings?.class_teacher_label || 'Class Teacher'} Remark
           </p>
           <p className="mt-2 min-h-14 text-[10px] leading-relaxed text-slate-600">
-            {score?.teacher_remark ||
-              'Steady progress this term. Continue to improve class participation and independent study habits.'}
+            {score?.teacher_remark || <WriteInLines />}
           </p>
           <div className="mt-4 border-t border-dashed border-slate-300 pt-2 text-right text-[9px] text-slate-400">
             Signature
@@ -1043,22 +1055,28 @@ export const ReportCardTemplate: React.FC<ReportCardTemplateProps> = ({
 
         <div className="rounded border border-slate-200 p-3">
           <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">
-            {settings?.head_teacher_label || 'Head Teacher'} Remark
+            {headTitle} Remark
           </p>
           <p className="mt-2 min-h-14 text-[10px] leading-relaxed text-slate-600">
-            {score?.head_teacher_remark ||
-              'A promising performance. Keep striving for excellence with consistency and discipline.'}
+            {score?.head_teacher_remark || <WriteInLines />}
           </p>
           <div className="mt-4 flex items-center justify-end border-t border-dashed border-slate-300 pt-2">
-            {settings?.head_of_school_signature ? (
-              <img
-                src={Utils.getMediaUrl(settings.head_of_school_signature) || ''}
-                alt="Head signature"
-                className="h-8 object-contain"
-              />
-            ) : (
-              <span className="text-[9px] text-slate-400">Signature</span>
-            )}
+            <div className="text-right">
+              {headSignature ? (
+                <img
+                  src={Utils.getMediaUrl(headSignature) || ''}
+                  alt={`${headTitle} signature`}
+                  className="ml-auto h-8 object-contain"
+                />
+              ) : (
+                <span className="text-[9px] text-slate-400">Signature</span>
+              )}
+              {headName && (
+                <p className="text-[9px] font-semibold text-slate-600">
+                  {headName}, {headTitle}
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </div>

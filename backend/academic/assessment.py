@@ -119,6 +119,17 @@ def public_config(student_class):
     return {
         "parts": [{"key": key, **assessment[key]} for key in PARTS if assessment[key]["enabled"]],
         "show_position": section.show_position if section else True,
+        # Who signs this class's report cards; empty values fall back to the school's settings.
+        "section": (
+            {
+                "name": section.name,
+                "head_title": section.head_title,
+                "head_name": section.head_name,
+                "head_signature": section.head_signature,
+            }
+            if section
+            else None
+        ),
         "grading": [
             {"min": minimum, "grade": grade, "remark": remark} for minimum, grade, remark in grade_scale(student_class)
         ],

@@ -83,6 +83,8 @@ class SchoolSection(TenantModel):
     name = models.CharField(max_length=120)  # shown on report cards, e.g. "Heritage Kastle Nursery & Primary"
     head_title = models.CharField(max_length=60, blank=True)  # Head Teacher, Principal…
     head_name = models.CharField(max_length=120, blank=True)
+    # This section's head signs its report cards (falls back to the school's head of school).
+    head_signature = models.TextField(blank=True, default="")
     position = models.PositiveSmallIntegerField(default=0)
     # Assessment and grading for this section (academic/assessment.py). Empty = CA 1 20 + CA 2 20 + Exam 60.
     assessment = models.JSONField(default=dict, blank=True)
