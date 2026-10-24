@@ -6,6 +6,8 @@ from rest_framework.response import Response
 import csv
 import io
 
+from core.tenant_utils import get_request_school
+
 from .models import ImportJob, ImportRow
 
 
@@ -28,7 +30,7 @@ def import_data(request):
 
     # Create import job
     job = ImportJob.objects.create(
-        school=request.tenant,
+        school=get_request_school(request),
         import_type=import_type,
         file_name=f"import_{import_type}.csv",
         created_by=request.user.username,
@@ -47,9 +49,9 @@ def import_data(request):
     success_count = 0
 
     if import_type == "students":
-        success_count, errors = process_student_import(job, rows, request.tenant)
+        success_count, errors = process_student_import(job, rows, get_request_school(request))
     elif import_type == "scores":
-        success_count, errors = process_score_import(job, rows, request.tenant)
+        success_count, errors = process_score_import(job, rows, get_request_school(request))
     else:
         job.status = "failed"
         job.errors = [{"row": 0, "error": f"Unsupported import type: {import_type}"}]
@@ -221,7 +223,7 @@ def process_score_import(job, rows, school):
 def import_job_detail(request, job_id):
     """Get import job details."""
     try:
-        job = ImportJob.objects.get(id=job_id, school=request.tenant)
+        job = ImportJob.objects.get(id=job_id, school=get_request_school(request))
     except ImportJob.DoesNotExist:
         return Response({"error": "Job not found"}, status=404)
 
@@ -248,7 +250,7 @@ def import_job_detail(request, job_id):
 @permission_classes([FinanceOnly])
 def import_job_list(request):
     """List import jobs."""
-    jobs = ImportJob.objects.filter(school=request.tenant).order_by("-created_at")[:20]
+    jobs = ImportJob.objects.filter(school=get_request_school(request)).order_by("-created_at")[:20]
 
     return Response(
         [

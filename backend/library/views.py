@@ -7,6 +7,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from academic.views.base import TenantViewSet
+from core.tenant_utils import get_request_school
 from rest_framework import permissions as drf_permissions
 
 from academic.views.base import scope_to_learner
@@ -111,9 +112,13 @@ class BorrowRecordViewSet(TenantViewSet):
 
         book = serializer.validated_data["book"]
         student = serializer.validated_data["student"]
+        school = get_request_school(request)
+        if book.school_id != school.pk or student.school_id != school.pk:
+            return Response({"error": "Book and student must belong to your school."}, status=400)
 
         # Create borrow record
         record = serializer.save(
+            school=school,
             borrow_date=serializer.validated_data.get("borrow_date", date.today()),
             status="borrowed",
             issued_by=self.get_issued_by_user(request),
@@ -143,7 +148,9 @@ class BorrowRecordViewSet(TenantViewSet):
         condition = serializer.validated_data.get("condition", "Good")
         fine = serializer.validated_data.get("fine_amount", 0)
 
-        record = BorrowRecord.objects.get(id=record_id)
+        record = self.get_queryset().filter(pk=record_id).first()  # this school's records only
+        if record is None:
+            return Response({"error": "Borrow record not found"}, status=404)
 
         if record.status == "returned":
             return Response({"error": "Book already returned"}, status=400)
@@ -277,10 +284,11 @@ class LibraryMemberViewSet(TenantViewSet):
         return qs.select_related("student")
 
     def perform_create(self, serializer):
-        serializer.save(school=self.request.tenant)
+        serializer.save(school=get_request_school(self.request))
 
 
 class LibrarySettingsViewSet(TenantViewSet):
+    http_method_names = ["get", "put", "patch", "head", "options"]  # one per school; never deleted
     permission_classes = [drf_permissions.IsAuthenticated, OperationsStaff]
     queryset = LibrarySettings.objects.all()
     serializer_class = LibrarySettingsSerializer
@@ -289,7 +297,7 @@ class LibrarySettingsViewSet(TenantViewSet):
         return super().get_queryset()
 
     def get_object(self):
-        obj, _ = LibrarySettings.objects.get_or_create(school=self.request.tenant)
+        obj, _ = LibrarySettings.objects.get_or_create(school=get_request_school(self.request))
         return obj
 
     def list(self, request, *args, **kwargs):

@@ -8,16 +8,19 @@ import logging
 
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from core.notification_utils import get_termii_service, TermiiError
+from users.permissions import IsSuperAdmin
+
+# These send through the platform's own Termii account (paid per message), so only platform
+# admins may call them directly. Schools message parents through announcements and messaging.
 
 logger = logging.getLogger(__name__)
 
 
 @api_view(["POST"])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsSuperAdmin])
 def send_sms(request):
     """
     Send SMS to a phone number.
@@ -40,7 +43,7 @@ def send_sms(request):
 
 
 @api_view(["POST"])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsSuperAdmin])
 def send_whatsapp(request):
     """
     Send WhatsApp message.
@@ -63,7 +66,7 @@ def send_whatsapp(request):
 
 
 @api_view(["POST"])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsSuperAdmin])
 def send_bulk_sms(request):
     """
     Send bulk SMS to multiple contacts.
@@ -88,7 +91,7 @@ def send_bulk_sms(request):
 
 
 @api_view(["POST"])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsSuperAdmin])
 def send_otp(request):
     """
     Send OTP to phone number.
@@ -111,7 +114,7 @@ def send_otp(request):
 
 
 @api_view(["POST"])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsSuperAdmin])
 def verify_otp(request):
     """
     Verify OTP code.
@@ -134,7 +137,7 @@ def verify_otp(request):
 
 
 @api_view(["GET"])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsSuperAdmin])
 def get_notification_balance(request):
     """Get Termii account balance."""
     try:

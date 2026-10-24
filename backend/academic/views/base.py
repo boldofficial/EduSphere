@@ -59,7 +59,9 @@ def learner_class_ids(user):
         return [student.current_class_id] if student and student.current_class_id else []
     if user.role == "PARENT" and user.email:
         return list(
-            Student.objects.filter(parent_email__iexact=user.email, current_class__isnull=False)
+            Student.objects.filter(
+                school_id=user.school_id, parent_email__iexact=user.email, current_class__isnull=False
+            )
             .values_list("current_class_id", flat=True)
             .distinct()
         )

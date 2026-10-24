@@ -22,12 +22,11 @@ class SupportTicketViewSet(viewsets.ModelViewSet):
         if not user.school:
             return SupportTicket.objects.none()
 
-        # School admins only see their own school's tickets
-        return (
-            SupportTicket.objects.filter(school=user.school)
-            .select_related("school", "user")
-            .prefetch_related("responses", "responses__user")
-        )
+        # School admins see their school's tickets; everyone else only the tickets they opened.
+        tickets = SupportTicket.objects.filter(school=user.school)
+        if user.role != "SCHOOL_ADMIN":
+            tickets = tickets.filter(user=user)
+        return tickets.select_related("school", "user").prefetch_related("responses", "responses__user")
 
     def perform_create(self, serializer):
         user = self.request.user
