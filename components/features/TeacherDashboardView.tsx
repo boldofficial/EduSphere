@@ -17,6 +17,7 @@ import {
 import { useSchoolStore } from '@/lib/store';
 import * as Utils from '@/lib/utils';
 import * as Types from '@/lib/types';
+import { isLocalId } from '@/lib/offline';
 import {
   useStudents,
   useClasses,
@@ -179,21 +180,29 @@ export const TeacherDashboardView = () => {
   const { mutate: updateTeacher } = useUpdateTeacher();
 
   // Handlers
+  // Records saved on this device but not yet on the server (local ids) are saved again in full;
+  // the server creates or updates them by student + term / class + date.
   const handleUpsertScore = (score: Types.Score) => {
     const existing = scores.find((s) => s.id === score.id);
-    if (existing) {
-      updateScore({ id: score.id, updates: score });
+    if (existing && !isLocalId(existing.id)) {
+      updateScore({ id: existing.id, updates: score });
     } else {
-      createScore(score);
+      createScore({ ...existing, ...score });
     }
   };
 
   const handleUpsertAttendance = (att: Types.Attendance) => {
-    const existing = attendance.find((a) => a.id === att.id) || attendance[0];
-    if (existing) {
+    // Only this class's register for this day: never fall back to another register, which used to
+    // overwrite a different class's or day's attendance.
+    const existing = attendance.find(
+      (a) =>
+        String(a.id) === String(att.id) ||
+        (String(a.class_id) === String(att.class_id) && a.date === att.date)
+    );
+    if (existing && !isLocalId(existing.id)) {
       updateAttendance({ id: existing.id, updates: att });
     } else {
-      createAttendance(att);
+      createAttendance({ ...existing, ...att });
     }
   };
 
