@@ -2693,6 +2693,42 @@ export interface paths {
         patch: operations["core_announcements_partial_update"];
         trace?: never;
     };
+    "/api/core/audit-trail/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description GET /api/core/audit-trail/ — this school's change history, newest first.
+         *     Filters: area (Scores, Report cards, Students, Payments, Fees), user (id), action
+         *     (CREATE/UPDATE/DELETE), q (student, subject, receipt…), from/to (YYYY-MM-DD). */
+        get: operations["core_audit_trail_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/core/audit-trail/people/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description GET /api/core/audit-trail/people/ — who has made changes (for the filter), most active first. */
+        get: operations["core_audit_trail_people_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/core/conversations/": {
         parameters: {
             query?: never;
@@ -18025,6 +18061,42 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["SchoolAnnouncement"];
                 };
+            };
+        };
+    };
+    core_audit_trail_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    core_audit_trail_people_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

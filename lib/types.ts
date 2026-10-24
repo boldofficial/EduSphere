@@ -782,6 +782,7 @@ export type ViewState =
   | 'attendance'
   | 'settings'
   | 'data'
+  | 'audit'
   | 'roles'
   | 'cms'
   | 'announcements'

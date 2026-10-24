@@ -46,6 +46,7 @@ export function useNavigationFilter(
       'dashboard',
       'settings',
       'data',
+      'audit',
       'timetables',
       'support',
       'school-structure',

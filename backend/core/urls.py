@@ -15,6 +15,7 @@ from .views import (
     GlobalActivityLogViewSet,
     HealthCheckView,
 )
+from .views.audit import AuditTrailPeopleView, AuditTrailView
 from .notifications_views import (
     send_sms,
     send_whatsapp,
@@ -46,5 +47,7 @@ urlpatterns = [
     path("notifications/otp/verify/", verify_otp, name="verify-otp"),
     path("notifications/balance/", get_notification_balance, name="notification-balance"),
     path("health/", HealthCheckView.as_view(), name="health-check"),
+    path("audit-trail/", AuditTrailView.as_view(), name="audit-trail"),
+    path("audit-trail/people/", AuditTrailPeopleView.as_view(), name="audit-trail-people"),
     path("", include(router.urls)),
 ]

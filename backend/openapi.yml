@@ -7268,6 +7268,32 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/core/audit-trail/:
+    get:
+      operationId: core_audit_trail_retrieve
+      description: |-
+        GET /api/core/audit-trail/ — this school's change history, newest first.
+        Filters: area (Scores, Report cards, Students, Payments, Fees), user (id), action
+        (CREATE/UPDATE/DELETE), q (student, subject, receipt…), from/to (YYYY-MM-DD).
+      tags:
+      - core
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/core/audit-trail/people/:
+    get:
+      operationId: core_audit_trail_people_retrieve
+      description: GET /api/core/audit-trail/people/ — who has made changes (for the
+        filter), most active first.
+      tags:
+      - core
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
   /api/core/conversations/:
     get:
       operationId: core_conversations_list
