@@ -1,4 +1,5 @@
 import React from 'react';
+import { classAssessment, gradeFor, gradeTone } from '@/lib/assessment';
 import * as Types from '@/lib/types';
 import * as Utils from '@/lib/utils';
 import { School, User, TrendingUp, Brain, Target, ShieldCheck } from 'lucide-react';
@@ -12,62 +13,6 @@ interface ReportCardTemplateProps {
   subjects: string[];
   historyScores?: Types.Score[];
 }
-
-const GRADE_BANDS = [
-  {
-    grade: 'A+',
-    min: 90,
-    max: 100,
-    remark: 'Excellent',
-    badgeClass: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-  },
-  {
-    grade: 'A',
-    min: 80,
-    max: 89,
-    remark: 'Excellent',
-    badgeClass: 'bg-teal-100 text-teal-700 border-teal-200',
-  },
-  {
-    grade: 'B+',
-    min: 70,
-    max: 79,
-    remark: 'Very Good',
-    badgeClass: 'bg-cyan-100 text-cyan-700 border-cyan-200',
-  },
-  {
-    grade: 'B',
-    min: 60,
-    max: 69,
-    remark: 'Good',
-    badgeClass: 'bg-blue-100 text-blue-700 border-blue-200',
-  },
-  {
-    grade: 'C',
-    min: 50,
-    max: 59,
-    remark: 'Fair',
-    badgeClass: 'bg-amber-100 text-amber-700 border-amber-200',
-  },
-  {
-    grade: 'D',
-    min: 40,
-    max: 49,
-    remark: 'Pass',
-    badgeClass: 'bg-orange-100 text-orange-700 border-orange-200',
-  },
-  {
-    grade: 'F',
-    min: 0,
-    max: 39,
-    remark: 'Fail',
-    badgeClass: 'bg-rose-100 text-rose-700 border-rose-200',
-  },
-];
-
-const getBand = (value: number) =>
-  GRADE_BANDS.find((band) => value >= band.min && value <= band.max) ||
-  GRADE_BANDS[GRADE_BANDS.length - 1];
 
 const isHexColor = (value?: string | null) => Boolean(value && /^#([0-9a-fA-F]{6})$/.test(value));
 
@@ -220,6 +165,13 @@ export const ReportCardTemplate: React.FC<ReportCardTemplateProps> = ({
     next_step: item.next_step || '',
   }));
 
+  // Score columns, grading key and position display follow the class's section settings.
+  const assessment = classAssessment(currentClass);
+  const scoreParts = assessment.parts.filter((part) => part.enabled);
+  const gradingKey = [...assessment.grading]
+    .sort((a, b) => b.min - a.min)
+    .map((band, i, all) => ({ ...band, max: i === 0 ? 100 : all[i - 1].min - 1 }));
+
   const subjectRows = (
     subjects.length ? subjects : score?.rows?.map((row) => row.subject) || []
   ).map((subject) => {
@@ -233,12 +185,13 @@ export const ReportCardTemplate: React.FC<ReportCardTemplateProps> = ({
       comment: '',
     };
 
-    const band = getBand(row.total || 0);
+    const fallback = gradeFor(row.total || 0, assessment);
+    const grade = row.grade && row.grade !== '-' ? row.grade : fallback.grade;
 
     return {
       ...row,
-      band,
-      remark: row.comment || band.remark,
+      band: { grade, badgeClass: gradeTone(grade) },
+      remark: row.comment || fallback.comment,
     };
   });
 
@@ -510,12 +463,14 @@ export const ReportCardTemplate: React.FC<ReportCardTemplateProps> = ({
                 <span className="text-slate-500">Gender:</span>
                 <span className="ml-1 font-semibold text-slate-800">{student?.gender || '-'}</span>
               </div>
-              <div>
-                <span className="text-slate-500">Position:</span>
-                <span className="ml-1 font-semibold text-slate-800">
-                  {score?.position ? Utils.ordinalSuffix(score.position) : '-'}
-                </span>
-              </div>
+              {assessment.show_position && (
+                <div>
+                  <span className="text-slate-500">Position:</span>
+                  <span className="ml-1 font-semibold text-slate-800">
+                    {score?.position ? Utils.ordinalSuffix(score.position) : '-'}
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className="col-span-3 grid grid-cols-1 gap-2 text-[10px]">
@@ -640,15 +595,14 @@ export const ReportCardTemplate: React.FC<ReportCardTemplateProps> = ({
                 >
                   Subject
                 </th>
-                <th className="border border-slate-200 bg-[#d7e9ff] px-2 py-2 text-center font-bold uppercase tracking-wide text-[#0f355d]">
-                  Homework
-                </th>
-                <th className="border border-slate-200 bg-[#d9f0ff] px-2 py-2 text-center font-bold uppercase tracking-wide text-[#0f355d]">
-                  CA
-                </th>
-                <th className="border border-slate-200 bg-[#ffe5c7] px-2 py-2 text-center font-bold uppercase tracking-wide text-[#6a3b00]">
-                  Exam
-                </th>
+                {scoreParts.map((part) => (
+                  <th
+                    key={part.key}
+                    className="border border-slate-200 bg-[#d9f0ff] px-2 py-2 text-center font-bold uppercase tracking-wide text-[#0f355d]"
+                  >
+                    {part.label} ({part.max})
+                  </th>
+                ))}
                 <th className="border border-slate-200 bg-[#f1f6ff] px-2 py-2 text-center font-bold uppercase tracking-wide text-[#0f355d]">
                   Total
                 </th>
@@ -666,15 +620,14 @@ export const ReportCardTemplate: React.FC<ReportCardTemplateProps> = ({
                   <td className="border border-slate-200 px-2 py-2 font-semibold text-slate-700">
                     {row.subject}
                   </td>
-                  <td className="border border-slate-200 px-2 py-2 text-center text-slate-600">
-                    {row.ca1 || 0}
-                  </td>
-                  <td className="border border-slate-200 px-2 py-2 text-center text-slate-600">
-                    {row.ca2 || 0}
-                  </td>
-                  <td className="border border-slate-200 px-2 py-2 text-center text-slate-600">
-                    {row.exam || 0}
-                  </td>
+                  {scoreParts.map((part) => (
+                    <td
+                      key={part.key}
+                      className="border border-slate-200 px-2 py-2 text-center text-slate-600"
+                    >
+                      {row[part.key] || 0}
+                    </td>
+                  ))}
                   <td className="border border-slate-200 px-2 py-2 text-center font-bold text-slate-800">
                     {row.total || 0}
                   </td>
@@ -741,14 +694,16 @@ export const ReportCardTemplate: React.FC<ReportCardTemplateProps> = ({
               </p>
               <p className="mt-1 text-[14px] font-bold text-emerald-700">{average.toFixed(1)}%</p>
             </div>
-            <div className="rounded border border-[#dbe8ff] bg-[#eef4ff] px-2 py-2">
-              <p className="text-[9px] font-semibold uppercase tracking-wide text-[#4d67a1]">
-                Position
-              </p>
-              <p className="mt-1 text-[14px] font-bold text-[#3558a2]">
-                {score?.position ? Utils.ordinalSuffix(score.position) : '-'}
-              </p>
-            </div>
+            {assessment.show_position && (
+              <div className="rounded border border-[#dbe8ff] bg-[#eef4ff] px-2 py-2">
+                <p className="text-[9px] font-semibold uppercase tracking-wide text-[#4d67a1]">
+                  Position
+                </p>
+                <p className="mt-1 text-[14px] font-bold text-[#3558a2]">
+                  {score?.position ? Utils.ordinalSuffix(score.position) : '-'}
+                </p>
+              </div>
+            )}
             <div className="rounded border border-[#ecd7ff] bg-[#f7efff] px-2 py-2">
               <p className="text-[9px] font-semibold uppercase tracking-wide text-[#8054a6]">
                 Attendance
@@ -1061,7 +1016,7 @@ export const ReportCardTemplate: React.FC<ReportCardTemplateProps> = ({
           <div className="mt-3 rounded border border-slate-200 bg-[#f9fbfd] px-3 py-2 text-[10px]">
             <p className="font-semibold uppercase tracking-wide text-slate-500">Grading Key</p>
             <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-slate-600">
-              {GRADE_BANDS.map((band) => (
+              {gradingKey.map((band) => (
                 <span key={band.grade}>
                   <span className="font-bold text-slate-700">{band.grade}</span> ({band.min}-
                   {band.max})

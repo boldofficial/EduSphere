@@ -6,7 +6,8 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
 import { useToast } from '@/components/providers/toast-provider';
-import { useBulkImportScores, type BulkScoreImportData } from '@/lib/hooks/use-data';
+import { useBulkImportScores, useClasses, type BulkScoreImportData } from '@/lib/hooks/use-data';
+import { classAssessment } from '@/lib/assessment';
 import * as Types from '@/lib/types';
 
 interface BulkScoreImportProps {
@@ -23,6 +24,7 @@ export const BulkScoreImport: React.FC<BulkScoreImportProps> = ({
   onSuccess,
 }) => {
   const { addToast } = useToast();
+  const { data: classes = [] } = useClasses();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { mutate: importScores, isPending: isImporting } = useBulkImportScores();
@@ -89,18 +91,28 @@ export const BulkScoreImport: React.FC<BulkScoreImportProps> = ({
         continue;
       }
 
-      if (ca1 > 20 || ca2 > 20 || exam > 60) {
-        parseErrors.push({
-          row: i + 1,
-          studentNo,
-          error: 'Score exceeds maximum (CA:20, Exam:60)',
-        });
-        continue;
-      }
-
       const student = students.find((s) => s.student_no === studentNo);
       if (!student) {
         parseErrors.push({ row: i + 1, studentNo, error: 'Student not found' });
+        continue;
+      }
+
+      // Limits come from the student's class section (e.g. CA 1/20, or CA 40 + Exam 60).
+      const assessment = classAssessment(
+        classes.find((c) => String(c.id) === String(student.class_id))
+      );
+      const entered = { ca1, ca2, exam };
+      const problem = assessment.parts
+        .map((part) =>
+          !part.enabled && entered[part.key] > 0
+            ? `${part.label} is not used for this class`
+            : part.enabled && entered[part.key] > part.max
+              ? `${part.label} cannot be more than ${part.max}`
+              : null
+        )
+        .find(Boolean);
+      if (problem) {
+        parseErrors.push({ row: i + 1, studentNo, error: problem });
         continue;
       }
 
@@ -150,8 +162,13 @@ export const BulkScoreImport: React.FC<BulkScoreImportProps> = ({
         data: parsedData,
       },
       {
-        onSuccess: () => {
-          addToast(`Successfully imported ${parsedData.length} scores`, 'success');
+        onSuccess: (result: { imported: number; failed: number }) => {
+          addToast(
+            result.failed
+              ? `Imported ${result.imported} scores; ${result.failed} rows were skipped.`
+              : `Imported ${result.imported} scores`,
+            result.failed ? 'warning' : 'success'
+          );
           setSelectedFile(null);
           setParsedData([]);
           setErrors([]);

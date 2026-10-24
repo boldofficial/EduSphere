@@ -96,6 +96,7 @@ class ReportCardSerializer(serializers.ModelSerializer):
 
         return attrs
 
+    @transaction.atomic
     def create(self, validated_data):
         scores_data = validated_data.pop("rows", None) or validated_data.pop("scores", [])
 
@@ -151,9 +152,21 @@ class ReportCardSerializer(serializers.ModelSerializer):
 
     def _update_scores(self, report_card, scores_data, school):
         """Helper to sync scores without deleting everything if possible"""
+        from ..assessment import PARTS, check_scores, grade_for, grade_scale, section_assessment
+
         existing_scores = {s.subject.name: s for s in report_card.scores.all()}
+        # The class's section decides the score limits and the grading scale; the server is the authority
+        # on totals and grades, whatever the client computed.
+        assessment = section_assessment(report_card.student_class)
+        scale = grade_scale(report_card.student_class)
 
         for score_item in scores_data:
+            check_scores(score_item, assessment)
+            for key in PARTS:
+                if not assessment[key]["enabled"]:
+                    score_item[key] = 0
+            total = sum(float(score_item.get(key) or 0) for key in PARTS)
+            score_item["grade"], score_item["comment"] = grade_for(total, scale)
             subject_val = score_item.pop("subject", None)
 
             # Handle source='subject.name' which can return a dict for input in some DRF versions/configs

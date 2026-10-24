@@ -84,6 +84,12 @@ class SchoolSection(TenantModel):
     head_title = models.CharField(max_length=60, blank=True)  # Head Teacher, Principal…
     head_name = models.CharField(max_length=120, blank=True)
     position = models.PositiveSmallIntegerField(default=0)
+    # Assessment and grading for this section (academic/assessment.py). Empty = CA 1 20 + CA 2 20 + Exam 60.
+    assessment = models.JSONField(default=dict, blank=True)
+    grading_scheme = models.ForeignKey(
+        "GradingScheme", on_delete=models.SET_NULL, null=True, blank=True, related_name="sections"
+    )
+    show_position = models.BooleanField(default=True)  # many schools no longer rank pupils
 
     class Meta:
         ordering = ["position"]
@@ -407,7 +413,7 @@ class SubjectScore(AuditTrailMixin, TenantModel):
     ca2 = models.FloatField(default=0)
     exam = models.FloatField(default=0)
     total = models.FloatField(default=0)
-    grade = models.CharField(max_length=5, blank=True)
+    grade = models.CharField(max_length=10, blank=True)  # as long as GradeRange.grade (e.g. "Credit")
     comment = models.CharField(max_length=255, blank=True)
 
     class Meta:

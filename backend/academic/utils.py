@@ -362,15 +362,28 @@ class ReportCardPDFGenerator:
                 ],
             ]
         else:
-            score_header = ["Subject", "CA1", "CA2", "Exam", "Total", "Grade", "Remark"]
+            # Columns follow the section's score parts (e.g. "CA 1 (20)", or "CA (40)" + "Exam (60)").
+            from .assessment import PARTS, section_assessment
+
+            assessment = section_assessment(report.student_class)
+            parts = [key for key in PARTS if assessment[key]["enabled"]]
+            score_header = [
+                "Subject",
+                *[f"{assessment[k]['label']} ({assessment[k]['max']})" for k in parts],
+                "Total",
+                "Grade",
+                "Remark",
+            ]
             score_data = [score_header]
 
             scores = report.scores.all().select_related("subject")
             for s in scores:
-                score_data.append([s.subject.name, s.ca1, s.ca2, s.exam, s.total, s.grade, s.comment])
+                score_data.append([s.subject.name, *[getattr(s, k) for k in parts], s.total, s.grade, s.comment])
 
+            part_width = 0.6 * inch + (3 - len(parts)) * 0.2 * inch
             score_table = Table(
-                score_data, colWidths=[2 * inch, 0.6 * inch, 0.6 * inch, 0.6 * inch, 0.6 * inch, 0.6 * inch, 1.4 * inch]
+                score_data,
+                colWidths=[2 * inch, *[part_width] * len(parts), 0.6 * inch, 0.6 * inch, 1.4 * inch],
             )
             score_table.setStyle(
                 TableStyle(

@@ -18,6 +18,7 @@ import {
 import * as Types from '@/lib/types';
 import * as Utils from '@/lib/utils';
 import { GradingSchemeManager } from './grading/GradingSchemeManager';
+import { classAssessment, gradeFor } from '@/lib/assessment';
 import { SubjectTeacherManager } from './grading/SubjectTeacherManager';
 import { ScoreEntryTab } from './grading/ScoreEntryTab';
 import { EarlyYearsEntryTab } from './grading/EarlyYearsEntryTab';
@@ -154,7 +155,8 @@ export const GradingView: React.FC<GradingViewProps> = ({
     row[field] = value;
     row.total = row.ca1 + row.ca2 + row.exam;
 
-    const { grade, comment } = Utils.calculateGrade(row.total);
+    // Preview only; the server stores the authoritative grade from the section's scale.
+    const { grade, comment } = gradeFor(row.total, classAssessment(currentClass));
     row.grade = grade;
     row.comment = comment;
 

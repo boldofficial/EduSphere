@@ -27,6 +27,7 @@ import {
 } from '@/lib/hooks/use-school-structure';
 import { useToast } from '@/components/providers/toast-provider';
 import { PageHeader } from '@/components/ui/page-header';
+import { SectionAssessmentSettings } from './SectionAssessmentSettings';
 
 const ICONS: Record<SectionKey, typeof School> = {
   early_years: Baby,
@@ -327,6 +328,8 @@ export function SchoolStructureWizard() {
           into sections.
         </div>
       )}
+
+      <SectionAssessmentSettings sections={data.sections} />
 
       <section className="space-y-3">
         <h2 className="text-lg font-bold text-gray-900">1. Which sections does your school run?</h2>

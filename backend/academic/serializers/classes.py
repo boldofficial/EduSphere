@@ -62,9 +62,13 @@ class ClassSerializer(serializers.ModelSerializer):
         return attrs
 
     def to_representation(self, instance):
+        from ..assessment import public_config
+
         ret = super().to_representation(instance)
         # Explicitly add subjects as list of names for the frontend
         ret["subjects"] = [s.name for s in instance.subjects.all()]
+        # Score parts, grading scale and whether positions show, from the class's section.
+        ret["assessment"] = public_config(instance)
         return ret
 
     def create(self, validated_data):

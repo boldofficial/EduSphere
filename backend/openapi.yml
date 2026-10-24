@@ -2778,6 +2778,37 @@ paths:
               schema:
                 $ref: '#/components/schemas/ReportCard'
           description: ''
+  /api/academic/reports/bulk-import/:
+    post:
+      operationId: academic_reports_bulk_import_create
+      description: |-
+        Import many subject scores at once (from the CSV upload in Grading).
+        Body: {"session", "term", "mode": "upsert" | "create" | "update", "data": [{student_id, subject, ca1, ca2, exam}]}
+        Each row is checked against its student's class: the section's score limits apply and the grade comes
+        from the section's grading scale. Bad rows are reported and skipped; good rows are saved.
+      tags:
+      - academic
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportCardRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReportCardRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReportCardRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportCard'
+          description: ''
   /api/academic/reports/recalculate-positions/:
     post:
       operationId: academic_reports_recalculate_positions_create
@@ -2858,6 +2889,24 @@ paths:
       operationId: academic_school_structure_preview_create
       description: POST the wizard's choices; returns exactly what would be created,
         without saving anything.
+      tags:
+      - academic
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/academic/school-structure/sections/{id}/:
+    patch:
+      operationId: academic_school_structure_sections_partial_update
+      description: 'PATCH a section: its name, head, assessment parts, grading scheme
+        and whether positions show.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
       tags:
       - academic
       security:
@@ -24438,7 +24487,7 @@ components:
           format: double
         grade:
           type: string
-          maxLength: 5
+          maxLength: 10
         comment:
           type: string
           maxLength: 255
@@ -26630,7 +26679,7 @@ components:
           format: double
         grade:
           type: string
-          maxLength: 5
+          maxLength: 10
         comment:
           type: string
           maxLength: 255
@@ -26656,7 +26705,7 @@ components:
           format: double
         grade:
           type: string
-          maxLength: 5
+          maxLength: 10
         comment:
           type: string
           maxLength: 255

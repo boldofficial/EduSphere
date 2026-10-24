@@ -117,6 +117,92 @@ class ReportCardViewSet(TenantViewSet):
         report_card.calculate_trend(save=True)
         return Response({"success": True, "trend": report_card.performance_trend})
 
+    @action(detail=False, methods=["post"], url_path="bulk-import")
+    def bulk_import(self, request):
+        """
+        Import many subject scores at once (from the CSV upload in Grading).
+        Body: {"session", "term", "mode": "upsert" | "create" | "update", "data": [{student_id, subject, ca1, ca2, exam}]}
+        Each row is checked against its student's class: the section's score limits apply and the grade comes
+        from the section's grading scale. Bad rows are reported and skipped; good rows are saved.
+        """
+        from django.db import transaction
+        from rest_framework import serializers as drf_serializers
+
+        from ..assessment import PARTS, check_scores, grade_for, grade_scale, section_assessment
+        from ..models import Student, Subject
+
+        if not is_school_staff(request.user):
+            raise PermissionDenied("Only staff can import scores.")
+        school = get_request_school(request)
+        session, term = request.data.get("session"), request.data.get("term")
+        mode = request.data.get("mode") or "upsert"
+        rows = request.data.get("data")
+        if not session or not term or not isinstance(rows, list):
+            return Response({"detail": "session, term and data are required."}, status=400)
+        if mode not in ("upsert", "create", "update"):
+            return Response({"detail": "mode must be upsert, create or update."}, status=400)
+        if len(rows) > 5000:
+            return Response({"detail": "Import at most 5,000 rows at a time."}, status=400)
+
+        students = {
+            str(st.id): st
+            for st in Student.objects.filter(
+                school=school, id__in=[str(r.get("student_id")) for r in rows if isinstance(r, dict)]
+            ).select_related("current_class__section__grading_scheme")
+        }
+        imported, errors, touched_classes, cards = 0, [], set(), {}
+        for index, row in enumerate(rows, start=1):
+            student = students.get(str(row.get("student_id"))) if isinstance(row, dict) else None
+            subject_name = (
+                " ".join(str((row or {}).get("subject") or "").split())[:100] if isinstance(row, dict) else ""
+            )
+            if not student or not subject_name:
+                errors.append({"row": index, "error": "Unknown student or missing subject."})
+                continue
+            cls = student.current_class
+            assessment = section_assessment(cls)
+            try:
+                check_scores(row, assessment)
+            except drf_serializers.ValidationError as error:
+                errors.append(
+                    {"row": index, "error": str(error.detail[0] if isinstance(error.detail, list) else error.detail)}
+                )
+                continue
+            values = {k: (float(row.get(k) or 0) if assessment[k]["enabled"] else 0) for k in PARTS}
+            grade, remark = grade_for(sum(values.values()), grade_scale(cls))
+            with transaction.atomic():
+                card = cards.get(student.id)
+                if card is None:
+                    card, _ = ReportCard.objects.get_or_create(
+                        school=school, student=student, session=session, term=term, defaults={"student_class": cls}
+                    )
+                    cards[student.id] = card
+                subject, _ = Subject.objects.get_or_create(school=school, name=subject_name)
+                score = SubjectScore.objects.filter(report_card=card, subject=subject).first()
+                if (score and mode == "create") or (not score and mode == "update"):
+                    errors.append(
+                        {
+                            "row": index,
+                            "error": (
+                                "Skipped: score already exists." if score else "Skipped: no existing score to update."
+                            ),
+                        }
+                    )
+                    continue
+                score = score or SubjectScore(report_card=card, school=school, subject=subject)
+                for key, value in values.items():
+                    setattr(score, key, value)
+                score.grade, score.comment = grade, remark
+                score.save(skip_report_update=True)
+            imported += 1
+            if card.student_class_id:
+                touched_classes.add(card.student_class_id)
+        for card in cards.values():
+            card.update_totals()
+        for cls in Class.objects.filter(id__in=touched_classes):
+            ReportCard.calculate_positions(school, cls, session, term)
+        return Response({"imported": imported, "failed": len(errors), "errors": errors[:200]})
+
     @action(detail=False, methods=["post"], url_path="recalculate-positions")
     def recalculate_positions(self, request):
         """
