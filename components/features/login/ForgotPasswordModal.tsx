@@ -14,7 +14,6 @@ interface ForgotPasswordModalProps {
   setError: (e: string) => void;
   success: boolean;
   setSuccess: (s: boolean) => void;
-  newPassword: string;
   isLoading: boolean;
   onSubmit: (e: React.FormEvent) => void;
 }
@@ -30,7 +29,6 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
   setError,
   success,
   setSuccess,
-  newPassword,
   isLoading,
   onSubmit,
 }) => {
@@ -129,18 +127,11 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
             <div className="h-16 w-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <CheckCircle size={32} className="text-green-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Password Reset!</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Check the parent email</h2>
             <p className="text-gray-600 mb-6">
-              Your new password has been generated. Please save it securely.
-            </p>
-            <div className="bg-gray-100 rounded-xl p-4 mb-6">
-              <p className="text-xs text-gray-500 uppercase font-medium mb-1">New Password</p>
-              <p className="text-2xl font-mono font-bold text-gray-900 tracking-wider">
-                {newPassword}
-              </p>
-            </div>
-            <p className="text-xs text-gray-500 mb-6">
-              In a real system, this password would be sent to your registered email.
+              If the admission number and email match our records, we have sent a link to reset the
+              password. Can&apos;t find it? Check the spam folder, or ask the school office to reset
+              the password for you.
             </p>
             <button
               onClick={() => {

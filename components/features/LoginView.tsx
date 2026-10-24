@@ -46,7 +46,6 @@ export const LoginView = () => {
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotError, setForgotError] = useState('');
   const [forgotSuccess, setForgotSuccess] = useState(false);
-  const [newPassword, setNewPassword] = useState('');
   const [logoClickCount, setLogoClickCount] = useState(0);
 
   // 2FA state
@@ -381,8 +380,6 @@ export const LoginView = () => {
         throw new Error(data.detail || 'Could not find a student with these details.');
       }
 
-      const data = await res.json();
-      if (data.temp_password) setNewPassword(data.temp_password);
       setForgotSuccess(true);
     } catch (err: any) {
       setForgotError(err.message);
@@ -597,7 +594,6 @@ export const LoginView = () => {
         setError={setForgotError}
         success={forgotSuccess}
         setSuccess={setForgotSuccess}
-        newPassword={newPassword}
         isLoading={isLoading}
         onSubmit={handleForgotPassword}
       />

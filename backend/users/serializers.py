@@ -17,7 +17,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["id", "username", "email", "role", "school", "subscription", "school_details"]
+        fields = ["id", "username", "email", "role", "school", "subscription", "school_details", "must_change_password"]
 
     def get_subscription(self, obj):
         if obj.school:

@@ -24,97 +24,154 @@ class AcademicDataMigrationViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=["get"], url_path="student-template")
     def download_student_template(self, request):
-        """
-        Generate and download the CSV template for bulk student import.
-        """
+        """CSV template for the student import (Excel files with the same headings work too)."""
         response = HttpResponse(content_type="text/csv")
         response["Content-Disposition"] = 'attachment; filename="student_import_template.csv"'
-
         writer = csv.writer(response)
-        # Headers matching StudentSerializer expectations (mostly)
-        headers = [
-            "student_no",
-            "names",
-            "gender",
-            "date_of_birth",
-            "class_name",
-            "parent_name",
-            "parent_email",
-            "parent_phone",
-            "address",
-            "password",
-        ]
-        writer.writerow(headers)
-
-        # Add a sample row to guide the user
         writer.writerow(
             [
-                "ST2024001",
-                "John Doe",
-                "Male",
-                "2010-05-15",
-                "JSS 1",
-                "Mr. Doe",
-                "parent@example.com",
-                "08012345678",
-                "123 Main St, Lagos",
-                "securepass123",
+                "Admission No",
+                "Surname",
+                "First Name",
+                "Middle Name",
+                "Gender",
+                "Date of Birth",
+                "Class",
+                "Parent Name",
+                "Parent Email",
+                "Parent Phone",
+                "Address",
             ]
         )
-
+        writer.writerow(
+            [
+                "",
+                "Okafor",
+                "Adaeze",
+                "Chioma",
+                "Female",
+                "15/05/2016",
+                "Primary 3",
+                "Mrs. Ngozi Okafor",
+                "ngozi.okafor@example.com",
+                "08012345678",
+                "12 Allen Avenue, Ikeja",
+            ]
+        )
         return response
+
+    def _rows_and_options(self, request):
+        from ..student_onboarding import ImportFileError, read_rows
+
+        upload = request.FILES.get("file")
+        if not upload:
+            return None, None, Response({"detail": "Choose an Excel or CSV file."}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            rows = read_rows(upload)
+        except ImportFileError as error:
+            return None, None, Response({"detail": str(error)}, status=status.HTTP_400_BAD_REQUEST)
+        options = {
+            "update_existing": str(request.data.get("update_existing", "true")).lower() != "false",
+            "auto_number": str(request.data.get("auto_number", "true")).lower() != "false",
+            "number_prefix": " ".join(str(request.data.get("number_prefix") or "").split())[:20],
+        }
+        return rows, options, None
+
+    @action(detail=False, methods=["post"], url_path="import-students/preview")
+    def preview_students(self, request):
+        """Check a file without saving anything: what will be created, updated or rejected, row by row."""
+        from ..student_onboarding import build_preview
+
+        rows, options, error = self._rows_and_options(request)
+        if error:
+            return error
+        return Response(
+            build_preview(
+                request.user.school,
+                rows,
+                update_existing=options["update_existing"],
+                auto_number=options["auto_number"],
+            )
+        )
 
     @action(detail=False, methods=["post"], url_path="import-students")
     def import_students(self, request):
         """
-        Queue a bulk student import from a CSV file. Returns 202 {job_id}; poll `jobs/<job_id>/`.
-        Each row creates a login (password hashing), so a few hundred rows outlast a web request.
+        Import students from an Excel/CSV file in the background. Returns 202 {job_id}; poll `jobs/<job_id>/`,
+        then download the new accounts' login slips from `jobs/<job_id>/credentials/`.
         """
+        from datetime import date
+
         from data_import.models import ImportJob
 
-        from ..tasks import import_students_csv
+        from ..tasks import import_students_rows
 
-        file_obj = request.FILES.get("file")
-        if not file_obj:
-            return Response({"detail": "No file provided."}, status=status.HTTP_400_BAD_REQUEST)
-        if not file_obj.name.lower().endswith(".csv"):
-            return Response({"detail": "File must be a CSV."}, status=status.HTTP_400_BAD_REQUEST)
-        if file_obj.size > MAX_IMPORT_BYTES:
-            return Response({"detail": "CSV is too large (max 5 MB)."}, status=status.HTTP_400_BAD_REQUEST)
-        try:
-            text = file_obj.read().decode("utf-8-sig")
-        except UnicodeDecodeError:
-            return Response({"detail": "Save the CSV as UTF-8 and try again."}, status=status.HTTP_400_BAD_REQUEST)
-
-        rows = sum(1 for _ in csv.DictReader(text.splitlines()))
+        rows, options, error = self._rows_and_options(request)
+        if error:
+            return error
+        # Celery messages are JSON: dates from Excel become ISO strings (read back by the importer).
+        rows = [{k: (v.isoformat()[:10] if isinstance(v, date) else v) for k, v in r.items()} for r in rows]
         job = ImportJob.objects.create(
             school=request.user.school,
             import_type="students",
-            file_name=file_obj.name[:255],
+            file_name=request.FILES["file"].name[:255],
             created_by=request.user.username,
-            total_rows=rows,
+            total_rows=len(rows),
         )
-        import_students_csv.delay(job.pk, request.user.pk, text)
-        return Response({"job_id": job.pk, "status": "pending", "total_rows": rows}, status=status.HTTP_202_ACCEPTED)
+        import_students_rows.delay(job.pk, rows, options)
+        return Response(
+            {"job_id": job.pk, "status": "pending", "total_rows": len(rows)}, status=status.HTTP_202_ACCEPTED
+        )
 
     @action(detail=False, methods=["get"], url_path=r"jobs/(?P<job_id>[0-9]+)")
     def import_job(self, request, job_id=None):
+        from django.core.cache import cache
+
         from data_import.models import ImportJob
 
         job = ImportJob.objects.filter(pk=job_id, school=request.user.school).first()
         if not job:
             return Response({"detail": "Import not found."}, status=status.HTTP_404_NOT_FOUND)
+        result = cache.get(f"student-import:{job.pk}") or {}
         return Response(
             {
                 "job_id": job.pk,
                 "status": job.status,
                 "total_rows": job.total_rows,
                 "processed_rows": job.processed_rows,
+                "created": result.get("created", 0),
+                "updated": result.get("updated", 0),
                 "success_count": job.success_rows,
                 "error_count": job.failed_rows,
                 "errors": job.errors[:200],
+                "credentials_available": bool(result.get("credentials")),
             }
         )
+
+    @action(detail=False, methods=["get"], url_path=r"jobs/(?P<job_id>[0-9]+)/credentials")
+    def import_credentials(self, request, job_id=None):
+        """
+        Login slips for the accounts this import created: admission number + temporary password.
+        Kept for 24 hours only; students must change the password at first sign-in.
+        """
+        from django.core.cache import cache
+
+        from data_import.models import ImportJob
+
+        job = ImportJob.objects.filter(pk=job_id, school=request.user.school).first()
+        result = cache.get(f"student-import:{job.pk}") if job else None
+        if not result or not result.get("credentials"):
+            return Response(
+                {"detail": "Login details are no longer available. Reset passwords from the Students page."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = f'attachment; filename="student_logins_{job.pk}.csv"'
+        writer = csv.writer(response)
+        writer.writerow(["Admission No (username)", "Student", "Class", "Temporary password"])
+        for c in result["credentials"]:
+            writer.writerow([c["student_no"], c["names"], c["class_name"], c["password"]])
+        return response
 
     @action(detail=False, methods=["get"], url_path="export-students")
     def export_students(self, request):

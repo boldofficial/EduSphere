@@ -79,7 +79,8 @@ class BackgroundJobTests(TestCase):
         )
         r = self.client.post(
             "/api/academic/data-migration/import-students/",
-            {"file": SimpleUploadedFile("s.csv", csv_text.encode(), "text/csv")},
+            # Without automatic numbering, a row with no admission number is reported, not guessed.
+            {"file": SimpleUploadedFile("s.csv", csv_text.encode(), "text/csv"), "auto_number": "false"},
             format="multipart",
         )
         self.assertEqual(r.status_code, 202)

@@ -5,6 +5,7 @@ from .views import (
     DemoLoginView,
     ImpersonateUserView,
     MeView,
+    ChangePasswordView,
     PasswordResetConfirmView,
     PasswordResetRequestView,
 )
@@ -38,4 +39,5 @@ urlpatterns = [
     path("demo-login/", DemoLoginView.as_view(), name="demo-login"),
     path("password-reset-request/", PasswordResetRequestView.as_view(), name="password-reset-request"),
     path("password-reset-confirm/", PasswordResetConfirmView.as_view(), name="password-reset-confirm"),
+    path("change-password/", ChangePasswordView.as_view(), name="change-password"),
 ] + two_factor_urlpatterns

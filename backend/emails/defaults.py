@@ -137,6 +137,20 @@ DEFAULT_TEMPLATES = {
 """,
         "variables": {"name": "", "school_name": "", "login_url": "", "password": ""},
     },
+    "password_reset": {
+        "name": "Password reset link",
+        "subject": "Reset your Registra password",
+        "body_html": f"""
+<h2 style="margin:0 0 16px;color:#111827">Reset your password</h2>
+<p {P}>Hello,</p>
+<p {P}>We received a request to reset the password for <strong>{{{{ name }}}}</strong>{{% if is_student %}}
+(student account){{% endif %}}. Use the button below to choose a new password. The link works once
+and expires in 3 days.</p>
+{_button("reset_url", "Choose a new password")}
+<p {SMALL}>If you didn't ask for this, you can ignore this email; the password stays the same.</p>
+""",
+        "variables": {"reset_url": "", "name": "", "is_student": False},
+    },
     "test_email": {
         "name": "Test email",
         "subject": "Registra email test",

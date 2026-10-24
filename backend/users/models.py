@@ -18,6 +18,8 @@ class User(AbstractUser):
 
     # Two-Factor Authentication fields
     two_factor_enabled = models.BooleanField(default=False)
+    # Set on accounts created or reset with a temporary password; cleared when the user picks their own.
+    must_change_password = models.BooleanField(default=False)
     two_factor_secret = models.CharField(max_length=32, blank=True, null=True)  # For TOTP
     two_factor_backup_codes = models.JSONField(default=list, blank=True)  # Backup codes
     phone_number = models.CharField(max_length=20, blank=True)  # For SMS 2FA
