@@ -20,9 +20,15 @@ describe('tenant-host', () => {
       expect(result.tenantId).toBe('meritland');
     });
 
-    it('should reject invalid tenant IDs', () => {
+    it('accepts a valid custom hostname as the tenant identifier', () => {
       const result = resolveTenantFromHost('evil.example.com', 'myregistra.net');
-      expect(result.tenantId).toBeNull();
+      expect(result.tenantId).toBe('evil.example.com');
+    });
+
+    it('preserves www on custom domains', () => {
+      const result = resolveTenantFromHost('www.school.example', 'myregistra.net');
+      expect(result.tenantId).toBe('www.school.example');
+      expect(result.cleanHost).toBe('www.school.example');
     });
   });
 });

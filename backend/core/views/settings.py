@@ -10,8 +10,9 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from core.tenant_utils import get_request_school
 from core.media_utils import get_media_url
-from schools.models import School, SchoolSettings
+from schools.models import School, SchoolDomain, SchoolSettings
 from schools.serializers import SchoolSettingsSerializer
+from schools.domain_service import refresh_custom_domain, setup_payload
 
 logger = logging.getLogger(__name__)
 SETTINGS_VERSION = "1.0.2"
@@ -42,6 +43,7 @@ class SettingsView(APIView):
                 sub_status = school.subscription.status
 
             # Merge School and Settings data
+            domain_setup = setup_payload(school)
             return Response(
                 {
                     "id": str(settings_obj.id),
@@ -121,7 +123,9 @@ class SettingsView(APIView):
                     "role_permissions": settings_obj.role_permissions,
                     "subscription_status": sub_status,
                     "domain": school.domain,
-                    "custom_domain": school.custom_domain,
+                    "custom_domain": domain_setup["hostname"] if domain_setup else school.custom_domain,
+                    "custom_domain_setup": domain_setup,
+                    "custom_domain_allowed": school.custom_domain_allowed,
                     "subscription": {
                         "status": sub_status,
                         "plan": {
@@ -178,6 +182,26 @@ class SettingsView(APIView):
                 },
                 status=400,
             )
+
+
+class CustomDomainVerifyView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        if request.user.role not in ("SCHOOL_ADMIN", "SUPER_ADMIN") and not request.user.is_superuser:
+            return Response({"error": "Only admins can verify domains"}, status=403)
+        school = get_request_school(request, allow_super_admin_tenant=True)
+        if not school:
+            return Response({"error": "School not found"}, status=404)
+        if not school.custom_domain_allowed and not (request.user.is_superuser or request.user.role == "SUPER_ADMIN"):
+            return Response({"error": "Custom domains require an active eligible plan"}, status=403)
+        try:
+            setup = school.custom_domain_setup
+        except SchoolDomain.DoesNotExist:
+            return Response({"error": "Add a custom domain before checking it"}, status=404)
+        refresh_custom_domain(setup)
+        school.refresh_from_db()
+        return Response({"custom_domain": school.custom_domain, "custom_domain_setup": setup_payload(school)})
 
 
 from core.website_content import WEBSITE_FIELDS  # noqa: E402

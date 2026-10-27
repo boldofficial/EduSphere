@@ -334,9 +334,9 @@ class SchoolSettingsSerializer(serializers.ModelSerializer):
             if school_data:
                 if "custom_domain" in school_data:
                     custom_domain = school_data.get("custom_domain")
-                    normalized = custom_domain.strip() if isinstance(custom_domain, str) else None
-                    normalized = normalized or None
-                    school_data["custom_domain"] = normalized
+                    from .domain_service import normalize_custom_domain, request_custom_domain
+
+                    normalized = normalize_custom_domain(custom_domain)
 
                     request = self.context.get("request")
                     user = getattr(request, "user", None)
@@ -354,6 +354,8 @@ class SchoolSettingsSerializer(serializers.ModelSerializer):
                                 "custom_domain": "Custom domains require a paid plan. Upgrade to Starter or higher to use one."
                             }
                         )
+                    request_custom_domain(school, normalized)
+                    school_data.pop("custom_domain")
 
                 for attr, value in school_data.items():
                     setattr(school, attr, value)

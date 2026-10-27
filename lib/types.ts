@@ -206,6 +206,18 @@ export interface Settings extends Entity {
   // Domain & Subscription
   domain?: string;
   custom_domain?: string;
+  custom_domain_allowed?: boolean;
+  custom_domain_setup?: {
+    hostname: string;
+    status: 'pending' | 'verifying' | 'active' | 'failed' | 'suspended';
+    hostname_status: string;
+    certificate_status: string;
+    cname_target: string;
+    validation_records: { type: string; name: string; value: string }[];
+    failure_reason: string;
+    last_checked_at?: string | null;
+    activated_at?: string | null;
+  } | null;
   subscription?: {
     plan: SubscriptionPlan;
     status: string;

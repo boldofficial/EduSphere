@@ -12,6 +12,7 @@ from .views import (
     SchoolAnnouncementViewSet,
     SchoolMessageViewSet,
     SettingsView,
+    CustomDomainVerifyView,
     GlobalActivityLogViewSet,
     HealthCheckView,
 )
@@ -34,6 +35,7 @@ router.register(r"activity-logs", GlobalActivityLogViewSet, basename="activity-l
 
 urlpatterns = [
     path("settings/", SettingsView.as_view(), name="settings"),
+    path("custom-domain/verify/", CustomDomainVerifyView.as_view(), name="custom-domain-verify"),
     path("public-settings/", PublicSettingsView.as_view(), name="public-settings"),
     path("public-stats/", PublicStatsView.as_view(), name="public-stats"),
     path("upload/", FileUploadView.as_view(), name="file-upload"),

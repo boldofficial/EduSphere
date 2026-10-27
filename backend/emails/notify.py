@@ -37,7 +37,7 @@ def super_admin_recipients():
 
 def school_portal_url(school):
     """The school's own web address: its custom domain if set, else its subdomain."""
-    if getattr(school, "custom_domain", None):
+    if getattr(school, "custom_domain", None) and school.custom_domain_allowed:
         return f"https://{school.custom_domain}"
     root = getattr(settings, "ROOT_DOMAIN", "myregistra.net")
     return f"https://{school.domain}.{root}"

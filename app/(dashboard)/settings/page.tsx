@@ -5,6 +5,7 @@ import {
   useUpdateSettings,
   useSchoolPaymentSettings,
   useUpdateSchoolPaymentSettings,
+  useVerifyCustomDomain,
 } from '@/lib/hooks/use-data';
 import { SettingsView } from '@/components/features/SettingsView';
 import * as Utils from '@/lib/utils';
@@ -16,6 +17,7 @@ export default function SettingsPage() {
   const { data: paymentSettings } = useSchoolPaymentSettings();
   const { mutateAsync: updateSettings } = useUpdateSettings();
   const { mutateAsync: updatePaymentSettings } = useUpdateSchoolPaymentSettings();
+  const { mutateAsync: verifyCustomDomain, isPending: isVerifyingDomain } = useVerifyCustomDomain();
 
   return (
     <SettingsView
@@ -24,6 +26,8 @@ export default function SettingsPage() {
       paymentSettings={paymentSettings}
       onUpdatePaymentSettings={updatePaymentSettings}
       canManagePaymentSettings={canManagePaymentSettings}
+      onVerifyDomain={verifyCustomDomain}
+      isVerifyingDomain={isVerifyingDomain}
     />
   );
 }

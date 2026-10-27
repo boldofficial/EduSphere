@@ -85,6 +85,9 @@ for h in INTERNAL_HOSTS:
         ALLOWED_HOSTS.append(h)
 
 ROOT_DOMAIN = os.environ.get("ROOT_DOMAIN", "myregistra.net")
+CUSTOM_DOMAIN_CNAME_TARGET = os.environ.get("CUSTOM_DOMAIN_CNAME_TARGET", "customers.myregistra.net")
+CLOUDFLARE_API_TOKEN = os.environ.get("CLOUDFLARE_API_TOKEN", "")
+CLOUDFLARE_SAAS_ZONE_ID = os.environ.get("CLOUDFLARE_SAAS_ZONE_ID", "")
 
 # AI Service Keys (Centralized)
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")

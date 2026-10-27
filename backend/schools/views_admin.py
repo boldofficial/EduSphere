@@ -204,12 +204,16 @@ class SchoolManagementView(APIView):
         # Simple field update
         school.name = request.data.get("name", school.name)
         school.domain = request.data.get("domain", school.domain)
-        school.custom_domain = request.data.get("custom_domain", school.custom_domain)
+        custom_domain_supplied = "custom_domain" in request.data
         school.email = request.data.get("email", school.email)
         school.phone = request.data.get("phone", school.phone)
         school.address = request.data.get("address", school.address)
         school.contact_person = request.data.get("contact_person", school.contact_person)
         school.save()
+        if custom_domain_supplied:
+            from .domain_service import request_custom_domain
+
+            request_custom_domain(school, request.data.get("custom_domain"))
 
         # Manual Subscription Update
         plan_id = request.data.get("plan_id")
