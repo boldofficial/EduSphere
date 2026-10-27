@@ -47,16 +47,16 @@ describe('auth cookie options', () => {
     expect(options.domain).toBeUndefined();
   });
 
-  it('scopes production cookies to the root domain', async () => {
+  it('keeps production cookies host-only so custom domains can authenticate', async () => {
     vi.stubEnv('NODE_ENV', 'production');
     vi.stubEnv('NEXT_PUBLIC_ROOT_DOMAIN', 'myregistra.net');
     const { getCookieOptions } = await import('@/lib/auth-utils');
     expect(getCookieOptions('refresh')).toMatchObject({
       secure: true,
       sameSite: 'strict',
-      domain: '.myregistra.net',
       maxAge: 60 * 60 * 24 * 7,
     });
+    expect(getCookieOptions('refresh').domain).toBeUndefined();
     vi.stubEnv('NODE_ENV', 'test');
     vi.stubEnv('NEXT_PUBLIC_ROOT_DOMAIN', 'localhost');
   });

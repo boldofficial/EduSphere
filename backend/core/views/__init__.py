@@ -2,7 +2,7 @@
 Core views — split into domain-focused modules.
 """
 
-from .settings import PublicSettingsView, PublicStatsView, SettingsView
+from .settings import CustomDomainVerifyView, PublicSettingsView, PublicStatsView, SettingsView
 from .files import FileUploadView, SiteMediaView
 from .messaging import ConversationViewSet, SchoolMessageViewSet
 from .activity import GlobalActivityLogViewSet
@@ -12,6 +12,7 @@ from .health import HealthCheckView
 
 __all__ = [
     "SettingsView",
+    "CustomDomainVerifyView",
     "PublicSettingsView",
     "PublicStatsView",
     "FileUploadView",

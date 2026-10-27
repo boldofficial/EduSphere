@@ -58,6 +58,17 @@ export function useUpdateSettings() {
   });
 }
 
+export function useVerifyCustomDomain() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const response = await apiClient.post('core/custom-domain/verify/');
+      return response.data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.settings }),
+  });
+}
+
 export function usePublicStats() {
   return useQuery({
     queryKey: queryKeys.publicStats,

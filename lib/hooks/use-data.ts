@@ -119,6 +119,7 @@ export {
   useSettings,
   usePublicSettings,
   useUpdateSettings,
+  useVerifyCustomDomain,
   usePublicStats,
   useMe,
   useSystemHealth,

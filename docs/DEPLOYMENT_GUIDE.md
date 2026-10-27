@@ -65,6 +65,18 @@ sudo certbot certonly --standalone -d myregistra.net -d *.myregistra.net
 
 _Note: You may need to stop the nginx container temporarily during cert generation if using standalone mode._
 
+### 7. Customer Custom Domains
+
+The wildcard certificate for `*.myregistra.net` does not cover school-owned domains. Configure Cloudflare for SaaS before enabling custom domains in production:
+
+1. Enable Custom Hostnames on the `myregistra.net` zone.
+2. Create a proxied fallback origin that reaches the Registra frontend.
+3. Create `customers.myregistra.net` as the customer CNAME target and point it to the fallback origin.
+4. Ensure the edge/origin router accepts verified customer Host headers and forwards them unchanged to Next.js.
+5. Set `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_SAAS_ZONE_ID`, and `CUSTOM_DOMAIN_CNAME_TARGET` in the backend environment.
+
+Restrict the API token to Custom Hostnames access for this zone. The application activates a school hostname only after Cloudflare reports both the hostname and its certificate as active.
+
 ## Troubleshooting
 
 - **Check Logs**: `sudo docker-compose logs -f [service_name]`

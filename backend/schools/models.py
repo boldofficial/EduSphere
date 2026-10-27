@@ -101,6 +101,35 @@ class School(models.Model):
         ]
 
 
+class SchoolDomain(models.Model):
+    """Provisioning state for a school's single customer-owned hostname."""
+
+    STATUS_CHOICES = (
+        ("pending", "Waiting for DNS"),
+        ("verifying", "Verifying"),
+        ("active", "Active"),
+        ("failed", "Configuration error"),
+        ("suspended", "Suspended"),
+    )
+
+    school = models.OneToOneField(School, on_delete=models.CASCADE, related_name="custom_domain_setup")
+    hostname = models.CharField(max_length=253, unique=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    provider = models.CharField(max_length=30, default="cloudflare")
+    provider_hostname_id = models.CharField(max_length=100, blank=True)
+    hostname_status = models.CharField(max_length=40, blank=True)
+    certificate_status = models.CharField(max_length=40, blank=True)
+    validation_records = models.JSONField(default=list, blank=True)
+    failure_reason = models.TextField(blank=True)
+    last_checked_at = models.DateTimeField(null=True, blank=True)
+    activated_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.hostname} ({self.status})"
+
+
 class SubscriptionPlan(models.Model):
     name = models.CharField(max_length=100)
     slug = models.SlugField(unique=True)

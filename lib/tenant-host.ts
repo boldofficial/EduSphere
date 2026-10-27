@@ -6,11 +6,7 @@ export interface TenantResolution {
 }
 
 function normalizeHost(rawHost: string): string {
-  return rawHost
-    .split(':')[0]
-    .trim()
-    .toLowerCase()
-    .replace(/^www\./, '');
+  return rawHost.split(':')[0].trim().toLowerCase().replace(/\.$/, '');
 }
 
 function isLocalRootHost(cleanHost: string): boolean {
@@ -18,6 +14,8 @@ function isLocalRootHost(cleanHost: string): boolean {
 }
 
 const TENANT_ID_REGEX = /^[a-z0-9-]{1,63}$/;
+const CUSTOM_HOST_REGEX =
+  /^(?=.{4,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/;
 
 const isValidTenantId = (tenantId: string | null | undefined): boolean => {
   if (!tenantId || tenantId === 'null' || tenantId === 'undefined') return false;
@@ -31,6 +29,8 @@ const isValidTenantId = (tenantId: string | null | undefined): boolean => {
   // Stricter in production
   return TENANT_ID_REGEX.test(tenantId);
 };
+
+const isValidCustomHost = (hostname: string): boolean => CUSTOM_HOST_REGEX.test(hostname);
 
 /**
  * Resolve tenant identity from a host/root-domain pair.
@@ -70,6 +70,6 @@ export function resolveTenantFromHost(host: string, rootDomain: string): TenantR
   }
 
   // Non-root host that is not a known subdomain pattern => treat as custom domain.
-  const tenantId = isValidTenantId(cleanHost) ? cleanHost : null;
+  const tenantId = isValidCustomHost(cleanHost) ? cleanHost : null;
   return { cleanHost, cleanRoot, isRootHost: false, tenantId };
 }

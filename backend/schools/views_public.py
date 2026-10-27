@@ -53,8 +53,9 @@ class VerifySchoolSlugView(APIView):
 
         school = School.objects.filter(Q(domain=slug) | Q(custom_domain=slug)).first()
         if school:
+            active_custom_domain = school.custom_domain if school.custom_domain_allowed else None
             return Response(
-                {"exists": True, "name": school.name, "slug": school.domain, "custom_domain": school.custom_domain}
+                {"exists": True, "name": school.name, "slug": school.domain, "custom_domain": active_custom_domain}
             )
         return Response({"exists": False}, status=404)
 

@@ -1,4 +1,7 @@
+from unittest.mock import Mock, patch
+
 from django.contrib.auth import get_user_model
+from django.test import override_settings
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 
@@ -163,7 +166,7 @@ class CustomDomainGatingTests(APITestCase):
         self.free_school.refresh_from_db()
         self.assertIsNone(self.free_school.custom_domain)
 
-    def test_paid_plan_can_set_custom_domain(self):
+    def test_paid_plan_creates_pending_custom_domain_setup(self):
         self.client.force_authenticate(user=self.paid_admin)
         response = self.client.put(
             "/api/core/settings/",
@@ -172,6 +175,59 @@ class CustomDomainGatingTests(APITestCase):
             HTTP_X_TENANT_ID=self.paid_school.domain,
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.paid_school.refresh_from_db()
+        self.assertIsNone(self.paid_school.custom_domain)
+        setup = self.paid_school.custom_domain_setup
+        self.assertEqual(setup.hostname, "portal.paidschool.ng")
+        self.assertEqual(setup.status, "pending")
+
+    def test_custom_domain_is_normalized_and_rejects_urls(self):
+        self.client.force_authenticate(user=self.paid_admin)
+        response = self.client.put(
+            "/api/core/settings/",
+            {"custom_domain": " HTTPS://PaidSchool.ng/login "},
+            format="json",
+            HTTP_X_TENANT_ID=self.paid_school.domain,
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("custom_domain", response.data["errors"])
+
+        response = self.client.put(
+            "/api/core/settings/",
+            {"custom_domain": "Portal.PaidSchool.ng."},
+            format="json",
+            HTTP_X_TENANT_ID=self.paid_school.domain,
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(self.paid_school.custom_domain_setup.hostname, "portal.paidschool.ng")
+
+    @override_settings(CLOUDFLARE_API_TOKEN="token", CLOUDFLARE_SAAS_ZONE_ID="zone")
+    @patch("schools.domain_service.requests.request")
+    def test_verify_activates_domain_only_when_hostname_and_certificate_are_active(self, request):
+        self.client.force_authenticate(user=self.paid_admin)
+        self.client.put(
+            "/api/core/settings/",
+            {"custom_domain": "portal.paidschool.ng"},
+            format="json",
+            HTTP_X_TENANT_ID=self.paid_school.domain,
+        )
+        provider_response = Mock(ok=True)
+        provider_response.json.return_value = {
+            "success": True,
+            "result": {
+                "id": "provider-123",
+                "status": "active",
+                "ssl": {"status": "active", "validation_records": []},
+            },
+        }
+        request.return_value = provider_response
+
+        response = self.client.post(
+            "/api/core/custom-domain/verify/", format="json", HTTP_X_TENANT_ID=self.paid_school.domain
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["custom_domain_setup"]["status"], "active")
         self.paid_school.refresh_from_db()
         self.assertEqual(self.paid_school.custom_domain, "portal.paidschool.ng")
 
@@ -197,6 +253,9 @@ class CustomDomainGatingTests(APITestCase):
         self.paid_school.subscription.save()
         self.paid_school.refresh_from_db()
         self.assertFalse(self.paid_school.custom_domain_allowed)
+        self.client.force_authenticate(user=self.paid_admin)
+        response = self.client.get("/api/core/settings/", HTTP_X_TENANT_ID=self.paid_school.domain)
+        self.assertFalse(response.data["custom_domain_allowed"])
 
 
 class AnnualPlanTests(APITestCase):

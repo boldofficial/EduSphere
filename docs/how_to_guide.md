@@ -17,15 +17,14 @@
 4.  **Session & Display**: Set the **Current Session** (e.g., 2025/2026) and **Current Term**.
 5.  Click **Save Changes** at the top right to apply.
 
-### How to Configure a Custom Domain (Enterprise Only)
+### How to Configure a Custom Domain (Starter or Higher)
 
-1.  Ensure your **DNS settings** are configured:
-    - Create a **CNAME** record pointing your custom domain (e.g. `portal.school.com`) to `app.myregistra.net`.
-    - Wait for DNS propagation (usually 30 mins to 2 hours).
-2.  Navigate to **Settings** > **Domain Management**.
-3.  Enter your custom domain in the **Custom Domain** field.
-4.  Click **Save Changes**.
-5.  Users can now access your portal directly via `https://portal.school.com`.
+1.  Navigate to **Settings** > **Domain Management**.
+2.  Enter only the hostname you want to use, such as `portal.school.com`; do not include `https://` or a path.
+3.  Click **Save Changes**. The domain remains pending until ownership and HTTPS are verified.
+4.  At your DNS provider, create the CNAME record displayed by MyRegistra. Domains may remain registered with Dynadot or any other registrar.
+5.  Return to MyRegistra and select **Check status**. The domain becomes active only after both the hostname and its SSL certificate are active.
+6.  Your permanent `school.myregistra.net` address remains available while setup is pending or if the custom domain is removed.
 
 ### How to Manage Your Public Website (CMS)
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Save, Lock } from 'lucide-react';
+import { Save, Lock, RefreshCw, CheckCircle2, AlertTriangle, Copy } from 'lucide-react';
 import * as Types from '@/lib/types';
 import * as Utils from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,8 @@ interface SettingsViewProps {
   paymentSettings?: Types.SchoolPaymentSettings | null;
   onUpdatePaymentSettings?: (s: Partial<Types.SchoolPaymentSettings>) => Promise<unknown>;
   canManagePaymentSettings?: boolean;
+  onVerifyDomain?: () => Promise<unknown>;
+  isVerifyingDomain?: boolean;
 }
 
 export const SettingsView: React.FC<SettingsViewProps> = ({
@@ -24,7 +26,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   paymentSettings,
   onUpdatePaymentSettings,
   canManagePaymentSettings = false,
+  onVerifyDomain,
+  isVerifyingDomain = false,
 }) => {
+  const customDomainAllowed =
+    settings.custom_domain_allowed ??
+    (settings.subscription?.status === 'active' &&
+      Boolean(settings.subscription?.plan?.custom_domain_enabled));
   // Ensure all new fields have default values to prevent uncontrolled input errors
   const initializeForm = (s: Types.Settings) => ({
     ...s,
@@ -198,6 +206,19 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       }
       return next;
     });
+  };
+  const handleVerifyDomain = async () => {
+    if (!onVerifyDomain) return;
+    try {
+      await onVerifyDomain();
+      addToast('Domain status refreshed', 'success');
+    } catch {
+      addToast('Could not verify the domain. Check the DNS records and try again.', 'error');
+    }
+  };
+  const copyValue = async (value: string) => {
+    await navigator.clipboard.writeText(value);
+    addToast('Copied to clipboard', 'success');
   };
   const handleSavePaymentSettings = async () => {
     if (!onUpdatePaymentSettings) return;
@@ -533,42 +554,133 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 placeholder="e.g. portal.yourschool.com"
                 value={formData.custom_domain || ''}
                 onChange={(e) => handleChange('custom_domain', e.target.value)}
-                disabled={!settings.subscription?.plan?.custom_domain_enabled}
+                disabled={!customDomainAllowed}
                 className="font-mono"
               />
-              {settings.subscription?.plan?.custom_domain_enabled && (
-                <div className="mt-3 p-3 bg-blue-50 border border-blue-100 rounded-xl flex items-start gap-3">
-                  <div className="p-1.5 bg-blue-100 text-blue-600 rounded-lg">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
+              {customDomainAllowed && (
+                <div className="mt-3 p-4 bg-blue-50 border border-blue-100 rounded-xl space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="p-1.5 bg-blue-100 text-blue-600 rounded-lg">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="16" x2="12" y2="12" />
+                        <line x1="12" y1="8" x2="12.01" y2="8" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-xs font-bold text-blue-900 uppercase tracking-tight">
+                        DNS Configuration Required
+                      </p>
+                      <p className="text-xs text-blue-800 font-medium leading-relaxed">
+                        Enter only the hostname, save your settings, then add the DNS record shown
+                        below.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-[64px_1fr_auto] gap-2 text-xs items-center bg-white border border-blue-100 rounded-lg p-3">
+                    <span className="font-bold text-gray-500">Type</span>
+                    <code className="font-bold text-blue-900">CNAME</code>
+                    <span />
+                    <span className="font-bold text-gray-500">Name</span>
+                    <code className="font-bold text-blue-900 break-all">
+                      {settings.custom_domain_setup?.hostname ||
+                        formData.custom_domain ||
+                        'portal.yourschool.com'}
+                    </code>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        copyValue(
+                          settings.custom_domain_setup?.hostname || formData.custom_domain || ''
+                        )
+                      }
+                      className="p-1.5 text-blue-700 hover:bg-blue-50 rounded"
+                      aria-label="Copy hostname"
                     >
-                      <circle cx="12" cy="12" r="10" />
-                      <line x1="12" y1="16" x2="12" y2="12" />
-                      <line x1="12" y1="8" x2="12.01" y2="8" />
-                    </svg>
+                      <Copy size={14} />
+                    </button>
+                    <span className="font-bold text-gray-500">Target</span>
+                    <code className="font-bold text-blue-900 break-all">
+                      {settings.custom_domain_setup?.cname_target || 'customers.myregistra.net'}
+                    </code>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        copyValue(
+                          settings.custom_domain_setup?.cname_target || 'customers.myregistra.net'
+                        )
+                      }
+                      className="p-1.5 text-blue-700 hover:bg-blue-50 rounded"
+                      aria-label="Copy CNAME target"
+                    >
+                      <Copy size={14} />
+                    </button>
                   </div>
-                  <div className="flex-1">
-                    <p className="text-xs font-bold text-blue-900 uppercase tracking-tight">
-                      DNS Configuration Required
-                    </p>
-                    <p className="text-xs text-blue-800 font-medium leading-relaxed">
-                      Point your domain&apos;s <strong>CNAME</strong> record to:{' '}
-                      <code className="bg-blue-100 px-1 rounded text-blue-900 font-bold">
-                        app.myregistra.net
-                      </code>
-                    </p>
-                  </div>
+                  {settings.custom_domain_setup && (
+                    <div className="space-y-3 border-t border-blue-100 pt-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2 text-xs font-bold">
+                          {settings.custom_domain_setup.status === 'active' ? (
+                            <CheckCircle2 size={16} className="text-green-600" />
+                          ) : settings.custom_domain_setup.status === 'failed' ? (
+                            <AlertTriangle size={16} className="text-red-600" />
+                          ) : (
+                            <RefreshCw size={16} className="text-amber-600" />
+                          )}
+                          <span className="capitalize">
+                            {settings.custom_domain_setup.status === 'pending'
+                              ? 'Waiting for DNS'
+                              : settings.custom_domain_setup.status}
+                          </span>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={handleVerifyDomain}
+                          disabled={isVerifyingDomain}
+                        >
+                          <RefreshCw
+                            className={`h-3.5 w-3.5 mr-1.5 ${isVerifyingDomain ? 'animate-spin' : ''}`}
+                          />{' '}
+                          Check status
+                        </Button>
+                      </div>
+                      {settings.custom_domain_setup.failure_reason && (
+                        <p className="text-xs text-red-700">
+                          {settings.custom_domain_setup.failure_reason}
+                        </p>
+                      )}
+                      {settings.custom_domain_setup.validation_records.map((record) => (
+                        <div
+                          key={`${record.name}-${record.value}`}
+                          className="bg-white border border-blue-100 rounded-lg p-3 text-xs space-y-1"
+                        >
+                          <p className="font-bold text-gray-700">
+                            {record.type} verification record
+                          </p>
+                          <p className="font-mono break-all">
+                            <span className="text-gray-500">Name:</span> {record.name}
+                          </p>
+                          <p className="font-mono break-all">
+                            <span className="text-gray-500">Value:</span> {record.value}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
-              {!settings.subscription?.plan?.custom_domain_enabled && (
+              {!customDomainAllowed && (
                 <div className="mt-2 p-3 bg-amber-50 border border-amber-100 rounded-xl flex items-start gap-3">
                   <div className="p-1.5 bg-amber-100 text-amber-600 rounded-lg">
                     <Lock size={14} />
@@ -578,8 +690,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                       Upgrade Required
                     </p>
                     <p className="text-xs text-amber-800 font-medium">
-                      Custom domains are only available on Enterprise plans. Contact support to
-                      upgrade.
+                      Custom domains require an active Starter plan or higher. Upgrade to connect
+                      one.
                     </p>
                   </div>
                 </div>
