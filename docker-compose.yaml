@@ -187,6 +187,13 @@ services:
       - traefik.http.routers.frontend.entrypoints=https
       - traefik.http.routers.frontend.tls=true
       - traefik.http.routers.frontend.tls.certresolver=letsencrypt
+      # Cloudflare for SaaS preserves each school's Host header at the fallback origin.
+      # Keep this router below the platform-domain routers so custom domains enter
+      # through Next.js, where tenant resolution and API proxying are enforced.
+      - traefik.http.routers.frontend-custom.priority=1
+      - 'traefik.http.routers.frontend-custom.rule=PathPrefix(`/`)'
+      - traefik.http.routers.frontend-custom.entrypoints=https
+      - traefik.http.routers.frontend-custom.tls=true
       - traefik.http.services.frontend.loadbalancer.server.port=3000
       - traefik.docker.network=coolify
 
