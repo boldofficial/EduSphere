@@ -1196,3 +1196,53 @@ export interface ScoreImportResult {
     exam: number;
   }>;
 }
+
+/** Super admin overview (schools/command-center/). */
+export interface CommandCenterAttention {
+  key: string;
+  severity: 'critical' | 'warning' | 'info';
+  title: string;
+  count: number;
+  summary: string;
+  href: string;
+  items: { label: string; detail: string }[];
+}
+
+export interface CommandCenter {
+  generated_at: string;
+  kpis: {
+    schools: { total: number; active: number; new_this_month: number; new_last_month: number };
+    mrr: number;
+    revenue: { this_month: number; last_month: number; this_year: number };
+    students: number;
+    teachers: number;
+  };
+  attention: CommandCenterAttention[];
+  renewals: {
+    school_id: number;
+    school: string;
+    plan: string;
+    end_date: string;
+    days_left: number;
+    auto_renew: boolean;
+    amount: number;
+  }[];
+  trends: { month: string; label: string; schools: number; revenue: number }[];
+  plans: { name: string; schools: number; mrr: number }[];
+  recent_schools: {
+    id: number;
+    name: string;
+    domain: string | null;
+    created_at: string;
+    plan: string | null;
+    status: string;
+    students: number;
+  }[];
+  activity: {
+    id: number;
+    action: string;
+    description: string;
+    school_name: string;
+    created_at: string;
+  }[];
+}

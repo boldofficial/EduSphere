@@ -14826,6 +14826,16 @@ paths:
       responses:
         '200':
           description: No response body
+  /api/schools/command-center/:
+    get:
+      operationId: schools_command_center_retrieve
+      tags:
+      - schools
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
   /api/schools/demo-request/:
     post:
       operationId: schools_demo_request_create

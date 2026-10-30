@@ -1,407 +1,357 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useSchoolStore } from '@/lib/store';
 import {
-  LayoutDashboard,
-  School as SchoolIcon,
-  CreditCard,
-  Settings,
-  LogOut,
-  Search,
-  Grid,
-  ScrollText,
-  Mail,
-  Rocket,
-  MessageSquare,
-  Megaphone,
-  Wallet,
-  Shield,
-  Radio,
-  Star,
   BookOpen,
+  CreditCard,
+  Grid,
+  LayoutDashboard,
+  LogOut,
+  Mail,
+  Megaphone,
+  Menu,
+  MessageSquare,
+  Radio,
+  Rocket,
+  School as SchoolIcon,
+  ScrollText,
+  Search,
+  Settings,
+  Shield,
+  Star,
+  Wallet,
+  X,
 } from 'lucide-react';
-import { useAdminSchools, useGlobalSearch } from '@/lib/hooks/use-data';
-import apiClient from '@/lib/api-client';
+import { useAdminSchools, useCommandCenter, useGlobalSearch } from '@/lib/hooks/use-data';
 import { CommandPalette } from '@/components/features/CommandPalette';
-import { useToast } from '@/components/providers/toast-provider';
-import { ConfirmActionModal } from './components/ConfirmActionModal';
 
-function SidebarGroup({ label }: { label: string }) {
+const ROOT = '/dashboard/super-admin';
+
+interface NavItem {
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+  label: string;
+  href: string;
+  /** Attention-queue keys whose counts show as a badge on this item. */
+  badge?: string[];
+}
+
+const NAV: { label: string; items: NavItem[] }[] = [
+  {
+    label: 'Business',
+    items: [
+      { icon: LayoutDashboard, label: 'Command center', href: ROOT },
+      {
+        icon: SchoolIcon,
+        label: 'Schools',
+        href: `${ROOT}/tenants`,
+        badge: ['subscriptions_pending', 'subscriptions_overdue'],
+      },
+      {
+        icon: Wallet,
+        label: 'Financials',
+        href: `${ROOT}/financials`,
+        badge: ['payments_pending'],
+      },
+      { icon: CreditCard, label: 'Plans & pricing', href: `${ROOT}/plans` },
+      { icon: Grid, label: 'Modules', href: `${ROOT}/modules` },
+    ],
+  },
+  {
+    label: 'Customers',
+    items: [
+      {
+        icon: MessageSquare,
+        label: 'Support tickets',
+        href: `${ROOT}/support`,
+        badge: ['tickets_urgent', 'tickets_open'],
+      },
+      {
+        icon: Rocket,
+        label: 'Demo requests',
+        href: `${ROOT}/demo-requests`,
+        badge: ['demos_pending'],
+      },
+      { icon: Star, label: 'Feedback', href: `${ROOT}/feedback` },
+    ],
+  },
+  {
+    label: 'Communication',
+    items: [
+      { icon: Radio, label: 'Broadcasts', href: `${ROOT}/broadcasts` },
+      { icon: Megaphone, label: 'Email marketing', href: `${ROOT}/email-marketing` },
+      { icon: Mail, label: 'Email templates', href: `${ROOT}/templates` },
+      { icon: ScrollText, label: 'Delivery logs', href: `${ROOT}/logs`, badge: ['emails_failed'] },
+    ],
+  },
+  {
+    label: 'Platform',
+    items: [
+      { icon: BookOpen, label: 'Blog', href: `${ROOT}/blog` },
+      { icon: Settings, label: 'Blog settings', href: `${ROOT}/blog/settings` },
+      { icon: Shield, label: 'Governance', href: `${ROOT}/governance` },
+      { icon: Settings, label: 'Platform settings', href: `${ROOT}/settings` },
+    ],
+  },
+];
+
+/** The most specific nav item that matches the path is the active one. */
+function activeHref(pathname: string) {
+  const all = NAV.flatMap((group) => group.items.map((item) => item.href));
+  return all
+    .filter((href) => pathname === href || (href !== ROOT && pathname.startsWith(`${href}/`)))
+    .sort((a, b) => b.length - a.length)[0];
+}
+
+function Sidebar({
+  pathname,
+  counts,
+  onNavigate,
+  onLogout,
+}: {
+  pathname: string;
+  counts: Record<string, { count: number; severity: string }>;
+  onNavigate: () => void;
+  onLogout: () => void;
+}) {
+  const active = activeHref(pathname);
   return (
-    <div className="px-4 pt-6 pb-2">
-      <span className="text-xs font-black uppercase tracking-[0.2em] text-brand-400/50">
-        {label}
-      </span>
+    <div className="flex h-full flex-col bg-brand-950 text-white">
+      <div className="flex h-16 items-center border-b border-white/10 px-5">
+        <Link href="/" className="h-9">
+          <img src="/footer-logo.png" alt="Registra" className="h-full w-auto object-contain" />
+        </Link>
+      </div>
+      <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4" aria-label="Super admin">
+        {NAV.map((group) => (
+          <div key={group.label}>
+            <p className="px-3 pb-1.5 text-xs font-semibold uppercase tracking-wider text-white/40">
+              {group.label}
+            </p>
+            <ul className="space-y-0.5">
+              {group.items.map(({ icon: Icon, label, href, badge }) => {
+                const isActive = active === href;
+                const total = (badge ?? []).reduce(
+                  (sum, key) => sum + (counts[key]?.count ?? 0),
+                  0
+                );
+                const urgent = (badge ?? []).some((key) => counts[key]?.severity === 'critical');
+                return (
+                  <li key={href}>
+                    <Link
+                      href={href}
+                      onClick={onNavigate}
+                      aria-current={isActive ? 'page' : undefined}
+                      className={`flex items-center gap-3 rounded-control px-3 py-2 text-sm transition-colors ${
+                        isActive
+                          ? 'bg-white/10 font-semibold text-white'
+                          : 'text-white/65 hover:bg-white/5 hover:text-white'
+                      }`}
+                    >
+                      <Icon size={17} className={isActive ? 'text-white' : 'text-white/50'} />
+                      <span className="flex-1">{label}</span>
+                      {total > 0 && (
+                        <span
+                          className={`min-w-5 rounded-full px-1.5 text-center text-xs font-bold leading-5 ${
+                            urgent ? 'bg-red-500 text-white' : 'bg-white/15 text-white'
+                          }`}
+                        >
+                          {total > 99 ? '99+' : total}
+                        </span>
+                      )}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
+      </nav>
+      <div className="border-t border-white/10 p-3">
+        <button
+          type="button"
+          onClick={onLogout}
+          className="flex w-full items-center gap-3 rounded-control px-3 py-2 text-sm text-white/65 transition-colors hover:bg-white/5 hover:text-white"
+        >
+          <LogOut size={17} className="text-white/50" />
+          Log out
+        </button>
+      </div>
     </div>
   );
 }
 
-function SidebarItem({
-  icon: Icon,
-  label,
-  href,
-  active,
-}: {
-  icon: any;
-  label: string;
-  href: string;
-  active: boolean;
-}) {
+function GlobalSearch({ onOpenPalette }: { onOpenPalette: () => void }) {
+  const [query, setQuery] = useState('');
+  const [open, setOpen] = useState(false);
+  const { data: results, isLoading } = useGlobalSearch(query);
+  const schools = (results?.schools ?? []) as { id: number; name: string; status: string }[];
+
   return (
-    <Link
-      href={href}
-      className={`flex items-center gap-3 px-4 py-2.5 w-full rounded-xl transition-all text-sm ${
-        active
-          ? 'bg-gradient-to-r from-brand-600 to-brand-500 text-white shadow-lg shadow-brand-600/40 font-bold'
-          : 'text-gray-400 hover:text-white hover:bg-white/5 font-medium'
-      }`}
-    >
-      <Icon size={18} />
-      <span>{label}</span>
-    </Link>
+    <div className="relative w-full max-w-md">
+      <Search
+        size={16}
+        className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+      />
+      <input
+        type="search"
+        placeholder="Search schools…"
+        value={query}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          setOpen(true);
+        }}
+        onFocus={() => setOpen(true)}
+        className="h-9 w-full rounded-control border border-gray-200 bg-gray-50 pl-9 pr-16 text-sm outline-none transition-colors focus:border-brand-500 focus:bg-white"
+      />
+      <button
+        type="button"
+        onClick={onOpenPalette}
+        className="absolute right-1.5 top-1/2 hidden -translate-y-1/2 rounded border border-gray-200 bg-white px-1.5 py-0.5 text-xs font-medium text-gray-500 hover:text-gray-700 sm:block"
+      >
+        Ctrl K
+      </button>
+      {open && query.length >= 2 && (
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+          <div className="absolute left-0 right-0 top-full z-20 mt-1.5 overflow-hidden rounded-card border border-gray-200 bg-white shadow-raised">
+            {isLoading ? (
+              <p className="px-4 py-3 text-sm text-gray-500">Searching…</p>
+            ) : schools.length === 0 ? (
+              <p className="px-4 py-3 text-sm text-gray-500">No schools match “{query}”.</p>
+            ) : (
+              <ul className="max-h-80 overflow-y-auto py-1">
+                {schools.map((school) => (
+                  <li key={school.id}>
+                    <Link
+                      href={`${ROOT}/tenants`}
+                      onClick={() => {
+                        setOpen(false);
+                        setQuery('');
+                      }}
+                      className="flex items-center justify-between gap-3 px-4 py-2 text-sm hover:bg-gray-50"
+                    >
+                      <span className="font-medium text-gray-900">{school.name}</span>
+                      <span className="text-xs capitalize text-gray-500">{school.status}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </>
+      )}
+    </div>
   );
 }
 
 export default function SuperAdminLayout({ children }: { children: React.ReactNode }) {
   const { currentUser, currentRole, logout, hasHydrated } = useSchoolStore();
-  const { addToast } = useToast();
   const router = useRouter();
   const pathname = usePathname();
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const isSuperAdmin = currentRole?.toLowerCase() === 'super_admin';
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
-  const [isTogglingMaintenance, setIsTogglingMaintenance] = useState(false);
-  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
-  const [impersonateTarget, setImpersonateTarget] = useState<number | null>(null);
-  const [isImpersonating, setIsImpersonating] = useState(false);
-
-  // Command Palette Keyboard Shortcut
   useEffect(() => {
-    const handleCmdK = (e: KeyboardEvent) => {
+    const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
-        setIsCommandPaletteOpen((prev) => !prev);
+        setPaletteOpen((open) => !open);
       }
     };
-    window.addEventListener('keydown', handleCmdK);
-    return () => window.removeEventListener('keydown', handleCmdK);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
   }, []);
 
   const { data: schools = [] } = useAdminSchools();
-  const { data: searchResults, isLoading: searchLoading } = useGlobalSearch(searchQuery);
+  const { data: center } = useCommandCenter();
+  const counts = Object.fromEntries(
+    (center?.attention ?? []).map((item) => [
+      item.key,
+      { count: item.count, severity: item.severity },
+    ])
+  );
 
   const handleLogout = async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
-      logout();
-      router.push('/');
     } catch {
-      console.error('Logout failed');
-      logout();
-      router.push('/login');
+      // Clear the local session either way.
     }
-  };
-
-  const confirmImpersonate = async () => {
-    if (!impersonateTarget) return;
-    setIsImpersonating(true);
-    try {
-      const res = await fetch('/api/auth/impersonate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: impersonateTarget }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        useSchoolStore.getState().login(data.user.role, data.user);
-        addToast('Impersonation started successfully.', 'success');
-        router.push('/dashboard');
-      } else {
-        addToast('Impersonation failed', 'error');
-      }
-    } catch {
-      addToast('An error occurred while impersonating.', 'error');
-    } finally {
-      setIsImpersonating(false);
-      setImpersonateTarget(null);
-    }
-  };
-
-  const handleToggleMaintenance = async () => {
-    setIsTogglingMaintenance(true);
-    try {
-      const nextMode = !isMaintenanceMode;
-      await apiClient.post('schools/maintenance/', { action: nextMode ? 'on' : 'off' });
-      setIsMaintenanceMode(nextMode);
-      addToast(`Maintenance mode turned ${nextMode ? 'ON' : 'OFF'}`, 'success');
-    } catch {
-      addToast('Failed to toggle maintenance mode', 'error');
-    } finally {
-      setIsTogglingMaintenance(false);
-    }
+    logout();
+    router.push('/login');
   };
 
   if (!hasHydrated) return null;
 
-  if (!currentUser || currentRole?.toLowerCase() !== 'super_admin') {
+  if (!currentUser || !isSuperAdmin) {
     router.push('/dashboard');
     return null;
   }
 
+  const name = currentUser.username || 'Admin';
+  const sidebar = (
+    <Sidebar
+      pathname={pathname}
+      counts={counts}
+      onNavigate={() => setMenuOpen(false)}
+      onLogout={handleLogout}
+    />
+  );
+
   return (
-    <div className="min-h-screen bg-gray-50 font-primary flex">
-      {/* Sidebar */}
-      <aside className="w-72 bg-gradient-to-b from-brand-950 via-brand-900 to-brand-950 text-white fixed h-full z-10 flex flex-col border-r border-brand-800/30">
-        <div className="p-6 border-b border-white/5 flex items-center gap-3">
-          <div className="h-14 w-full flex items-center justify-start">
-            <Link href="/" className="h-full">
-              <img
-                src="/footer-logo.png"
-                alt="Registra"
-                className="h-full w-auto object-contain cursor-pointer"
-              />
-            </Link>
-          </div>
+    <div className="min-h-screen bg-gray-50 font-primary">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 lg:block">{sidebar}</aside>
+
+      {menuOpen && (
+        <div className="fixed inset-0 z-40 lg:hidden">
+          <div className="absolute inset-0 bg-gray-900/50" onClick={() => setMenuOpen(false)} />
+          <aside className="relative h-full w-64 shadow-raised">
+            {sidebar}
+            <button
+              type="button"
+              onClick={() => setMenuOpen(false)}
+              aria-label="Close menu"
+              className="absolute right-3 top-4 rounded-control p-1.5 text-white/70 hover:bg-white/10"
+            >
+              <X size={18} />
+            </button>
+          </aside>
         </div>
-        <nav className="flex-1 px-3 py-2 space-y-0.5 overflow-y-auto custom-scrollbar">
-          <SidebarGroup label="Core" />
-          <SidebarItem
-            icon={LayoutDashboard}
-            label="Overview"
-            href="/dashboard/super-admin"
-            active={pathname === '/dashboard/super-admin'}
-          />
-          <SidebarItem
-            icon={SchoolIcon}
-            label="Tenants (Schools)"
-            href="/dashboard/super-admin/tenants"
-            active={pathname.startsWith('/dashboard/super-admin/tenants')}
-          />
-          <SidebarItem
-            icon={Wallet}
-            label="Financials"
-            href="/dashboard/super-admin/financials"
-            active={pathname.startsWith('/dashboard/super-admin/financials')}
-          />
-          <SidebarItem
-            icon={CreditCard}
-            label="Plans & Pricing"
-            href="/dashboard/super-admin/plans"
-            active={pathname.startsWith('/dashboard/super-admin/plans')}
-          />
-          <SidebarItem
-            icon={Grid}
-            label="Modules Library"
-            href="/dashboard/super-admin/modules"
-            active={pathname.startsWith('/dashboard/super-admin/modules')}
-          />
+      )}
 
-          <SidebarGroup label="Communication" />
-          <SidebarItem
-            icon={Mail}
-            label="Email Templates"
-            href="/dashboard/super-admin/templates"
-            active={pathname.startsWith('/dashboard/super-admin/templates')}
-          />
-          <SidebarItem
-            icon={ScrollText}
-            label="Delivery Logs"
-            href="/dashboard/super-admin/logs"
-            active={pathname.startsWith('/dashboard/super-admin/logs')}
-          />
-          <SidebarItem
-            icon={Megaphone}
-            label="Email Marketing"
-            href="/dashboard/super-admin/email-marketing"
-            active={pathname.startsWith('/dashboard/super-admin/email-marketing')}
-          />
-          <SidebarItem
-            icon={Radio}
-            label="Broadcasts"
-            href="/dashboard/super-admin/broadcasts"
-            active={pathname.startsWith('/dashboard/super-admin/broadcasts')}
-          />
-
-          <SidebarGroup label="Advanced" />
-          <SidebarItem
-            icon={Shield}
-            label="Governance"
-            href="/dashboard/super-admin/governance"
-            active={pathname.startsWith('/dashboard/super-admin/governance')}
-          />
-          <SidebarItem
-            icon={Rocket}
-            label="Demo Requests"
-            href="/dashboard/super-admin/demo-requests"
-            active={pathname.startsWith('/dashboard/super-admin/demo-requests')}
-          />
-          <SidebarItem
-            icon={MessageSquare}
-            label="Support Tickets"
-            href="/dashboard/super-admin/support"
-            active={pathname.startsWith('/dashboard/super-admin/support')}
-          />
-          <SidebarItem
-            icon={BookOpen}
-            label="Blog"
-            href="/dashboard/super-admin/blog"
-            active={
-              pathname === '/dashboard/super-admin/blog' ||
-              (pathname.startsWith('/dashboard/super-admin/blog/') &&
-                !pathname.includes('/settings'))
-            }
-          />
-          <SidebarItem
-            icon={Settings}
-            label="Blog Settings"
-            href="/dashboard/super-admin/blog/settings"
-            active={pathname.startsWith('/dashboard/super-admin/blog/settings')}
-          />
-          <SidebarItem
-            icon={Star}
-            label="User Feedback"
-            href="/dashboard/super-admin/feedback"
-            active={pathname.startsWith('/dashboard/super-admin/feedback')}
-          />
-          <SidebarItem
-            icon={Settings}
-            label="Platform Settings"
-            href="/dashboard/super-admin/settings"
-            active={pathname.startsWith('/dashboard/super-admin/settings')}
-          />
-        </nav>
-        <div className="p-3 border-t border-white/5">
+      <div className="lg:pl-64">
+        <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-gray-200 bg-white/95 px-4 backdrop-blur sm:px-6 lg:px-8">
           <button
-            onClick={handleLogout}
-            className="flex items-center gap-3 px-4 py-2.5 w-full text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all text-sm font-medium"
+            type="button"
+            onClick={() => setMenuOpen(true)}
+            aria-label="Open menu"
+            className="rounded-control p-2 text-gray-600 hover:bg-gray-100 lg:hidden"
           >
-            <LogOut size={18} />
-            <span>Logout</span>
+            <Menu size={20} />
           </button>
-        </div>
-      </aside>
-
-      {/* Main Content */}
-      <main className="ml-72 flex-1">
-        <header className="h-20 bg-white border-b border-gray-100 flex items-center justify-between px-8 sticky top-0 z-30">
-          <div className="relative w-96">
-            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-              <Search className="text-gray-400" size={18} />
+          <GlobalSearch onOpenPalette={() => setPaletteOpen(true)} />
+          <div className="ml-auto flex items-center gap-3">
+            <div className="hidden text-right sm:block">
+              <p className="text-sm font-semibold leading-tight text-gray-900">{name}</p>
+              <p className="text-xs text-gray-500">Super admin</p>
             </div>
-            <input
-              type="text"
-              placeholder="Search schools, activities, or logs..."
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setIsSearchOpen(true);
-              }}
-              onFocus={() => setIsSearchOpen(true)}
-              className="w-full bg-gray-50 border-2 border-transparent focus:border-brand-600 focus:bg-white rounded-2xl py-3 pl-12 pr-4 outline-none transition-all font-medium text-sm"
-            />
-            {isSearchOpen && searchQuery.length >= 2 && (
-              <>
-                <div className="fixed inset-0" onClick={() => setIsSearchOpen(false)} />
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-3xl shadow-2xl border border-gray-100 p-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                  {searchLoading ? (
-                    <div className="p-4 text-center text-gray-400 text-sm">Searching...</div>
-                  ) : (
-                    <div className="space-y-6">
-                      {searchResults?.schools?.length > 0 && (
-                        <div>
-                          <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3 px-2">
-                            Schools
-                          </p>
-                          <div className="space-y-1">
-                            {searchResults.schools.map((s: any) => (
-                              <Link
-                                key={s.id}
-                                href="/dashboard/super-admin/tenants"
-                                onClick={() => {
-                                  setIsSearchOpen(false);
-                                  setSearchQuery('');
-                                }}
-                                className="w-full text-left p-3 hover:bg-gray-50 rounded-xl flex items-center justify-between group transition-colors"
-                              >
-                                <span className="font-bold text-gray-900">{s.name}</span>
-                                <span className="text-xs font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full uppercase">
-                                  {s.status}
-                                </span>
-                              </Link>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </>
-            )}
-          </div>
-          <div className="flex items-center gap-6">
-            <button
-              onClick={() => setIsCommandPaletteOpen(true)}
-              className="p-3 bg-gray-50 border border-gray-100 rounded-2xl text-gray-400 hover:text-brand-600 hover:bg-white hover:border-brand-200 transition-all flex items-center gap-2 group"
-            >
-              <Search size={18} className="group-hover:scale-110 transition-transform" />
-              <kbd className="hidden md:inline-flex items-center gap-1 px-1.5 py-0.5 border border-gray-200 rounded text-xs font-black text-gray-400">
-                Ctrl+K
-              </kbd>
-            </button>
-            <button
-              disabled={isTogglingMaintenance}
-              onClick={handleToggleMaintenance}
-              className={`flex items-center gap-3 px-4 py-2 rounded-2xl border transition-all ${isMaintenanceMode ? 'bg-amber-50 border-amber-200 text-amber-700' : 'bg-red-50 border-red-100 text-red-700 hover:bg-red-100'}`}
-            >
-              <div
-                className={`w-2 h-2 rounded-full ${isMaintenanceMode ? 'bg-amber-500 animate-pulse' : 'bg-red-500'}`}
-              ></div>
-              <span className="text-xs font-bold uppercase tracking-tight">
-                {isTogglingMaintenance
-                  ? 'UPDATING...'
-                  : isMaintenanceMode
-                    ? 'Maintenance: ON'
-                    : 'Maintenance: OFF'}
-              </span>
-            </button>
-            <div className="h-10 w-[1px] bg-gray-100"></div>
-            <div className="flex items-center gap-3">
-              <div className="text-right">
-                <p className="text-sm font-black text-gray-900">
-                  {currentUser?.username || 'Admin'}
-                </p>
-                <p className="text-xs font-bold text-brand-600 uppercase tracking-widest">
-                  Global Super Admin
-                </p>
-              </div>
-              <div className="w-12 h-12 bg-gray-900 rounded-2xl flex items-center justify-center text-white font-black text-lg shadow-lg overflow-hidden border-2 border-white">
-                {currentUser?.username?.[0].toUpperCase() || 'A'}
-              </div>
-            </div>
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-600 text-sm font-semibold text-white">
+              {name[0]?.toUpperCase()}
+            </span>
           </div>
         </header>
 
-        <div className="p-8">{children}</div>
-      </main>
+        <main className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">{children}</main>
+      </div>
 
       <CommandPalette
         schools={schools}
-        isOpen={isCommandPaletteOpen}
-        onClose={() => setIsCommandPaletteOpen(false)}
-      />
-      <ConfirmActionModal
-        isOpen={Boolean(impersonateTarget)}
-        title="Confirm Impersonation"
-        message="You will be logged in as this school's administrator."
-        confirmLabel="Impersonate Admin"
-        confirmVariant="warning"
-        isProcessing={isImpersonating}
-        onConfirm={confirmImpersonate}
-        onCancel={() => setImpersonateTarget(null)}
+        isOpen={paletteOpen}
+        onClose={() => setPaletteOpen(false)}
       />
     </div>
   );
