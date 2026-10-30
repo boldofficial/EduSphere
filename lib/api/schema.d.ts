@@ -64,14 +64,12 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Mixin to add caching capabilities to ViewSets
-         *
-         *     Automatically invalidates cache on create, update, delete */
+        /** @description For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+         *     "report_card" or "attendance_session"). */
         get: operations["academic_attendance_records_list"];
         put?: never;
-        /** @description Mixin to add caching capabilities to ViewSets
-         *
-         *     Automatically invalidates cache on create, update, delete */
+        /** @description For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+         *     "report_card" or "attendance_session"). */
         post: operations["academic_attendance_records_create"];
         delete?: never;
         options?: never;
@@ -86,24 +84,20 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Mixin to add caching capabilities to ViewSets
-         *
-         *     Automatically invalidates cache on create, update, delete */
+        /** @description For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+         *     "report_card" or "attendance_session"). */
         get: operations["academic_attendance_records_retrieve"];
-        /** @description Mixin to add caching capabilities to ViewSets
-         *
-         *     Automatically invalidates cache on create, update, delete */
+        /** @description For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+         *     "report_card" or "attendance_session"). */
         put: operations["academic_attendance_records_update"];
         post?: never;
-        /** @description Mixin to add caching capabilities to ViewSets
-         *
-         *     Automatically invalidates cache on create, update, delete */
+        /** @description For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+         *     "report_card" or "attendance_session"). */
         delete: operations["academic_attendance_records_destroy"];
         options?: never;
         head?: never;
-        /** @description Mixin to add caching capabilities to ViewSets
-         *
-         *     Automatically invalidates cache on create, update, delete */
+        /** @description For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+         *     "report_card" or "attendance_session"). */
         patch: operations["academic_attendance_records_partial_update"];
         trace?: never;
     };
@@ -114,14 +108,12 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Mixin to add caching capabilities to ViewSets
-         *
-         *     Automatically invalidates cache on create, update, delete */
+        /** @description For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+         *     "report_card" or "attendance_session"). */
         get: operations["academic_attendance_sessions_list"];
         put?: never;
-        /** @description Mixin to add caching capabilities to ViewSets
-         *
-         *     Automatically invalidates cache on create, update, delete */
+        /** @description For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+         *     "report_card" or "attendance_session"). */
         post: operations["academic_attendance_sessions_create"];
         delete?: never;
         options?: never;
@@ -136,24 +128,20 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Mixin to add caching capabilities to ViewSets
-         *
-         *     Automatically invalidates cache on create, update, delete */
+        /** @description For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+         *     "report_card" or "attendance_session"). */
         get: operations["academic_attendance_sessions_retrieve"];
-        /** @description Mixin to add caching capabilities to ViewSets
-         *
-         *     Automatically invalidates cache on create, update, delete */
+        /** @description For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+         *     "report_card" or "attendance_session"). */
         put: operations["academic_attendance_sessions_update"];
         post?: never;
-        /** @description Mixin to add caching capabilities to ViewSets
-         *
-         *     Automatically invalidates cache on create, update, delete */
+        /** @description For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+         *     "report_card" or "attendance_session"). */
         delete: operations["academic_attendance_sessions_destroy"];
         options?: never;
         head?: never;
-        /** @description Mixin to add caching capabilities to ViewSets
-         *
-         *     Automatically invalidates cache on create, update, delete */
+        /** @description For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+         *     "report_card" or "attendance_session"). */
         patch: operations["academic_attendance_sessions_partial_update"];
         trace?: never;
     };
@@ -253,6 +241,114 @@ export interface paths {
         get: operations["academic_broadsheet_retrieve"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/academic/calendar/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description GET: the current term (week, school days) and every session with its terms.
+         *     POST {"name"?}: add a session; its term dates are copied from the latest session a year on. */
+        get: operations["academic_calendar_retrieve"];
+        put?: never;
+        /** @description GET: the current term (week, school days) and every session with its terms.
+         *     POST {"name"?}: add a session; its term dates are copied from the latest session a year on. */
+        post: operations["academic_calendar_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/academic/calendar/promotion/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description GET ?session=: each class's students with a suggested decision (promote, repeat, graduate).
+         *     POST {"session", "decisions": {student_id: decision}, "copy_subject_teachers"}: apply them. */
+        get: operations["academic_calendar_promotion_retrieve"];
+        put?: never;
+        /** @description GET ?session=: each class's students with a suggested decision (promote, repeat, graduate).
+         *     POST {"session", "decisions": {student_id: decision}, "copy_subject_teachers"}: apply them. */
+        post: operations["academic_calendar_promotion_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/academic/calendar/sessions/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** @description DELETE a session that has never been used (all its terms still upcoming). */
+        delete: operations["academic_calendar_sessions_destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/academic/calendar/terms/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** @description PATCH a term's dates: start, end and mid-term break. */
+        patch: operations["academic_calendar_terms_partial_update"];
+        trace?: never;
+    };
+    "/api/academic/calendar/terms/{id}/checklist/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description GET: what is still missing before this term is closed (scores, report cards, attendance, fees). */
+        get: operations["academic_calendar_terms_checklist_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/academic/calendar/terms/{id}/start/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description POST: make this the current term. The current one is closed. */
+        post: operations["academic_calendar_terms_start_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1171,14 +1267,12 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Mixin to add caching capabilities to ViewSets
-         *
-         *     Automatically invalidates cache on create, update, delete */
+        /** @description For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+         *     "report_card" or "attendance_session"). */
         get: operations["academic_reports_list"];
         put?: never;
-        /** @description Mixin to add caching capabilities to ViewSets
-         *
-         *     Automatically invalidates cache on create, update, delete */
+        /** @description For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+         *     "report_card" or "attendance_session"). */
         post: operations["academic_reports_create"];
         delete?: never;
         options?: never;
@@ -1193,24 +1287,20 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Mixin to add caching capabilities to ViewSets
-         *
-         *     Automatically invalidates cache on create, update, delete */
+        /** @description For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+         *     "report_card" or "attendance_session"). */
         get: operations["academic_reports_retrieve"];
-        /** @description Mixin to add caching capabilities to ViewSets
-         *
-         *     Automatically invalidates cache on create, update, delete */
+        /** @description For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+         *     "report_card" or "attendance_session"). */
         put: operations["academic_reports_update"];
         post?: never;
-        /** @description Mixin to add caching capabilities to ViewSets
-         *
-         *     Automatically invalidates cache on create, update, delete */
+        /** @description For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+         *     "report_card" or "attendance_session"). */
         delete: operations["academic_reports_destroy"];
         options?: never;
         head?: never;
-        /** @description Mixin to add caching capabilities to ViewSets
-         *
-         *     Automatically invalidates cache on create, update, delete */
+        /** @description For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+         *     "report_card" or "attendance_session"). */
         patch: operations["academic_reports_partial_update"];
         trace?: never;
     };
@@ -1396,14 +1486,12 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Mixin to add caching capabilities to ViewSets
-         *
-         *     Automatically invalidates cache on create, update, delete */
+        /** @description For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+         *     "report_card" or "attendance_session"). */
         get: operations["academic_scores_list"];
         put?: never;
-        /** @description Mixin to add caching capabilities to ViewSets
-         *
-         *     Automatically invalidates cache on create, update, delete */
+        /** @description For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+         *     "report_card" or "attendance_session"). */
         post: operations["academic_scores_create"];
         delete?: never;
         options?: never;
@@ -1418,24 +1506,20 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Mixin to add caching capabilities to ViewSets
-         *
-         *     Automatically invalidates cache on create, update, delete */
+        /** @description For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+         *     "report_card" or "attendance_session"). */
         get: operations["academic_scores_retrieve"];
-        /** @description Mixin to add caching capabilities to ViewSets
-         *
-         *     Automatically invalidates cache on create, update, delete */
+        /** @description For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+         *     "report_card" or "attendance_session"). */
         put: operations["academic_scores_update"];
         post?: never;
-        /** @description Mixin to add caching capabilities to ViewSets
-         *
-         *     Automatically invalidates cache on create, update, delete */
+        /** @description For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+         *     "report_card" or "attendance_session"). */
         delete: operations["academic_scores_destroy"];
         options?: never;
         head?: never;
-        /** @description Mixin to add caching capabilities to ViewSets
-         *
-         *     Automatically invalidates cache on create, update, delete */
+        /** @description For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+         *     "report_card" or "attendance_session"). */
         patch: operations["academic_scores_partial_update"];
         trace?: never;
     };
@@ -2768,6 +2852,28 @@ export interface paths {
         head?: never;
         /** @description Base ViewSet ensuring data isolation by School. */
         patch: operations["bursary_student_fees_partial_update"];
+        trace?: never;
+    };
+    "/api/bursary/term-setup/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description GET: the new term's fee structure and last term's unpaid balances.
+         *     POST {"action": "copy_fees", "item_ids"?} or {"action": "carry_forward", "student_ids": [...]}.
+         *     Bursar and admins only; each step runs only when they confirm it. */
+        get: operations["bursary_term_setup_retrieve"];
+        put?: never;
+        /** @description GET: the new term's fee structure and last term's unpaid balances.
+         *     POST {"action": "copy_fees", "item_ids"?} or {"action": "carry_forward", "student_ids": [...]}.
+         *     Bursar and admins only; each step runs only when they confirm it. */
+        post: operations["bursary_term_setup_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/core/activity-logs/": {
@@ -11188,6 +11294,7 @@ export interface components {
             assigned_fees?: unknown;
             discounts?: unknown;
             readonly assigned_subjects: unknown;
+            readonly balance_transfers: unknown;
             status?: components["schemas"]["StudentStatusEnum"];
             readonly performance_trend: string;
             /** Format: date-time */
@@ -12250,6 +12357,158 @@ export interface operations {
             query?: never;
             header?: never;
             path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    academic_calendar_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    academic_calendar_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    academic_calendar_promotion_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    academic_calendar_promotion_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    academic_calendar_sessions_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    academic_calendar_terms_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    academic_calendar_terms_checklist_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    academic_calendar_terms_start_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -18521,6 +18780,42 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["StudentFee"];
                 };
+            };
+        };
+    };
+    bursary_term_setup_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    bursary_term_setup_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

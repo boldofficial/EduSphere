@@ -7,6 +7,7 @@ from schools.models import SchoolSettings
 from ..models import AttendanceRecord, AttendanceSession
 from ..serializers import AttendanceRecordSerializer, AttendanceSessionSerializer
 from .base import TenantViewSet
+from .term_lock import ClosedTermLockMixin
 
 
 def _is_truthy(value):
@@ -15,7 +16,7 @@ def _is_truthy(value):
     return str(value).strip().lower() in {"1", "true", "yes", "on"}
 
 
-class AttendanceSessionViewSet(TenantViewSet):
+class AttendanceSessionViewSet(ClosedTermLockMixin, TenantViewSet):
     queryset = AttendanceSession.objects.select_related("student_class", "school").all()
     serializer_class = AttendanceSessionSerializer
     pagination_class = StandardPagination
@@ -57,7 +58,9 @@ class AttendanceSessionViewSet(TenantViewSet):
         return qs
 
 
-class AttendanceRecordViewSet(TenantViewSet):
+class AttendanceRecordViewSet(ClosedTermLockMixin, TenantViewSet):
+    term_source = "attendance_session"
+
     queryset = AttendanceRecord.objects.select_related("attendance_session", "student", "school").all()
     serializer_class = AttendanceRecordSerializer
     pagination_class = LargePagination

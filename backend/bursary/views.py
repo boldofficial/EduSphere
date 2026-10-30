@@ -9,6 +9,7 @@ from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from academic.models import AcademicTerm, Student
 from academic.serializers import Base64ImageField
@@ -423,9 +424,21 @@ class DashboardViewSet(viewsets.ViewSet):
         if term:
             filters["term"] = term
 
-        expected_fees = calculate_expected_revenue(school, session=session, term=term)
+        if session and term:
+            # Each student's bill as the bursary screens work it out (class fees, optional fees taken,
+            # discounts, balances carried between terms) and only payments the school has confirmed.
+            from .balances import term_balances
 
-        total_collected = Payment.objects.filter(**filters).aggregate(Sum("amount"))["amount__sum"] or 0
+            balances = term_balances(school, session, term).values()
+            expected_fees = sum((b["bill"] for b in balances), 0)
+            total_collected = sum((b["paid"] for b in balances), 0)
+            outstanding = sum((b["balance"] for b in balances if b["balance"] > 0), 0)
+        else:
+            expected_fees = calculate_expected_revenue(school, session=session, term=term)
+            total_collected = (
+                Payment.objects.filter(**filters, status="completed").aggregate(Sum("amount"))["amount__sum"] or 0
+            )
+            outstanding = expected_fees - total_collected
         total_expenses = Expense.objects.filter(**filters).aggregate(Sum("amount"))["amount__sum"] or 0
 
         # Payroll stats (approximate based on session/term as payroll is monthly)
@@ -437,9 +450,6 @@ class DashboardViewSet(viewsets.ViewSet):
             )["total"]
             or 0
         )
-
-        # Outstanding
-        outstanding = expected_fees - total_collected
 
         data = {
             "expected_revenue": float(expected_fees),
@@ -459,7 +469,9 @@ class DashboardViewSet(viewsets.ViewSet):
         if term_id:
             term = AcademicTerm.objects.filter(school=school, id=term_id).first()
         else:
-            term = AcademicTerm.objects.filter(school=school, is_current=True).first()
+            from academic.calendar import active_term
+
+            term = active_term(school)
 
         if not term:
             return Response({"error": "Academic term not found"}, status=404)
@@ -517,8 +529,12 @@ class DashboardViewSet(viewsets.ViewSet):
         # 3. FORECASTING logic
         today = timezone.now().date()
 
-        days_elapsed = (today - term.start_date).days
-        days_total = (term.end_date - term.start_date).days
+        # Undated terms (dates not set in the academic calendar yet) forecast from what is collected.
+        if term.start_date and term.end_date and term.end_date > term.start_date:
+            days_elapsed = (today - term.start_date).days
+            days_total = (term.end_date - term.start_date).days
+        else:
+            days_elapsed = days_total = 0
 
         # Max out elapsed days at total days if term has ended
         days_elapsed = max(0, min(days_elapsed, days_total))
@@ -561,10 +577,14 @@ class DashboardViewSet(viewsets.ViewSet):
         if term_id:
             term = AcademicTerm.objects.filter(school=school, id=term_id).first()
         else:
-            term = AcademicTerm.objects.filter(school=school, is_current=True).first()
+            from academic.calendar import active_term
+
+            term = active_term(school)
 
         if not term:
             return Response({"error": "Academic term not found"}, status=404)
+        if not term.start_date or not term.end_date:
+            return Response({"error": "Set this term's dates in the academic calendar to see the chart."}, status=404)
 
         # Generate labels (Weekly)
         from datetime import timedelta
@@ -631,8 +651,12 @@ class DashboardViewSet(viewsets.ViewSet):
             week_num += 1
 
         # Forecast Projection (Starts from current cumulative collected)
-        days_elapsed = (today - term.start_date).days
-        days_total = (term.end_date - term.start_date).days
+        # Undated terms (dates not set in the academic calendar yet) forecast from what is collected.
+        if term.start_date and term.end_date and term.end_date > term.start_date:
+            days_elapsed = (today - term.start_date).days
+            days_total = (term.end_date - term.start_date).days
+        else:
+            days_elapsed = days_total = 0
 
         current_collected = (
             collected_points[min(len(collected_points) - 1, (days_elapsed // 7))] if days_elapsed >= 0 else 0
@@ -714,3 +738,42 @@ class DiscountViewSet(TenantViewSet):
         )
 
         return Response(preview_data)
+
+
+class TermSetupView(APIView):
+    """
+    GET: the new term's fee structure and last term's unpaid balances.
+    POST {"action": "copy_fees", "item_ids"?} or {"action": "carry_forward", "student_ids": [...]}.
+    Bursar and admins only; each step runs only when they confirm it.
+    """
+
+    permission_classes = [permissions.IsAuthenticated, IsFinanceStaff]
+
+    def get(self, request):
+        from .term_setup import status
+
+        school = get_request_school(request)
+        if not school:
+            return Response({"detail": "School not found."}, status=404)
+        return Response(status(school))
+
+    def post(self, request):
+        from .term_setup import SetupError, carry_forward, copy_fees
+
+        school = get_request_school(request)
+        if not school:
+            return Response({"detail": "School not found."}, status=404)
+        action_name = request.data.get("action")
+        try:
+            if action_name == "copy_fees":
+                created = copy_fees(school, request.data.get("item_ids") or None)
+                return Response({"created": created})
+            if action_name == "carry_forward":
+                ids = request.data.get("student_ids")
+                if not isinstance(ids, list) or not ids:
+                    return Response({"detail": "Choose the students whose balances to carry forward."}, status=400)
+                moved, total = carry_forward(school, ids, request.user)
+                return Response({"moved": moved, "total": total})
+        except SetupError as error:
+            return Response({"detail": str(error)}, status=400)
+        return Response({"detail": "Unknown action."}, status=400)

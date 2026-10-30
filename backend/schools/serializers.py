@@ -264,7 +264,8 @@ class SchoolSettingsSerializer(serializers.ModelSerializer):
     class Meta:
         model = SchoolSettings
         fields = "__all__"
-        read_only_fields = ("school",)
+        # The session, term and next-term date follow the academic calendar (academic/calendar.py).
+        read_only_fields = ("school", "current_session", "current_term", "next_term_begins")
 
     def validate_landing_about_image_position(self, value):
         if value not in ("left", "right"):

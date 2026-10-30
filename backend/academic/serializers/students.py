@@ -39,13 +39,15 @@ class StudentSerializer(serializers.ModelSerializer):
             # Subjects this student takes (empty = all the class offers); set on the Student subjects
             # page (classes/<id>/subject-choices/), which checks them against the class.
             "assigned_subjects",
+            # Balances moved between terms; set by the bursary's term setup (bursary/term_setup.py).
+            "balance_transfers",
             "password",
             "status",
             "performance_trend",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ("school", "user", "current_class", "assigned_subjects")
+        read_only_fields = ("school", "user", "current_class", "assigned_subjects", "balance_transfers")
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)

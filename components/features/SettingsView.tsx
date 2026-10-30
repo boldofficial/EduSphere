@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { Save, Lock, RefreshCw, CheckCircle2, AlertTriangle, Copy } from 'lucide-react';
 import * as Types from '@/lib/types';
 import * as Utils from '@/lib/utils';
@@ -9,6 +10,7 @@ import { Select } from '@/components/ui/select';
 import { useToast } from '@/components/providers/toast-provider';
 import { PaymentSettingsCard } from '@/components/features/settings/PaymentSettingsCard';
 import { TwoFactorSettings } from '@/components/features/auth/TwoFactorSettings';
+import { formatDay } from '@/components/features/AcademicCalendarView';
 
 interface SettingsViewProps {
   settings: Types.Settings;
@@ -87,34 +89,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   );
   const [isSavingPaymentSettings, setIsSavingPaymentSettings] = useState(false);
 
-  const normalizeDateForApi = (value?: string | null): string | undefined => {
-    const trimmed = (value || '').trim();
-    if (!trimmed) return undefined;
-
-    if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
-      return trimmed;
-    }
-
-    const parsed = new Date(trimmed);
-    if (Number.isNaN(parsed.getTime())) {
-      return undefined;
-    }
-
-    return parsed.toISOString().slice(0, 10);
-  };
-
   const buildSettingsPayload = (data: Types.Settings) => {
-    const normalizedNextTermBegins = normalizeDateForApi(data.next_term_begins);
-
+    // Session, term and next-term date are set on the Sessions & Terms page.
     return {
       school_name: data.school_name,
       school_address: data.school_address,
       school_email: data.school_email,
       school_phone: data.school_phone,
       school_tagline: data.school_tagline,
-      current_session: data.current_session,
-      current_term: data.current_term,
-      ...(normalizedNextTermBegins ? { next_term_begins: normalizedNextTermBegins } : {}),
       class_teacher_label: data.class_teacher_label,
       head_teacher_label: data.head_teacher_label,
       report_font_family: data.report_font_family,
@@ -291,27 +273,23 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </Card>
         <Card title="Session & Display">
           <div className="space-y-4">
-            <Input
-              label="Current Session"
-              value={formData.current_session}
-              onChange={(e) => handleChange('current_session', e.target.value)}
-            />
-            <div className="grid grid-cols-2 gap-4">
-              <Select
-                label="Current Term"
-                value={formData.current_term}
-                onChange={(e) => handleChange('current_term', e.target.value)}
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-control border border-gray-200 bg-gray-50 px-4 py-3">
+              <div className="text-sm">
+                <p className="font-semibold text-gray-900">
+                  {formData.current_term}, {formData.current_session}
+                </p>
+                <p className="text-gray-500">
+                  {formData.next_term_begins
+                    ? `Next term begins ${formatDay(String(formData.next_term_begins).slice(0, 10))}`
+                    : 'Next term date not set'}
+                </p>
+              </div>
+              <Link
+                href="/sessions"
+                className="text-sm font-semibold text-brand-700 hover:underline"
               >
-                <option>First Term</option>
-                <option>Second Term</option>
-                <option>Third Term</option>
-              </Select>
-              <Input
-                label="Next Term Begins"
-                type="date"
-                value={formData.next_term_begins}
-                onChange={(e) => handleChange('next_term_begins', e.target.value)}
-              />
+                Sessions &amp; terms →
+              </Link>
             </div>
             <div className="space-y-3 pt-2">
               <div className="flex items-center gap-2">

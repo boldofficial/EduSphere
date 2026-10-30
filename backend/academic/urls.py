@@ -58,5 +58,11 @@ urlpatterns = [
     path("grades/trends/", views.GradeTrendView.as_view(), name="grade-trends"),
     path("analytics/", views.SchoolAnalyticsView.as_view(), name="school-analytics"),
     path("dashboard/", views.AdminDashboardView.as_view(), name="admin-dashboard"),
+    path("calendar/", views.AcademicCalendarView.as_view(), name="academic-calendar"),
+    path("calendar/sessions/<int:pk>/", views.AcademicSessionDetailView.as_view(), name="academic-session"),
+    path("calendar/terms/<int:pk>/", views.AcademicTermDetailView.as_view(), name="academic-term"),
+    path("calendar/terms/<int:pk>/start/", views.StartTermView.as_view(), name="academic-term-start"),
+    path("calendar/terms/<int:pk>/checklist/", views.TermChecklistView.as_view(), name="academic-term-checklist"),
+    path("calendar/promotion/", views.SessionPromotionView.as_view(), name="session-promotion"),
     path("", include(router.urls)),
 ]

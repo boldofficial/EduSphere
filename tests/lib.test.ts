@@ -88,3 +88,41 @@ describe('getRateLimitConfig', () => {
     expect(config.limit).toBe(RATE_LIMITS.default.limit);
   });
 });
+
+describe('getStudentBalance with balances carried between terms', () => {
+  // Imported here so the tenant-host tests above stay independent of the utils module.
+  it('adds the brought-forward balance to the new term and settles the old one', async () => {
+    const { getStudentBalance, broughtForwardLines } = await import('@/lib/utils');
+    const student = {
+      id: 's1',
+      class_id: 'c1',
+      assigned_fees: [],
+      discounts: [],
+      balance_transfers: [
+        {
+          from_session: '2025/2026',
+          from_term: 'First Term',
+          to_session: '2025/2026',
+          to_term: 'Second Term',
+          amount: '40000.00',
+        },
+      ],
+    } as never;
+    const fees = [
+      { id: 'f1', amount: 60000, class_id: 'c1', session: '2025/2026', term: 'First Term' },
+      { id: 'f2', amount: 50000, class_id: 'c1', session: '2025/2026', term: 'Second Term' },
+    ] as never;
+    const payments = [
+      { student_id: 's1', amount: 20000, session: '2025/2026', term: 'First Term' },
+    ] as never;
+
+    const first = getStudentBalance(student, fees, payments, '2025/2026', 'First Term');
+    expect(first.balance).toBe(0);
+    const second = getStudentBalance(student, fees, payments, '2025/2026', 'Second Term');
+    expect(second.totalBill).toBe(90000);
+    expect(second.broughtForward).toBe(40000);
+    expect(broughtForwardLines(student, '2025/2026', 'Second Term')).toEqual([
+      { label: 'Balance from First Term 2025/2026', amount: 40000 },
+    ]);
+  });
+});

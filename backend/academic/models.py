@@ -193,6 +193,9 @@ class Student(AuditTrailMixin, TenantModel):
     assigned_fees = models.JSONField(default=list, blank=True)  # List of FeeItem IDs
     discounts = models.JSONField(default=list, blank=True)  # List of discount objects
     assigned_subjects = models.JSONField(default=list, blank=True)  # List of subject names (strings)
+    # Unpaid balances moved from one term to the next (bursary/balances.py):
+    # [{"from_session", "from_term", "to_session", "to_term", "amount", "at", "by"}]
+    balance_transfers = models.JSONField(default=list, blank=True)
 
     def save(self, *args, **kwargs):
         self.track_changes(user=getattr(self, "_user", None))
@@ -754,21 +757,42 @@ class TimetableEntry(TenantModel):
 
 class AcademicTerm(TenantModel):
     """
-    Specific academic periods with start and end dates.
-    Essential for fee collection forecasting and term-based analytics.
+    One term of a session, with its dates. Exactly one term per school is active; SchoolSettings
+    mirrors it (see academic/calendar.py). `session` keeps the session name as text, like every
+    other record, and `academic_session` links the session it belongs to.
     """
 
+    TERM_NAMES = ["First Term", "Second Term", "Third Term"]
+    STATUS_CHOICES = [("upcoming", "Upcoming"), ("active", "Active"), ("closed", "Closed")]
+
+    academic_session = models.ForeignKey(
+        "AcademicSession", on_delete=models.CASCADE, null=True, blank=True, related_name="terms"
+    )
     session = models.CharField(max_length=50)  # e.g. "2025/2026"
     name = models.CharField(max_length=50)  # e.g. "First Term"
-    start_date = models.DateField()
-    end_date = models.DateField()
-    is_current = models.BooleanField(default=False)
+    order = models.PositiveSmallIntegerField(default=0)  # 1, 2, 3
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+    mid_term_start = models.DateField(null=True, blank=True)
+    mid_term_end = models.DateField(null=True, blank=True)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="upcoming", db_index=True)
+    is_current = models.BooleanField(default=False)  # kept equal to status == "active"
+    closed_at = models.DateTimeField(null=True, blank=True)
+    closed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
 
     class Meta:
         verbose_name = "Academic Term"
         verbose_name_plural = "Academic Terms"
         unique_together = ("school", "session", "name")
         ordering = ["-start_date"]
+
+    def save(self, *args, **kwargs):
+        if self.name in self.TERM_NAMES:
+            self.order = self.TERM_NAMES.index(self.name) + 1
+        self.is_current = self.status == "active"
+        if kwargs.get("update_fields") is not None:
+            kwargs["update_fields"] = {*kwargs["update_fields"], "order", "is_current"}
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.name} {self.session} ({self.school.name})"
@@ -827,3 +851,18 @@ class ExternalExamCandidate(TenantModel):
 
     def __str__(self):
         return f"{self.student.names} · {self.exam.name}"
+
+
+class AcademicSession(TenantModel):
+    """A school year, e.g. 2025/2026. Its terms carry the dates; SchoolSettings mirrors the active one."""
+
+    name = models.CharField(max_length=20)  # always "YYYY/YYYY"
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-name"]
+        constraints = [models.UniqueConstraint(fields=["school", "name"], name="unique_session_per_school")]
+
+    def __str__(self):
+        return f"{self.name} ({self.school.name})"

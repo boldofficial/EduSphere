@@ -12,6 +12,7 @@ from .views import (
     ScholarshipViewSet,
     StudentFeeViewSet,
     DiscountViewSet,
+    TermSetupView,
 )
 from .views_public import PublicInvoiceView
 
@@ -30,4 +31,5 @@ router.register(r"dashboard", DashboardViewSet, basename="bursary-dashboard")
 
 urlpatterns = [
     path("public/invoice/<uuid:payment_hash>/", PublicInvoiceView.as_view(), name="public-invoice"),
+    path("term-setup/", TermSetupView.as_view(), name="term-setup"),
 ] + router.urls
