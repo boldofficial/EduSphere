@@ -10,6 +10,7 @@ import * as Types from '@/lib/types';
 import * as Utils from '@/lib/utils';
 import { Card } from '@/components/ui/card';
 import { Select } from '@/components/ui/select';
+import { useAcademicCalendar } from '@/lib/hooks/use-calendar';
 
 interface SkillsTabProps {
   classes: Types.Class[];
@@ -52,6 +53,9 @@ export const SkillsTab: React.FC<SkillsTabProps> = ({
   const [attendanceTotalInput, setAttendanceTotalInput] = React.useState('0');
   const [teacherRemarkDraft, setTeacherRemarkDraft] = React.useState('');
   const [headTeacherRemarkDraft, setHeadTeacherRemarkDraft] = React.useState('');
+
+  // School days of the current term, counted from its dates (Sessions & Terms).
+  const schoolDays = useAcademicCalendar().data?.current?.school_days ?? null;
 
   const score = scores.find(
     (s) =>
@@ -251,7 +255,23 @@ export const SkillsTab: React.FC<SkillsTabProps> = ({
                     />
                   </div>
                 </div>
-                <p className="text-xs text-gray-500">Attendance values are manually editable.</p>
+                <p className="text-xs text-gray-500">
+                  Attendance values are manually editable.
+                  {schoolDays != null && String(schoolDays) !== attendanceTotalInput && (
+                    <>
+                      {' '}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          commitAttendanceValue('attendance_total', String(schoolDays))
+                        }
+                        className="font-semibold text-brand-700 hover:underline"
+                      >
+                        Use {schoolDays} school days from the term calendar
+                      </button>
+                    </>
+                  )}
+                </p>
 
                 <div className="space-y-1">
                   <div className="flex items-center justify-between">

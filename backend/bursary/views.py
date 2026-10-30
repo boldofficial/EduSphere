@@ -459,7 +459,9 @@ class DashboardViewSet(viewsets.ViewSet):
         if term_id:
             term = AcademicTerm.objects.filter(school=school, id=term_id).first()
         else:
-            term = AcademicTerm.objects.filter(school=school, is_current=True).first()
+            from academic.calendar import active_term
+
+            term = active_term(school)
 
         if not term:
             return Response({"error": "Academic term not found"}, status=404)
@@ -517,8 +519,12 @@ class DashboardViewSet(viewsets.ViewSet):
         # 3. FORECASTING logic
         today = timezone.now().date()
 
-        days_elapsed = (today - term.start_date).days
-        days_total = (term.end_date - term.start_date).days
+        # Undated terms (dates not set in the academic calendar yet) forecast from what is collected.
+        if term.start_date and term.end_date and term.end_date > term.start_date:
+            days_elapsed = (today - term.start_date).days
+            days_total = (term.end_date - term.start_date).days
+        else:
+            days_elapsed = days_total = 0
 
         # Max out elapsed days at total days if term has ended
         days_elapsed = max(0, min(days_elapsed, days_total))
@@ -561,10 +567,14 @@ class DashboardViewSet(viewsets.ViewSet):
         if term_id:
             term = AcademicTerm.objects.filter(school=school, id=term_id).first()
         else:
-            term = AcademicTerm.objects.filter(school=school, is_current=True).first()
+            from academic.calendar import active_term
+
+            term = active_term(school)
 
         if not term:
             return Response({"error": "Academic term not found"}, status=404)
+        if not term.start_date or not term.end_date:
+            return Response({"error": "Set this term's dates in the academic calendar to see the chart."}, status=404)
 
         # Generate labels (Weekly)
         from datetime import timedelta
@@ -631,8 +641,12 @@ class DashboardViewSet(viewsets.ViewSet):
             week_num += 1
 
         # Forecast Projection (Starts from current cumulative collected)
-        days_elapsed = (today - term.start_date).days
-        days_total = (term.end_date - term.start_date).days
+        # Undated terms (dates not set in the academic calendar yet) forecast from what is collected.
+        if term.start_date and term.end_date and term.end_date > term.start_date:
+            days_elapsed = (today - term.start_date).days
+            days_total = (term.end_date - term.start_date).days
+        else:
+            days_elapsed = days_total = 0
 
         current_collected = (
             collected_points[min(len(collected_points) - 1, (days_elapsed // 7))] if days_elapsed >= 0 else 0

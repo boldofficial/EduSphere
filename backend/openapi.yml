@@ -605,6 +605,83 @@ paths:
       responses:
         '200':
           description: No response body
+  /api/academic/calendar/:
+    get:
+      operationId: academic_calendar_retrieve
+      description: |-
+        GET: the current term (week, school days) and every session with its terms.
+        POST {"name"?}: add a session; its term dates are copied from the latest session a year on.
+      tags:
+      - academic
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: academic_calendar_create
+      description: |-
+        GET: the current term (week, school days) and every session with its terms.
+        POST {"name"?}: add a session; its term dates are copied from the latest session a year on.
+      tags:
+      - academic
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/academic/calendar/sessions/{id}/:
+    delete:
+      operationId: academic_calendar_sessions_destroy
+      description: DELETE a session that has never been used (all its terms still
+        upcoming).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - academic
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/academic/calendar/terms/{id}/:
+    patch:
+      operationId: academic_calendar_terms_partial_update
+      description: 'PATCH a term''s dates: start, end and mid-term break.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - academic
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/academic/calendar/terms/{id}/start/:
+    post:
+      operationId: academic_calendar_terms_start_create
+      description: 'POST: make this the current term. The current one is closed.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - academic
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
   /api/academic/classes/:
     get:
       operationId: academic_classes_list

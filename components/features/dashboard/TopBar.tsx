@@ -1,6 +1,7 @@
 import React from 'react';
 import { Menu, Search } from 'lucide-react';
 import { NotificationCenter } from '@/components/features/NotificationCenter';
+import { useAcademicCalendar } from '@/lib/hooks/use-calendar';
 
 interface TopBarProps {
   onMenuToggle: () => void;
@@ -10,6 +11,7 @@ interface TopBarProps {
 }
 
 export function TopBar({ onMenuToggle, onSearchOpen, currentRole, settings }: TopBarProps) {
+  const current = useAcademicCalendar().data?.current;
   return (
     <header className="h-16 lg:h-20 bg-white border-b sticky top-0 z-20 flex items-center justify-between px-4 lg:px-6 no-print shadow-sm shrink-0">
       {/* Mobile menu button - hidden on desktop */}
@@ -38,7 +40,17 @@ export function TopBar({ onMenuToggle, onSearchOpen, currentRole, settings }: To
             <p className="text-xs lg:text-sm font-bold text-gray-900 uppercase tracking-tight">
               {currentRole}
             </p>
-            <p className="text-xs text-brand-600 font-medium">{settings.current_term}</p>
+            <p
+              className="text-xs text-brand-600 font-medium"
+              title={current ? `${current.term}, ${current.session}` : undefined}
+            >
+              {current?.term ?? settings.current_term}
+              {current?.week && current.weeks
+                ? ` · Week ${current.week} of ${current.weeks}`
+                : current?.days_left != null && current.days_left < 0
+                  ? ' · Ended'
+                  : ''}
+            </p>
           </div>
           <div className="h-8 w-8 lg:h-10 lg:w-10 bg-brand-50 rounded-full border-2 border-brand-100 flex items-center justify-center font-bold text-brand-700 uppercase text-xs lg:text-sm">
             {currentRole?.substring(0, 2)}

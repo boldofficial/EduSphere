@@ -795,6 +795,7 @@ export type ViewState =
   | 'settings'
   | 'data'
   | 'external_exams'
+  | 'sessions'
   | 'audit'
   | 'roles'
   | 'cms'

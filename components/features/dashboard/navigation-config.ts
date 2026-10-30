@@ -12,6 +12,7 @@ import {
   UserCog,
   Megaphone as AnnouncementIcon,
   Calendar,
+  CalendarRange,
   BarChart3,
   FileCheck,
   Newspaper,
@@ -118,6 +119,13 @@ export const NAVIGATION_ITEMS = [
     category: 'Academics',
   },
   { id: 'calendar', name: 'Calendar', href: '/calendar', icon: Calendar, category: 'Academics' },
+  {
+    id: 'sessions',
+    name: 'Sessions & Terms',
+    href: '/sessions',
+    icon: CalendarRange,
+    category: 'Academics',
+  },
   // New exam modules under Academics
   {
     id: 'question_bank',
