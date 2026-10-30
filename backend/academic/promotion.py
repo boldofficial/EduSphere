@@ -118,7 +118,9 @@ def apply(school, session, decisions, user=None, copy_subject_teachers=True):
     if bad:
         raise PromotionError("Each student must be promoted, repeated or graduated.")
     done = decided(school, session)
-    students = Student.objects.select_for_update().filter(school=school, status="active", pk__in=list(decisions.keys()))
+    students = Student.objects.select_for_update(of=("self",)).filter(
+        school=school, status="active", pk__in=list(decisions.keys())
+    )
     students = students.select_related("current_class__next_class")
     counts = {"promoted": 0, "repeated": 0, "graduated": 0, "skipped": 0}
     for student in students:
