@@ -40,6 +40,12 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({
       (!f.is_optional || student.assigned_fees?.includes(f.id))
   );
 
+  const broughtForward = Utils.broughtForwardLines(
+    student,
+    settings.current_session,
+    settings.current_term
+  );
+
   const studentPayments = payments.filter(
     (p) =>
       p.student_id === student.id &&
@@ -362,7 +368,43 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({
                 </td>
               </tr>
             ))}
-            {applicableFees.length === 0 && (
+            {broughtForward.map((line, index) => (
+              <tr key={line.label} style={{ borderBottom: '1px solid #f3f4f6' }}>
+                <td
+                  style={{
+                    padding: '12px 15px',
+                    textAlign: 'center',
+                    color: '#6b7280',
+                    fontSize: '10pt',
+                  }}
+                >
+                  {applicableFees.length + index + 1}
+                </td>
+                <td
+                  style={{
+                    padding: '12px 15px',
+                    fontSize: '10pt',
+                    fontWeight: 600,
+                    color: '#374151',
+                  }}
+                >
+                  {line.label}
+                </td>
+                <td
+                  style={{
+                    padding: '12px 15px',
+                    textAlign: 'right',
+                    fontSize: '11pt',
+                    fontWeight: 700,
+                    color: '#111827',
+                    fontFamily: 'monospace',
+                  }}
+                >
+                  {Utils.formatCurrency(line.amount).replace('₦', '')}
+                </td>
+              </tr>
+            ))}
+            {applicableFees.length === 0 && broughtForward.length === 0 && (
               <tr>
                 <td
                   colSpan={3}

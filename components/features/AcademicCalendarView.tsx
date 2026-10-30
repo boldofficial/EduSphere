@@ -2,8 +2,19 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { CalendarDays, CalendarRange, Loader2, Pencil, Play, Plus, Trash2 } from 'lucide-react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  AlertTriangle,
+  CalendarDays,
+  CalendarRange,
+  CheckCircle2,
+  Loader2,
+  Lock,
+  Pencil,
+  Play,
+  Plus,
+  Trash2,
+} from 'lucide-react';
 import apiClient from '@/lib/api-client';
 import {
   type CalendarSession,
@@ -89,28 +100,10 @@ export function AcademicCalendarView() {
     onError: (error) => addToast(detailOf(error, 'Could not remove the session.'), 'error'),
   });
 
-  const startTerm = useMutation({
-    mutationFn: async (id: number) => apiClient.post(`academic/calendar/terms/${id}/start/`),
-    onSuccess: () => {
-      // Almost every screen reads the current term: refresh everything.
-      queryClient.invalidateQueries();
-      addToast('The new term has started.', 'success');
-    },
-    onError: (error) => addToast(detailOf(error, 'Could not start the term.'), 'error'),
-  });
-
   const sessions = data?.sessions ?? [];
   const current = data?.current;
   const nextId = nextTermId(sessions);
-
-  const begin = async (term: CalendarTerm, session: string) => {
-    const ok = await confirm({
-      title: `Start ${term.name}, ${session}?`,
-      description: `${current ? `${current.term} ${current.session} will be closed. ` : ''}New scores, attendance, fees and report cards will be recorded under ${term.name} ${session} for the whole school.`,
-      confirmLabel: 'Start term',
-    });
-    if (ok) startTerm.mutate(term.id);
-  };
+  const [closing, setClosing] = useState(false);
 
   const remove = async (session: CalendarSession) => {
     const ok = await confirm({
@@ -150,14 +143,25 @@ export function AcademicCalendarView() {
       {current && (
         <section className="rounded-card border border-brand-100 bg-brand-50/60 p-5">
           <p className="text-xs font-bold uppercase tracking-wider text-brand-700">Current term</p>
-          <div className="mt-1 flex flex-wrap items-baseline gap-x-4 gap-y-1">
-            <h2 className="text-xl font-bold text-gray-900">
-              {current.term}, {current.session}
-            </h2>
-            {current.week && current.weeks && (
-              <span className="text-sm font-semibold text-brand-700">
-                Week {current.week} of {current.weeks}
-              </span>
+          <div className="mt-1 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+              <h2 className="text-xl font-bold text-gray-900">
+                {current.term}, {current.session}
+              </h2>
+              {current.week && current.weeks && (
+                <span className="text-sm font-semibold text-brand-700">
+                  Week {current.week} of {current.weeks}
+                </span>
+              )}
+            </div>
+            {canEdit && (
+              <button
+                type="button"
+                onClick={() => setClosing(true)}
+                className="inline-flex items-center gap-2 whitespace-nowrap rounded-control border border-brand-200 bg-white px-4 py-2 text-sm font-bold text-brand-700 hover:bg-brand-50"
+              >
+                <Lock size={15} /> Close term
+              </button>
             )}
           </div>
           <dl className="mt-3 grid gap-3 text-sm sm:grid-cols-3">
@@ -267,8 +271,7 @@ export function AcademicCalendarView() {
                         {term.id === nextId && (
                           <button
                             type="button"
-                            onClick={() => begin(term, session.name)}
-                            disabled={startTerm.isPending}
+                            onClick={() => setClosing(true)}
                             className="inline-flex items-center gap-1 rounded-control bg-brand-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-brand-700 disabled:opacity-60"
                           >
                             <Play size={13} /> Start term
@@ -294,6 +297,10 @@ export function AcademicCalendarView() {
           : add them as Holiday events and they are left out of the school days.
         </span>
       </p>
+
+      {closing && current && (
+        <CloseTermModal termId={current.id} onClose={() => setClosing(false)} />
+      )}
 
       {editing && (
         <TermDatesModal
@@ -391,6 +398,137 @@ function TermDatesModal({
           </button>
         </div>
       </form>
+    </Modal>
+  );
+}
+
+interface ChecklistItem {
+  class: string;
+  missing: number;
+  detail: string;
+}
+
+interface Checklist {
+  term: { id: number; session: string; term: string };
+  next: { id: number; session: string; term: string } | null;
+  checks: {
+    key: string;
+    title: string;
+    status: 'ok' | 'warn';
+    summary: string;
+    items: ChecklistItem[];
+  }[];
+  ready: boolean;
+}
+
+/** What is still missing in the current term, then close it and start the next one. */
+function CloseTermModal({ termId, onClose }: { termId: number; onClose: () => void }) {
+  const { addToast } = useToast();
+  const queryClient = useQueryClient();
+  const { data, isLoading } = useQuery({
+    queryKey: ['term-checklist', termId],
+    queryFn: async () =>
+      (await apiClient.get(`academic/calendar/terms/${termId}/checklist/`)).data as Checklist,
+    staleTime: 0,
+  });
+
+  const start = useMutation({
+    mutationFn: async (id: number) => apiClient.post(`academic/calendar/terms/${id}/start/`),
+    onSuccess: () => {
+      // Almost every screen reads the current term: refresh everything.
+      queryClient.invalidateQueries();
+      addToast(
+        `${data?.next?.term} ${data?.next?.session} has started. The bursar can now set up its fees.`,
+        'success'
+      );
+      onClose();
+    },
+    onError: (error) => addToast(detailOf(error, 'Could not start the term.'), 'error'),
+  });
+
+  const title = data ? `Close ${data.term.term}, ${data.term.session}` : 'Close term';
+  return (
+    <Modal isOpen onClose={onClose} title={title} size="lg">
+      {isLoading || !data ? (
+        <p className="flex items-center gap-2 text-sm text-gray-500">
+          <Loader2 size={16} className="animate-spin" /> Checking the term…
+        </p>
+      ) : (
+        <div className="space-y-5">
+          <ul className="space-y-3">
+            {data.checks.map((check) => (
+              <li key={check.key} className="rounded-control border border-gray-200 p-3">
+                <div className="flex items-start gap-3">
+                  {check.status === 'ok' ? (
+                    <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-green-600" />
+                  ) : (
+                    <AlertTriangle size={18} className="mt-0.5 shrink-0 text-amber-600" />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-gray-900">{check.title}</p>
+                    <p className="text-sm text-gray-600">{check.summary}</p>
+                    {check.items.length > 0 && (
+                      <ul className="mt-2 divide-y divide-gray-100 rounded-control bg-gray-50 text-xs">
+                        {check.items.map((item) => (
+                          <li key={item.class} className="flex gap-3 px-3 py-1.5">
+                            <span className="w-24 shrink-0 font-semibold text-gray-800">
+                              {item.class}
+                            </span>
+                            <span className="text-gray-600">
+                              {item.detail || `${item.missing} missing`}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          {data.next ? (
+            <p className="text-sm text-gray-600">
+              {data.ready ? 'Everything is in place. ' : 'You can still close the term. '}
+              After closing, teachers can no longer change {data.term.term} scores, report cards or
+              attendance (admins still can), and everything new is recorded under{' '}
+              <strong>
+                {data.next.term} {data.next.session}
+              </strong>
+              .
+            </p>
+          ) : (
+            <p className="text-sm text-amber-700">
+              There is no term after this one yet. Add the next session on this page first.
+            </p>
+          )}
+
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-control border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+            >
+              Not yet
+            </button>
+            {data.next && (
+              <button
+                type="button"
+                onClick={() => start.mutate(data.next!.id)}
+                disabled={start.isPending}
+                className="inline-flex items-center gap-2 rounded-control bg-brand-600 px-4 py-2 text-sm font-bold text-white hover:bg-brand-700 disabled:opacity-60"
+              >
+                {start.isPending ? (
+                  <Loader2 size={15} className="animate-spin" />
+                ) : (
+                  <Play size={15} />
+                )}
+                Close and start {data.next.term}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </Modal>
   );
 }

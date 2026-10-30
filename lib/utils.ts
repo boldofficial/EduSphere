@@ -604,6 +604,15 @@ export const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
 };
 
+/** Invoice lines for balances brought into this term, e.g. "Balance from First Term 2025/2026". */
+export const broughtForwardLines = (student: Student, session: string, term: string) =>
+  (student.balance_transfers || [])
+    .filter((t) => t.to_session === session && t.to_term === term)
+    .map((t) => ({
+      label: `Balance from ${t.from_term} ${t.from_session}`,
+      amount: Number(t.amount) || 0,
+    }));
+
 export const getStudentBalance = (
   student: Student,
   fees: FeeStructure[],
@@ -633,7 +642,18 @@ export const getStudentBalance = (
   );
   const totalDiscount = activeDiscounts.reduce((acc, d) => acc + (Number(d.amount) || 0), 0);
 
-  const totalBill = Math.max(0, rawBill - totalDiscount); // Ensure bill doesn't go below 0
+  // Balances the bursar moved between terms: owed from last term is added here, and the term it
+  // left is settled, so it is never counted twice.
+  const transfers = student.balance_transfers || [];
+  const broughtForward = transfers
+    .filter((t) => t.to_session === session && t.to_term === term)
+    .reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
+  const carriedForward = transfers
+    .filter((t) => t.from_session === session && t.from_term === term)
+    .reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
+
+  // Ensure the term's own fees don't go below 0
+  const totalBill = Math.max(0, rawBill - totalDiscount) + broughtForward - carriedForward;
 
   // Calculate total paid
   // Only money the school has confirmed counts: transfers awaiting the bursar's check (pending)
@@ -647,7 +667,15 @@ export const getStudentBalance = (
   );
   const totalPaid = studentPayments.reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
 
-  return { totalBill, totalPaid, balance: totalBill - totalPaid, totalDiscount, applicableFees };
+  return {
+    totalBill,
+    totalPaid,
+    balance: totalBill - totalPaid,
+    totalDiscount,
+    applicableFees,
+    broughtForward,
+    carriedForward,
+  };
 };
 
 export const getStudentPosition = (

@@ -62,5 +62,6 @@ urlpatterns = [
     path("calendar/sessions/<int:pk>/", views.AcademicSessionDetailView.as_view(), name="academic-session"),
     path("calendar/terms/<int:pk>/", views.AcademicTermDetailView.as_view(), name="academic-term"),
     path("calendar/terms/<int:pk>/start/", views.StartTermView.as_view(), name="academic-term-start"),
+    path("calendar/terms/<int:pk>/checklist/", views.TermChecklistView.as_view(), name="academic-term-checklist"),
     path("", include(router.urls)),
 ]

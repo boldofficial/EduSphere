@@ -72,6 +72,8 @@ export const StudentInvoiceView: React.FC<StudentInvoiceViewProps> = ({
       (f.class_id === null || f.class_id === student.class_id)
   );
 
+  const broughtForward = Utils.broughtForwardLines(student, targetSession, targetTerm);
+
   // Get student's payments
   const studentPayments = payments
     .filter(
@@ -263,7 +265,7 @@ export const StudentInvoiceView: React.FC<StudentInvoiceViewProps> = ({
             Fee Breakdown
           </h2>
 
-          {studentFees.length > 0 ? (
+          {studentFees.length > 0 || broughtForward.length > 0 ? (
             <div className="space-y-2 flex-grow">
               {studentFees.map((fee) => (
                 <div
@@ -273,6 +275,17 @@ export const StudentInvoiceView: React.FC<StudentInvoiceViewProps> = ({
                   <span className="text-sm font-medium text-gray-600">{fee.name}</span>
                   <span className="text-sm font-bold text-gray-900">
                     ₦{fee.amount.toLocaleString()}
+                  </span>
+                </div>
+              ))}
+              {broughtForward.map((line) => (
+                <div
+                  key={line.label}
+                  className="flex justify-between items-center p-3 bg-amber-50 rounded-xl border border-amber-100"
+                >
+                  <span className="text-sm font-medium text-amber-800">{line.label}</span>
+                  <span className="text-sm font-bold text-amber-900">
+                    ₦{line.amount.toLocaleString()}
                   </span>
                 </div>
               ))}

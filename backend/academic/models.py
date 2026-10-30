@@ -193,6 +193,9 @@ class Student(AuditTrailMixin, TenantModel):
     assigned_fees = models.JSONField(default=list, blank=True)  # List of FeeItem IDs
     discounts = models.JSONField(default=list, blank=True)  # List of discount objects
     assigned_subjects = models.JSONField(default=list, blank=True)  # List of subject names (strings)
+    # Unpaid balances moved from one term to the next (bursary/balances.py):
+    # [{"from_session", "from_term", "to_session", "to_term", "amount", "at", "by"}]
+    balance_transfers = models.JSONField(default=list, blank=True)
 
     def save(self, *args, **kwargs):
         self.track_changes(user=getattr(self, "_user", None))

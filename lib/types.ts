@@ -381,6 +381,7 @@ export interface Student extends Entity {
   password?: string; // Portal login password (set by admin)
   assigned_fees?: string[]; // IDs of optional fees assigned to this student
   discounts?: StudentDiscount[]; // Applied discounts/scholarships
+  balance_transfers?: BalanceTransfer[]; // Unpaid balances moved between terms
   assigned_subjects?: string[]; // List of subject names
   performance_trend?: 'improving' | 'declining' | 'stable';
   // Nigerian-specific fields
@@ -405,6 +406,17 @@ export interface StudentGroup extends Entity {
   description?: string;
   students?: Array<string | Student>;
   student_count?: number;
+}
+
+/** An unpaid balance the bursar moved from one term into the next. */
+export interface BalanceTransfer {
+  from_session: string;
+  from_term: string;
+  to_session: string;
+  to_term: string;
+  amount: string | number;
+  at?: string;
+  by?: string;
 }
 
 export interface StudentDiscount {

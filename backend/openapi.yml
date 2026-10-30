@@ -44,9 +44,8 @@ paths:
     get:
       operationId: academic_attendance_records_list
       description: |-
-        Mixin to add caching capabilities to ViewSets
-
-        Automatically invalidates cache on create, update, delete
+        For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+        "report_card" or "attendance_session").
       parameters:
       - name: page
         required: false
@@ -74,9 +73,8 @@ paths:
     post:
       operationId: academic_attendance_records_create
       description: |-
-        Mixin to add caching capabilities to ViewSets
-
-        Automatically invalidates cache on create, update, delete
+        For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+        "report_card" or "attendance_session").
       tags:
       - academic
       requestBody:
@@ -104,9 +102,8 @@ paths:
     get:
       operationId: academic_attendance_records_retrieve
       description: |-
-        Mixin to add caching capabilities to ViewSets
-
-        Automatically invalidates cache on create, update, delete
+        For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+        "report_card" or "attendance_session").
       parameters:
       - in: path
         name: id
@@ -128,9 +125,8 @@ paths:
     put:
       operationId: academic_attendance_records_update
       description: |-
-        Mixin to add caching capabilities to ViewSets
-
-        Automatically invalidates cache on create, update, delete
+        For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+        "report_card" or "attendance_session").
       parameters:
       - in: path
         name: id
@@ -164,9 +160,8 @@ paths:
     patch:
       operationId: academic_attendance_records_partial_update
       description: |-
-        Mixin to add caching capabilities to ViewSets
-
-        Automatically invalidates cache on create, update, delete
+        For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+        "report_card" or "attendance_session").
       parameters:
       - in: path
         name: id
@@ -199,9 +194,8 @@ paths:
     delete:
       operationId: academic_attendance_records_destroy
       description: |-
-        Mixin to add caching capabilities to ViewSets
-
-        Automatically invalidates cache on create, update, delete
+        For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+        "report_card" or "attendance_session").
       parameters:
       - in: path
         name: id
@@ -220,9 +214,8 @@ paths:
     get:
       operationId: academic_attendance_sessions_list
       description: |-
-        Mixin to add caching capabilities to ViewSets
-
-        Automatically invalidates cache on create, update, delete
+        For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+        "report_card" or "attendance_session").
       parameters:
       - name: page
         required: false
@@ -250,9 +243,8 @@ paths:
     post:
       operationId: academic_attendance_sessions_create
       description: |-
-        Mixin to add caching capabilities to ViewSets
-
-        Automatically invalidates cache on create, update, delete
+        For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+        "report_card" or "attendance_session").
       tags:
       - academic
       requestBody:
@@ -280,9 +272,8 @@ paths:
     get:
       operationId: academic_attendance_sessions_retrieve
       description: |-
-        Mixin to add caching capabilities to ViewSets
-
-        Automatically invalidates cache on create, update, delete
+        For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+        "report_card" or "attendance_session").
       parameters:
       - in: path
         name: id
@@ -304,9 +295,8 @@ paths:
     put:
       operationId: academic_attendance_sessions_update
       description: |-
-        Mixin to add caching capabilities to ViewSets
-
-        Automatically invalidates cache on create, update, delete
+        For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+        "report_card" or "attendance_session").
       parameters:
       - in: path
         name: id
@@ -340,9 +330,8 @@ paths:
     patch:
       operationId: academic_attendance_sessions_partial_update
       description: |-
-        Mixin to add caching capabilities to ViewSets
-
-        Automatically invalidates cache on create, update, delete
+        For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+        "report_card" or "attendance_session").
       parameters:
       - in: path
         name: id
@@ -375,9 +364,8 @@ paths:
     delete:
       operationId: academic_attendance_sessions_destroy
       description: |-
-        Mixin to add caching capabilities to ViewSets
-
-        Automatically invalidates cache on create, update, delete
+        For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+        "report_card" or "attendance_session").
       parameters:
       - in: path
         name: id
@@ -652,6 +640,24 @@ paths:
     patch:
       operationId: academic_calendar_terms_partial_update
       description: 'PATCH a term''s dates: start, end and mid-term break.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - academic
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/academic/calendar/terms/{id}/checklist/:
+    get:
+      operationId: academic_calendar_terms_checklist_retrieve
+      description: 'GET: what is still missing before this term is closed (scores,
+        report cards, attendance, fees).'
       parameters:
       - in: path
         name: id
@@ -3042,9 +3048,8 @@ paths:
     get:
       operationId: academic_reports_list
       description: |-
-        Mixin to add caching capabilities to ViewSets
-
-        Automatically invalidates cache on create, update, delete
+        For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+        "report_card" or "attendance_session").
       parameters:
       - name: page
         required: false
@@ -3072,9 +3077,8 @@ paths:
     post:
       operationId: academic_reports_create
       description: |-
-        Mixin to add caching capabilities to ViewSets
-
-        Automatically invalidates cache on create, update, delete
+        For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+        "report_card" or "attendance_session").
       tags:
       - academic
       requestBody:
@@ -3102,9 +3106,8 @@ paths:
     get:
       operationId: academic_reports_retrieve
       description: |-
-        Mixin to add caching capabilities to ViewSets
-
-        Automatically invalidates cache on create, update, delete
+        For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+        "report_card" or "attendance_session").
       parameters:
       - in: path
         name: id
@@ -3126,9 +3129,8 @@ paths:
     put:
       operationId: academic_reports_update
       description: |-
-        Mixin to add caching capabilities to ViewSets
-
-        Automatically invalidates cache on create, update, delete
+        For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+        "report_card" or "attendance_session").
       parameters:
       - in: path
         name: id
@@ -3162,9 +3164,8 @@ paths:
     patch:
       operationId: academic_reports_partial_update
       description: |-
-        Mixin to add caching capabilities to ViewSets
-
-        Automatically invalidates cache on create, update, delete
+        For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+        "report_card" or "attendance_session").
       parameters:
       - in: path
         name: id
@@ -3197,9 +3198,8 @@ paths:
     delete:
       operationId: academic_reports_destroy
       description: |-
-        Mixin to add caching capabilities to ViewSets
-
-        Automatically invalidates cache on create, update, delete
+        For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+        "report_card" or "attendance_session").
       parameters:
       - in: path
         name: id
@@ -3446,9 +3446,8 @@ paths:
     get:
       operationId: academic_scores_list
       description: |-
-        Mixin to add caching capabilities to ViewSets
-
-        Automatically invalidates cache on create, update, delete
+        For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+        "report_card" or "attendance_session").
       parameters:
       - name: page
         required: false
@@ -3476,9 +3475,8 @@ paths:
     post:
       operationId: academic_scores_create
       description: |-
-        Mixin to add caching capabilities to ViewSets
-
-        Automatically invalidates cache on create, update, delete
+        For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+        "report_card" or "attendance_session").
       tags:
       - academic
       requestBody:
@@ -3505,9 +3503,8 @@ paths:
     get:
       operationId: academic_scores_retrieve
       description: |-
-        Mixin to add caching capabilities to ViewSets
-
-        Automatically invalidates cache on create, update, delete
+        For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+        "report_card" or "attendance_session").
       parameters:
       - in: path
         name: id
@@ -3529,9 +3526,8 @@ paths:
     put:
       operationId: academic_scores_update
       description: |-
-        Mixin to add caching capabilities to ViewSets
-
-        Automatically invalidates cache on create, update, delete
+        For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+        "report_card" or "attendance_session").
       parameters:
       - in: path
         name: id
@@ -3564,9 +3560,8 @@ paths:
     patch:
       operationId: academic_scores_partial_update
       description: |-
-        Mixin to add caching capabilities to ViewSets
-
-        Automatically invalidates cache on create, update, delete
+        For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+        "report_card" or "attendance_session").
       parameters:
       - in: path
         name: id
@@ -3599,9 +3594,8 @@ paths:
     delete:
       operationId: academic_scores_destroy
       description: |-
-        Mixin to add caching capabilities to ViewSets
-
-        Automatically invalidates cache on create, update, delete
+        For viewsets whose records carry a session and term (directly or through `term_source`, e.g.
+        "report_card" or "attendance_session").
       parameters:
       - in: path
         name: id
@@ -7551,6 +7545,33 @@ paths:
       - jwtAuth: []
       responses:
         '204':
+          description: No response body
+  /api/bursary/term-setup/:
+    get:
+      operationId: bursary_term_setup_retrieve
+      description: |-
+        GET: the new term's fee structure and last term's unpaid balances.
+        POST {"action": "copy_fees", "item_ids"?} or {"action": "carry_forward", "student_ids": [...]}.
+        Bursar and admins only; each step runs only when they confirm it.
+      tags:
+      - bursary
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: bursary_term_setup_create
+      description: |-
+        GET: the new term's fee structure and last term's unpaid balances.
+        POST {"action": "copy_fees", "item_ids"?} or {"action": "carry_forward", "student_ids": [...]}.
+        Bursar and admins only; each step runs only when they confirm it.
+      tags:
+      - bursary
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
           description: No response body
   /api/core/activity-logs/:
     get:
@@ -27144,6 +27165,8 @@ components:
         discounts: {}
         assigned_subjects:
           readOnly: true
+        balance_transfers:
+          readOnly: true
         status:
           $ref: '#/components/schemas/StudentStatusEnum'
         performance_trend:
@@ -27159,6 +27182,7 @@ components:
           readOnly: true
       required:
       - assigned_subjects
+      - balance_transfers
       - created_at
       - current_class
       - gender

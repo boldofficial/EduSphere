@@ -164,3 +164,20 @@ class StartTermView(APIView):
             return Response({"detail": "This term has been closed."}, status=400)
         start_term(term, request.user)
         return Response(describe(term))
+
+
+class TermChecklistView(APIView):
+    """GET: what is still missing before this term is closed (scores, report cards, attendance, fees)."""
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, pk):
+        from ..term_close import checklist
+
+        if denied := _admin(request):
+            return denied
+        school = get_request_school(request, allow_super_admin_tenant=True)
+        term = AcademicTerm.objects.select_related("academic_session").filter(school=school, pk=pk).first()
+        if not term:
+            return Response({"detail": "Term not found."}, status=404)
+        return Response(checklist(term))

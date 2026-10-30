@@ -11,6 +11,7 @@ import { FinancialDashboard } from './bursary/FinancialDashboard';
 import { DebtorReport } from './bursary/DebtorReport';
 import { ScholarshipManager } from './bursary/ScholarshipManager';
 import { TransferReviewQueue } from './bursary/TransferReviewQueue';
+import { TermSetupPanel } from './bursary/TermSetupPanel';
 import { useTransfers } from '@/lib/hooks/use-transfers';
 
 interface BursaryViewProps {
@@ -147,6 +148,8 @@ export const BursaryView: React.FC<BursaryViewProps> = ({
           <span className="font-semibold">Review →</span>
         </button>
       )}
+
+      {activeTab === 'dashboard' && <TermSetupPanel />}
 
       {activeTab === 'dashboard' && (
         <FinancialDashboard

@@ -20,6 +20,7 @@ from ..models import (
 from ..serializers import ReportCardSerializer, SubjectScoreSerializer
 from ..utils import ReportCardPDFGenerator
 from .base import IsSchoolStaff, TenantViewSet, is_school_staff, scope_to_learner
+from .term_lock import ClosedTermLockMixin, check_term_open
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +31,7 @@ def _is_truthy(value):
     return str(value).strip().lower() in {"1", "true", "yes", "on"}
 
 
-class ReportCardViewSet(TenantViewSet):
+class ReportCardViewSet(ClosedTermLockMixin, TenantViewSet):
     queryset = (
         ReportCard.objects.select_related("student", "student_class", "school")
         .prefetch_related("scores__subject")
@@ -143,6 +144,7 @@ class ReportCardViewSet(TenantViewSet):
         rows = request.data.get("data")
         if not session or not term or not isinstance(rows, list):
             return Response({"detail": "session, term and data are required."}, status=400)
+        check_term_open(request, school, session, term)
         if mode not in ("upsert", "create", "update"):
             return Response({"detail": "mode must be upsert, create or update."}, status=400)
         if len(rows) > 5000:
@@ -266,7 +268,9 @@ class ReportCardViewSet(TenantViewSet):
             return Response({"error": "Invalid verification hash"}, status=404)
 
 
-class SubjectScoreViewSet(TenantViewSet):
+class SubjectScoreViewSet(ClosedTermLockMixin, TenantViewSet):
+    term_source = "report_card"
+
     queryset = SubjectScore.objects.select_related(
         "report_card__student", "report_card__student_class", "subject", "school"
     ).all()
