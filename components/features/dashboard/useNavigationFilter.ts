@@ -56,6 +56,7 @@ export function useNavigationFilter(
       'transport',
       'question_bank',
       'exams',
+      'external_exams',
       'hr',
     ];
 

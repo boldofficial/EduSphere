@@ -28,6 +28,7 @@ import {
   FileText,
   BookMarked,
   Layers,
+  Award,
   History,
 } from 'lucide-react';
 
@@ -126,6 +127,13 @@ export const NAVIGATION_ITEMS = [
     category: 'Academics',
   },
   { id: 'exams', name: 'Formal Exams', href: '/exams', icon: FileText, category: 'Academics' },
+  {
+    id: 'external_exams',
+    name: 'WAEC, NECO & JAMB',
+    href: '/external-exams',
+    icon: Award,
+    category: 'Academics',
+  },
 
   { id: 'bursary', name: 'Bursary', href: '/bursary', icon: Wallet, category: 'Account' },
   { id: 'hr', name: 'HR & Payroll', href: '/hr', icon: Users, category: 'Account' },

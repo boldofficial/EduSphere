@@ -794,6 +794,7 @@ export type ViewState =
   | 'attendance'
   | 'settings'
   | 'data'
+  | 'external_exams'
   | 'audit'
   | 'roles'
   | 'cms'

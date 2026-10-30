@@ -764,6 +764,137 @@ export interface paths {
         patch: operations["academic_events_partial_update"];
         trace?: never;
     };
+    "/api/academic/external-exam-candidates/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description GET /academic/external-exam-candidates/?exam=<id>. Staff see all; students and parents only
+         *     their own entries (and results). Admins edit candidate numbers, subjects, results and status. */
+        get: operations["academic_external_exam_candidates_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/academic/external-exam-candidates/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description GET /academic/external-exam-candidates/?exam=<id>. Staff see all; students and parents only
+         *     their own entries (and results). Admins edit candidate numbers, subjects, results and status. */
+        get: operations["academic_external_exam_candidates_retrieve"];
+        put?: never;
+        post?: never;
+        /** @description GET /academic/external-exam-candidates/?exam=<id>. Staff see all; students and parents only
+         *     their own entries (and results). Admins edit candidate numbers, subjects, results and status. */
+        delete: operations["academic_external_exam_candidates_destroy"];
+        options?: never;
+        head?: never;
+        /** @description GET /academic/external-exam-candidates/?exam=<id>. Staff see all; students and parents only
+         *     their own entries (and results). Admins edit candidate numbers, subjects, results and status. */
+        patch: operations["academic_external_exam_candidates_partial_update"];
+        trace?: never;
+    };
+    "/api/academic/external-exams/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description GET/POST /academic/external-exams/; admins manage, staff view. */
+        get: operations["academic_external_exams_list"];
+        put?: never;
+        /** @description GET/POST /academic/external-exams/; admins manage, staff view. */
+        post: operations["academic_external_exams_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/academic/external-exams/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description GET/POST /academic/external-exams/; admins manage, staff view. */
+        get: operations["academic_external_exams_retrieve"];
+        /** @description GET/POST /academic/external-exams/; admins manage, staff view. */
+        put: operations["academic_external_exams_update"];
+        post?: never;
+        /** @description GET/POST /academic/external-exams/; admins manage, staff view. */
+        delete: operations["academic_external_exams_destroy"];
+        options?: never;
+        head?: never;
+        /** @description GET/POST /academic/external-exams/; admins manage, staff view. */
+        patch: operations["academic_external_exams_partial_update"];
+        trace?: never;
+    };
+    "/api/academic/external-exams/{id}/import-results/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Results as rows: {"rows": [{"candidate": candidate no. or admission no., "subject", "grade"}]}
+         *     (pasted from the exam body's result sheet). Unknown candidates are reported, not guessed. */
+        post: operations["academic_external_exams_import_results_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/academic/external-exams/{id}/register/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Enter students as candidates. Body: {"student_ids": [...]} or nothing to enter the whole target
+         *     class. Subjects default to what each student takes (up to the exam's maximum). */
+        post: operations["academic_external_exams_register_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/academic/external-exams/{id}/summary/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description GET/POST /academic/external-exams/; admins manage, staff view. */
+        get: operations["academic_external_exams_summary_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/academic/global-search/": {
         parameters: {
             query?: never;
@@ -7034,6 +7165,17 @@ export interface components {
         BenefitTypeEnum: "percentage" | "fixed";
         /** @enum {unknown} */
         BlankEnum: "";
+        /**
+         * @description * `WAEC` - WAEC (WASSCE)
+         *     * `NECO` - NECO (SSCE)
+         *     * `NABTEB` - NABTEB
+         *     * `BECE` - BECE (Junior WAEC)
+         *     * `JAMB` - JAMB (UTME)
+         *     * `COMMON_ENTRANCE` - Common Entrance
+         *     * `OTHER` - Other
+         * @enum {string}
+         */
+        BodyEnum: "WAEC" | "NECO" | "NABTEB" | "BECE" | "JAMB" | "COMMON_ENTRANCE" | "OTHER";
         BookCategory: {
             readonly id: number;
             name: string;
@@ -7297,6 +7439,29 @@ export interface components {
             estimated_arrival: string;
             students?: number[];
         };
+        Candidate: {
+            readonly id: number;
+            readonly exam: number;
+            readonly student: number;
+            readonly student_name: string;
+            readonly student_no: string;
+            /** @default  */
+            readonly class_name: string;
+            candidate_number?: string;
+            subjects?: unknown;
+            results?: unknown;
+            status?: components["schemas"]["CandidateStatusEnum"];
+            readonly summary: string;
+        };
+        /**
+         * @description * `registered` - Registered
+         *     * `sat` - Sat the exam
+         *     * `released` - Results released
+         *     * `withheld` - Results withheld
+         *     * `absent` - Absent
+         * @enum {string}
+         */
+        CandidateStatusEnum: "registered" | "sat" | "released" | "withheld" | "absent";
         /**
          * @description * `academic` - Academic
          *     * `leadership` - Leadership
@@ -7904,6 +8069,38 @@ export interface components {
             description?: string;
             session: string;
             term: string;
+        };
+        ExternalExam: {
+            readonly id: number;
+            body: components["schemas"]["BodyEnum"];
+            readonly body_label: string;
+            name: string;
+            year: number;
+            target_class?: number | null;
+            /** @default  */
+            readonly target_class_name: string;
+            /** Format: date */
+            registration_deadline?: string | null;
+            /** Format: decimal */
+            fee?: string | null;
+            max_subjects?: number;
+            notes?: string;
+            /** @default 0 */
+            readonly candidate_count: number;
+            /** Format: date-time */
+            readonly created_at: string;
+        };
+        ExternalExamRequest: {
+            body: components["schemas"]["BodyEnum"];
+            name: string;
+            year: number;
+            target_class?: number | null;
+            /** Format: date */
+            registration_deadline?: string | null;
+            /** Format: decimal */
+            fee?: string | null;
+            max_subjects?: number;
+            notes?: string;
         };
         FeeCategory: {
             readonly id: number;
@@ -8575,6 +8772,21 @@ export interface components {
             previous?: string | null;
             results: components["schemas"]["BusStop"][];
         };
+        PaginatedCandidateList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous?: string | null;
+            results: components["schemas"]["Candidate"][];
+        };
         PaginatedClassList: {
             /** @example 123 */
             count: number;
@@ -8784,6 +8996,21 @@ export interface components {
              */
             previous?: string | null;
             results: components["schemas"]["Expense"][];
+        };
+        PaginatedExternalExamList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous?: string | null;
+            results: components["schemas"]["ExternalExam"][];
         };
         PaginatedFeeCategoryList: {
             /** @example 123 */
@@ -9692,6 +9919,12 @@ export interface components {
             estimated_arrival?: string;
             students?: number[];
         };
+        PatchedCandidateRequest: {
+            candidate_number?: string;
+            subjects?: unknown;
+            results?: unknown;
+            status?: components["schemas"]["CandidateStatusEnum"];
+        };
         PatchedClassRequest: {
             name?: string;
             category?: components["schemas"]["ClassCategoryEnum"];
@@ -9840,6 +10073,18 @@ export interface components {
             description?: string;
             session?: string;
             term?: string;
+        };
+        PatchedExternalExamRequest: {
+            body?: components["schemas"]["BodyEnum"];
+            name?: string;
+            year?: number;
+            target_class?: number | null;
+            /** Format: date */
+            registration_deadline?: string | null;
+            /** Format: decimal */
+            fee?: string | null;
+            max_subjects?: number;
+            notes?: string;
         };
         PatchedFeeCategoryRequest: {
             name?: string;
@@ -13100,6 +13345,327 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SchoolEvent"];
+                };
+            };
+        };
+    };
+    academic_external_exam_candidates_list: {
+        parameters: {
+            query?: {
+                /** @description A page number within the paginated result set. */
+                page?: number;
+                /** @description Number of results to return per page. */
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedCandidateList"];
+                };
+            };
+        };
+    };
+    academic_external_exam_candidates_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this external exam candidate. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Candidate"];
+                };
+            };
+        };
+    };
+    academic_external_exam_candidates_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this external exam candidate. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    academic_external_exam_candidates_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this external exam candidate. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedCandidateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedCandidateRequest"];
+                "multipart/form-data": components["schemas"]["PatchedCandidateRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Candidate"];
+                };
+            };
+        };
+    };
+    academic_external_exams_list: {
+        parameters: {
+            query?: {
+                /** @description A page number within the paginated result set. */
+                page?: number;
+                /** @description Number of results to return per page. */
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedExternalExamList"];
+                };
+            };
+        };
+    };
+    academic_external_exams_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExternalExamRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ExternalExamRequest"];
+                "multipart/form-data": components["schemas"]["ExternalExamRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExternalExam"];
+                };
+            };
+        };
+    };
+    academic_external_exams_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this external exam. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExternalExam"];
+                };
+            };
+        };
+    };
+    academic_external_exams_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this external exam. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExternalExamRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ExternalExamRequest"];
+                "multipart/form-data": components["schemas"]["ExternalExamRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExternalExam"];
+                };
+            };
+        };
+    };
+    academic_external_exams_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this external exam. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    academic_external_exams_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this external exam. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedExternalExamRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedExternalExamRequest"];
+                "multipart/form-data": components["schemas"]["PatchedExternalExamRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExternalExam"];
+                };
+            };
+        };
+    };
+    academic_external_exams_import_results_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this external exam. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExternalExamRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ExternalExamRequest"];
+                "multipart/form-data": components["schemas"]["ExternalExamRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExternalExam"];
+                };
+            };
+        };
+    };
+    academic_external_exams_register_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this external exam. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExternalExamRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ExternalExamRequest"];
+                "multipart/form-data": components["schemas"]["ExternalExamRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExternalExam"];
+                };
+            };
+        };
+    };
+    academic_external_exams_summary_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this external exam. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExternalExam"];
                 };
             };
         };

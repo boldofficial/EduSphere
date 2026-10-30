@@ -352,6 +352,7 @@ export const INITIAL_SETTINGS: Settings = {
         'dashboard',
         'timetables',
         'grading',
+        'external_exams',
         'attendance',
         'learning',
         'announcements',
@@ -366,6 +367,7 @@ export const INITIAL_SETTINGS: Settings = {
         'dashboard',
         'timetables',
         'grading',
+        'external_exams',
         'attendance',
         'learning',
         'announcements',
@@ -382,6 +384,7 @@ export const INITIAL_SETTINGS: Settings = {
       navigation: [
         'dashboard',
         'grading',
+        'external_exams',
         'attendance',
         'learning',
         'announcements',

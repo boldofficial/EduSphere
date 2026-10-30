@@ -772,3 +772,58 @@ class AcademicTerm(TenantModel):
 
     def __str__(self):
         return f"{self.name} {self.session} ({self.school.name})"
+
+
+class ExternalExam(TenantModel):
+    """An external examination the school enters candidates for: WAEC, NECO, BECE, JAMB…"""
+
+    BODY_CHOICES = [
+        ("WAEC", "WAEC (WASSCE)"),
+        ("NECO", "NECO (SSCE)"),
+        ("NABTEB", "NABTEB"),
+        ("BECE", "BECE (Junior WAEC)"),
+        ("JAMB", "JAMB (UTME)"),
+        ("COMMON_ENTRANCE", "Common Entrance"),
+        ("OTHER", "Other"),
+    ]
+    body = models.CharField(max_length=20, choices=BODY_CHOICES)
+    name = models.CharField(max_length=120)  # e.g. "WASSCE May/June 2027"
+    year = models.PositiveSmallIntegerField()
+    target_class = models.ForeignKey(
+        Class, on_delete=models.SET_NULL, null=True, blank=True, related_name="external_exams"
+    )
+    registration_deadline = models.DateField(null=True, blank=True)
+    fee = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    max_subjects = models.PositiveSmallIntegerField(default=9)
+    notes = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ["-year", "body"]
+
+    def __str__(self):
+        return self.name
+
+
+class ExternalExamCandidate(TenantModel):
+    """One student's entry for an external exam: candidate number, subjects and results."""
+
+    STATUS_CHOICES = [
+        ("registered", "Registered"),
+        ("sat", "Sat the exam"),
+        ("released", "Results released"),
+        ("withheld", "Results withheld"),
+        ("absent", "Absent"),
+    ]
+    exam = models.ForeignKey(ExternalExam, on_delete=models.CASCADE, related_name="candidates")
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name="external_exams")
+    candidate_number = models.CharField(max_length=40, blank=True)
+    subjects = models.JSONField(default=list, blank=True)  # subject names entered for
+    results = models.JSONField(default=dict, blank=True)  # {subject: grade or score}
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="registered")
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["exam", "student"], name="unique_candidate_per_exam")]
+        ordering = ["student__names"]
+
+    def __str__(self):
+        return f"{self.student.names} · {self.exam.name}"
