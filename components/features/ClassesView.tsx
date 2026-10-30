@@ -9,6 +9,7 @@ import {
   Plus,
   Search,
   Settings2,
+  BookOpenCheck,
   Trash2,
   User,
 } from 'lucide-react';
@@ -432,13 +433,21 @@ export const ClassesView: React.FC<ClassesViewProps> = ({
                       </div>
 
                       <div className="flex items-center justify-between gap-2 border-t border-gray-100 px-4 py-2.5">
-                        <button
-                          type="button"
-                          onClick={() => handleEdit(c)}
-                          className="inline-flex items-center gap-1.5 rounded-control px-2 py-1 text-sm font-semibold text-brand-700 hover:bg-brand-50"
-                        >
-                          <Settings2 size={15} /> Configure
-                        </button>
+                        <div className="flex min-w-0 items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => handleEdit(c)}
+                            className="inline-flex items-center gap-1.5 rounded-control px-2 py-1 text-sm font-semibold text-brand-700 hover:bg-brand-50"
+                          >
+                            <Settings2 size={15} /> Configure
+                          </button>
+                          <Link
+                            href={`/classes/subjects?class=${c.id}`}
+                            className="inline-flex items-center gap-1.5 rounded-control px-2 py-1 text-sm font-semibold text-gray-600 hover:bg-gray-50"
+                          >
+                            <BookOpenCheck size={15} /> Subjects
+                          </Link>
+                        </div>
                         {onDelete && (
                           <button
                             type="button"

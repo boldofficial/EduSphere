@@ -36,13 +36,16 @@ class StudentSerializer(serializers.ModelSerializer):
             "passport_url",
             "assigned_fees",
             "discounts",
+            # Subjects this student takes (empty = all the class offers); set on the Student subjects
+            # page (classes/<id>/subject-choices/), which checks them against the class.
+            "assigned_subjects",
             "password",
             "status",
             "performance_trend",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ("school", "user", "current_class")
+        read_only_fields = ("school", "user", "current_class", "assigned_subjects")
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)

@@ -349,6 +349,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/academic/classes/{id}/subject-choices/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description GET: the class's subjects, which are compulsory, each active student's subjects and the
+         *     department presets. PUT {"compulsory": [names], "choices": {student_id: [electives]}}. */
+        get: operations["academic_classes_subject_choices_retrieve"];
+        /** @description GET: the class's subjects, which are compulsory, each active student's subjects and the
+         *     department presets. PUT {"compulsory": [names], "choices": {student_id: [electives]}}. */
+        put: operations["academic_classes_subject_choices_update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/academic/classes/export-jobs/{job_id}/": {
         parameters: {
             query?: never;
@@ -2837,6 +2857,22 @@ export interface paths {
          *       "type": "DIRECT" | "GROUP" | "BROADCAST" (optional)
          *     } */
         post: operations["core_conversations_start_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/core/custom-domain/verify/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["core_custom_domain_verify_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -10906,6 +10942,7 @@ export interface components {
             passport_url?: string | null;
             assigned_fees?: unknown;
             discounts?: unknown;
+            readonly assigned_subjects: unknown;
             status?: components["schemas"]["StudentStatusEnum"];
             readonly performance_trend: string;
             /** Format: date-time */
@@ -12190,6 +12227,56 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Class"];
+                };
+            };
+        };
+    };
+    academic_classes_subject_choices_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this class. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Class"];
+                };
+            };
+        };
+    };
+    academic_classes_subject_choices_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this class. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClassRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ClassRequest"];
+                "multipart/form-data": components["schemas"]["ClassRequest"];
+            };
+        };
         responses: {
             200: {
                 headers: {
@@ -18345,6 +18432,24 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["Conversation"];
                 };
+            };
+        };
+    };
+    core_custom_domain_verify_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

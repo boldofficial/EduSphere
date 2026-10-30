@@ -138,6 +138,8 @@ class Class(TenantModel):
     arm = models.CharField(max_length=20, blank=True)  # "A", "Gold"…
     department = models.CharField(max_length=20, blank=True)  # senior secondary: science / arts / commercial
     level_order = models.PositiveSmallIntegerField(default=0)  # position in the school, for sorting and promotion
+    # Subjects every student in the class takes; empty = all of them (see academic/subject_choices.py).
+    compulsory_subjects = models.JSONField(default=list, blank=True)
 
     def __str__(self):
         return f"{self.name} ({self.school.name}) - {self.category}"

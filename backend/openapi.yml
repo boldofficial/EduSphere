@@ -866,6 +866,65 @@ paths:
               schema:
                 $ref: '#/components/schemas/Class'
           description: ''
+  /api/academic/classes/{id}/subject-choices/:
+    get:
+      operationId: academic_classes_subject_choices_retrieve
+      description: |-
+        GET: the class's subjects, which are compulsory, each active student's subjects and the
+        department presets. PUT {"compulsory": [names], "choices": {student_id: [electives]}}.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this class.
+        required: true
+      tags:
+      - academic
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Class'
+          description: ''
+    put:
+      operationId: academic_classes_subject_choices_update
+      description: |-
+        GET: the class's subjects, which are compulsory, each active student's subjects and the
+        department presets. PUT {"compulsory": [names], "choices": {student_id: [electives]}}.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this class.
+        required: true
+      tags:
+      - academic
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClassRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ClassRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ClassRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Class'
+          description: ''
   /api/academic/classes/export-jobs/{job_id}/:
     get:
       operationId: academic_classes_export_jobs_retrieve
@@ -7573,6 +7632,16 @@ paths:
               schema:
                 $ref: '#/components/schemas/Conversation'
           description: ''
+  /api/core/custom-domain/verify/:
+    post:
+      operationId: core_custom_domain_verify_create
+      tags:
+      - core
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
   /api/core/health/:
     get:
       operationId: core_health_retrieve
@@ -26386,6 +26455,8 @@ components:
           nullable: true
         assigned_fees: {}
         discounts: {}
+        assigned_subjects:
+          readOnly: true
         status:
           $ref: '#/components/schemas/StudentStatusEnum'
         performance_trend:
@@ -26400,6 +26471,7 @@ components:
           format: date-time
           readOnly: true
       required:
+      - assigned_subjects
       - created_at
       - current_class
       - gender
