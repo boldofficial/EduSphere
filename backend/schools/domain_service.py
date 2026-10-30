@@ -7,7 +7,6 @@ from rest_framework.exceptions import ValidationError
 
 from .models import School, SchoolDomain
 
-
 HOST_RE = re.compile(r"^(?=.{4,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$")
 
 

@@ -866,6 +866,65 @@ paths:
               schema:
                 $ref: '#/components/schemas/Class'
           description: ''
+  /api/academic/classes/{id}/subject-choices/:
+    get:
+      operationId: academic_classes_subject_choices_retrieve
+      description: |-
+        GET: the class's subjects, which are compulsory, each active student's subjects and the
+        department presets. PUT {"compulsory": [names], "choices": {student_id: [electives]}}.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this class.
+        required: true
+      tags:
+      - academic
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Class'
+          description: ''
+    put:
+      operationId: academic_classes_subject_choices_update
+      description: |-
+        GET: the class's subjects, which are compulsory, each active student's subjects and the
+        department presets. PUT {"compulsory": [names], "choices": {student_id: [electives]}}.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this class.
+        required: true
+      tags:
+      - academic
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClassRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ClassRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ClassRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Class'
+          description: ''
   /api/academic/classes/export-jobs/{job_id}/:
     get:
       operationId: academic_classes_export_jobs_retrieve
@@ -1777,6 +1836,365 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/academic/external-exam-candidates/:
+    get:
+      operationId: academic_external_exam_candidates_list
+      description: |-
+        GET /academic/external-exam-candidates/?exam=<id>. Staff see all; students and parents only
+        their own entries (and results). Admins edit candidate numbers, subjects, results and status.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - academic
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCandidateList'
+          description: ''
+  /api/academic/external-exam-candidates/{id}/:
+    get:
+      operationId: academic_external_exam_candidates_retrieve
+      description: |-
+        GET /academic/external-exam-candidates/?exam=<id>. Staff see all; students and parents only
+        their own entries (and results). Admins edit candidate numbers, subjects, results and status.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this external exam candidate.
+        required: true
+      tags:
+      - academic
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Candidate'
+          description: ''
+    patch:
+      operationId: academic_external_exam_candidates_partial_update
+      description: |-
+        GET /academic/external-exam-candidates/?exam=<id>. Staff see all; students and parents only
+        their own entries (and results). Admins edit candidate numbers, subjects, results and status.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this external exam candidate.
+        required: true
+      tags:
+      - academic
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCandidateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCandidateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCandidateRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Candidate'
+          description: ''
+    delete:
+      operationId: academic_external_exam_candidates_destroy
+      description: |-
+        GET /academic/external-exam-candidates/?exam=<id>. Staff see all; students and parents only
+        their own entries (and results). Admins edit candidate numbers, subjects, results and status.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this external exam candidate.
+        required: true
+      tags:
+      - academic
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/academic/external-exams/:
+    get:
+      operationId: academic_external_exams_list
+      description: GET/POST /academic/external-exams/; admins manage, staff view.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - academic
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedExternalExamList'
+          description: ''
+    post:
+      operationId: academic_external_exams_create
+      description: GET/POST /academic/external-exams/; admins manage, staff view.
+      tags:
+      - academic
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExternalExamRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ExternalExamRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ExternalExamRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalExam'
+          description: ''
+  /api/academic/external-exams/{id}/:
+    get:
+      operationId: academic_external_exams_retrieve
+      description: GET/POST /academic/external-exams/; admins manage, staff view.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this external exam.
+        required: true
+      tags:
+      - academic
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalExam'
+          description: ''
+    put:
+      operationId: academic_external_exams_update
+      description: GET/POST /academic/external-exams/; admins manage, staff view.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this external exam.
+        required: true
+      tags:
+      - academic
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExternalExamRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ExternalExamRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ExternalExamRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalExam'
+          description: ''
+    patch:
+      operationId: academic_external_exams_partial_update
+      description: GET/POST /academic/external-exams/; admins manage, staff view.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this external exam.
+        required: true
+      tags:
+      - academic
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedExternalExamRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedExternalExamRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedExternalExamRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalExam'
+          description: ''
+    delete:
+      operationId: academic_external_exams_destroy
+      description: GET/POST /academic/external-exams/; admins manage, staff view.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this external exam.
+        required: true
+      tags:
+      - academic
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/academic/external-exams/{id}/import-results/:
+    post:
+      operationId: academic_external_exams_import_results_create
+      description: |-
+        Results as rows: {"rows": [{"candidate": candidate no. or admission no., "subject", "grade"}]}
+        (pasted from the exam body's result sheet). Unknown candidates are reported, not guessed.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this external exam.
+        required: true
+      tags:
+      - academic
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExternalExamRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ExternalExamRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ExternalExamRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalExam'
+          description: ''
+  /api/academic/external-exams/{id}/register/:
+    post:
+      operationId: academic_external_exams_register_create
+      description: |-
+        Enter students as candidates. Body: {"student_ids": [...]} or nothing to enter the whole target
+        class. Subjects default to what each student takes (up to the exam's maximum).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this external exam.
+        required: true
+      tags:
+      - academic
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExternalExamRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ExternalExamRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ExternalExamRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalExam'
+          description: ''
+  /api/academic/external-exams/{id}/summary/:
+    get:
+      operationId: academic_external_exams_summary_retrieve
+      description: GET/POST /academic/external-exams/; admins manage, staff view.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this external exam.
+        required: true
+      tags:
+      - academic
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalExam'
+          description: ''
   /api/academic/global-search/:
     get:
       operationId: academic_global_search_retrieve
@@ -7573,6 +7991,16 @@ paths:
               schema:
                 $ref: '#/components/schemas/Conversation'
           description: ''
+  /api/core/custom-domain/verify/:
+    post:
+      operationId: core_custom_domain_verify_create
+      tags:
+      - core
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
   /api/core/health/:
     get:
       operationId: core_health_retrieve
@@ -17981,6 +18409,24 @@ components:
     BlankEnum:
       enum:
       - ''
+    BodyEnum:
+      enum:
+      - WAEC
+      - NECO
+      - NABTEB
+      - BECE
+      - JAMB
+      - COMMON_ENTRANCE
+      - OTHER
+      type: string
+      description: |-
+        * `WAEC` - WAEC (WASSCE)
+        * `NECO` - NECO (SSCE)
+        * `NABTEB` - NABTEB
+        * `BECE` - BECE (Junior WAEC)
+        * `JAMB` - JAMB (UTME)
+        * `COMMON_ENTRANCE` - Common Entrance
+        * `OTHER` - Other
     BookCategory:
       type: object
       properties:
@@ -18670,6 +19116,60 @@ components:
       - arrival_order
       - estimated_arrival
       - name
+    Candidate:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        exam:
+          type: integer
+          readOnly: true
+        student:
+          type: integer
+          readOnly: true
+        student_name:
+          type: string
+          readOnly: true
+        student_no:
+          type: string
+          readOnly: true
+        class_name:
+          type: string
+          readOnly: true
+          default: ''
+        candidate_number:
+          type: string
+          maxLength: 40
+        subjects: {}
+        results: {}
+        status:
+          $ref: '#/components/schemas/CandidateStatusEnum'
+        summary:
+          type: string
+          readOnly: true
+      required:
+      - class_name
+      - exam
+      - id
+      - student
+      - student_name
+      - student_no
+      - summary
+    CandidateStatusEnum:
+      enum:
+      - registered
+      - sat
+      - released
+      - withheld
+      - absent
+      type: string
+      description: |-
+        * `registered` - Registered
+        * `sat` - Sat the exam
+        * `released` - Results released
+        * `withheld` - Results withheld
+        * `absent` - Absent
     Category0ffEnum:
       enum:
       - academic
@@ -20199,6 +20699,98 @@ components:
       - session
       - term
       - title
+    ExternalExam:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        body:
+          $ref: '#/components/schemas/BodyEnum'
+        body_label:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          maxLength: 120
+        year:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        target_class:
+          type: integer
+          nullable: true
+        target_class_name:
+          type: string
+          readOnly: true
+          default: ''
+        registration_deadline:
+          type: string
+          format: date
+          nullable: true
+        fee:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+        max_subjects:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        notes:
+          type: string
+        candidate_count:
+          type: integer
+          readOnly: true
+          default: 0
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - body
+      - body_label
+      - candidate_count
+      - created_at
+      - id
+      - name
+      - target_class_name
+      - year
+    ExternalExamRequest:
+      type: object
+      properties:
+        body:
+          $ref: '#/components/schemas/BodyEnum'
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        year:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        target_class:
+          type: integer
+          nullable: true
+        registration_deadline:
+          type: string
+          format: date
+          nullable: true
+        fee:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+        max_subjects:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        notes:
+          type: string
+      required:
+      - body
+      - name
+      - year
     FeeCategory:
       type: object
       properties:
@@ -21617,6 +22209,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/BusStop'
+    PaginatedCandidateList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Candidate'
     PaginatedClassList:
       type: object
       required:
@@ -21939,6 +22554,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Expense'
+    PaginatedExternalExamList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExternalExam'
     PaginatedFeeCategoryList:
       type: object
       required:
@@ -23498,6 +24136,16 @@ components:
           type: array
           items:
             type: integer
+    PatchedCandidateRequest:
+      type: object
+      properties:
+        candidate_number:
+          type: string
+          maxLength: 40
+        subjects: {}
+        results: {}
+        status:
+          $ref: '#/components/schemas/CandidateStatusEnum'
     PatchedClassRequest:
       type: object
       properties:
@@ -23841,6 +24489,37 @@ components:
           type: string
           minLength: 1
           maxLength: 50
+    PatchedExternalExamRequest:
+      type: object
+      properties:
+        body:
+          $ref: '#/components/schemas/BodyEnum'
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        year:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        target_class:
+          type: integer
+          nullable: true
+        registration_deadline:
+          type: string
+          format: date
+          nullable: true
+        fee:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+        max_subjects:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        notes:
+          type: string
     PatchedFeeCategoryRequest:
       type: object
       properties:
@@ -26386,6 +27065,8 @@ components:
           nullable: true
         assigned_fees: {}
         discounts: {}
+        assigned_subjects:
+          readOnly: true
         status:
           $ref: '#/components/schemas/StudentStatusEnum'
         performance_trend:
@@ -26400,6 +27081,7 @@ components:
           format: date-time
           readOnly: true
       required:
+      - assigned_subjects
       - created_at
       - current_class
       - gender

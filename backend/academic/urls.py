@@ -42,6 +42,8 @@ router.register(r"grade-ranges", views.GradeRangeViewSet, basename="grade-ranges
 router.register(r"subject_teachers", views.SubjectTeacherViewSet, basename="subject_teachers")
 router.register(r"broadsheet", views.BroadsheetView, basename="broadsheet")
 router.register(r"data-migration", AcademicDataMigrationViewSet, basename="data-migration")
+router.register(r"external-exams", views.ExternalExamViewSet, basename="external-exams")
+router.register(r"external-exam-candidates", views.ExternalExamCandidateViewSet, basename="external-exam-candidates")
 
 urlpatterns = [
     path("global-search/", views.GlobalSearchView.as_view(), name="global-search"),

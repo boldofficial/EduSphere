@@ -47,3 +47,4 @@ from .ai_views import (  # noqa: F401
 )
 from .search import GlobalSearchView  # noqa: F401
 from .migration import AcademicDataMigrationViewSet  # noqa: F401
+from .external_exams import ExternalExamCandidateViewSet, ExternalExamViewSet  # noqa: F401

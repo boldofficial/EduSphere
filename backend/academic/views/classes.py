@@ -28,6 +28,66 @@ class ClassViewSet(TenantViewSet):
     serializer_class = ClassSerializer
     pagination_class = StandardPagination
 
+    @action(detail=True, methods=["get", "put"], url_path="subject-choices")
+    def subject_choices(self, request, pk=None):
+        """
+        GET: the class's subjects, which are compulsory, each active student's subjects and the
+        department presets. PUT {"compulsory": [names], "choices": {student_id: [electives]}}.
+        """
+        from core.permissions import ADMIN, role_of
+
+        from ..models import Student
+        from ..subject_choices import (
+            ChoiceError,
+            class_subject_names,
+            compulsory_for,
+            department_presets,
+            effective_subjects,
+            save_choices,
+        )
+
+        cls = self.get_object()
+        students = list(Student.objects.filter(school=cls.school, current_class=cls, status="active").order_by("names"))
+        if request.method == "PUT":
+            if role_of(request.user) not in ADMIN:
+                return Response({"detail": "Only admins can change student subjects."}, status=403)
+            # Leaving "compulsory" out keeps the class's current list.
+            compulsory = request.data["compulsory"] if "compulsory" in request.data else compulsory_for(cls)
+            choices = request.data.get("choices") or {}
+            if not isinstance(compulsory, list) or not isinstance(choices, dict):
+                return Response({"detail": "Send compulsory as a list and choices by student."}, status=400)
+            try:
+                count = save_choices(cls, students, [str(s) for s in compulsory], choices)
+            except ChoiceError as error:
+                return Response({"detail": str(error)}, status=400)
+            cls.refresh_from_db()
+            response_extra = {"updated": count}
+        else:
+            response_extra = {}
+
+        offered = class_subject_names(cls)
+        compulsory = compulsory_for(cls, offered)
+        return Response(
+            {
+                "class_id": cls.pk,
+                "class_name": cls.name,
+                "department": cls.department,
+                "subjects": offered,
+                "compulsory": compulsory,
+                "presets": department_presets(cls, offered),
+                "students": [
+                    {
+                        "id": s.pk,
+                        "names": s.names,
+                        "student_no": s.student_no,
+                        "subjects": effective_subjects(s, cls, offered, compulsory),
+                    }
+                    for s in students
+                ],
+                **response_extra,
+            }
+        )
+
     @action(detail=True, methods=["get"], url_path="export-broadsheet-pdf")
     def export_broadsheet_pdf(self, request, pk=None):
         """
