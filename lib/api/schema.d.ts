@@ -267,6 +267,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/academic/calendar/promotion/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description GET ?session=: each class's students with a suggested decision (promote, repeat, graduate).
+         *     POST {"session", "decisions": {student_id: decision}, "copy_subject_teachers"}: apply them. */
+        get: operations["academic_calendar_promotion_retrieve"];
+        put?: never;
+        /** @description GET ?session=: each class's students with a suggested decision (promote, repeat, graduate).
+         *     POST {"session", "decisions": {student_id: decision}, "copy_subject_teachers"}: apply them. */
+        post: operations["academic_calendar_promotion_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/academic/calendar/sessions/{id}/": {
         parameters: {
             query?: never;
@@ -12369,6 +12389,42 @@ export interface operations {
         };
     };
     academic_calendar_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    academic_calendar_promotion_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    academic_calendar_promotion_create: {
         parameters: {
             query?: never;
             header?: never;

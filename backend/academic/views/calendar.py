@@ -181,3 +181,46 @@ class TermChecklistView(APIView):
         if not term:
             return Response({"detail": "Term not found."}, status=404)
         return Response(checklist(term))
+
+
+class SessionPromotionView(APIView):
+    """
+    GET ?session=: each class's students with a suggested decision (promote, repeat, graduate).
+    POST {"session", "decisions": {student_id: decision}, "copy_subject_teachers"}: apply them.
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        from ..promotion import plan
+
+        if denied := _admin(request):
+            return denied
+        school = get_request_school(request, allow_super_admin_tenant=True)
+        ensure_calendar(school)
+        session = request.query_params.get("session") or school.settings.current_session
+        return Response(plan(school, session))
+
+    def post(self, request):
+        from ..promotion import PromotionError, apply
+
+        if denied := _admin(request):
+            return denied
+        school = get_request_school(request, allow_super_admin_tenant=True)
+        session = request.data.get("session")
+        decisions = request.data.get("decisions")
+        if not session or not isinstance(decisions, dict) or not decisions:
+            return Response({"detail": "Send the session and a decision for each student."}, status=400)
+        if not AcademicSession.objects.filter(school=school, name=session).exists():
+            return Response({"detail": "Session not found."}, status=404)
+        try:
+            counts = apply(
+                school,
+                session,
+                {str(k): v for k, v in decisions.items()},
+                request.user,
+                copy_subject_teachers=request.data.get("copy_subject_teachers", True) is not False,
+            )
+        except PromotionError as error:
+            return Response({"detail": str(error)}, status=400)
+        return Response(counts)

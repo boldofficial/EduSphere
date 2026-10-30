@@ -161,6 +161,24 @@ def checklist(term):
             ),
         ),
     ]
+    if following and following.session != session:
+        from .promotion import plan
+
+        pending = plan(school, session)["pending"]
+        checks.insert(
+            0,
+            _check(
+                "promotion",
+                "Promotions for the new session",
+                pending == 0,
+                (
+                    "Every student has been promoted, repeated or graduated."
+                    if pending == 0
+                    else f"{_plural(pending, 'student')} not yet promoted, repeated or graduated. "
+                    "Do this before the new session starts so everyone begins in the right class."
+                ),
+            ),
+        )
     return {
         "term": {"id": term.id, "session": session, "term": name},
         "next": {"id": following.id, "session": following.session, "term": following.name} if following else None,

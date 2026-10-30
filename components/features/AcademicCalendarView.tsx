@@ -467,6 +467,14 @@ function CloseTermModal({ termId, onClose }: { termId: number; onClose: () => vo
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold text-gray-900">{check.title}</p>
                     <p className="text-sm text-gray-600">{check.summary}</p>
+                    {check.key === 'promotion' && check.status === 'warn' && (
+                      <Link
+                        href="/sessions/promotion"
+                        className="mt-1 inline-block text-sm font-semibold text-brand-700 hover:underline"
+                      >
+                        Review promotions →
+                      </Link>
+                    )}
                     {check.items.length > 0 && (
                       <ul className="mt-2 divide-y divide-gray-100 rounded-control bg-gray-50 text-xs">
                         {check.items.map((item) => (

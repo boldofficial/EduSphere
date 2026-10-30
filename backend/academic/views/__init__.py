@@ -52,6 +52,7 @@ from .calendar import (  # noqa: F401
     AcademicCalendarView,
     AcademicSessionDetailView,
     AcademicTermDetailView,
+    SessionPromotionView,
     StartTermView,
     TermChecklistView,
 )

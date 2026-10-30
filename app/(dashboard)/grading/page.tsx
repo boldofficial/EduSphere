@@ -16,7 +16,7 @@ import { isLocalId } from '@/lib/offline';
 import { GradingView } from '@/components/features/GradingView';
 import { SubjectTeacherManager } from '@/components/features/grading/SubjectTeacherManager';
 import { TermComparisonView } from '@/components/features/grading/TermComparisonView';
-import { PromotionManager } from '@/components/features/grading/PromotionManager';
+import { SessionPromotionView } from '@/components/features/SessionPromotionView';
 import { StudentScoresView } from '@/components/features/grading/StudentScoresView';
 import { BulkScoreImport } from '@/components/features/grading/BulkScoreImport';
 import { SubjectAnalytics } from '@/components/features/grading/SubjectAnalytics';
@@ -231,7 +231,7 @@ export default function GradingPage() {
         />
       )}
 
-      {activeTab === 'promotion' && <PromotionManager />}
+      {activeTab === 'promotion' && <SessionPromotionView embedded />}
 
       {activeTab === 'assignments' && <SubjectTeacherManager />}
     </div>

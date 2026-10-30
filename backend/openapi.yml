@@ -618,6 +618,31 @@ paths:
       responses:
         '200':
           description: No response body
+  /api/academic/calendar/promotion/:
+    get:
+      operationId: academic_calendar_promotion_retrieve
+      description: |-
+        GET ?session=: each class's students with a suggested decision (promote, repeat, graduate).
+        POST {"session", "decisions": {student_id: decision}, "copy_subject_teachers"}: apply them.
+      tags:
+      - academic
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: academic_calendar_promotion_create
+      description: |-
+        GET ?session=: each class's students with a suggested decision (promote, repeat, graduate).
+        POST {"session", "decisions": {student_id: decision}, "copy_subject_teachers"}: apply them.
+      tags:
+      - academic
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
   /api/academic/calendar/sessions/{id}/:
     delete:
       operationId: academic_calendar_sessions_destroy
