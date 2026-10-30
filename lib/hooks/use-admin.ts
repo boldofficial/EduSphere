@@ -103,6 +103,16 @@ export function useSystemHealth() {
   });
 }
 
+/** One request for the super admin overview: KPIs, the queue of work, renewals and trends. */
+export function useCommandCenter() {
+  return useQuery({
+    queryKey: queryKeys.commandCenter,
+    queryFn: async () =>
+      (await apiClient.get('schools/command-center/')).data as Types.CommandCenter,
+    refetchInterval: 60000,
+  });
+}
+
 export function useAdminSchools() {
   return useQuery({
     queryKey: queryKeys.adminSchools,

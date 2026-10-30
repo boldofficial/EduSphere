@@ -21,11 +21,13 @@ from .views import (
     UserAnnouncementsView,
     VerifySchoolSlugView,
 )
+from .views_command_center import CommandCenterView
 from .views_public import DemoRequestViewSet
 
 urlpatterns = [
     path("verify-slug/<str:slug>/", VerifySchoolSlugView.as_view(), name="verify-slug"),
     path("health/", SystemHealthView.as_view(), name="system-health"),
+    path("command-center/", CommandCenterView.as_view(), name="command-center"),
     path("analytics/strategic/", StrategicAnalyticsView.as_view(), name="strategic-analytics"),
     path("governance/", PlatformGovernanceView.as_view(), name="platform-governance"),
     path("announcements/", UserAnnouncementsView.as_view(), name="user-announcements"),

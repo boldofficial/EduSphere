@@ -5534,6 +5534,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/schools/command-center/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["schools_command_center_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/schools/demo-request/": {
         parameters: {
             query?: never;
@@ -25547,6 +25563,24 @@ export interface operations {
         };
     };
     schools_announcements_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    schools_command_center_retrieve: {
         parameters: {
             query?: never;
             header?: never;
